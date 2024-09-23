@@ -5,7 +5,7 @@
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
-function enviar_email($destinatario, $assunto, $mensagemHTML){
+function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
 
     require ('src/PHPMailer.php');
     require ('src/Exception.php');
@@ -35,18 +35,18 @@ function enviar_email($destinatario, $assunto, $mensagemHTML){
     //$senha = '#@//Jones?';
     //  //batata2023
 
-    if (strstr($email_suporte, "@gmail.com")) {
+    if (strstr(haystack: $email_suporte, needle: "@gmail.com")) {
         //$email = "exemplo@gmail.com"; // Substitua pelo endereço de e-mail que você quer verificar
         $email_host = 'smtp.gmail.com';
         //$senha ='xqurngdmehhkfhob'; //senha para acesso de app
         $num_port = 587;
         //return "Este é um endereço do Gmail.";
 
-    } elseif (strstr($email_suporte, "@hotmail.com")) {
+    } elseif (strstr(haystack: $email_suporte, needle: "@hotmail.com")) {
         $email_host= 'smtp-mail.outlook.com';
         $num_port = 587;    
         //return "Este é um endereço do Hotmail.";
-    }  elseif (strstr($email_suporte, "@yahoo.com")) {
+    }  elseif (strstr(haystack: $email_suporte, needle: "@yahoo.com")) {
         $email_host= 'smtp.mail.yahoo.com';
         $num_port = 587;    
         //return "Este é um endereço do Hotmail.";
@@ -54,7 +54,7 @@ function enviar_email($destinatario, $assunto, $mensagemHTML){
        return false;
     }
     //'batata_jonesrodrigues@hotmail.com'
-    $mail = new PHPMailer(true);
+    $mail = new PHPMailer(exceptions: true);
     try{
         $mail->isSMTP();
         //$mail->SMTPDebug = SMTP::DEBUG_SERVER;
@@ -65,11 +65,11 @@ function enviar_email($destinatario, $assunto, $mensagemHTML){
         $mail->Password = $senha;
         //$mail->SMTPSecure = 'tls';//usado no gmail
         //$mail->SMTPSecure = false;
-        $mail->isHTML(true);
+        $mail->isHTML(isHtml: true);
         $mail->CharSet = 'UTF-8';
 
-        $mail->setFrom($email_suporte, $razao);
-        $mail->addAddress($destinatario);
+        $mail->setFrom(address: $email_suporte, name: $razao);
+        $mail->addAddress(address: $destinatario);
         $mail->Subject = $assunto;
 
         $mail->Body = $mensagemHTML;
