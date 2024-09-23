@@ -1,0 +1,19 @@
+{
+    "name": "batat/credgas",
+    "description": "Sistema de gestão de distribuição de gás para automação de pedidos e controle de estoque.",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Batat\\Credgas\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "JonesRod",
+            "email": "batatajonesrodrigues@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
