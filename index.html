@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar Contato</title>
+</head>
+<body>
+    <form action="adicionar_contato.php" method="POST">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" >
+        <br>
+        <label for="telefone">Telefone:</label>
+        <input type="text" id="telefone" name="telefone" ><!--required-->
+        <br>
+        <label for="data_envio">Data de Envio:</label>
+        <input type="date" id="data_envio" name="data_envio" >
+        <br>
+        <button type="submit">Adicionar Contato</button>
+    </form>
+
+    <h1>Bem-vindo!</h1>
+    <p>Clique no link abaixo para enviar mensagens:</p>
+    <a href="enviar_mensagens.html">Enviar Mensagens</a>
+    
+    <script> 
+        document.querySelector('form').addEventListener('submit', function(event) {
+            var nome = document.getElementById('nome').value;
+            var telefone = document.getElementById('telefone').value;
+            var data_envio = document.getElementById('data_envio').value;
+        
+            if (!nome || !telefone || !data_envio) {
+                alert('Por favor, preencha todos os campos.');
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
