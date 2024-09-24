@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="PT-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <style>
+        body h1{
+            text-align: center;
+        }
+        body form{
+            text-align: center;
+            /*border: 1px solid black;*/
+            width: 98%;
+            /*position: absolute;*/
+            /*top: 50%;
+            left: 50%;
+            /*transform: translate(-50%, -50%);*/
+            padding: 10px;
+            margin: 10px;
+        }
+        fieldset{
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            margin-left: 25%;
+        }
+        img{
+            width: 50%;
+            /*text-align: center;*/
+            border-radius: 10px;
+        }
+        form .dados input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .dados label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        form .endereco input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .endereco label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        form .contatos input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .contatos label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        .motivo{
+            margin-top: 10px;
+        }
+        textarea{
+            width: 90%;
+            height: 150px; /* Defina a altura desejada em pixels */
+        }
+
+    </style>
+    <title>Ficha de Inscrição</title>
+</head>
+<body>
+    <h1>Ficha de Inscrição</h1>
+    <form action="confirma_inscricao.php" method="POST" enctype="multipart/form-data" autocomplete="on" onsubmit="return validateForm()">
+
+        <img id="preview" style="max-width: 300px;" src= ""><br>
+        <span id="imgAlerta"></span><br>
+        <input required type="file" id="imageInput" name="imageInput" accept=".png, .jpg, .jpeg" onchange="handleImageUpload(event)">
+        <br>
+        <fieldset class="dados">
+            <legend>Dados Pessoais</legend>
+            <p>
+                <label for="inome_completo">Nome ompleto: </label><br>
+                <input required name="nome_completo" id="inome_completo" type="text" minlength="3" maxlength="15" size=""><br>
+            </p>
+            <p>
+                <label for="iapelido">Apelido: </label><br>
+                <input name="apelido" id="iapelido" type="text" ><br>
+            </p>
+            <p>
+                <label for="icpf">CPF: </label><br>
+                <input required name="cpf" id="icpf" type="text" oninput="formatCPF(this)" onblur="verificaCpf()"><br>
+            </p>
+            <p>
+                <label for="irg">RG: </label><br>
+                <input required name="rg" id="irg" type="text" oninput="formatRG(this)" onblur="verificaRG()"><br>
+            </p>
+            <p>
+                <label for="inascimento">Data de Nascimento: </label><br>
+                <input required name="nascimento" id="inascimento" type="text" placeholder="00/00/0000" oninput="formatarData(this)" onblur="verificaData()"><br>
+            </p>
+            <p> 
+                <label for="iuf">Estado Natal: </label><br>
+                <select required name="uf" id="iuf" value="">
+                <option value="Escolha" >---Escolha---</option>
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+                <!-- Adicione mais opções para outros estados aqui -->
+                </select>
+            </p>
+            <p>
+                <label for="icidnatal">Cidade Natal: </label><br>
+                <input required name="cidnatal" id="icidnatal" type="text"><br>
+            </p>
+            <p>
+                <label for="imae">Nome da Mãe: </label><br>
+                <input required name="mae" id="imae" type="data"><br>
+            </p>
+            <p>
+                <label for="ipai">Nome do Pai: </label><br>
+                <input name="pai" id="ipai" type="text"><br>
+            </p>
+        </fieldset>
+        <fieldset class="sexo">
+            <legend>Sexo</legend>
+            <p>
+                <input type="radio" name="sexo" id="imasc" checked value="MASCULINO"><label for="imasc">Masculino</label> 
+                <input type="radio" name="sexo" id="ifemi" value="FEMININO"><label for="ifemi">Feminino</label> 
+                <input type="radio" name="sexo" id="iout" value="OUTROS"><label for="iout">Outros</label>
+            </p>
+        </fieldset>
+        <fieldset class="endereco">
+            <legend>Endereço Atual</legend>
+            <p> 
+                <label for="iuf_atual">Estado Atual: </label><br>
+                <select name="uf_atual" id="iuf_atual" value="">
+                <option value="Escolha">---Escolha---</option>
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+                <!-- Adicione mais opções para outros estados aqui -->
+                </select>
+            </p>
+            <p>
+                <label for="icep">CEP: </label><br>
+                <input required value="" name="cep" id="icep" type="text" maxlength="9" oninput="formatarCEP(this)" onblur="fetchCityByCEP()"><br>
+            </p>
+            <p>
+                <label for="icid_atual">Cidade Atual: </label><br>
+                <input required value="" name="cid_atual" id="icid_atual" type="text"><br>
+            </p>
+            <p>
+                <label for="iendereco">Logradouro: AV/RUA </label><br>
+                <input required value="" name="endereco" id="iendereco" type="text"><br>
+            </p>
+            <p>
+                <label for="inum">N°: </label><br>
+                <input required value="" name="numero" id="inum" type="text"><br>
+            </p>
+            <p>
+                <label for="ibairro">Bairro: </label><br>
+                <input required value="" name="bairro" id="ibairro" type="text"><br>
+            </p>
+        </fieldset>
+        <fieldset class="contatos">
+            <legend>Contatos</legend>
+            <p>
+                <label for="icelular1">Celular 1: </label><br>
+                <input required value="" name="celular1" id="icelular1" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular1(this)" onblur="verificaCelular1()"><br>
+            </p>
+            <p>
+                <label for="icelular2">Celular 2: Opcional </label><br>
+                <input value="" name="celular2" id="icelular2" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular2(this)" onblur="verificaCelular2()"><br>
+            </p>
+            <p>
+                <label for="iemail">E-mail:</label><br>
+                <input required value="" name="email" id="iemail" type="email"><br>
+            </p>
+        </fieldset>
+        <fieldset class="motivo">
+            <p>
+                <label for="imotivo">Diga qual é o motivo ao qual você deseja se tornar sócio: </label><br>
+                <textarea required placeholder="Minimo 100 digitos" type="text" name="motivo" id="imotivo" ></textarea>
+            </p>
+        </fieldset>
+        <p>
+            <input type="checkbox" id="iaceito"  onchange="verificarAceite()" name="aceito" value="sim">Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br><br>
+            <span id="imgAlerta2"></span><br>
+            <a href="../index.php">Voltar</a>
+            <input id="solicitar" disabled ="false" type="submit" value="Solicitar">
+        </p>
+        <script src="verifica_dados.js"></script>
+    </form>
+</body>
+</html>

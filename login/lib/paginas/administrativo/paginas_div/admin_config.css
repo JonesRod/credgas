@@ -1,0 +1,43 @@
+body {
+    font-family: Arial, sans-serif;
+    /*margin: 0;*/
+    background-color: #f8f8f8;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#ititulo {
+    /*align-items: center;*/
+    text-align: center;
+}
+form {
+    display: flex;
+    /*justify-content: center;*/
+    align-items: center;
+    /*height: 100vh; /* Isso garante que o formulário ocupe toda a altura da tela */
+    flex-direction: column; /* Organiza os elementos verticalmente */
+    margin-bottom: 10px;
+}
+.partes{
+    width: 70%;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.partes input{
+    width: 200px;
+    text-align: center;
+}
+.partes input[type="number"] {
+    width: 60px; /* Defina o tamanho desejado */
+    font-size: 16px; /* Ajuste o tamanho da fonte conforme necessário */
+}
+.partes #iuf{
+    width: 200px;
+    text-align: center;
+}
+.partes #ijoia{
+    width: 60px;
+}
+button{
+    margin: 5px;
+}
