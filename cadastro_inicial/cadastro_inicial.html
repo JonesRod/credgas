@@ -31,6 +31,12 @@
             /*text-align: center;*/
             /*border-radius: 10px;
         }*/
+        select{
+            width: 191px; 
+            height: 26px; 
+            border-radius: 3px; 
+            border: 1px solid black;
+        }
         form .dados input {
             text-align: center;
             border: 1px solid black;
@@ -120,7 +126,7 @@
             </p>
             <p> 
                 <label for="uf">Estado: </label><br>
-                <select name="uf" id="uf" value="" style="width: 191px; height: 26px; border-radius: 3px; border: 1px solid black;">
+                <select required name="uf" id="uf">
                 <option value="Escolha">---Escolha---</option>
                 <option value="AC">Acre</option>
                 <option value="AL">Alagoas</option>
@@ -173,14 +179,9 @@
                 <input required value="" name="email" id="email" type="email"><br>
             </p>
         </fieldset>
-        <!--<fieldset class="motivo">
-            <p>
-                <label for="motivo">Diga qual é o motivo ao qual você deseja se tornar sócio: </label><br>
-                <textarea required placeholder="Minimo 100 digitos" type="text" name="motivo" id="motivo" ></textarea>
-            </p>
-        </fieldset>-->
+
         <p>
-            <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br>
+            <input placeholder="Search" type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br>
             <span id="msgAlerta2"></span><br>
             <a href="../index.php">Voltar</a>
             <input id="solicitar" disabled ="false" type="submit" value="solicitar">
