@@ -92,7 +92,7 @@
         
                 if(($quantidade_cpf) == 1) {
         
-                    if(password_verify($senha, $usuario['senha'])) {
+                    if(password_verify(password: $senha, hash: $usuario['senha'])) {
         
                         $admin = $usuario['admin'];
         
@@ -135,9 +135,9 @@
         $logo = $dadosEscolhido['logo'];
         
         if($logo == ''){
-            $logo = 'login/lib/paginas/arquivos_fixos/IMG-20230811-WA0040.jpg';
+            $logo = 'login/lib/paginas/arquivos_fixos/avatar_icone.jpg';
         }else{
-            $logo = 'login/lib/paginas/administrativo/arquivos/'. $logo;
+            $logo = 'login/lib/paginas/arquivos_fixos/'. $logo;
         }
     }
     $mysqli->close();
@@ -150,6 +150,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />    <link rel="stylesheet" href="entrar/lib/css/index.css">
     <link rel="stylesheet" href="login/style/index.css">
+    <style>
+        img{
+            width: 200px;
+            height: 200px; /* Certifique-se de que a altura seja igual à largura */
+            border-radius: 50%;
+        }
+    </style>
     <title>Entrar</title>
     <script>
         function toggleSenha() {
@@ -173,7 +180,7 @@
         <span id="msg"><?php echo $msg; ?></span>
         <p>
             <label id="email" for="iemail">Usuário</label>
-            <input required type="text" name="email" id="iemail" placeholder="E-mail ou CPF" oninput="formatarCampo(this)" value="<?php if(isset($_POST['email'])) echo $_POST['email']; ?>">
+            <input required type="text" name="email" id="iemail" placeholder="CPF, CNPJ ou E-mail" oninput="formatarCampo(this)" value="<?php if(isset($_POST['email'])) echo $_POST['email']; ?>">
         </p>
         <p>
             <div id="senhaInputContainer">
@@ -183,7 +190,7 @@
             </div>
         </p>
         <p> 
-            <a style="margin-right:10px;" href="inscricao/ficha_inscricao.html">Quero ser sócio.</a> 
+            <a style="margin-right:10px;" href="cadastro_inicial/cadastro_inicial.html">Cadastre-se.</a> 
             <a style="margin-right:10px;" href="login/lib/Recupera_Senha.php">Esqueci minha Senha!</a> 
         </p>
         <button type="submit">Entrar</button>
@@ -194,15 +201,19 @@
             let value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
 
             if (/^[0-9]+$/.test(value)) {
-                if (value.length > 9) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                if (value.length > 12) {
+                    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{1})/, '$1.$2.$3/$4-$5');
+                } else if (value.length > 11) {
+                    value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3/$4');
+                }else if (value.length > 9){
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1})/, '$1.$2.$3-$4');
                 } else if (value.length > 6) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                    value = value.replace(/(\d{3})(\d{3})(\d{1})/, '$1.$2.$3');
                 } else if (value.length > 3) {
-                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
+                    value = value.replace(/(\d{3})(\d{1})/, '$1.$2');
                 }
                 input.value = value; 
-            }
+            }   
 
             if (value.includes('@')) {
                 // Se o valor contiver '@', formatar como E-mail

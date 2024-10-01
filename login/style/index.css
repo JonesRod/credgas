@@ -39,8 +39,11 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1); /*sombra*/
 
 }
+
 img{
-    width: 300px;
+    width: 200px;
+    height: 200px; /* Certifique-se de que a altura seja igual à largura */
+    border-radius: 50%;
 }
 
 #ititulo {

@@ -1,128 +1,92 @@
 function validateForm() {
-    const arqFoto = document.getElementById('imageInput');
-    var uf =document.getElementById('iuf').value;
-    var ufAtual =document.getElementById('iuf_atual').value;
+    //const arqFoto = document.getElementById('imageInput');
+    var uf =document.getElementById('uf').value;
+    var cidade =document.getElementById('cidade').value;
     var sem_escolha ="Escolha";
 
-    if (arqFoto.files.length === 0) {
+    /*if (arqFoto.files.length === 0) {
         //alert('Por favor, preencha todos os campos.');
-        document.querySelector('#imgAlerta2').textContent = "Adicione uma foto.";
+        document.querySelector('#msgAlerta').textContent = "Adicione uma foto.";
         return false; // Impede o envio do formulário
-    }
+    }*/
     if(uf === sem_escolha){
-        document.querySelector('#imgAlerta2').textContent = "Selecione o Estado!";
-        document.getElementById('iuf').focus();
-        console.log(apelido);
+        document.querySelector('#msgAlerta').textContent = "Selecione o Estado onde você mora!";
+        document.getElementById('uf').focus();
+        //console.log(apelido);
 
         return false; // Impede o envio do formulário
     }
-    if(ufAtual === sem_escolha){
-        document.querySelector('#imgAlerta2').textContent = "Selecione seu Estado atual!";
-        document.getElementById('iuf_atual').focus();
-        return false; // Impede o envio do formulário
-    }
-        document.querySelector('#imgAlerta2').textContent = "";
-        //console.log('2');
+    document.querySelector('#msgAlerta').textContent = "";
+    //console.log('2');
 
     // Aqui você pode adicionar mais validações conforme necessário
     return true; // Permite o envio do formulário
 }
-window.onload = function() { 
-    //console.log('1');
-    const fileInput = document.getElementById('imageInput');
-    const imageElement = document.getElementById('preview');
-
-    if (fileInput.files.length === 0) {
-        imageElement.src = '../login/lib/paginas/usuarios/arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg'; // Substitua pelo caminho da imagem padrão
-    }
-
-    fileInput.addEventListener('change', function() {
-        const selectedFile = fileInput.files[0];
-        if (selectedFile) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                imageElement.src = event.target.result;
-            };
-            reader.readAsDataURL(selectedFile);
-        } else {
-            imageElement.src ='../login/lib/paginas/usuarios/arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg'; // Substitua pelo caminho da imagem padrão
-        }
-    });
-
-};
- 
-function handleImageUpload(event) {
-    const file = event.target.files[0];
-
-    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            const preview = document.getElementById('preview');
-            preview.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-        document.querySelector('#imgAlerta').textContent = "";
-    } else {
-        //alert('Por favor, selecione uma imagem PNG ou JPG.');
-        document.getElementById('preview').src= "../login/lib/paginas/usuarios/arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg"
-        document.getElementById('imageInput').value = null;
-        document.querySelector('#imgAlerta').textContent = "Por favor, selecione uma imagem PNG ou JPG.";
-    }
-}             
-
 function formatCPF(input) {
     let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+    
+    // Limita o CPF a 11 caracteres
     if (value.length > 11) {
         value = value.substr(0, 11);
     }
+    
+    // Aplica a formatação
     if (value.length > 9) {
         value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3-');
     } else if (value.length > 6) {
-        value = value.replace(/(\d{3})(\d{3})/, '$1.$2.');
+        value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
     } else if (value.length > 3) {
         value = value.replace(/(\d{3})/, '$1.');
     }
-    input.value = value;
+    input.value = value; // Atualiza o valor do input
 }
-function verificaCpf(){
-    var cpf =document.getElementById('icpf').value;
-    var apelido = document.getElementById('iapelido').value;
 
-    if(apelido === ''){
-        document.getElementById('iapelido').value= document.getElementById('inome').value;
-    }if(cpf.length < 14){
-        //console.log(cpf);
-        document.querySelector('#imgAlerta').textContent = "CPF invalido! Preencha o campo corretamente.";
-        document.getElementById('icpf').focus();
-    }else{
-        document.querySelector('#imgAlerta').textContent = "";
-    }
-      
-}
-function formatRG(input) {
-    let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-    if (value.length > 11) {
-        value = value.substr(0, 11);
-    }
-    if (value.length > 9) {
-        value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3.');
-    } else if (value.length > 6) {
-        value = value.replace(/(\d{3})(\d{3})/, '$1.$2.');
-    } else if (value.length > 3) {
-        value = value.replace(/(\d{3})/, '$1.');
-    }
-    input.value = value;
-}
-function verificaRG(){
-    var rg =document.getElementById('irg').value;
+function verificaCpf() {
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, ''); // Remove formatação
     
-    if(rg.length < 4 || rg.length ===""){
-        //console.log(cpf);
-        document.querySelector('#imgAlerta').textContent = "Preencha o campo RG corretamnete!";
-        document.getElementById('irg').focus();
-    }else{
-        document.querySelector('#imgAlerta').textContent = "";
+    // Verifica se o CPF tem 11 dígitos
+    if (cpf.length !== 11 || !isCpfValid(cpf)) {
+        document.querySelector('#msgAlerta').textContent = "CPF inválido! Preencha o campo corretamente.";
+        document.getElementById('cpf').focus();
+    } else {
+        document.querySelector('#msgAlerta').textContent = "";
+        // Aqui você pode adicionar a verificação de existência via API, se necessário
+        console.log("CPF válido! Você pode adicionar uma verificação de existência aqui.");
     }
+}
+function isCpfValid(cpf) {
+    // Validação de CPFs com sequências repetidas
+    if (/^(\d)\1+$/.test(cpf)) {
+        return false; // CPF inválido se for uma sequência repetida
+    }
+
+    // Cálculo do primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+        sum += parseInt(cpf[i]) * (10 - i);
+    }
+    let firstDigit = (sum * 10) % 11;
+    if (firstDigit === 10 || firstDigit === 11) {
+        firstDigit = 0;
+    }
+    if (firstDigit !== parseInt(cpf[9])) {
+        return false; // Primeiro dígito verificador não é válido
+    }
+
+    // Cálculo do segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+        sum += parseInt(cpf[i]) * (11 - i);
+    }
+    let secondDigit = (sum * 10) % 11;
+    if (secondDigit === 10 || secondDigit === 11) {
+        secondDigit = 0;
+    }
+    if (secondDigit !== parseInt(cpf[10])) {
+        return false; // Segundo dígito verificador não é válido
+    }
+
+    return true; // CPF é válido
 }
 function formatarData(input) {
     let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
@@ -138,7 +102,7 @@ function formatarData(input) {
 }
 
 function verificaData(){
-    var data_input = document.getElementById('inascimento').value;
+    var data_input = document.getElementById('nascimento').value;
     //const data = new Date(data_input);
     const data_inicio = '01/01/1900';
     const data_final = new Date(); // Isso pega a data e hora atuais
@@ -164,19 +128,19 @@ function verificaData(){
     if(data_input != "") {
 
         if(data_input_dia < 1 || data_input_dia > 31){
-            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-            document.getElementById('inascimento').focus();
+            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+            document.getElementById('nascimento').focus();
         }else if(data_input_mes < 1 || data_input_mes >12){
-            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-            document.getElementById('inascimento').focus();
+            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+            document.getElementById('nascimento').focus();
         }else if(data_input_ano < 1900 || data_input_ano > ano_atual){
-            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-            document.getElementById('inascimento').focus();
+            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+            document.getElementById('nascimento').focus();
         } 
 
         if(data_input.length < 10){
-            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-            document.getElementById('inascimento').focus();
+            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+            document.getElementById('nascimento').focus();
         }
         else if (data_input.length === 10) {
             switch(data_input_mes){
@@ -184,82 +148,82 @@ function verificaData(){
                 case 8: case 10: case 12:
                 if(data_input_dia <= 31){
                     if (data < data_inicio_convertida) {
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
                         //console.log('1');
                     } else if (data.getTime() > data_final.getTime()) {
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
                         //console.log('12');
                     } else {
-                        document.querySelector('#imgAlerta').textContent = "";
+                        document.querySelector('#msgAlerta').textContent = "";
                         //console.log(data);
                         break ;
                     }
                 }else
-                document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                document.getElementById('inascimento').focus();
+                document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                document.getElementById('nascimento').focus();
                 break ;
                 case 4: case 6:
                 case 9: case 11:
                 if(data_input_dia <= 30){
                     if (data < data_inicio_convertida) {
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
                         //console.log('11');
                     } else if (data > data_final) {
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
                         //console.log('22');
                     } else {
-                        document.querySelector('#imgAlerta').textContent = "";
+                        document.querySelector('#msgAlerta').textContent = "";
                         //console.log('23');
                         break ;
                     }
                 }else
-                    document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                    document.getElementById('inascimento').focus();
+                    document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                    document.getElementById('nascimento').focus();
                     break ;
                     case 2:
                     if( (data_input_ano%400 == 0) || (data_input_ano%4==0 && data_input_ano%100!=0) )
                     if( data_input_dia <= 29){
                         //console.log('111');
                         if (data < data_inicio_convertida) {
-                            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                            document.getElementById('inascimento').focus();
+                            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                            document.getElementById('nascimento').focus();
                             //console.log('1122');
                         } else if (data > data_final) {
-                            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                            document.getElementById('inascimento').focus();
+                            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                            document.getElementById('nascimento').focus();
                             //console.log('222');
                         } else {
-                            document.querySelector('#imgAlerta').textContent = "";
+                            document.querySelector('#msgAlerta').textContent = "";
                             //console.log('data');
                             break ;
                         }
                     }else{
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
                     }else if( data_input_dia <= 28){
                         if (data < data_inicio_convertida) {
-                            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                            document.getElementById('inascimento').focus();
+                            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                            document.getElementById('nascimento').focus();
                             //console.log('11222');
                         } else if (data > data_final) {
-                            document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                            document.getElementById('inascimento').focus();
+                            document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                            document.getElementById('nascimento').focus();
                             //console.log(data);
                         } else {
-                            document.querySelector('#imgAlerta').textContent = "";
+                            document.querySelector('#msgAlerta').textContent = "";
                             break ;
                         }
                     }else
-                        document.querySelector('#imgAlerta').textContent = "Data invalida! Preencha o campo corretamente.";
-                        document.getElementById('inascimento').focus();
+                        document.querySelector('#msgAlerta').textContent = "Data de nascimento invalida! Preencha o campo corretamente.";
+                        document.getElementById('nascimento').focus();
             }
         }
     } else if(data_input == "") {
-        document.querySelector('#imgAlerta').textContent = "Preencha o campo Data de nascimento.";
+        document.querySelector('#msgAlerta').textContent = "Preencha o campo Data de nascimento.";
     }
 }
 function formatarCEP(input) {
@@ -267,36 +231,45 @@ function formatarCEP(input) {
     if (value.length > 8) {
         value = value.substr(0, 8);
     }
-     if (value.length > 5) {
+    if (value.length > 5) {
         value = value.replace(/(\d{5})/, '$1-');
     }
     input.value = value;
+    //console.log(11);
 }
-async function fetchCityByCEP() {
-    const cep = document.getElementById('icep').value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+async function buscarCidadeUF() {
+    const cep = document.getElementById('cep').value.replace(/\D/g, ''); // Remove caracteres não numéricos
 
     if (cep.length !== 8) {
-        //alert('CEP inválido.');
-        document.querySelector('#imgAlerta').textContent = "CEP invalido! Preencha o campo corretamente.";
-        document.querySelector('#icid_atual').value = "";
-        document.getElementById('icep').focus();
+        document.querySelector('#msgAlerta').textContent = "CEP inválido! Preencha o campo corretamente.";
+        document.querySelector('#cidade').value = "";
+        document.querySelector('#uf').value = "---Escolha---";
+        document.getElementById('cep').focus();
         return;
     }
 
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
-    document.querySelector('#imgAlerta').textContent = "";
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await response.json();
 
-    if (data.erro) {
-        //alert('CEP não encontrado.');
-        document.querySelector('#imgAlerta').textContent = "CEP está incorretamente.";
-        document.querySelector('#icid_atual').value = "";
-        //document.getElementById('icep').focus();
-        return;
+        if (data.erro) {
+            document.querySelector('#msgAlerta').textContent = "CEP não encontrado.";
+            document.querySelector('#cidade').value = "";
+            document.querySelector('#uf').value = "---Escolha---";
+            return;
+        }
+
+        document.querySelector('#msgAlerta').textContent = "";
+        document.getElementById('cidade').value = data.localidade;
+        document.getElementById('uf').value = data.uf;
+
+    } catch (error) {
+        document.querySelector('#msgAlerta').textContent = "Erro ao buscar o CEP. Tente novamente mais tarde.";
+        console.error('Erro:', error);
     }
-    document.querySelector('#imgAlerta').textContent = "";
-    document.getElementById('icid_atual').value = data.localidade;
 }
+
 function formatarCelular1(input) {
     let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
     if (value.length > 11) {
@@ -316,14 +289,14 @@ function formatarCelular1(input) {
     input.value = value;
 }
 function verificaCelular1(){
-    var celular =document.getElementById('icelular1').value;
+    var celular =document.getElementById('celular1').value;
     //console.log(celular.length);
     if(celular.length < 11 ){
         
-        document.querySelector('#imgAlerta').textContent = "Preencha o campo Celular corretamente!";
-        document.getElementById('icelular1').focus();
+        document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
+        document.getElementById('celular1').focus();
     }else{
-        document.querySelector('#imgAlerta').textContent = "";
+        document.querySelector('#msgAlerta').textContent = "";
     }
 }
 function formatarCelular2(input) {
@@ -345,22 +318,22 @@ function formatarCelular2(input) {
     input.value = value;
 }
 function verificaCelular2(){
-    var celular = document.getElementById('icelular2').value;
+    var celular = document.getElementById('celular2').value;
 
     if(celular.length === 0){
        // console.log(celular.value );
-        document.querySelector('#imgAlerta2').textContent = "";
+        document.querySelector('#msgAlerta').textContent = "";
         //document.getElementById('icelular2').focus();
     }else if(celular.length < 14 ){
         //console.log(celular.value );
-        document.querySelector('#imgAlerta2').textContent = "Preencha o campo Celular corretamente!";
-        document.getElementById('icelular2').focus();
+        document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
+        document.getElementById('celular2').focus();
     }else{
-        document.querySelector('#imgAlerta').textContent = "";
+        document.querySelector('#msgAlerta').textContent = "";
     }
 }
 function verificarAceite() {
-    var checkbox = document.getElementById('iaceito');
+    var checkbox = document.getElementById('aceito');
     var botaoEnviar = document.getElementById('solicitar');
     
     if (checkbox.checked) {

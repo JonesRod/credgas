@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="PT-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="localizador.js" defer></script> <!-- Inclui o arquivo JS -->
+    <script src="verifica_dados.js"></script>
+    <style>
+        body h2{
+            text-align: center;
+        }
+        body form{
+            text-align: center;
+            /*border: 1px solid black;*/
+            width: 98%;
+            /*position: absolute;*/
+            /*top: 50%;
+            left: 50%;
+            /*transform: translate(-50%, -50%);*/
+            padding: 10px;
+            margin: 10px;
+        }
+        fieldset{
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            margin-left: 25%;
+        }
+        /*img{
+            width: 50%;
+            /*text-align: center;*/
+            /*border-radius: 10px;
+        }*/
+        form .dados input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .dados label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        form .endereco input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .endereco label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        form .contatos input {
+            text-align: center;
+            border: 1px solid black;
+            width: 50%;
+            padding: 5px;
+            border-radius: 4px;
+            box-sizing: border-box; 
+            text-align: center;
+        }
+        form .contatos label {
+            display: inline-block;
+            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
+            max-width: 20%; /* Define a largura máxima desejada */
+            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
+        }
+        .motivo{
+            margin-top: 10px;
+        }
+        textarea{
+            width: 90%;
+            height: 150px; /* Defina a altura desejada em pixels */
+        }
+
+    </style>
+    <title>Cadastre-se</title>
+</head>
+<body>
+    <h2>Não perca tempo, cadastre-se agora!</h2>
+    <form action="confirma_cadastro.php" method="POST" enctype="multipart/form-data" autocomplete="on" onsubmit="return validateForm()">
+
+        <!--<img id="preview" style="max-width: 300px;" src= ""><br>-->
+        <span id="msgAlerta"></span><br>
+        <!--<input required type="file" id="imageInput" name="imageInput" accept=".png, .jpg, .jpeg" onchange="handleImageUpload(event)">
+        <br>-->
+        <fieldset class="dados">
+            <!--<legend>Dados Pessoais</legend>-->
+            <p>
+                <label for="primeiro_nome">Primeiro Nome: </label><br>
+                <input required name="primeiro_nome" id="primeiro_nome" type="text" minlength="3" maxlength="15" size=""><br>
+            </p>
+            <p>
+                <label for="cpf">CPF: </label><br>
+                <input required name="cpf" id="cpf" type="text" oninput="formatCPF(this)" onblur="verificaCpf()"><br>
+            </p>
+            <p>
+                <label for="nascimento">Data de Nascimento: </label><br>
+                <input required name="nascimento" id="nascimento" type="text" placeholder="00/00/0000" oninput="formatarData(this)" onblur="verificaData()"><br>
+            </p>
+
+        </fieldset>
+        <fieldset class="endereco">
+            <legend>Região</legend>
+            <p id="status-localizacao">Localização: </p>
+            <p>
+                <label for="cep">CEP: </label><br>
+                <input required value="" name="cep" id="cep" type="text" maxlength="9" oninput="formatarCEP(this)" onblur="buscarCidadeUF()"><br>
+            </p>
+            <p> 
+                <label for="uf">Estado: </label><br>
+                <select name="uf" id="uf" value="" style="width: 191px; height: 26px; border-radius: 3px; border: 1px solid black;">
+                <option value="Escolha">---Escolha---</option>
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+                <!-- Adicione mais opções para outros estados aqui -->
+                </select>
+            </p>
+            <p>
+                <label for="cidade">Cidade: </label><br>
+                <input required value="" name="cidade" id="cidade" type="text"><br>
+            </p>
+
+        </fieldset>
+        <fieldset class="contatos">
+            <legend>Contatos</legend>
+            <p>
+                <label for="celular1">Celular 1: </label><br>
+                <input required value="" name="celular1" id="celular1" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular1(this)" onblur="verificaCelular1()"><br>
+            </p>
+            <p>
+                <label for="celular2">Celular 2: Opcional </label><br>
+                <input value="" name="celular2" id="celular2" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular2(this)" onblur="verificaCelular2()"><br>
+            </p>
+            <p>
+                <label for="email">E-mail:</label><br>
+                <input required value="" name="email" id="email" type="email"><br>
+            </p>
+        </fieldset>
+        <!--<fieldset class="motivo">
+            <p>
+                <label for="motivo">Diga qual é o motivo ao qual você deseja se tornar sócio: </label><br>
+                <textarea required placeholder="Minimo 100 digitos" type="text" name="motivo" id="motivo" ></textarea>
+            </p>
+        </fieldset>-->
+        <p>
+            <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br>
+            <span id="msgAlerta2"></span><br>
+            <a href="../index.php">Voltar</a>
+            <input id="solicitar" disabled ="false" type="submit" value="solicitar">
+        </p>
+        <script src="verifica_dados.js"></script>
+    </form>
+
+</body>
+</html>

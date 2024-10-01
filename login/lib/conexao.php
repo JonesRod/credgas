@@ -3,7 +3,7 @@
     $host = "localhost";
     $usuario = "root";
     $senha = "";
-    $banco = "associacao_40ribas";
+    $banco = "credgas";
 
     //acesso do banco no site
     /*$host = "localhost";
@@ -11,7 +11,7 @@
     $senha = "Batata/2023";
     $banco = "id21385241_banco40ribas";*/
 
-    $mysqli = new mysqli($host, $usuario, $senha, $banco);
+    $mysqli = new mysqli(hostname: $host, username: $usuario, password: $senha, database: $banco);
 
     /*function formatar_data($data){
         return implode('/', array_reverse(explode('-', $data)));

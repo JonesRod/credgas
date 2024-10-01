@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localização em Tempo Real</title>
+</head>
+<body>
+    <h2>Localização e Endereço em Tempo Real</h2>
+    <button onclick="obterLocalizacao()">Obter Minha Localização</button>
+    <p id="status-localizacao">Localização: </p>
+    <p id="endereco-completo">Endereço: </p>
+
+    <script>
+        function obterLocalizacao() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(mostrarPosicao, mostrarErro, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+            } else {
+                document.getElementById("status-localizacao").textContent = "Geolocalização não é suportada por este navegador.";
+            }
+        }
+
+        function mostrarPosicao(posicao) {
+            const lat = posicao.coords.latitude;
+            const lon = posicao.coords.longitude;
+            document.getElementById("status-localizacao").textContent = `Localização: Latitude ${lat}, Longitude ${lon}`;
+            obterEndereco(lat, lon); // Chama a função para fazer a geocodificação reversa
+        }
+
+        async function obterEndereco(lat, lon) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                const data = await response.json();
+
+                const endereco = data.display_name;
+                document.getElementById("endereco-completo").textContent = `Endereço: ${endereco}`;
+            } catch (error) {
+                console.error('Erro ao obter o endereço:', error);
+                document.getElementById("endereco-completo").textContent = "Não foi possível obter o endereço.";
+            }
+        }
+
+        function mostrarErro(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("status-localizacao").textContent = "Usuário negou a solicitação de Geolocalização.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("status-localizacao").textContent = "Informações de localização indisponíveis.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("status-localizacao").textContent = "A solicitação para obter a localização expirou.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("status-localizacao").textContent = "Ocorreu um erro desconhecido.";
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
