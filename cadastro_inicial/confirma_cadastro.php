@@ -32,7 +32,7 @@
             include('../login/lib/conexao.php');
             include('../login/lib/enviarEmail.php');
 
-            $nome_completo = $mysqli->escape_string($_POST['primeiro_nome']);
+            $primeiro_nome = $mysqli->escape_string($_POST['primeiro_nome']);
             //$apelido = $mysqli->escape_string($_POST['apelido']);
 
             // Separar o nome do sobrenome
@@ -43,24 +43,13 @@
                 //$apelido = $primeiroNome;
             //}
             
-            //$cpf = $mysqli->escape_string($_POST['cpf']);
-            //$rg = $mysqli->escape_string($_POST['rg']);
             $nascimento = $mysqli->escape_string($_POST['nascimento']);
-            $uf = $mysqli->escape_string($_POST['uf']);
-            $cidade = $mysqli->escape_string($_POST['cidade']);
-            //$mae = $mysqli->escape_string($_POST['mae']);
-            //$pai = $mysqli->escape_string($_POST['pai']);
-            //$sexo = $mysqli->escape_string($_POST['sexo']);
-            $uf = $mysqli->escape_string($_POST['uf']);
             $cep = $mysqli->escape_string($_POST['cep']);
-            //$cid_atual = $mysqli->escape_string($_POST['cid_atual']);
-            //$endereco = $mysqli->escape_string($_POST['endereco']);
-            //$numero = $mysqli->escape_string($_POST['numero']);
-            //$bairro = $mysqli->escape_string($_POST['bairro']);        
+            $uf = $mysqli->escape_string($_POST['uf']);
+            $cidade = $mysqli->escape_string($_POST['cidade']);        
             $celular1 = $mysqli->escape_string($_POST['celular1']);
             $celular2 = $mysqli->escape_string($_POST['celular2']);
             $email = $mysqli->escape_string($_POST['email']);
-            //$motivo = $mysqli->escape_string($_POST['motivo']);
             $termos = $mysqli->escape_string($_POST['aceito']);
             
             $hoje = new DateTime(datetime: 'now');
@@ -69,14 +58,14 @@
 
             if ($dataFormatada !== false) {
             // echo $dataFormatada->format('Y-m-d'); // Formato de data: yyyy-mm-dd
-            $dataFormatada->format('Y-m-d');
+            $dataFormatada->format(format: 'Y-m-d');
             //$nasc = new DateTime($dataFormatada);
             } else {
             // echo "Formato de data inválido.";
             }
             //echo $dataFormatada->format('Y-m-d');
-            $nasc = $dataFormatada->format('Y-m-d');
-            $idade = $hoje->diff($dataFormatada);
+            $nasc = $dataFormatada->format(format: 'Y-m-d');
+            $idade = $hoje->diff(targetObject: $dataFormatada);
 
             //$id = '1';
             //$dados = $mysqli->query("SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->$error);
@@ -86,8 +75,8 @@
             $idade_minima = '18';
             $anos_idade = $idade->y;
 
-            $dataAtual = date('Y-m-d'); // Obtém a data atual no formato ano-mês-dia
-            $validade = date('Y-m-d', strtotime($dataAtual . '+'. $dadosEscolhido['validade'].' days')); // Adiciona 365 dias
+            $dataAtual = date(format: 'Y-m-d'); // Obtém a data atual no formato ano-mês-dia
+            $validade = date(format: 'Y-m-d', timestamp: strtotime(datetime: $dataAtual . '+'. $dadosEscolhido['validade'].' days')); // Adiciona 365 dias
 
             /*echo "Diferença de " . $idade->d . " dias";
             echo " e " . $idade->m . " mese s";
@@ -113,30 +102,29 @@
             
                     if(($email_registrado ) == 0) {
                         
-                        $sql_cpf_socio = $mysqli->query("SELECT * FROM socios WHERE cpf = '$cpf'");
-                        $result_cpf_socio= $sql_cpf_socio->fetch_assoc();
-                        $cpf_registrado_socio = $sql_cpf_socio->num_rows;
+                        $sql_cpf_cliente = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE cpf = '$cpf'");
+                        $result_cpf_cliente= $sql_cpf_cliente->fetch_assoc();
+                        $cpf_registrado_cliente = $sql_cpf_cliente->num_rows;
         
-                        $sql_email_socio = $mysqli->query("SELECT * FROM socios WHERE email = '$email'");
-                        $result_email_socio= $sql_email_socio->fetch_assoc();
-                        $email_registrado_socio = $sql_email_socio->num_rows;
+                        $sql_email_cliente = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE email = '$email'");
+                        $result_email_cliente= $sql_email_cliente->fetch_assoc();
+                        $email_registrado_cliente = $sql_email_cliente->num_rows;
                         //var_dump($_POST);
                         //die();
 
-                        if(($cpf_registrado_socio) == 0) {
+                        if(($cpf_registrado_cliente) == 0) {
                     
-                            if(($email_registrado_socio) == 0) {
+                            if(($email_registrado_cliente) == 0) {
 
                                 $arq = $_FILES['imageInput'];
                                 $path = enviarArquivo($arq['error'], $arq['name'], $arq['tmp_name']);
                                 //echo $path;
 
                                 $status = 'ATIVO';
-                                $votacao = 'NÃO';
+                                $status_crediario = 'INATIVO';
                                 
-                                $sql_code = "INSERT INTO int_associar (data, foto, apelido, nome_completo, cpf, rg, 
-                                nascimento, uf, cid_natal, mae, pai, sexo, uf_atual, cep, cid_atual, endereco, nu, 
-                                bairro, celular1, celular2, email, motivo, termos, validade, status, em_votacao) 
+                                $sql_code = "INSERT INTO meus_clientes (data_cadastro, primeiro_nome, cpf, 
+                                nascimento, cep, uf, cidade, celular1, celular2, email, status, status_crediario, termos) 
                                 VALUES (NOW(),'$path','$apelido', '$nome_completo','$cpf','$rg','$nasc', '$uf', 
                                 '$cid_natal', '$mae', '$pai', '$sexo', '$uf_atual','$cep','$cid_atual','$endereco', 
                                 '$numero','$bairro','$celular1','$celular2','$email', '$motivo', '$termos', '$validade', '$status', '$votacao')";
