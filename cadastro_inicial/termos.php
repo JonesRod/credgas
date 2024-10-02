@@ -18,7 +18,7 @@
 <body>
     <div class="container">
         <h1>Termos para realização de cadastro.</h1>
-        <textarea placeholder="Texto..." name="" id="" cols="120" rows="35"><?php echo $dadosEscolhido['termos_insc']; ?></textarea>
+        <textarea placeholder="Texto..." name="" id="" cols="120" rows="35"><?php echo $dadosEscolhido['termos_1']; ?></textarea>
     </div>
 </body>
 </html>

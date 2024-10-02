@@ -59,7 +59,7 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
                 if($editado) {   
                     $msg = "Nova senha definida com sucesso. Você será redirecionado para a tele de login.";
                     
-                    enviar_email($email, "Sua nova senha de acesso da plataforma", "
+                    enviar_email(destinatario: $email, assunto: "Sua nova senha de acesso da plataforma", mensagemHTML: "
                     <h1>Seja bem vindo " . $nome . "</h1>
                     <p><b>Seu E-mail de acesso é: </b> $email</p>
                     <p><b>Sua senha de acesso é: </b> $novaSenha</p>

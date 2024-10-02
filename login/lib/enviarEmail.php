@@ -19,7 +19,7 @@ function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
     // Port = Porta hotmail SMTP (TLS): 587
 
     $id = '1';
-    $dados = $mysqli->query("SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->error);
+    $dados = $mysqli->query("SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->$error);
     $dadosEscolhido = $dados->fetch_assoc();
 
     //$destinatario ='batata_jonesrodrigues@hotmail.com';
@@ -32,7 +32,7 @@ function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
 
     //$razao = 'razao';
     //$email_suporte = 'batatajonesrodrigues@gmail.com';
-    //$senha = '#@//Jones?';
+    //$senha = '#@//Jones?'; xqurngdmehhkfhob
     //  //batata2023
 
     if (strstr(haystack: $email_suporte, needle: "@gmail.com")) {
