@@ -24,6 +24,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>Solicitação</title>
     <?php
         $erro = false;
@@ -34,15 +35,6 @@
             include('../login/lib/generateRandomString.php');
 
             $primeiro_nome = $mysqli->escape_string($_POST['primeiro_nome']);
-            //$apelido = $mysqli->escape_string($_POST['apelido']);
-
-            // Separar o nome do sobrenome
-            //$partesNome = explode(separator: ' ', string: $nome_completo);
-            //$primeiroNome = $partesNome[0];
-            //$sobrenome = end($partesNome);
-            //if($apelido == ''){
-                //$apelido = $primeiroNome;
-            //}
             $cpf = $mysqli->escape_string($_POST['cpf']);
             $nascimento = $mysqli->escape_string($_POST['nascimento']);
             $cep = $mysqli->escape_string($_POST['cep']);
@@ -51,7 +43,8 @@
             $celular1 = $mysqli->escape_string($_POST['celular1']);
             $celular2 = $mysqli->escape_string($_POST['celular2']);
             $email = $mysqli->escape_string($_POST['email']);
-            
+            $termos =$_POST['aceito'];
+
             $hoje = new DateTime(datetime: 'now');
             $dataStr = $nascimento;
             $dataFormatada = DateTime::createFromFormat(format: 'd/m/Y', datetime: $dataStr);
@@ -124,7 +117,8 @@
                         uf, 
                         cidade, 
                         status, 
-                        status_crediario) 
+                        status_crediario,
+                        termos_1) 
                         VALUES (
                         NOW(),
                         '$primeiro_nome',
@@ -138,7 +132,8 @@
                         '$uf', 
                         '$cidade', 
                         '$status', 
-                        '$status_crediario')";
+                        '$status_crediario',
+                        '$termos')";
                         
                         $deu_certo = $mysqli->query(query: $sql_code) or die($mysqli->error);
 
@@ -151,7 +146,7 @@
 
                             enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
                             <h1>Olá Sr. " . $primeiro_nome . ", seja bem vindo!</h1>
-                            <p><b>Você pode logar com seu CPF,CNPJ ou E-MAIL.</p>
+                            <p><b>Você pode logar com seu CPF ou E-MAIL.</p>
                             <p><b>Senha: </b>$senha</p>
                             <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
                             <p><b>Para entrar </b><a href='../index.php'>clique aqui.</a></p>

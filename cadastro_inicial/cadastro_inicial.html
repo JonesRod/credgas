@@ -3,98 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="localizador.js" defer></script> <!-- Inclui o arquivo JS -->
     <script src="verifica_dados.js"></script>
     <style>
-        body h2{
+        body {
             text-align: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        body form{
+    
+        h2 {
             text-align: center;
-            /*border: 1px solid black;*/
-            width: 98%;
-            /*position: absolute;*/
-            /*top: 50%;
-            left: 50%;
-            /*transform: translate(-50%, -50%);*/
-            padding: 10px;
-            margin: 10px;
+            font-size: 2rem;
+            margin-bottom: 20px;
         }
-        fieldset{
+        #msgAlerta {
+            color: red; /* Define a cor vermelha */
+            font-weight: bold; /* Define o texto em negrito */
+        }
+        form {
             text-align: center;
-            border: 1px solid black;
-            width: 50%;
-            margin-left: 25%;
-        }
-        /*img{
-            width: 50%;
-            /*text-align: center;*/
-            /*border-radius: 10px;
-        }*/
-        select{
-            width: 191px; 
-            height: 26px; 
-            border-radius: 3px; 
-            border: 1px solid black;
-        }
-        form .dados input {
-            text-align: center;
-            border: 1px solid black;
-            width: 50%;
-            padding: 5px;
-            border-radius: 4px;
-            box-sizing: border-box; 
-            text-align: center;
-        }
-        form .dados label {
-            display: inline-block;
-            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
-            max-width: 20%; /* Define a largura máxima desejada */
-            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
-        }
-        form .endereco input {
-            text-align: center;
-            border: 1px solid black;
-            width: 50%;
-            padding: 5px;
-            border-radius: 4px;
-            box-sizing: border-box; 
-            text-align: center;
-        }
-        form .endereco label {
-            display: inline-block;
-            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
-            max-width: 20%; /* Define a largura máxima desejada */
-            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
-        }
-        form .contatos input {
-            text-align: center;
-            border: 1px solid black;
-            width: 50%;
-            padding: 5px;
-            border-radius: 4px;
-            box-sizing: border-box; 
-            text-align: center;
-        }
-        form .contatos label {
-            display: inline-block;
-            width: 100%; /* Faz a label ocupar 100% da largura do contêiner pai */
-            max-width: 20%; /* Define a largura máxima desejada */
-            box-sizing: border-box; /* Inclui a largura da borda e o preenchimento na largura total */
-        }
-        .motivo{
-            margin-top: 10px;
-        }
-        textarea{
             width: 90%;
-            height: 150px; /* Defina a altura desejada em pixels */
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
         }
-
+    
+        fieldset {
+            text-align: center;
+            border: 1px solid black;
+            margin: 10px auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+    
+        select {
+            width: 100%;
+            height: 35px;
+            border-radius: 3px;
+            border: 1px solid black;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+    
+        .dados input,
+        .endereco input,
+        .contatos input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid black;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    
+        .dados label,
+        .endereco label,
+        .contatos label {
+            display: inline-block;
+            width: 100%;
+            max-width: 100%;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid black;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    
+        /* Responsividade para tablets */
+        @media (min-width: 600px) {
+            form {
+                width: 80%;
+            }
+    
+            fieldset {
+                width: 80%;
+            }
+        }
+    
+        /* Responsividade para telas maiores (desktops) */
+        @media (min-width: 1024px) {
+            form {
+                width: 60%;
+            }
+    
+            fieldset {
+                width: 60%;
+            }
+        }
     </style>
+    
     <title>Cadastre-se</title>
 </head>
 <body>
     <h2>Não perca tempo, cadastre-se agora!</h2>
+    <p>Torne-se mais um de nossos Parceiros.<a href="cadastro_parceiro.php"> Me cadastrar!</a></p>
     <form action="confirma_cadastro.php" method="POST" enctype="multipart/form-data" autocomplete="on" onsubmit="return validateForm()">
 
         <!--<img id="preview" style="max-width: 300px;" src= ""><br>-->
@@ -117,9 +131,24 @@
             </p>
 
         </fieldset>
+        <fieldset class="contatos">
+            <legend>Contatos</legend>
+            <p>
+                <label for="celular1">Celular 1: </label><br>
+                <input required value="" name="celular1" id="celular1" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular1(this)" onblur="verificaCelular1()"><br>
+            </p>
+            <p>
+                <label for="celular2">Celular 2: Opcional </label><br>
+                <input value="" name="celular2" id="celular2" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular2(this)" onblur="verificaCelular2()"><br>
+            </p>
+            <p>
+                <label for="email">E-mail:</label><br>
+                <input required value="" name="email" id="email" type="email"><br>
+            </p>
+        </fieldset>
         <fieldset class="endereco">
             <legend>Região</legend>
-            <p id="status-localizacao">Localização: </p>
+            <p id="status-localizacao">Localização: Ativa</p>
             <p>
                 <label for="cep">CEP: </label><br>
                 <input required value="" name="cep" id="cep" type="text" maxlength="9" oninput="formatarCEP(this)" onblur="buscarCidadeUF()"><br>
@@ -164,22 +193,6 @@
             </p>
 
         </fieldset>
-        <fieldset class="contatos">
-            <legend>Contatos</legend>
-            <p>
-                <label for="celular1">Celular 1: </label><br>
-                <input required value="" name="celular1" id="celular1" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular1(this)" onblur="verificaCelular1()"><br>
-            </p>
-            <p>
-                <label for="celular2">Celular 2: Opcional </label><br>
-                <input value="" name="celular2" id="celular2" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular2(this)" onblur="verificaCelular2()"><br>
-            </p>
-            <p>
-                <label for="email">E-mail:</label><br>
-                <input required value="" name="email" id="email" type="email"><br>
-            </p>
-        </fieldset>
-
         <p>
             <input placeholder="Search" type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br>
             <span id="msgAlerta2"></span><br>

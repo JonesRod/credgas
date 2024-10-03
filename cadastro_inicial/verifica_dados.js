@@ -4,11 +4,6 @@ function validateForm() {
     var cidade =document.getElementById('cidade').value;
     var sem_escolha ="Escolha";
 
-    /*if (arqFoto.files.length === 0) {
-        //alert('Por favor, preencha todos os campos.');
-        document.querySelector('#msgAlerta').textContent = "Adicione uma foto.";
-        return false; // Impede o envio do formulário
-    }*/
     if(uf === sem_escolha){
         document.querySelector('#msgAlerta').textContent = "Selecione o Estado onde você mora!";
         document.getElementById('uf').focus();
@@ -269,8 +264,25 @@ async function buscarCidadeUF() {
         console.error('Erro:', error);
     }
 }
-
 function formatarCelular1(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+    if (value.length > 11) {
+        value = value.substr(0, 11);
+    }
+    if (value.length > 10) {
+        value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
+    } else if (value.length > 6) {
+        value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
+    } else if (value.length > 2) {
+        value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+    }else if (value.length > 2) {
+        value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+    }else if (value.length > 1) {
+        value = value.replace(/(\d{1})/, '($1');
+    }
+    input.value = value;
+}
+function formatarCelular2(input) {
     let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
     if (value.length > 11) {
         value = value.substr(0, 11);
@@ -291,41 +303,19 @@ function formatarCelular1(input) {
 function verificaCelular1(){
     var celular =document.getElementById('celular1').value;
     //console.log(celular.length);
-    if(celular.length < 11 ){
-        
+    if(celular.length < 15 ){
         document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
         document.getElementById('celular1').focus();
     }else{
         document.querySelector('#msgAlerta').textContent = "";
     }
 }
-function formatarCelular2(input) {
-    let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-    if (value.length > 11) {
-        value = value.substr(0, 11);
-    }
-    if (value.length > 10) {
-        value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
-    } else if (value.length > 6) {
-        value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
-    } else if (value.length > 2) {
-        value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
-    }else if (value.length > 2) {
-        value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
-    }else if (value.length > 1) {
-        value = value.replace(/(\d{1})/, '($1');
-    }
-    input.value = value;
-}
 function verificaCelular2(){
     var celular = document.getElementById('celular2').value;
 
     if(celular.length === 0){
-       // console.log(celular.value );
         document.querySelector('#msgAlerta').textContent = "";
-        //document.getElementById('icelular2').focus();
-    }else if(celular.length < 14 ){
-        //console.log(celular.value );
+    }else if(celular.length < 15 ){
         document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
         document.getElementById('celular2').focus();
     }else{
