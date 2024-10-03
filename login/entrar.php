@@ -58,10 +58,10 @@ if(isset($_SESSION)) {
 
     if($admin == 1 ){
         //echo "2";  
-       header("Location: lib/paginas/administrativo/admin_home.php");       
+       header(header: "Location: lib/paginas/administrativo/admin_home.php");       
     }else{
         //echo "3";  
-        header("Location: lib/paginas/usuarios/usuario_home.php");  
+        header(header: "Location: lib/paginas/usuarios/usuario_home.php");  
     }
 }else{
     //echo "4"; 
@@ -75,11 +75,11 @@ if(isset($_SESSION)) {
         //var_dump($_POST);
         //die();
         $sql_primeiro_registro = "SELECT * FROM socios";
-        $registros = $mysqli->query($sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->$error);
+        $registros = $mysqli->query(query: $sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->$error);
 
         // Verifica se existem registros na tabela 'socios'
         if ($registros->num_rows == 0) {
-            header("Location: lib/cadastro_usuario.php");
+            header(header: "Location: lib/cadastro_usuario.php");
             exit();
         }
 
@@ -91,27 +91,27 @@ if(isset($_SESSION)) {
         //echo "oii";
         if(isset($_SESSION['email'])){
             $email = $_SESSION['email'];
-            $senha = password_hash($_SESSION['senha'], PASSWORD_DEFAULT);
-            $mysqli->query("INSERT INTO senha (email, senha, cpf) VALUES('$email','$senha','$cpf')");
+            $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);
+            $mysqli->query(query: "INSERT INTO senha (email, senha, cpf) VALUES('$email','$senha','$cpf')");
         }
-        if(strlen($_POST['email']) == 0 ) {
+        if(strlen(string: $_POST['email']) == 0 ) {
             $msg= true;
             $msg = "Preencha o campo Usuário.";
             //echo $msg;
-        } else if(strlen($_POST['senha']) == 0 ) {
+        } else if(strlen(string: $_POST['senha']) == 0 ) {
             $msg= true;
             $msg = "Preencha sua senha.";
             //echo $msg;
         } else {
 
             $sql_code = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
-            $sql_query =$mysqli->query($sql_code) or die("Falha na execução do código SQL: " . $mysqli->$error);
+            $sql_query =$mysqli->query(query: $sql_code) or die("Falha na execução do código SQL: " . $mysqli->$error);
             $usuario = $sql_query->fetch_assoc();
             $quantidade = $sql_query->num_rows;//retorna a quantidade encontrado
 
             if(($quantidade ) == 1) {
 
-                if(password_verify($senha, $usuario['senha'])) {
+                if(password_verify(password: $senha, hash: $usuario['senha'])) {
 
                     $admin = $usuario['admin'];
 
@@ -121,14 +121,14 @@ if(isset($_SESSION)) {
                         //$msg = "1";
                         unset($_POST);
                         //session_start(); 
-                        header("Location: lib/tipo_login.php");
+                        header(header: "Location: lib/tipo_login.php");
                     }else if($admin != 1){
                         $_SESSION['usuario'] = $usuario['id'];
                         $_SESSION['admin'] = $admin;
                         //$msg = "2";
                         unset($_POST);
                         //session_start(); 
-                        header("Location: lib/paginas/usuario_home.php");
+                        header(header: "Location: lib/paginas/usuario_home.php");
                     }    
                 }else{
                     $msg= true;
@@ -138,13 +138,13 @@ if(isset($_SESSION)) {
             }else{
 
                 $sql_cpf = "SELECT * FROM socios WHERE cpf = '$cpf' LIMIT 1";
-                $sql_query =$mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->$error);
+                $sql_query =$mysqli->query(query: $sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->$error);
                 $usuario = $sql_query->fetch_assoc();
                 $quantidade_cpf = $sql_query->num_rows;//retorna a quantidade encontrado
         
                 if(($quantidade_cpf) == 1) {
         
-                    if(password_verify($senha, $usuario['senha'])) {
+                    if(password_verify(password: $senha, hash: $usuario['senha'])) {
         
                         $admin = $usuario['admin'];
         
@@ -154,14 +154,14 @@ if(isset($_SESSION)) {
                             //$msg = "1";
                             unset($_POST);
                             //session_start(); 
-                            header("Location: lib/tipo_login.php");
+                            header(header: "Location: lib/tipo_login.php");
                         }else if($admin != 1){
                             $_SESSION['usuario'] = $usuario['id'];
                             $_SESSION['admin'] = $admin;
                             //$msg = "2";
                             unset($_POST);
                             //session_start(); 
-                            header("Location: lib/paginas/usuario_home.php");
+                            header(header: "Location: lib/paginas/usuario_home.php");
                         }    
                     }else{
                         $msg= true;
