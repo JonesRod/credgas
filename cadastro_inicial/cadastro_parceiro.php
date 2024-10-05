@@ -42,6 +42,10 @@
         <label for="email">E-mail:</label>
         <input required value="" name="email" id="email" type="email" required>
 
+   
+        <label for="senha">Senha:</label><br>
+        <input required value="" name="senha" id="senha" placeholder="Minímo 6 digitos" type="password">
+
         <p id="status-localizacao">Localização: Ativa</p>
 
         <label for="cep">CEP:</label>

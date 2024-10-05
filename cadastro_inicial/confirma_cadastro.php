@@ -43,6 +43,7 @@
             $celular1 = $mysqli->escape_string($_POST['celular1']);
             $celular2 = $mysqli->escape_string($_POST['celular2']);
             $email = $mysqli->escape_string($_POST['email']);
+            $senha = $mysqli->escape_string($_POST['senha']);
             $termos =$_POST['aceito'];
 
             $hoje = new DateTime(datetime: 'now');
@@ -99,7 +100,8 @@
             
                     if(($email_registrado ) == 0) {
 
-                        $senha = generateRandomString(length: 6);
+                        //$senha = generateRandomString(length: 6);
+                        //$senha='123456';
                         $senha_criptografada = password_hash(password: $senha, algo: PASSWORD_DEFAULT);
                         $status = 'INATIVO';
                         $status_crediario = 'INATIVO';

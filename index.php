@@ -4,46 +4,86 @@
     if(!isset($_SESSION)) {
         session_start(); 
     }
-
-    if(isset($_SESSION['cliente']) && isset($_SESSION['admin']) && isset($_SESSION['admin'])) {
-        $cliente = $_SESSION['cliente'];
-        $admin = $_SESSION['admin'];
-        $parceiro = $_SESSION['parceiro'];
-
-        if($admin == 1 ){
-            header(header: "Location: login/lib/paginas/administrativo/admin_home.php");       
-            exit(); // Importante adicionar exit() após o redirecionamento
-        } else {
-            header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
-            exit(); // Importante adicionar exit() após o redirecionamento
-        }
+    
+    if (isset($_SESSION['cliente'])) {
+        // Redireciona para a página do cliente
+        header("Location: login/lib/paginas/clientes/cliente_home.php");
+        exit();
+    } elseif (isset($_SESSION['admin'])) {
+        // Redireciona para a página do administrador
+        header("Location: login/lib/paginas/administrativo/admin_home.php");
+        exit();
+    } elseif (isset($_SESSION['parceiro'])) {
+        // Redireciona para a página do parceiro
+        header("Location: login/lib/paginas/parceiros/parceiro_home.php");
+        exit();
     }
+    
         
     $msg= false;
 
-   if(isset($_POST['email']) || isset($_POST['senha'])) {
-        //echo 'oii';
-        $sql_primeiro_registro = "SELECT * FROM meus_parceiros";
-        $registros = $mysqli->query(query: $sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
+   if(isset($_POST['usuario']) || isset($_POST['senha'])) {
 
+        $usuario = $mysqli->escape_string($_POST['usuario']);//$mysqli->escape_string SERVE PARA PROTEGER O ACESSO 
+        $senha = $mysqli->escape_string($_POST['senha']);
+
+var_dump(value: $usuario);  
+       
+        $verifica = "SELECT * FROM meus_clientes WHERE cpf = '$usuario' LIMIT 1";
+        $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
+        $cliente = $sql_verifica->fetch_assoc();
+        $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
+
+               
+        
+        if(($quantidade ) == 1) {
+
+            if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
+
+                $usuario = $cliente['admin'];
+
+                if($usuario == 'admin'){
+                    $_SESSION['cliente'] = $cliente['id'];
+                    $_SESSION['admin'] = $usuario;
+                    //$msg = "1";
+                    unset($_POST);
+                    session_start(); 
+                    header(header: "Location: login/lib/tipo_login.php");
+                }else if($usuario != 'admin'){
+                    $_SESSION['cliente'] = $cliente['id'];
+                    $_SESSION['cliente'] = $cliente;
+                    //$msg = "2";
+                    unset($_POST);
+                    session_start(); 
+                    header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
+                }    
+            }else{
+                $msg= true;
+                $msg = "Usúario ou Senha estão inválidos!1";    
+                //echo $msg;
+            }
+        }/*else{
+            $verifica = "SELECT * FROM meus_parceiros WHERE cnpj = '$usuario' LIMIT 1";
+            $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
+            $cliente = $sql_verifica->fetch_assoc();
+            $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
+        }
         // Verifica se existem registros na tabela 'socios'
-        if ($registros->num_rows == 0) {
+        /*if ($registros->num_rows == 0) {
             header(header: "Location: login/lib/cadastro_cliente.php");
             exit();
         }
 
-        $email = $mysqli->escape_string($_POST['email']);//$mysqli->escape_string SERVE PARA PROTEGER O ACESSO 
-        $cpf = $mysqli->escape_string($_POST['email']);
-        $senha = $mysqli->escape_string($_POST['senha']);
+
         
         //echo "oii";
-        if(isset($_SESSION['email'])){
-            $email = $_SESSION['email'];
+        /*if(isset($_SESSION['usuario'])){
+            $usuario = $_SESSION['usuario'];
             $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);
-            $mysqli->query(query: "INSERT INTO senha (email, senha, cpf) VALUES('$email','$senha','$cpf')");
+            $mysqli->query(query: "INSERT INTO senha (usuario, senha, cpf) VALUES('$usuario','$senha','$cpf')");
 
         }
-        if(strlen(string: $_POST['email']) == 0 ) {
+        /*if(strlen(string: $_POST['usuario']) == 0 ) {
             $msg= true;
             $msg = "Preencha o campo Usuário.";
             //echo $msg;
@@ -53,12 +93,12 @@
             //echo $msg;
         } else {
 
-            $verifica = "SELECT * FROM meus_clientes WHERE email = '$email' LIMIT 1";
+            $verifica = "SELECT * FROM meus_clientes WHERE usuario = '$usuario' LIMIT 1";
             $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
             $cliente = $sql_verifica->fetch_assoc();
             $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
 
-            if(($quantidade ) == 1) {
+            /*if(($quantidade ) == 1) {
 
                 if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
 
@@ -86,7 +126,7 @@
                 }
             }else{
 
-                $sql_cpf = "SELECT * FROM meus_clientes WHERE cpf = '$cpf' LIMIT 1";
+                /*$sql_cpf = "SELECT * FROM meus_clientes WHERE cpf = '$cpf' LIMIT 1";
                 $sql_query =$mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
                 $cliente = $sql_query->fetch_assoc();
                 $quantidade_cpf = $sql_query->num_rows;//retorna a quantidade encontrado
@@ -123,9 +163,9 @@
                     $msg = "O Usúario informado não esta correto ou não está cadastrado!";
                     //$mysqli->close();
                     //echo $msg;
-                }
-            }
-        }
+                }*/
+            //}*/
+        //}*/
     }
     $id = '1';
     $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->error);
@@ -180,12 +220,12 @@
         <h1 id="ititulo">Entrar</h1>
         <span id="msg"><?php echo $msg; ?></span>
         <p>
-            <label id="email" for="iemail">Usuário</label>
-            <input required type="text" name="email" id="iemail" placeholder="CPF, CNPJ ou E-mail" oninput="formatarCampo(this)" value="<?php if(isset($_POST['email'])) echo $_POST['email']; ?>">
+            <label id="usuario" for="iusuario">Usuário</label>
+            <input required type="text" name="usuario" id="iusuario" placeholder="CPF, CNPJ ou E-mail" oninput="formatarCampo(this)" value="<?php if(isset($_POST['usuario'])) echo $_POST['usuario']; ?>">
         </p>
         <p>
             <div id="senhaInputContainer">
-                <label id="senha" for="senha">Senha</label>
+                <label id="isenha" for="senha">Senha</label>
                 <input required type="password" name="senha" id="senhaInput" placeholder="Sua Senha" value="<?php if(isset($_POST['senha'])) echo $_POST['senha']; ?>">
                 <span id="toggleSenha" class="material-symbols-outlined" onclick="toggleSenha()">visibility_off</span>
             </div>
@@ -218,8 +258,8 @@
 
             if (value.includes('@')) {
                 // Se o valor contiver '@', formatar como E-mail
-                let emailElement = document.getElementById('iemail');
-                emailElement.textContent = value;
+                let usuarioElement = document.getElementById('iusuario');
+                usuarioElement.textContent = value;
             }
         }
     </script>

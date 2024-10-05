@@ -7,6 +7,6 @@ if(isset($_SESSION)){
     //echo "ee";
     session_unset();
     session_destroy();  
-    header("Location: ../../../../index.php");            
+    header(header: "Location: ../../../../index.php");            
 }    
 ?>

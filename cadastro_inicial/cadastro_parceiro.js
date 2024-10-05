@@ -83,7 +83,7 @@ async function validaCNPJ(cnpj) {
 
     return data.status === 'OK';
 }
-document.getElementById('cadastroEmpresa').addEventListener('submit', async function(event) {
+/*document.getElementById('cadastroEmpresa').addEventListener('submit', async function(event) {
     const cnpj = document.getElementById('cnpj').value.replace(/[^\d]+/g, '');
     const isValid = await validaCNPJ(cnpj);
 
@@ -91,7 +91,7 @@ document.getElementById('cadastroEmpresa').addEventListener('submit', async func
         alert('CNPJ inválido ou não encontrado!');
         event.preventDefault();
     }
-});
+});*/
 function validateForm() {
     //const arqFoto = document.getElementById('imageInput');
     var uf =document.getElementById('uf').value;

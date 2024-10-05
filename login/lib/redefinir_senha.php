@@ -40,7 +40,7 @@ if (isset($_POST['email']) || isset($_POST['senha_atual'])) {
         $cliente = $sql_verifica->fetch_assoc();
         $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
 
-        var_dump(value: $cliente['senha_login']);        
+        //var_dump(value: $cliente['senha_login']);        
         
         if(($quantidade ) == 1) {
             //var_dump(value: $cliente['id']);
@@ -156,7 +156,8 @@ if (isset($_POST['email']) || isset($_POST['senha_atual'])) {
             <input required placeholder="Minimo 6 digitos" type="password" id="Conf_senha" name="Conf_senha" value="<?php if(isset($_POST['Conf_senha'])) echo $_POST['Conf_senha']; ?>">
             <span id="ver_conf_senha" onclick="ver_conf_senha()">👁️</span>
         </p>
-        <a href="../../index.php">Ir para login</a>
+
+        <a href="paginas/clientes/cliente_logout.php">Ir para login</a>
         <button type="submit">Salvar</button>
     </form>
 </body>
