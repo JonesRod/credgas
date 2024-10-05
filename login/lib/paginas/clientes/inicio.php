@@ -4,21 +4,21 @@
     if(!isset($_SESSION)){
         session_start(); 
 
-        if(isset($_SESSION['usuario'])){
+        if(isset($_SESSION['id'])){
 
             if (isset($_POST["tipoLogin"])) {
                 // echo "1";
-                $usuario = $_SESSION['usuario'];
+                $usuario = $_SESSION['id'];
                 $valorSelecionado = $_POST["tipoLogin"];// Obter o valor do input radio
                 $admin = $valorSelecionado;
 
                 if($admin != 1){
-                    $usuario = $_SESSION['usuario'];
+                    $usuario = $_SESSION['id'];
                     $admin = $_SESSION['admin'];
                     //echo "1";
-                    header("Location: ../../usuarios/usuario_home.php");      
+                    header(header: "Location: ../../clientes/cliente_home.php");      
                 }else{
-                    $usuario = $_SESSION['usuario'];
+                    $usuario = $_SESSION['id'];
                     $admin = $_SESSION['admin'];
                     $_SESSION['usuario'];
                     $_SESSION['admin'];  
@@ -29,17 +29,17 @@
             //echo "5";
             session_unset();
             session_destroy(); 
-            header("Location: ../../../../../index.php");  
+            header(header: "Location: ../../../../../index.php");  
         }
     
     }else{
         //echo "6";
         session_unset();
         session_destroy(); 
-        header("Location: ../../../../../index.php");  
+        header(header: "Location: ../../../../../index.php");  
     }
-    $id = $_SESSION['usuario'];
-    $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+    $id = $_SESSION['id'];
+    $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
     $usuario = $sql_query->fetch_assoc();
 ?>
 <!DOCTYPE html>
@@ -156,14 +156,14 @@
                             12 => 'Dezembro'
                         ];
 
-                        $mes_atual = date('n');
+                        $mes_atual = date(format: 'n');
                         $nome_mes = $meses[$mes_atual];
                         echo $nome_mes;
                     ?>
                 </h3>
                 <?php
                     // Agora, vamos buscar os aniversariantes do mês
-                    $result = $mysqli->query("SELECT * FROM socios WHERE MONTH(nascimento) = $mes_atual ORDER BY DAY(nascimento)") or die($mysqli->error);
+                    $result = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE MONTH(nascimento) = $mes_atual ORDER BY DAY(nascimento)") or die($mysqli->error);
 
                     // Verifica se há resultados
                     if ($result->num_rows > 0) {
@@ -178,9 +178,9 @@
                             </tr>";
 
                         while($row = $result->fetch_assoc()) {
-                            $nascimento_formatado = date('d/m/Y', strtotime($row["nascimento"]));
-                            $dataNascimento = new DateTime($row["nascimento"]);
-                            $intervalo = $dataNascimento->diff(new DateTime());
+                            $nascimento_formatado = date(format: 'd/m/Y', timestamp: strtotime(datetime: $row["nascimento"]));
+                            $dataNascimento = new DateTime(datetime: $row["nascimento"]);
+                            $intervalo = $dataNascimento->diff(targetObject: new DateTime());
                             $idade = $intervalo->y;
 
                             if($row["foto"] ==''){
@@ -305,7 +305,7 @@
                                     <td><img src='" . $foto . "'></td>
                                     <td>" . $nascimento_formatado. "</td>
                                     <td>" . $row["apelido"] . "</td>
-                                    <td style='text-align: left; padding-left: 5px;'>" . $row["nome_completo"] . "</td>
+                                    <td style='text-align: left; padding-left: 5px;'>" . $row["primeiro_nome"] . "</td>
                                     <td>" . $idade . "</td>
                                 </tr>";
                         }

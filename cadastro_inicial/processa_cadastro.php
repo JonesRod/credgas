@@ -18,6 +18,7 @@
         $telefoneComercial = $_POST['telefoneComercial'];
         $telefoneResponsavel = $_POST['telefoneResponsavel'];
         $email = $_POST['email'];
+        $senha = $_POST['senha'];
         $cep = $_POST['cep'];
         $estado = $_POST['uf'];
         $cidade = $_POST['cidade'];
@@ -36,7 +37,7 @@
         if (($resultCNPJ)== 0) {
             
             if (($resultEmail) == 0){
-                $senha = generateRandomString(length: 6);
+                //$senha = generateRandomString(length: 6);
                 $senha_criptografada = password_hash(password: $senha, algo: PASSWORD_DEFAULT);
                 $status = 'INATIVO';
 
@@ -102,7 +103,7 @@
                 //echo $msg;
                 $mysqli->close();
                 header(header: "refresh: 10;../index.php");
-                echo "Erro: " . $sql . "<br>" . $conn->error;
+                echo "Erro: " . $sql . "<br>" . $conn->$error;
                 //echo "E-mail já cadastrado!";
             }
         }else{

@@ -5,117 +5,103 @@
         session_start(); 
     }
 
-    if(isset($_SESSION['usuario'])){
-        $usuario = $_SESSION['usuario'];
-        $id = $_SESSION['usuario'];
-        $sql_query = $mysqli->query(query: "SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+    if(isset($_SESSION['id'])){
+        $id = $_SESSION['id'];
+        //$id = $_SESSION['usuario'];
+        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
         $usuario = $sql_query->fetch_assoc(); 
 
     } else {
         // Se não houver uma sessão de usuário, redirecione para a página de login
         session_unset();
         session_destroy(); 
-        header("Location: ../../../../index.php");  
+        header(header: "Location: ../../../../index.php");  
         exit(); // Importante adicionar exit() após o redirecionamento
     }
 
 ?>
 
 <!DOCTYPE html>
-<html lang="PT-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="usuario_home.css">
-    <script>
-        //atualiza a pagian a cada 10 min
-        setTimeout(function() {
-            location.reload();
-        }, 100000);
-        
-        // Função para carregar o conteúdo na div
-        function abrirNaDiv(pagina) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("iconteudo").innerHTML = this.responseText;
-                }
-            };
-            xhttp.open("GET", pagina, true);
-            xhttp.send();
-        }
+    <title>Minha Loja</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="cliente_home.css">
 
-        // Carregar a página de início ao carregar a página
-        window.onload = function() {
-            abrirNaDiv('inicio.php');
-        }
-    </script>
-    <title>Meu Site</title>
 </head>
 <body>
 
-    <div id="idivMenu">
-        <div id="imenuBtn" onclick="<?php if (!isset($_SESSION['usuario'])) { ?>
-                location.reload();
-            <?php } else { ?>
-                toggleMenu();
-            <?php } ?>">
-            <div class="iconeMenu"></div>
-            <div class="iconeMenu"></div>
-            <div class="iconeMenu"></div>
-        </div>
-
-        <div id="iusuario">
-            <a> Olá, <?php echo $usuario['apelido']; ?></a><br>
-            <a> Status: <?php echo $usuario['status']; ?></a>
-        </div>
-    </div>
-
-    <div class="titulo">
-        <div class="menu" id="imenu">
-            <ul id="ilista" class="lista">
-                <li><a href="#" onclick="abrirNaDiv('inicio.php');toggleMenu()">Inicío </a></li>
-                <li><a href="#" onclick="abrirNaDiv('perfil.php');toggleMenu()">Meu Perfil </a></li>
-                <li><a href="#" onclick="abrirNaDiv('CarregarMensalidades.php');toggleMenu()">Minhas Mensalidades</a></li>
-                <li><a href="#" onclick="abrirNaDiv('Carregar_joia.php');toggleMenu()">Jóia</a></li>
-                <li><a href="usuario_logout.php">Sair</a></li>
-            </ul>
-        </div>
-        <div id="ititulo">
-            <H1>Associação 40Ribas</H1>
-        </div>
-    </div>
-    <div class="container">
-        <div class="conteudo" id="iconteudo">
-            <!-- Conteúdo central (dados escolhidos) -->
-        </div>
-    </div>
-    <script src="usuario_home.js"></script>
-</body>
-    <footer>
-        <div class="container-rodape">
-            <div class="row">
-                <div class="col-md-6">
-                    <h3>Links Úteis</h3>
-                    <ul>
-                        <li><a href="#">Sobre Nós</a></li>
-                        <li><a href="#">Contato</a></li>
-                        <li><a href="#">Política de Privacidade</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h3>Redes Sociais</h3>
-                    <ul>
-                        <li><a href="#">Facebook</a></li>
-                        <li><a href="#">Twitter</a></li>
-                        <li><a href="#">Instagram</a></li>
-                    </ul>
-                </div>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">Minha Loja</div>
+            <div class="user-area">
+                <span>Bem-vindo, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
+                <i class="fas fa-bell"></i> <!-- Ícone de Notificação -->
+                <!--<i class="fas fa-cog"></i> <!-- Ícone de Configurações -->
+                <i class="fas fa-shopping-cart"></i> <!-- Ícone de Carrinho -->
+                <i class="fas fa-user"></i> <!-- Ícone de Perfil -->
             </div>
         </div>
-        <div class="bottom-bar">
-            <p>&copy; 2023 <?php echo 'Associação 40 Ribas';?>. Todos os direitos reservados.</p>
+    </header>
+
+    <!-- Faixa de navegação (Início, Promoções, etc.) -->
+    <div class="sub-nav">
+        <div>Início</div>
+        <div>Promoções</div>
+        <div>Novidades</div>
+        <div>Frete Grátis</div>
+    </div>
+
+    <!-- Parceiros -->
+    <div class="container">
+        <h2>Lojas Parceiras</h2>
+        <div class="parceiros">
+            <img src="https://via.placeholder.com/150x50" alt="Parceiro 1">
+            <img src="https://via.placeholder.com/150x50" alt="Parceiro 2">
+            <img src="https://via.placeholder.com/150x50" alt="Parceiro 3">
+        </div>
+
+        <!-- Cards de Produtos -->
+        <h2>Produtos em Destaque</h2>
+        <div class="products">
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150" alt="Produto 1">
+                <h3>Produto 1</h3>
+                <p>R$ 99,99</p>
+                <a href="#" class="add-cart">Adicionar ao Carrinho</a>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150" alt="Produto 2">
+                <h3>Produto 2</h3>
+                <p>R$ 199,99</p>
+                <a href="#" class="add-cart">Adicionar ao Carrinho</a>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150" alt="Produto 3">
+                <h3>Produto 3</h3>
+                <p>R$ 299,99</p>
+                <a href="#" class="add-cart">Adicionar ao Carrinho</a>
+            </div>
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150" alt="Produto 4">
+                <h3>Produto 4</h3>
+                <p>R$ 399,99</p>
+                <a href="#" class="add-cart">Adicionar ao Carrinho</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Minha Loja - Todos os direitos reservados</p>
+        <div class="contato">
+            <p><strong>Contato:</strong></p>
+            <p>Email: contato@minhaloja.com.br | Telefone: (11) 1234-5678</p>
         </div>
     </footer>
+
+</body>
 </html>

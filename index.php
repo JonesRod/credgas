@@ -22,51 +22,79 @@
         
     $msg= false;
 
-   if(isset($_POST['usuario']) || isset($_POST['senha'])) {
+
+    if(isset($_POST['usuario']) || isset($_POST['senha'])) {
+
+        $sql_primeiro_registro = "SELECT * FROM meus_clientes";
+        $registros = $mysqli->query($sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
 
         $usuario = $mysqli->escape_string($_POST['usuario']);//$mysqli->escape_string SERVE PARA PROTEGER O ACESSO 
         $senha = $mysqli->escape_string($_POST['senha']);
 
-var_dump(value: $usuario);  
-       
         $verifica = "SELECT * FROM meus_clientes WHERE cpf = '$usuario' LIMIT 1";
         $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
         $cliente = $sql_verifica->fetch_assoc();
-        $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
-
-               
-        
+        $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado     
+        //var_dump($quantidade);    
+        //die();             
         if(($quantidade ) == 1) {
+        //var_dump($_POST['usuario']);       
+        //var_dump($_POST['senha']); 
+            if (password_verify(password: $senha, hash: $cliente['senha_login'])) {
+                // Verifica se o usuário é administrador
 
-            if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
-
-                $usuario = $cliente['admin'];
-
-                if($usuario == 'admin'){
-                    $_SESSION['cliente'] = $cliente['id'];
-                    $_SESSION['admin'] = $usuario;
-                    //$msg = "1";
+                if ($cliente['admin'] == 'admin') {
+                    $_SESSION['id'] = $cliente['id'];
+                    $_SESSION['usuario'] = $cliente['primeiro_nome'];
+                    $_SESSION['admin'] = $cliente['admin'];
+                    
+                    // Redireciona para a página de tipo de login
                     unset($_POST);
-                    session_start(); 
-                    header(header: "Location: login/lib/tipo_login.php");
-                }else if($usuario != 'admin'){
-                    $_SESSION['cliente'] = $cliente['id'];
-                    $_SESSION['cliente'] = $cliente;
-                    //$msg = "2";
+                    header("Location: login/lib/tipo_login.php");
+                    exit();
+                } else {
+                    //echo('oii');
+                    //die();
+                    // Caso o usuário não seja admin, é cliente
+                    $_SESSION['id'] = $cliente['id'];
+                    $_SESSION['cliente_info'] = $cliente; // Armazena mais informações do cliente, se necessário
+                    
                     unset($_POST);
-                    session_start(); 
                     header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
-                }    
-            }else{
-                $msg= true;
-                $msg = "Usúario ou Senha estão inválidos!1";    
-                //echo $msg;
+                    exit();
+                }
+            } else {
+                // Mensagem de erro caso a senha ou usuário esteja incorreto
+                $msg = "Usuário ou senha inválidos!";
             }
-        }/*else{
+        
+        }else{
+
             $verifica = "SELECT * FROM meus_parceiros WHERE cnpj = '$usuario' LIMIT 1";
             $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
-            $cliente = $sql_verifica->fetch_assoc();
+            $parceiro = $sql_verifica->fetch_assoc();
             $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
+
+            if(($quantidade ) == 1) {
+                        //echo "parceiro 1";
+                if (password_verify(password: $senha, hash: $parceiro['senha'])) {
+
+                    $_SESSION['id'] = $parceiro['id'];
+                    $_SESSION['usuario'] = $cliente['nomeFantasia'];
+                    
+                    unset($_POST);
+                    header("Location: login/lib/paginas/parceiros/parceiro_home.php");
+                    exit();
+                    
+                } else {
+                    // Mensagem de erro caso a senha ou usuário esteja incorreto
+                    $msg = "Usuário ou senha inválidos!";
+                }
+            }else{
+                // Mensagem de erro caso a senha ou usuário esteja incorreto
+                $msg = "Usuário ou senha inválidos!";
+            }
+
         }
         // Verifica se existem registros na tabela 'socios'
         /*if ($registros->num_rows == 0) {
@@ -76,7 +104,7 @@ var_dump(value: $usuario);
 
 
         
-        //echo "oii";
+
         /*if(isset($_SESSION['usuario'])){
             $usuario = $_SESSION['usuario'];
             $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);

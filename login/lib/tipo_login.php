@@ -4,34 +4,40 @@
     if(!isset($_SESSION)){
         session_start();
 
-        if(isset($_SESSION['usuario'])){
-            $usuario = $_SESSION['usuario'];
-            $admin = $_SESSION['admin'];  
-            
-            if($admin == 0){
-                $_SESSION['usuario'];
-                header("Location: paginas/usuario_home.php"); 
+        if(isset($_SESSION['id'])){
 
-            }else if($admin == 1){
-                $usuario = $_SESSION['usuario'];
+            //$usuario= $SESSION['usuario'];
+            $admin = $_SESSION['admin'];  
+            $id = $_SESSION['id'];
+
+            $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
+            $usuario = $sql_query->fetch_assoc(); 
+
+            if($usuario['admin'] != 'admin'){
+            //if($admin !== 'admin'){
+                $_SESSION['id'];
+                header(header: "Location: paginas/clientes/cliente_home.php"); 
+
+            }else if($usuario['admin'] == 'admin'){
+                $usuario = $_SESSION['id'];
                 $admin = $_SESSION['admin'];
                 $_SESSION['usuario'];
                 $_SESSION['admin']; 
 
-                $id = $_SESSION['usuario'];
-                $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+                $id = $_SESSION['id'];
+                $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
                 $usuario = $sql_query->fetch_assoc(); 
                 //header("Location: paginas/administrativo/admin_home.php");     
             }else{
                 session_unset();
                 session_destroy();
-                header("Location: ../../../../index.php"); 
+                header(header: "Location: ../../../../index.php"); 
             }
         }else{
             // Destruir todas as variáveis de sessão
             session_unset();
             session_destroy();
-            header("Location: ../../index.php");  
+            header(header: "Location: ../../index.php");  
         }
     }else{
         if(isset($_SESSION['usuario'])){
@@ -40,7 +46,7 @@
             
             if($admin == 0){
                 $_SESSION['usuario'];
-                header("Location: paginas/usuario_home.php"); 
+                header("Location: paginas/clientes/cliente_home.php"); 
 
             }else if($admin == 1){
                 $usuario = $_SESSION['usuario'];
@@ -49,7 +55,7 @@
                 $_SESSION['admin']; 
 
                 $id = $_SESSION['usuario'];
-                $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+                $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
                 $usuario = $sql_query->fetch_assoc(); 
                 //header("Location: paginas/administrativo/admin_home.php");     
             }else{
@@ -84,7 +90,7 @@
 </head>
 <body>
     <main>
-        <h2>Olá, <?php echo $usuario['apelido']; ?></h2>
+        <h2>Olá, <?php echo $usuario['primeiro_nome']; ?></h2>
         <h3>Escolha o tipo de login:</h3>
         <form id="escolherLoginForm" method="POST" action="paginas/administrativo/admin_home.php" onsubmit="return resposta()">
             <label>
@@ -125,4 +131,3 @@
     </script>
 </body>
 </html>
-

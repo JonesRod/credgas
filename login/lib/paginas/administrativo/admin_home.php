@@ -20,7 +20,7 @@
                     if($admin == 0){
                         //echo '6';
                         $_SESSION['usuario'];
-                        header("Location: ../usuarios/usuario_home.php");       
+                        header(header: "Location: ../clientes/cliente_home.php");       
                     }else if($admin == 1){
                         //echo '7';
                         $usuario = $_SESSION['usuario'];
@@ -29,7 +29,7 @@
                         $_SESSION['admin'];  
                         
                         $id = $_SESSION['usuario'];
-                        $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+                        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
                         $usuario = $sql_query->fetch_assoc();    
                     }else{
                         //echo '8';
@@ -58,7 +58,7 @@
             $_SESSION['admin'];  
     
             $id = $_SESSION['usuario'];
-            $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+            $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
             $usuario = $sql_query->fetch_assoc();    
     
         }else{
@@ -76,7 +76,7 @@
         $_SESSION['admin'];  
 
         $id = $_SESSION['usuario'];
-        $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+        $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
         $usuario = $sql_query->fetch_assoc();    
 
     }else{
@@ -93,7 +93,7 @@
                 if($admin == 0){
 
                     $_SESSION['usuario'];
-                    header("Location: ../usuario_home.php");       
+                    header("Location: ../cliente_home.php");       
                 }else if($admin == 1){
                     $usuario = $_SESSION['usuario'];
                     $admin = $_SESSION['admin'];
@@ -101,7 +101,7 @@
                     $_SESSION['admin'];  
 
                     $id = $_SESSION['usuario'];
-                    $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+                    $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
                     $usuario = $sql_query->fetch_assoc();    
 
                 }else{
