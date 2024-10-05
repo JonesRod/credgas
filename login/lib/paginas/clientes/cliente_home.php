@@ -42,7 +42,15 @@
                 <i class="fas fa-bell"></i> <!-- Ícone de Notificação -->
                 <!--<i class="fas fa-cog"></i> <!-- Ícone de Configurações -->
                 <i class="fas fa-shopping-cart"></i> <!-- Ícone de Carrinho -->
-                <i class="fas fa-user"></i> <!-- Ícone de Perfil -->
+
+                <div class="profile-dropdown">
+                    <i class="fas fa-user" id="profileIcon"></i> <!-- Ícone de Perfil -->
+                    <ul class="dropdown-menu" id="dropdownMenu">
+                        <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
+                        <li><a href="editar_perfil.html"><i class="fas fa-user-edit"></i> Editar Perfil</a></li>
+                        <li><a href="cliente_logout"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </header>
@@ -93,7 +101,31 @@
             </div>
         </div>
     </div>
+    <script>
+        // Script para mostrar/ocultar o menu suspenso ao clicar no ícone de perfil
+        document.getElementById("profileIcon").addEventListener("click", function() {
+            var dropdownMenu = document.getElementById("dropdownMenu");
+            dropdownMenu.classList.toggle("show"); // Alterna a classe "show" para exibir ou ocultar o menu
+        });
 
+        // Fechar o menu suspenso ao clicar fora dele
+        window.onclick = function(event) {
+            if (!event.target.matches('#profileIcon')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        };
+        // Função para encerrar a sessão e fechar a página
+         document.getElementById("logoutButton").addEventListener("click", function() {
+            // Redireciona para a página de logout no servidor
+            window.location.href = "cliente_logout.php"; // Logout no PHP ou outra ação de logout
+        });
+    </script>
     <!-- Footer -->
     <footer>
         <p>&copy; 2024 Minha Loja - Todos os direitos reservados</p>
