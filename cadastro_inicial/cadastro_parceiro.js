@@ -84,7 +84,7 @@ async function validaCNPJ(cnpj) {
     return data.status === 'OK';
 }
 document.getElementById('cadastroEmpresa').addEventListener('submit', async function(event) {
-    const cnpj = document.getElementById('cnpj').value;
+    const cnpj = document.getElementById('cnpj').value.replace(/[^\d]+/g, '');
     const isValid = await validaCNPJ(cnpj);
 
     if (!isValid) {

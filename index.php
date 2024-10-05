@@ -5,15 +5,16 @@
         session_start(); 
     }
 
-    if(isset($_SESSION['usuario']) && isset($_SESSION['admin'])) {
-        $usuario = $_SESSION['usuario'];
+    if(isset($_SESSION['cliente']) && isset($_SESSION['admin']) && isset($_SESSION['admin'])) {
+        $cliente = $_SESSION['cliente'];
         $admin = $_SESSION['admin'];
+        $parceiro = $_SESSION['parceiro'];
 
         if($admin == 1 ){
             header(header: "Location: login/lib/paginas/administrativo/admin_home.php");       
             exit(); // Importante adicionar exit() após o redirecionamento
         } else {
-            header(header: "Location: login/lib/paginas/usuarios/usuario_home.php");
+            header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
             exit(); // Importante adicionar exit() após o redirecionamento
         }
     }
@@ -22,12 +23,12 @@
 
    if(isset($_POST['email']) || isset($_POST['senha'])) {
         //echo 'oii';
-        $sql_primeiro_registro = "SELECT * FROM socios";
+        $sql_primeiro_registro = "SELECT * FROM meus_parceiros";
         $registros = $mysqli->query(query: $sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
 
         // Verifica se existem registros na tabela 'socios'
         if ($registros->num_rows == 0) {
-            header(header: "Location: login/lib/cadastro_usuario.php");
+            header(header: "Location: login/lib/cadastro_cliente.php");
             exit();
         }
 
@@ -35,12 +36,12 @@
         $cpf = $mysqli->escape_string($_POST['email']);
         $senha = $mysqli->escape_string($_POST['senha']);
         
-
         //echo "oii";
         if(isset($_SESSION['email'])){
             $email = $_SESSION['email'];
             $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);
             $mysqli->query(query: "INSERT INTO senha (email, senha, cpf) VALUES('$email','$senha','$cpf')");
+
         }
         if(strlen(string: $_POST['email']) == 0 ) {
             $msg= true;
@@ -52,68 +53,68 @@
             //echo $msg;
         } else {
 
-            $verifica = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
-            $sql_verifiva =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
-            $usuario = $sql_verifiva->fetch_assoc();
-            $quantidade = $sql_verifiva->num_rows;//retorna a quantidade encontrado
+            $verifica = "SELECT * FROM meus_clientes WHERE email = '$email' LIMIT 1";
+            $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
+            $cliente = $sql_verifica->fetch_assoc();
+            $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
 
             if(($quantidade ) == 1) {
 
-                if(password_verify(password: $senha, hash: $usuario['senha'])) {
+                if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
 
-                    $admin = $usuario['admin'];
+                    $admin = $cliente['admin'];
 
                     if($admin == 1){
-                        $_SESSION['usuario'] = $usuario['id'];
+                        $_SESSION['cliente'] = $cliente['id'];
                         $_SESSION['admin'] = $admin;
                         //$msg = "1";
                         unset($_POST);
                         session_start(); 
                         header(header: "Location: login/lib/tipo_login.php");
                     }else if($admin != 1){
-                        $_SESSION['usuario'] = $usuario['id'];
+                        $_SESSION['cliente'] = $cliente['id'];
                         $_SESSION['admin'] = $admin;
                         //$msg = "2";
                         unset($_POST);
                         session_start(); 
-                        header(header: "Location: login/lib/paginas/usuarios/usuario_home.php");
+                        header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
                     }    
                 }else{
                     $msg= true;
-                    $msg = "Usúario ou Senha estão inválidos!";    
+                    $msg = "Usúario ou Senha estão inválidos!1";    
                     //echo $msg;
                 }
             }else{
 
-                $sql_cpf = "SELECT * FROM socios WHERE cpf = '$cpf' LIMIT 1";
+                $sql_cpf = "SELECT * FROM meus_clientes WHERE cpf = '$cpf' LIMIT 1";
                 $sql_query =$mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
-                $usuario = $sql_query->fetch_assoc();
+                $cliente = $sql_query->fetch_assoc();
                 $quantidade_cpf = $sql_query->num_rows;//retorna a quantidade encontrado
         
                 if(($quantidade_cpf) == 1) {
+                    var_dump($senha);
+                    if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
         
-                    if(password_verify(password: $senha, hash: $usuario['senha'])) {
-        
-                        $admin = $usuario['admin'];
+                        $admin = $cliente['admin'];
         
                         if($admin == 1){
-                            $_SESSION['usuario'] = $usuario['id'];
+                            $_SESSION['cliente'] = $cliente['id'];
                             $_SESSION['admin'] = $admin;
                             //$msg = "1";
                             unset($_POST);
                             session_start(); 
                             header(header: "Location: login/lib/tipo_login.php");
                         }else if($admin != 1){
-                            $_SESSION['usuario'] = $usuario['id'];
+                            $_SESSION['cliente'] = $cliente['id'];
                             $_SESSION['admin'] = $admin;
                             //$msg = "2";
                             unset($_POST);
                             session_start(); 
-                            header(header: "Location: login/lib/paginas/usuarios/usuario_home.php");
+                            header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
                         }    
                     }else{
                         $msg= true;
-                        $msg = "Usúario ou Senha estão inválidos!";   
+                        $msg = "Usúario ou Senha estão inválidos!2";   
                         //$mysqli->close(); 
                         //echo $msg;
                     }

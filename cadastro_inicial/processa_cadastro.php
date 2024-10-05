@@ -23,7 +23,7 @@
         $cidade = $_POST['cidade'];
         $termos =$_POST['aceito'];
 
-        var_dump(value: $_POST);
+        //var_dump(value: $_POST);
 
         // Verifica se o CNPJ já está cadastrado
         $sqlCNPJ = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE cnpj = '$cnpj'");

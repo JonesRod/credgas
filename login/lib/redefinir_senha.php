@@ -1,29 +1,29 @@
 <?php
 
     $msg= false;
-    $minimo = 8;
+    $minimo = 6;
     $maximo = 16;
 
-if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
-    if(strlen($_POST['senhaAtual']) == 0 ) {
+if (isset($_POST['email']) || isset($_POST['senha_atual'])) {
+    if(strlen(string: $_POST['senha_atual']) == 0 ) {
         $msg = "Preencha sua senha Atual."; 
 
-    } else if(strlen($_POST['novaSenha']) == 0 ) {
+    } else if(strlen(string: $_POST['Nova_senha']) == 0 ) {
         $msg = "Preencha o campo Nova Senha.";
 
-    }else if(strlen($_POST['novaSenha']) < $minimo ) {
+    }else if(strlen(string: $_POST['Nova_senha']) < $minimo ) {
         $msg = "Nova senha deve ter no minimo 8 digito.";
         
-    }else if(strlen($_POST['novaSenha']) > $maximo ) {
+    }else if(strlen(string: $_POST['Nova_senha']) > $maximo ) {
         $msg = "Nona senha deve ter no maximo 16 digito.";
 
-    }else if(strlen($_POST['confSenha']) == 0 ) {
+    }else if(strlen(string: $_POST['Conf_senha']) == 0 ) {
         $msg = "Preencha o campo confirmar Senha.";
 
-    }else if(strlen($_POST['confSenha']) < $minimo) {
+    }else if(strlen(string: $_POST['Conf_senha']) < $minimo) {
         $msg = "Campo Confirmar Senha deve ter no minimo 8 digito.";
 
-    }else if(strlen($_POST['confSenha']) > $maximo) {
+    }else if(strlen(string: $_POST['Conf_senha']) > $maximo) {
         $msg = "Campo Confirmar Senha deve ter no maximo 16 digito.";
 
     }else{
@@ -32,29 +32,32 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
         include('enviarEmail.php');
 
         $email = $mysqli->escape_string($_POST['email']);//$mysqli->escape_string SERVE PARA PROTEGER O ACESSO 
-        $senha = $mysqli->escape_string($_POST['senhaAtual']);
-        $novaSenha = $_POST['novaSenha'];
+        $senha = $mysqli->escape_string($_POST['senha_atual']);
+        $novaSenha = $_POST['Nova_senha'];
 
-        $sql_code = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
-        $sql_query =$mysqli->query($sql_code) or die("Falha na execução do código SQL: " . $mysqli->$error);
-        $usuario = $sql_query->fetch_assoc();
-        $quantidade = $sql_query->num_rows;//retorna a quantidade encontrado
-       
+        $verifica = "SELECT * FROM meus_clientes WHERE email = '$email' LIMIT 1";
+        $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
+        $cliente = $sql_verifica->fetch_assoc();
+        $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
+
+        var_dump(value: $cliente['senha_login']);        
+        
         if(($quantidade ) == 1) {
+            //var_dump(value: $cliente['id']);
 
-            if(password_verify($senha, $usuario['senha'])) {
+            if(password_verify($senha, $cliente['senha_login'])) {
 
-                $_SESSION['usuario'] = $usuario['id'];
-                $nome = $usuario['apelido'];
-                $_SESSION['admin'] = $usuario['admin'];
+                $_SESSION['cliente'] = $cliente['id'];
+                $nome = $cliente['primeiro_nome'];
+                $_SESSION['admin'] = $cliente['admin'];
 
-                $nova_senha_criptografada = password_hash($novaSenha, PASSWORD_DEFAULT);
+                $nova_senha_criptografada = password_hash(password: $novaSenha, algo: PASSWORD_DEFAULT);
 
-                $sql_code = "UPDATE socios
-                SET senha = '$nova_senha_criptografada'
+                $sql_code = "UPDATE meus_clientes
+                SET senha_login = '$nova_senha_criptografada'
                 WHERE email = '$email'";
 
-                $editado = $mysqli->query($sql_code) or die($mysqli->$error);
+                $editado = $mysqli->query(query: $sql_code) or die($mysqli->$error);
 
                 if($editado) {   
                     $msg = "Nova senha definida com sucesso. Você será redirecionado para a tele de login.";
@@ -68,11 +71,11 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
                     
                     unset($_POST);
 
-                    header("refresh: 5; paginas/usuarios/usuario_logout.php");
+                    header(header: "refresh: 5; paginas/clientes/cliente_logout.php");
                 }
                     
             }else{
-            $msg = "Senha inválida!";
+                $msg = "Sua senha atual está incorreta!";
             }
         }else{
             $msg = "O e-mail informado não esta correto ou não está cadastrado!";
@@ -89,7 +92,7 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
     <title>redefinição de senha</title>
     <script>
         function ver_senha_atual() {
-            var senhaInput = document.getElementById('isenha_atual');
+            var senhaInput = document.getElementById('senha_atual');
             var ver_senha_atual = document.getElementById('ver_senha_atual');
 
             if (senhaInput.type === 'password') {
@@ -101,26 +104,26 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
             }
         }
         function ver_nova_senha() {
-            var iNova_senha = document.getElementById('iNova_senha');
+            var Nova_senha = document.getElementById('Nova_senha');
             var ver_nova_senha = document.getElementById('ver_nova_senha');
 
-            if (iNova_senha.type === 'password') {
-                iNova_senha.type = 'text';
+            if (Nova_senha.type === 'password') {
+                Nova_senha.type = 'text';
                 ver_nova_senha.textContent = '👁️';
             } else {
-                iNova_senha.type = 'password';
+                Nova_senha.type = 'password';
                 ver_nova_senha.textContent = '👁️';
             }
         }
         function ver_conf_senha() {
-            var iConf_senha = document.getElementById('iConf_senha');
+            var Conf_senha = document.getElementById('Conf_senha');
             var ver_conf_senha = document.getElementById('ver_conf_senha');
 
-            if (iConf_senha.type === 'password') {
-                iConf_senha.type = 'text';
+            if (Conf_senha.type === 'password') {
+                Conf_senha.type = 'text';
                 ver_conf_senha.textContent = '👁️';
             } else {
-                iConf_senha.type = 'password';
+                Conf_senha.type = 'password';
                 ver_conf_senha.textContent = '👁️';
             }
         }
@@ -139,21 +142,21 @@ if (isset($_POST['email']) || isset($_POST['senhaAtual'])) {
             <input value="<?php if(isset($_POST['email'])) echo $_POST['email']; ?>" required type="text" name="email">
         </p>
         <p>
-            <label for="isenha_atual">Senha Atual: </label>
-            <input required type="password" name="senhaAtual" id="isenha_atual" value="<?php if(isset($_POST['senhaAtual'])) echo $_POST['senhaAtual']; ?>">
+            <label for="senha_atual">Senha Atual: </label>
+            <input required type="password" name="senha_atual" id="senha_atual" value="<?php if(isset($_POST['senha_atual'])) echo $_POST['senha_atual']; ?>">
             <span id="ver_senha_atual" onclick="ver_senha_atual()">👁️</span>
         </p>
         <p>
-            <label for="iNova_senha">Nova Senha: </label>
-            <input required placeholder="Minimo 8 digitos" type="password" id="iNova_senha" name="novaSenha" value="<?php if(isset($_POST['novaSenha'])) echo $_POST['novaSenha']; ?>">
+            <label for="Nova_senha">Nova Senha: </label>
+            <input required placeholder="Minimo 6 digitos" type="password" id="Nova_senha" name="Nova_senha" value="<?php if(isset($_POST['Nova_senha'])) echo $_POST['Nova_senha']; ?>">
             <span id="ver_nova_senha" onclick="ver_nova_senha()">👁️</span>
         </p>
         <p>
-            <label for="iConf_senha">Confirmar Senha: </label>
-            <input required placeholder="Minimo 8 digitos" type="password" id="iConf_senha" name="confSenha" value="<?php if(isset($_POST['confSenha'])) echo $_POST['confSenha']; ?>">
+            <label for="Conf_senha">Confirmar Senha: </label>
+            <input required placeholder="Minimo 6 digitos" type="password" id="Conf_senha" name="Conf_senha" value="<?php if(isset($_POST['Conf_senha'])) echo $_POST['Conf_senha']; ?>">
             <span id="ver_conf_senha" onclick="ver_conf_senha()">👁️</span>
         </p>
-        <a href="paginas/usuarios/usuario_logout.php">Ir para login</a>
+        <a href="../../index.php">Ir para login</a>
         <button type="submit">Salvar</button>
     </form>
 </body>

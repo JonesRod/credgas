@@ -8,7 +8,7 @@
     if(isset($_SESSION['usuario'])){
         $usuario = $_SESSION['usuario'];
         $id = $_SESSION['usuario'];
-        $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
+        $sql_query = $mysqli->query(query: "SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
         $usuario = $sql_query->fetch_assoc(); 
 
     } else {
