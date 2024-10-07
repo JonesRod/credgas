@@ -12,17 +12,23 @@ header {
     color: white;
     padding: 20px 0;
 }
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo-img {
+    width: 150px; /* Tamanho da imagem */
+    height: auto;
+    margin-right: 15px; /* Espaço entre a logo e o texto */
+    border-radius: 50%;
+}
 
 .container {
     width: 95%;
     margin: 0 auto;
 }
 
-.logo {
-    display: inline-block;
-    font-size: 30px;
-    font-weight: bold;
-}
 /* Estilos da área de usuário */
 .user-area {
     display: flex;

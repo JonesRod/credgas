@@ -18,8 +18,23 @@
         header(header: "Location: ../../../../index.php");  
         exit(); // Importante adicionar exit() após o redirecionamento
     }
+    $id_conf = '1';
+    $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id_conf'") or die($mysqli->error);
+    $dadosEscolhido = $dados->fetch_assoc();
 
-?>
+    //$logo = $dadosEscolhido['logo'];
+    if(isset($dadosEscolhido['logo'])) {
+        $logo = $dadosEscolhido['logo'];
+        
+        if($logo == ''){
+            $logo = '../arquivos_fixos/avatar_icone.jpg';
+        }else{
+            $logo = '../arquivos_fixos/'. $logo;
+            //echo $logo;
+        }
+    }
+
+?> 
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -36,7 +51,7 @@
     <!-- Header -->
     <header>
         <div class="container">
-            <div class="logo">Minha Loja</div>
+            <div class="logo"></div>
             <div class="user-area">
                 <span>Bem-vindo, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
                 <i class="fas fa-bell"></i> <!-- Ícone de Notificação -->
@@ -52,6 +67,7 @@
                     </ul>
                 </div>
             </div>
+            <img src="<?php if(isset($logo)) echo $logo; ?>" alt="" class="logo-img"> <!-- Adicionando a imagem da logo -->
         </div>
     </header>
 
