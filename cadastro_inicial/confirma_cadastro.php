@@ -27,6 +27,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>Solicitação</title>
     <?php
+        // Código PHP para processamento do formulário
         $erro = false;
         if(isset($_POST['email'])) {
             //include('upload.php');
@@ -189,6 +190,62 @@
             exit;
         }
     ?>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Cor de fundo suave */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Ocupa toda a altura da tela */
+        }
+
+        #msg {
+            background-color: #fff; /* Fundo branco para o bloco de mensagens */
+            border-radius: 8px; /* Cantos arredondados */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para profundidade */
+            padding: 20px;
+            text-align: center; /* Centraliza o texto */
+            width: 90%;
+            max-width: 500px; /* Largura máxima */
+        }
+
+        #msg span {
+            display: block; /* Cada mensagem em uma nova linha */
+            margin: 10px 0; /* Espaçamento entre as mensagens */
+            font-size: 1.2rem; /* Tamanho da fonte */
+        }
+
+        /* Estilos para mensagens de erro e sucesso */
+        #msg span:nth-child(1) {
+            color: #28a745; /* Verde para sucesso */
+            font-weight: bold;
+        }
+
+        #msg span:nth-child(2), 
+        #msg span:nth-child(3) {
+            color: #dc3545; /* Vermelho para erro */
+            font-weight: bold;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px; /* Reduz o preenchimento em telas menores */
+            }
+
+            #msg {
+                width: 100%; /* Largura total em telas pequenas */
+                padding: 15px; /* Reduz o preenchimento do bloco de mensagens */
+            }
+
+            #msg span {
+                font-size: 1rem; /* Tamanho da fonte menor em telas pequenas */
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="msg">

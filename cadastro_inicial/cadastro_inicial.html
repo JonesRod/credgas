@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="localizador.js" defer></script> <!-- Inclui o arquivo JS -->
+    <script src="localizador.js" defer></script>
     <script src="verifica_dados.js"></script>
     <style>
         body {
@@ -12,98 +12,116 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f9f9f9; /* Cor de fundo suave */
         }
-    
+
         h2 {
-            text-align: center;
             font-size: 2rem;
             margin-bottom: 20px;
+            color: #333; /* Cor do texto */
         }
+
         #msgAlerta {
-            color: red; /* Define a cor vermelha */
-            font-weight: bold; /* Define o texto em negrito */
+            color: red;
+            font-weight: bold;
         }
+
         form {
-            text-align: center;
             width: 90%;
             max-width: 600px;
             margin: 0 auto;
-            padding: 10px;
-        }
-    
-        fieldset {
-            text-align: center;
-            border: 1px solid black;
-            margin: 10px auto;
             padding: 20px;
-            width: 100%;
-            max-width: 600px;
-            box-sizing: border-box;
+            background: #fff; /* Fundo branco para o formulário */
+            border-radius: 8px; /* Bordas arredondadas */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
         }
-    
-        select {
-            width: 100%;
-            height: 35px;
-            border-radius: 3px;
-            border: 1px solid black;
-            margin-bottom: 10px;
-            padding: 5px;
+
+        fieldset {
+            border: none; /* Remover borda padrão */
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f3f3f3; /* Fundo do fieldset */
+            border-radius: 8px; /* Bordas arredondadas */
         }
-    
-        .dados input,
-        .endereco input,
-        .contatos input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid black;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-    
-        .dados label,
-        .endereco label,
-        .contatos label {
-            display: inline-block;
-            width: 100%;
-            max-width: 100%;
-            text-align: left;
-            margin-bottom: 5px;
+
+        legend {
             font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
         }
-    
-        textarea {
+
+        select, input[type="text"], input[type="email"], input[type="password"], textarea {
             width: 100%;
             padding: 10px;
-            margin-top: 10px;
-            border: 1px solid black;
+            margin-bottom: 10px;
+            border: 1px solid #ccc; /* Borda suave */
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 1rem; /* Tamanho da fonte */
         }
-    
+
+        input[type="submit"] {
+            background-color: #28a745; /* Cor de fundo do botão */
+            color: white; /* Cor do texto do botão */
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer; /* Cursor de mão */
+            font-size: 1rem; /* Tamanho da fonte do botão */
+            transition: background-color 0.3s; /* Transição suave */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #218838; /* Cor do botão ao passar o mouse */
+        }
+
+        input[type="submit"]:disabled {
+            background-color: #cccccc; /* Cor cinza quando desabilitado */
+            color: #666666; /* Cor do texto cinza escuro */
+            cursor: not-allowed; /* Cursor de não permitido */
+        }
+
+        .termos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .termos input {
+            margin-right: 10px; /* Espaço entre checkbox e texto */
+        }
+
         /* Responsividade para tablets */
         @media (min-width: 600px) {
             form {
                 width: 80%;
             }
-    
-            fieldset {
-                width: 80%;
-            }
         }
-    
+
         /* Responsividade para telas maiores (desktops) */
         @media (min-width: 1024px) {
             form {
                 width: 60%;
             }
-    
-            fieldset {
-                width: 60%;
-            }
+        }
+
+        /* Estilos adicionais para melhorar a estética geral */
+        p {
+            color: #666; /* Texto cinza */
+        }
+        
+        a {
+            color: #007bff; /* Cor do link */
+            text-decoration: none; /* Remover sublinhado */
+            font-weight: bold; /* Tornar o texto em negrito */
+        }
+
+        a:hover {
+            text-decoration: underline; /* Sublinhado ao passar o mouse */
         }
     </style>
-    
+
     <title>Cadastre-se</title>
 </head>
 <body>
@@ -111,100 +129,95 @@
     <p>Torne-se mais um de nossos Parceiros.<a href="cadastro_parceiro.php"> Me cadastrar!</a></p>
     <form action="confirma_cadastro.php" method="POST" enctype="multipart/form-data" autocomplete="on" onsubmit="return validateForm()">
 
-        <!--<img id="preview" style="max-width: 300px;" src= ""><br>-->
         <span id="msgAlerta"></span><br>
-        <!--<input required type="file" id="imageInput" name="imageInput" accept=".png, .jpg, .jpeg" onchange="handleImageUpload(event)">
-        <br>-->
         <fieldset class="dados">
-            <!--<legend>Dados Pessoais</legend>-->
+            <legend>Dados Pessoais</legend>
             <p>
-                <label for="primeiro_nome">Primeiro Nome: </label><br>
-                <input required name="primeiro_nome" id="primeiro_nome" type="text" minlength="3" maxlength="15" size=""><br>
+                <label for="primeiro_nome">Primeiro Nome:</label>
+                <input required name="primeiro_nome" id="primeiro_nome" type="text" minlength="3" maxlength="15">
             </p>
             <p>
-                <label for="cpf">CPF: </label><br>
-                <input required name="cpf" id="cpf" type="text" oninput="formatCPF(this)" onblur="verificaCpf()"><br>
+                <label for="cpf">CPF:</label>
+                <input required name="cpf" id="cpf" type="text" oninput="formatCPF(this)" onblur="verificaCpf()">
             </p>
             <p>
-                <label for="nascimento">Data de Nascimento: </label><br>
-                <input required name="nascimento" id="nascimento" type="text" placeholder="00/00/0000" oninput="formatarData(this)" onblur="verificaData()"><br>
+                <label for="nascimento">Data de Nascimento:</label>
+                <input required name="nascimento" id="nascimento" type="text" placeholder="00/00/0000" oninput="formatarData(this)" onblur="verificaData()">
             </p>
-
         </fieldset>
         <fieldset class="contatos">
             <legend>Contatos</legend>
             <p>
-                <label for="celular1">Celular 1: </label><br>
-                <input required value="" name="celular1" id="celular1" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular1(this)" onblur="verificaCelular1()"><br>
+                <label for="celular1">Celular 1:</label>
+                <input required name="celular1" id="celular1" type="text" placeholder="(00) 00000-0000" oninput="formatarCelular1(this)" onblur="verificaCelular1()">
             </p>
             <p>
-                <label for="celular2">Celular 2: Opcional </label><br>
-                <input value="" name="celular2" id="celular2" type="text" placeholder="(00) 00000-0000" size="" oninput="formatarCelular2(this)" onblur="verificaCelular2()"><br>
+                <label for="celular2">Celular 2: Opcional</label>
+                <input name="celular2" id="celular2" type="text" placeholder="(00) 00000-0000" oninput="formatarCelular2(this)" onblur="verificaCelular2()">
             </p>
             <p>
-                <label for="email">E-mail:</label><br>
-                <input required value="" name="email" id="email" type="email"><br>
+                <label for="email">E-mail:</label>
+                <input required name="email" id="email" type="email">
             </p>
             <p>
-                <label for="senha">Senha:</label><br>
-                <input required value="" name="senha" id="senha" placeholder="Minímo 6 digitos" type="password"><br>
+                <label for="senha">Senha:</label>
+                <input required name="senha" id="senha" placeholder="Mínimo 6 dígitos" type="password">
             </p>
         </fieldset>
         <fieldset class="endereco">
             <legend>Região</legend>
             <p id="status-localizacao">Localização: Ativa</p>
             <p>
-                <label for="cep">CEP: </label><br>
-                <input required value="" name="cep" id="cep" type="text" maxlength="9" oninput="formatarCEP(this)" onblur="buscarCidadeUF()"><br>
+                <label for="cep">CEP:</label>
+                <input required name="cep" id="cep" type="text" maxlength="9" oninput="formatarCEP(this)" onblur="buscarCidadeUF()">
             </p>
-            <p> 
-                <label for="uf">Estado: </label><br>
+            <p>
+                <label for="uf">Estado:</label>
                 <select required name="uf" id="uf">
-                <option value="Escolha">---Escolha---</option>
-                <option value="AC">Acre</option>
-                <option value="AL">Alagoas</option>
-                <option value="AP">Amapá</option>
-                <option value="AM">Amazonas</option>
-                <option value="BA">Bahia</option>
-                <option value="CE">Ceará</option>
-                <option value="DF">Distrito Federal</option>
-                <option value="ES">Espírito Santo</option>
-                <option value="GO">Goiás</option>
-                <option value="MA">Maranhão</option>
-                <option value="MS">Mato Grosso do Sul</option>
-                <option value="MT">Mato Grosso</option>
-                <option value="MG">Minas Gerais</option>
-                <option value="PA">Pará</option>
-                <option value="PB">Paraíba</option>
-                <option value="PR">Paraná</option>
-                <option value="PE">Pernambuco</option>
-                <option value="PI">Piauí</option>
-                <option value="RJ">Rio de Janeiro</option>
-                <option value="RN">Rio Grande do Norte</option>
-                <option value="RS">Rio Grande do Sul</option>
-                <option value="RO">Rondônia</option>
-                <option value="RR">Roraima</option>
-                <option value="SC">Santa Catarina</option>
-                <option value="SP">São Paulo</option>
-                <option value="SE">Sergipe</option>
-                <option value="TO">Tocantins</option>
-                <!-- Adicione mais opções para outros estados aqui -->
+                    <option value="Escolha">---Escolha---</option>
+                    <option value="AC">Acre</option>
+                    <option value="AL">Alagoas</option>
+                    <option value="AP">Amapá</option>
+                    <option value="AM">Amazonas</option>
+                    <option value="BA">Bahia</option>
+                    <option value="CE">Ceará</option>
+                    <option value="DF">Distrito Federal</option>
+                    <option value="ES">Espírito Santo</option>
+                    <option value="GO">Goiás</option>
+                    <option value="MA">Maranhão</option>
+                    <option value="MS">Mato Grosso do Sul</option>
+                    <option value="MT">Mato Grosso</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="PA">Pará</option>
+                    <option value="PB">Paraíba</option>
+                    <option value="PR">Paraná</option>
+                    <option value="PE">Pernambuco</option>
+                    <option value="PI">Piauí</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="RN">Rio Grande do Norte</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                    <option value="RO">Rondônia</option>
+                    <option value="RR">Roraima</option>
+                    <option value="SC">Santa Catarina</option>
+                    <option value="SP">São Paulo</option>
+                    <option value="SE">Sergipe</option>
+                    <option value="TO">Tocantins</option>
                 </select>
             </p>
             <p>
-                <label for="cidade">Cidade: </label><br>
-                <input required value="" name="cidade" id="cidade" type="text"><br>
+                <label for="cidade">Cidade:</label>
+                <input required name="cidade" id="cidade" type="text">
             </p>
-
         </fieldset>
+        <div class="termos">
+            <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>
+            <label for="aceito">Eu aceito os <a href="termos.php" target="_blank">Termos.</a></label>
+        </div>
+        <span id="msgAlerta2"></span>
         <p>
-            <input placeholder="Search" type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>Eu aceito os <a href="termos.php" target="_blank">Termos.</a><br>
-            <span id="msgAlerta2"></span><br>
             <a href="../index.php">Voltar</a>
-            <input id="solicitar" disabled ="false" type="submit" value="solicitar">
+            <input id="solicitar" disabled type="submit" value="Solicitar">
         </p>
-        <script src="verifica_dados.js"></script>
     </form>
-
 </body>
 </html>
