@@ -94,6 +94,15 @@ header {
     cursor: pointer;
 }
 
+.user-area i {
+    color: white; /* Cor padrão do ícone */
+    transition: color 0.3s ease; /* Transição suave ao mudar a cor */
+}
+
+.user-area i:hover {
+    color: #f8c407; /* Cor verde escuro ao passar o mouse */
+}
+
 .sub-nav {
     background-color: #444;
     padding: 10px 0;
@@ -111,10 +120,18 @@ header {
 }
 
 .sub-nav div:hover {
-    background-color: #555;
+    background-color: #fa9508;
     border-radius: 10px;
 }
 
+.sub-nav div a {
+    color: #006400; /* Verde escuro */
+    text-decoration: none; /* Remove o sublinhado */
+}
+
+.sub-nav div a:hover {
+    color: #004d00; /* Verde escuro mais intenso ao passar o mouse */
+}
 /* Cards de Produtos */
 .products {
     display: grid;

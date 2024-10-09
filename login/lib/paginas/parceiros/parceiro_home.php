@@ -11,7 +11,7 @@
         $id = $_SESSION['id'];
 
         // Consulta para buscar o parceiro
-        $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
+        $sql_query = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
         $parceiro = $sql_query->fetch_assoc();
 
         // Verifica e ajusta a logo
@@ -31,7 +31,8 @@
     }
 
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query("SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
+    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -39,7 +40,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $parceiro['nomeFantasia']; ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"><!--icones notificação e perfil da loja-->
     <link rel="stylesheet" href="parceiro_home.css">
 
 </head>
@@ -71,12 +72,29 @@
 
     <!-- Navegação -->
     <div class="sub-nav">
-        <div><a href="#catalogo">Catálogo de Produtos</a></div>
-        <div><a href="#promocoes">Minhas Promoções</a></div>
+        <div><a href="#catalogo">Catálogo</a></div>
+        <div><a href="#promocoes">Promoções</a></div>
         <div><a href="#mais_vendidos">Mais Vendidos</a></div>
         <div><a href="#frete_gratis">Frete Grátis</a></div>
-    </div>
 
+    </div>
+        <?php
+            //Verifica se existem produtos cadastrados
+            if ($produtos_catalogo->num_rows > 0) {
+                // Se houver produtos, exiba o catálogo
+                echo '<div class="sub-nav">';
+                echo '<div><a href="#catalogo">Catálogo</a></div>';
+                echo '<div><a href="#promocoes">Promoções</a></div>';
+                echo '<div><a href="#mais_vendidos">Mais Vendidos</a></div>';
+                echo '<div><a href="#frete_gratis">Frete Grátis</a></div>';
+                echo '</div>';
+            } else {
+                // Se não houver produtos, exiba a mensagem e o botão
+                echo '<div class="sub-nav">';
+                echo '<div><a href="#incluir_produto" class="button">Inclua seu primeiro produto</a></div>';
+                echo '</div>';
+            }
+        ?>
     <!-- Footer -->
     <footer>
         <p>&copy; 2024 <?php echo $parceiro['nomeFantasia']; ?> - Todos os direitos reservados</p>

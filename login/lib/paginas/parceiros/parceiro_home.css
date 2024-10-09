@@ -92,6 +92,15 @@ header {
     margin-right: 10px;
 }
 
+.user-area i {
+    color: white; /* Cor padrão do ícone */
+    transition: color 0.3s ease; /* Transição suave ao mudar a cor */
+}
+
+.user-area i:hover {
+    color: #f9b703; /* Cor verde escuro ao passar o mouse */
+}
+
 .dropdown-menu li:hover {
     background-color: #f1f1f1;
 }
@@ -103,7 +112,7 @@ header {
 
 /* Navegação Horizontal (Sub-Navegação) */
 .sub-nav {
-    background-color: #444;
+    background-color: #fff;
     padding: 10px 0;
     display: flex;
     justify-content: center; /* Centraliza os itens horizontalmente */
@@ -114,12 +123,35 @@ header {
     padding: 10px 20px;
     cursor: pointer;
     font-weight: bold;
-    color: white;
+    color: rgb(26, 66, 3);
 }
 
 .sub-nav div:hover {
-    background-color: #555;
+    background-color: #fe9800;
     border-radius: 10px;
+}
+
+.sub-nav div a {
+    color: #006400; /* Verde escuro */
+    text-decoration: none; /* Remove o sublinhado */
+}
+
+.sub-nav div a:hover {
+    color: #004d00; /* Verde escuro mais intenso ao passar o mouse */
+}
+/* se não existir Produtos, mostrar botão*/
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Verde escuro */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.button:hover {
+    background-color: #fad102; /* Verde mais claro ao passar o mouse */
 }
 
 /* Cards de Produtos */
@@ -168,18 +200,6 @@ header {
     background-color: #555;
 }
 
-/* Parceiros */
-.parceiros {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.parceiros img {
-    width: 150px;
-    height: auto;
-    margin: 0 20px;
-}
-
 /* Footer */
 footer {
     text-align: center;
@@ -191,4 +211,60 @@ footer {
 
 footer .contato {
     margin: 10px 0;
+}
+
+/* RESPONSIVIDADE */
+
+/* Para telas menores que 1024px */
+@media (max-width: 1024px) {
+    .logo-img {
+        width: 120px;
+    }
+    .logo-text {
+        font-size: 22px;
+    }
+    .sub-nav div {
+        font-size: 18px;
+        padding: 8px 15px;
+    }
+    .products {
+        grid-template-columns: repeat(4, 1fr); /* 4 colunas em tablets */
+    }
+}
+
+/* Para telas menores que 768px */
+@media (max-width: 768px) {
+    .logo-img {
+        width: 100px;
+    }
+    .logo-text {
+        font-size: 18px;
+    }
+    .sub-nav div {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+    .products {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas em tablets menores e celulares */
+    }
+}
+
+/* Para telas menores que 480px (smartphones) */
+@media (max-width: 480px) {
+    .logo-img {
+        width: 80px;
+    }
+    .logo-text {
+        font-size: 16px;
+    }
+    .user-area i {
+        font-size: 18px; /* Reduz o tamanho dos ícones */
+    }
+    .sub-nav div {
+        font-size: 14px;
+        padding: 5px 8px;
+    }
+    .products {
+        grid-template-columns: 1fr; /* 1 coluna em smartphones */
+    }
 }
