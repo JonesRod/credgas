@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    /*align-items: center;*/
+    height: 170vh;
+    background-color: #f0f0f0;
+}
+
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px; /* Limita a largura do formulário */
+}
+#msgAlerta {
+    color: red; /* Define a cor vermelha */
+    font-weight: bold; /* Define o texto em negrito */
+}
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    transform: scale(1.2); /* Aumenta o tamanho do checkbox em 20% */
+    /*transform-origin: center; /* Mantém o checkbox centralizado ao redimensionar */
+    margin-bottom: 12px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-container a {
+    color: #007BFF;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.checkbox-container a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+/* Estilo para o botão desabilitado */
+button:disabled {
+    background-color: #ccc; /* Cor do botão desabilitado */
+    cursor: not-allowed; /* Indica que o botão não pode ser clicado */
+    opacity: 0.5; /* Torna o botão fosco */
+    pointer-events: none; /* Remove os efeitos de hover e clique */
+}
+select {
+    width: 100%;
+    height: 35px;
+    border-radius: 3px;
+    border: 1px solid black;
+    margin-bottom: 10px;
+    padding: 5px;
+}
