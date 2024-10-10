@@ -7,15 +7,15 @@
     
     if (isset($_SESSION['cliente'])) {
         // Redireciona para a página do cliente
-        header("Location: login/lib/paginas/clientes/cliente_home.php");
+        header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
         exit();
     } elseif (isset($_SESSION['admin'])) {
         // Redireciona para a página do administrador
-        header("Location: login/lib/paginas/administrativo/admin_home.php");
+        header(header: "Location: login/lib/paginas/administrativo/admin_home.php");
         exit();
     } elseif (isset($_SESSION['parceiro'])) {
         // Redireciona para a página do parceiro
-        header("Location: login/lib/paginas/parceiros/parceiro_home.php");
+        header(header: "Location: login/lib/paginas/parceiros/parceiro_home.php");
         exit();
     }
     
@@ -43,18 +43,19 @@
             if (password_verify(password: $senha, hash: $cliente['senha_login'])) {
                 // Verifica se o usuário é administrador
 
-                if ($cliente['admin'] == 'admin') {
+                if ($cliente['admin'] == 1) {
                     $_SESSION['id'] = $cliente['id'];
                     $_SESSION['usuario'] = $cliente['primeiro_nome'];
                     $_SESSION['admin'] = $cliente['admin'];
-                    
+
                     // Redireciona para a página de tipo de login
                     unset($_POST);
-                    header("Location: login/lib/tipo_login.php");
+                    header(header: "Location: login/lib/tipo_login.php");
                     exit();
                 } else {
-                    //echo('oii');
-                    //die();
+                    var_dump( $cliente['id']);
+
+                    die();
                     // Caso o usuário não seja admin, é cliente
                     $_SESSION['id'] = $cliente['id'];
                     $_SESSION['cliente_info'] = $cliente; // Armazena mais informações do cliente, se necessário
@@ -83,7 +84,7 @@
                     $_SESSION['usuario'] = $cliente['nomeFantasia'];
                     
                     unset($_POST);
-                    header("Location: login/lib/paginas/parceiros/parceiro_home.php");
+                    header(header: "Location: login/lib/paginas/parceiros/parceiro_home.php");
                     exit();
                     
                 } else {
@@ -96,104 +97,6 @@
             }
 
         }
-        // Verifica se existem registros na tabela 'socios'
-        /*if ($registros->num_rows == 0) {
-            header(header: "Location: login/lib/cadastro_cliente.php");
-            exit();
-        }
-
-
-        
-
-        /*if(isset($_SESSION['usuario'])){
-            $usuario = $_SESSION['usuario'];
-            $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);
-            $mysqli->query(query: "INSERT INTO senha (usuario, senha, cpf) VALUES('$usuario','$senha','$cpf')");
-
-        }
-        /*if(strlen(string: $_POST['usuario']) == 0 ) {
-            $msg= true;
-            $msg = "Preencha o campo Usuário.";
-            //echo $msg;
-        } else if(strlen(string: $_POST['senha']) == 0 ) {
-            $msg= true;
-            $msg = "Preencha sua senha.";
-            //echo $msg;
-        } else {
-
-            $verifica = "SELECT * FROM meus_clientes WHERE usuario = '$usuario' LIMIT 1";
-            $sql_verifica =$mysqli->query(query: $verifica) or die("Falha na execução do código SQL: " . $mysqli->error);
-            $cliente = $sql_verifica->fetch_assoc();
-            $quantidade = $sql_verifica->num_rows;//retorna a quantidade encontrado
-
-            /*if(($quantidade ) == 1) {
-
-                if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
-
-                    $admin = $cliente['admin'];
-
-                    if($admin == 1){
-                        $_SESSION['cliente'] = $cliente['id'];
-                        $_SESSION['admin'] = $admin;
-                        //$msg = "1";
-                        unset($_POST);
-                        session_start(); 
-                        header(header: "Location: login/lib/tipo_login.php");
-                    }else if($admin != 1){
-                        $_SESSION['cliente'] = $cliente['id'];
-                        $_SESSION['admin'] = $admin;
-                        //$msg = "2";
-                        unset($_POST);
-                        session_start(); 
-                        header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
-                    }    
-                }else{
-                    $msg= true;
-                    $msg = "Usúario ou Senha estão inválidos!1";    
-                    //echo $msg;
-                }
-            }else{
-
-                /*$sql_cpf = "SELECT * FROM meus_clientes WHERE cpf = '$cpf' LIMIT 1";
-                $sql_query =$mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
-                $cliente = $sql_query->fetch_assoc();
-                $quantidade_cpf = $sql_query->num_rows;//retorna a quantidade encontrado
-        
-                if(($quantidade_cpf) == 1) {
-                    var_dump($senha);
-                    if(password_verify(password: $senha, hash: $cliente['senha_login'])) {
-        
-                        $admin = $cliente['admin'];
-        
-                        if($admin == 1){
-                            $_SESSION['cliente'] = $cliente['id'];
-                            $_SESSION['admin'] = $admin;
-                            //$msg = "1";
-                            unset($_POST);
-                            session_start(); 
-                            header(header: "Location: login/lib/tipo_login.php");
-                        }else if($admin != 1){
-                            $_SESSION['cliente'] = $cliente['id'];
-                            $_SESSION['admin'] = $admin;
-                            //$msg = "2";
-                            unset($_POST);
-                            session_start(); 
-                            header(header: "Location: login/lib/paginas/clientes/cliente_home.php");
-                        }    
-                    }else{
-                        $msg= true;
-                        $msg = "Usúario ou Senha estão inválidos!2";   
-                        //$mysqli->close(); 
-                        //echo $msg;
-                    }
-                }else{
-                    $msg= true;
-                    $msg = "O Usúario informado não esta correto ou não está cadastrado!";
-                    //$mysqli->close();
-                    //echo $msg;
-                }*/
-            //}*/
-        //}*/
     }
     $id = '1';
     $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->error);

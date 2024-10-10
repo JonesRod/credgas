@@ -1,7 +1,14 @@
+// Função para alternar a exibição do menu lateral em telas pequenas
 function toggleMenu() {
-    $('#imenu').toggleClass('aberto');
+    var menu = document.getElementById('menu-lateral');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        menu.style.display = 'block';
+    }
 }
-function abrirNaDiv(link) {
-    var div = document.getElementById('iconteudo');
-    div.innerHTML = '<object type="text/html" data="' + link + '" style="width:100%; height:100%;">';
+
+// Função para adicionar um novo método de pagamento (exemplo simples)
+function adicionarMetodoPagamento() {
+    alert('Função para adicionar um método de pagamento');
 }

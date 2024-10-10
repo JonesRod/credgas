@@ -107,3 +107,11 @@ button {
     cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
     width: auto; /* Largura do botão ajusta automaticamente */
 }
+.file-preview img {
+    display: block;
+    margin: 10px auto; /* Centraliza a imagem no preview */
+}
+
+.file-preview p {
+    text-align: center; /* Centraliza o nome do arquivo no preview */
+}

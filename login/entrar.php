@@ -1,181 +1,95 @@
 <?php
-    /*include('login/lib/conexao.php');
-    //echo 'oi';
-    if(isset($_SESSION)){
-
-        if(isset($_SESSION['usuario'])){
-
-            if (isset($_POST["tipoLogin"])) {
-                // echo "1";
-                $usuario = $_SESSION['usuario'];
-                $valorSelecionado = $_POST["tipoLogin"];// Obter o valor do input radio
-                $admin = $valorSelecionado;
-
-                if($admin != 1){
-                    $id = $_SESSION['usuario'];
-                    $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
-                    $usuario = $sql_query->fetch_assoc();
-
-                    $usuario = $_SESSION['usuario'];
-                    $admin = $_SESSION['admin'];
-                    //echo "1";
-                    header("Location: login/lib/paginas/usuarios/usuario_home.php");    
-                }else{
-                    $id = $_SESSION['usuario'];
-                    $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
-                    $usuario = $sql_query->fetch_assoc();
-
-                    $usuario = $_SESSION['usuario'];
-                    $admin = $_SESSION['admin'];
-                    $_SESSION['usuario'];
-                    $_SESSION['admin'];  
-                    header("Location: login/lib/paginas/administrativo/admin_home.php");       
-                }
-            }  
-
-        }else{
-            //echo "5";
-            session_unset();
-            session_destroy(); 
-            header("Location: index.php");  
-        }
-    
-    }
-    if(!isset($_SESSION)){
-        session_start(); 
-    }*/
-
-    /*$id = $_SESSION['usuario'];
-    $sql_query = $mysqli->query("SELECT * FROM socios WHERE id = '$id'") or die($mysqli->$error);
-    $usuario = $sql_query->fetch_assoc();*/
-//--------------------
+// Incluindo o arquivo de conexão
 include("lib/conexao.php");
 
-if(isset($_SESSION)) {
-    
-    $usuario = $_SESSION['usuario'];
-    $admin = $_SESSION['admin'];
-
-    if($admin == 1 ){
-        //echo "2";  
-       header(header: "Location: lib/paginas/administrativo/admin_home.php");       
-    }else{
-        //echo "3";  
-        header(header: "Location: lib/paginas/usuarios/usuario_home.php");  
-    }
-}else{
-    //echo "4"; 
-    session_start(); 
+// Iniciando a sessão, caso ainda não tenha sido iniciada
+if (!isset($_SESSION)) {
+    session_start();
 }
-    
-    $msg= false;
 
-    if(isset($_POST['email']) || isset($_POST['senha'])) {
-        //echo 'oii';
-        //var_dump($_POST);
-        //die();
-        $sql_primeiro_registro = "SELECT * FROM socios";
-        $registros = $mysqli->query(query: $sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->$error);
+$msg = false;
 
-        // Verifica se existem registros na tabela 'socios'
-        if ($registros->num_rows == 0) {
-            header(header: "Location: lib/cadastro_usuario.php");
-            exit();
-        }
+if (isset($_POST['email']) || isset($_POST['senha'])) {
+    // Captura do email e senha fornecidos pelo usuário
+    $email = $_POST['email'];
+    $senha = $_POST['senha'];
 
-        $email = $_POST['email'];//$mysqli->escape_string SERVE PARA PROTEGER O ACESSO 
-        $cpf = $_POST['email'];
-        $senha = $_POST['senha'];
-        
+    // Primeiro, verificamos se há algum registro na tabela 'socios'
+    $sql_primeiro_registro = "SELECT * FROM socios";
+    $registros = $mysqli->query($sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
 
-        //echo "oii";
-        if(isset($_SESSION['email'])){
-            $email = $_SESSION['email'];
-            $senha = password_hash(password: $_SESSION['senha'], algo: PASSWORD_DEFAULT);
-            $mysqli->query(query: "INSERT INTO senha (email, senha, cpf) VALUES('$email','$senha','$cpf')");
-        }
-        if(strlen(string: $_POST['email']) == 0 ) {
-            $msg= true;
-            $msg = "Preencha o campo Usuário.";
-            //echo $msg;
-        } else if(strlen(string: $_POST['senha']) == 0 ) {
-            $msg= true;
-            $msg = "Preencha sua senha.";
-            //echo $msg;
+    if ($registros->num_rows == 0) {
+        header("Location: lib/cadastro_usuario.php");
+        exit();
+    }
+
+    // Validação dos campos
+    if (strlen($_POST['email']) == 0) {
+        $msg = "Preencha o campo Usuário.";
+    } else if (strlen($_POST['senha']) == 0) {
+        $msg = "Preencha sua senha.";
+    } else {
+        // Consulta no banco de dados com base no email
+        $sql_code = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
+        $sql_query = $mysqli->query($sql_code) or die("Falha na execução do código SQL: " . $mysqli->error);
+        $usuario = $sql_query->fetch_assoc();
+        $quantidade = $sql_query->num_rows;
+
+        if ($quantidade == 1) {
+            // Verificação da senha usando password_verify
+            if (password_verify($senha, $usuario['senha'])) {
+                $admin = $usuario['admin'];
+
+                // Sessões são iniciadas com o ID do usuário e seu status de admin
+                $_SESSION['usuario'] = $usuario['id'];
+                $_SESSION['admin'] = $admin;
+
+                // Redirecionamentos baseados no tipo de usuário
+                if ($admin == 1) {
+                    header(header: "Location: lib/tipo_login.php");
+                    $_SESSION['usuario'] = $usuario['id'];
+                    $_SESSION['admin'] = $admin;
+                    die();
+                } else {
+                    header(header: "Location: lib/paginas/usuario_home.php");
+                    $_SESSION['usuario'] = $usuario['id'];
+                }
+                exit();
+            } else {
+                $msg = "Usuário ou senha estão inválidos!";
+            }
         } else {
-
-            $sql_code = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
-            $sql_query =$mysqli->query(query: $sql_code) or die("Falha na execução do código SQL: " . $mysqli->$error);
+            // Se o email não foi encontrado, verificar o CPF
+            $sql_cpf = "SELECT * FROM socios WHERE cpf = '$email' LIMIT 1"; // Email também é CPF
+            $sql_query = $mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
             $usuario = $sql_query->fetch_assoc();
-            $quantidade = $sql_query->num_rows;//retorna a quantidade encontrado
+            $quantidade_cpf = $sql_query->num_rows;
 
-            if(($quantidade ) == 1) {
-
-                if(password_verify(password: $senha, hash: $usuario['senha'])) {
-
+            if ($quantidade_cpf == 1) {
+                if (password_verify($senha, $usuario['senha'])) {
                     $admin = $usuario['admin'];
 
-                    if($admin == 1){
-                        $_SESSION['usuario'] = $usuario['id'];
-                        $_SESSION['admin'] = $admin;
-                        //$msg = "1";
-                        unset($_POST);
-                        //session_start(); 
-                        header(header: "Location: lib/tipo_login.php");
-                    }else if($admin != 1){
-                        $_SESSION['usuario'] = $usuario['id'];
-                        $_SESSION['admin'] = $admin;
-                        //$msg = "2";
-                        unset($_POST);
-                        //session_start(); 
-                        header(header: "Location: lib/paginas/usuario_home.php");
-                    }    
-                }else{
-                    $msg= true;
-                    $msg = "Usúario ou Senha estão inválidos!";    
-                    //echo $msg;
-                }
-            }else{
+                    $_SESSION['usuario'] = $usuario['id'];
+                    $_SESSION['admin'] = $admin;
 
-                $sql_cpf = "SELECT * FROM socios WHERE cpf = '$cpf' LIMIT 1";
-                $sql_query =$mysqli->query(query: $sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->$error);
-                $usuario = $sql_query->fetch_assoc();
-                $quantidade_cpf = $sql_query->num_rows;//retorna a quantidade encontrado
-        
-                if(($quantidade_cpf) == 1) {
-        
-                    if(password_verify(password: $senha, hash: $usuario['senha'])) {
-        
-                        $admin = $usuario['admin'];
-        
-                        if($admin == 1){
-                            $_SESSION['usuario'] = $usuario['id'];
-                            $_SESSION['admin'] = $admin;
-                            //$msg = "1";
-                            unset($_POST);
-                            //session_start(); 
-                            header(header: "Location: lib/tipo_login.php");
-                        }else if($admin != 1){
-                            $_SESSION['usuario'] = $usuario['id'];
-                            $_SESSION['admin'] = $admin;
-                            //$msg = "2";
-                            unset($_POST);
-                            //session_start(); 
-                            header(header: "Location: lib/paginas/usuario_home.php");
-                        }    
-                    }else{
-                        $msg= true;
-                        $msg = "Usúario ou Senha estão inválidos!";   
-                        $mysqli->close(); 
-                        //echo $msg;
+                    if ($admin == 1) {
+                        header("Location: lib/tipo_login.php");
+                    } else {
+                        header("Location: lib/paginas/usuario_home.php");
                     }
-                }else{
-                    $msg= true;
-                    $msg = "O Usúario informado não esta correto ou não está cadastrado!";
-                    $mysqli->close();
-                    //echo $msg;
+                    exit();
+                } else {
+                    $msg = "Usuário ou senha estão inválidos!";
                 }
+            } else {
+                $msg = "O usuário informado não está correto ou não está cadastrado!";
             }
         }
     }
+}
+
+// Caso exista alguma mensagem de erro, ela será exibida aqui
+if ($msg) {
+    echo "<p>$msg</p>";
+}
 ?>

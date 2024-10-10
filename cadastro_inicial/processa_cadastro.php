@@ -15,6 +15,7 @@
         $cnpj = $_POST['cnpj'];
         $inscricaoEstadual = $_POST['inscricaoEstadual'];
         $categoria = $_POST['categoria'];
+        $arquivoEmpresa =$_POST['arquivoEmpresa'];
         $telefoneComercial = $_POST['telefoneComercial'];
         $telefoneResponsavel = $_POST['telefoneResponsavel'];
         $email = $_POST['email'];
@@ -49,6 +50,7 @@
                 cnpj, 
                 inscricaoEstadual, 
                 categoria, 
+                anexo_comprovante,
                 telefoneComercial, 
                 telefoneResponsavel, 
                 email, 
@@ -65,6 +67,7 @@
                 '$cnpj', 
                 '$inscricaoEstadual', 
                 '$categoria', 
+                '$arquivoEmpresa',
                 '$telefoneComercial', 
                 '$telefoneResponsavel', 
                 '$email', 
@@ -79,12 +82,12 @@
 
                 if($deu_certo){
                     $msg = true;
-                    $msg = "Cadastro realizado com sucesso!";
+                    $msg = "Cadastro foi enviado para analiza!";
                     $msg1 = "";
                     $msg2 = "";
                     //echo $msg;
 
-                    enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
+                    enviar_email(destinatario: $email, assunto: "Cadastro foi enviado para analiza!", mensagemHTML: "
                     <h1>È um prazer ter você, " . $nomeFantasia . " de parceiria. Boas vendas!</h1>
                     <p><b>Faça login com seu CNPJ.</p>
                     <p><b>Senha: </b>$senha</p>
@@ -118,6 +121,62 @@
 
         //$conn->close();
     ?>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4; /* Cor de fundo suave */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Ocupa toda a altura da tela */
+        }
+
+        #msg {
+            background-color: #fff; /* Fundo branco para o bloco de mensagens */
+            border-radius: 8px; /* Cantos arredondados */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para profundidade */
+            padding: 20px;
+            text-align: center; /* Centraliza o texto */
+            width: 90%;
+            max-width: 500px; /* Largura máxima */
+        }
+
+        #msg span {
+            display: block; /* Cada mensagem em uma nova linha */
+            margin: 10px 0; /* Espaçamento entre as mensagens */
+            font-size: 1.2rem; /* Tamanho da fonte */
+        }
+
+        /* Estilos para mensagens de erro e sucesso */
+        #msg span:nth-child(1) {
+            color: #28a745; /* Verde para sucesso */
+            font-weight: bold;
+        }
+
+        #msg span:nth-child(2), 
+        #msg span:nth-child(3) {
+            color: #dc3545; /* Vermelho para erro */
+            font-weight: bold;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px; /* Reduz o preenchimento em telas menores */
+            }
+
+            #msg {
+                width: 100%; /* Largura total em telas pequenas */
+                padding: 15px; /* Reduz o preenchimento do bloco de mensagens */
+            }
+
+            #msg span {
+                font-size: 1rem; /* Tamanho da fonte menor em telas pequenas */
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="msg">

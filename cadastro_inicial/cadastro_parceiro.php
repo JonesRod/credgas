@@ -31,10 +31,17 @@
         <label for="categoria">Categoria:</label>
         <input type="text" id="categoria" name="categoria" required>
 
-        <label for="telefoneComercial">Telefone Comercial:</label>
+        <!-- Div para visualização da imagem ou do nome do arquivo -->
+        <div id="filePreview" class="file-preview"></div>
+        <div class="file-upload-container">
+            <label for="arquivoEmpresa">Comprovante de Inscrição e de Situação Cadastral (PDF ou PNG):</label>
+            <input type="file" id="arquivoEmpresa" name="arquivoEmpresa" accept=".pdf, .png" required>
+        </div>
+
+        <label for="telefoneComercial">Telefone Comercial:(WhatsApp)</label>
         <input type="text" id="telefoneComercial" name="telefoneComercial" required placeholder="(00) 00000-0000" oninput="formatarCelular(this)" onblur="verificaCelular1()">
 
-        <label for="telefoneResponsavel">Telefone do Responsável:</label>
+        <label for="telefoneResponsavel">Telefone do Responsável:(WhatsApp)</label>
         <input type="text" id="telefoneResponsavel" name="telefoneResponsavel" required placeholder="(00) 00000-0000" oninput="formatarCelular(this)" onblur="verificaCelular2()">
         
         <label for="email">E-mail:</label>

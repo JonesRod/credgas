@@ -26,8 +26,8 @@
     if(isset($dadosEscolhido['logo'])) {
         $logo = $dadosEscolhido['logo'];
         
-        if($logo == '0'){
-            $logo = '../arquivos_fixos/avatar_icone.jpg';
+        if($logo == ''){
+            $logo = '../arquivos_fixos/imagem_credgas.jpg';
         }else{
             $logo = '../arquivos_fixos/'. $logo;
             //echo $logo;

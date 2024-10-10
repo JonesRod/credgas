@@ -11,13 +11,13 @@
         $id = $_SESSION['id'];
 
         // Consulta para buscar o parceiro
-        $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
+        $sql_query = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
         $parceiro = $sql_query->fetch_assoc();
 
         // Verifica e ajusta a logo
         if(isset($parceiro['logo'])) {
             $logo = $parceiro['logo'];
-            if($logo === '0'){
+            if($logo === ''){
                 $logo = '../arquivos_fixos/icone_loja.jpg';
             } else {
                 $logo = '../arquivos_fixos/'. $logo;
@@ -31,12 +31,12 @@
     }
 
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query("SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
+    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
-    $promocoes = $mysqli->query("SELECT * FROM produtos WHERE promocao = 1 AND id_loja = '$id'");
-    $mais_vendidos = $mysqli->query("SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_loja = '$id'");
-    $frete_gratis = $mysqli->query("SELECT * FROM produtos WHERE frete_gratis = 1 AND id_loja = '$id'");
+    $promocoes = $mysqli->query(query: "SELECT * FROM produtos WHERE promocao = 1 AND id_loja = '$id'");
+    $mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_loja = '$id'");
+    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE frete_gratis = 1 AND id_loja = '$id'");
 ?>
 
 <!DOCTYPE html>

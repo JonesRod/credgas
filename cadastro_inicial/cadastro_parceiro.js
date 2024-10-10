@@ -205,3 +205,36 @@ function verificarAceite() {
         botaoEnviar.disabled = true;
     }
 }
+document.getElementById('arquivoEmpresa').addEventListener('change', function(event) {
+    const file = event.target.files[0]; // Obtém o arquivo selecionado
+    const previewDiv = document.getElementById('filePreview');
+    
+    if (file) {
+        const fileType = file.type;
+        const reader = new FileReader();
+
+        // Limpa qualquer visualização anterior
+        previewDiv.innerHTML = '';
+
+        // Verifica se o arquivo é uma imagem PNG
+        if (fileType === 'image/png') {
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Pré-visualização do arquivo';
+                img.style.maxWidth = '200px'; // Ajusta o tamanho da imagem
+                img.style.marginTop = '10px';
+                previewDiv.appendChild(img); // Exibe a imagem
+            };
+            reader.readAsDataURL(file); // Lê o arquivo como URL de dados
+        } else if (fileType === 'application/pdf') {
+            // Apenas exibe o nome do arquivo se for PDF
+            const fileName = document.createElement('p');
+            fileName.textContent = `Arquivo selecionado: ${file.name}`;
+            previewDiv.appendChild(fileName);
+        } else {
+            // Se for um arquivo inválido, exibe uma mensagem de erro
+            previewDiv.textContent = 'Formato de arquivo não suportado. Por favor, selecione um arquivo PDF ou PNG.';
+        }
+    }
+});

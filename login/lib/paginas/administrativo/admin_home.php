@@ -1,217 +1,178 @@
 <?php
     include('../../conexao.php');
-    //echo '1';
-    //die();
-    if(!isset($_SESSION)){
-        session_start(); 
-        //echo '2';
-        //die();
-        if($_SERVER["REQUEST_METHOD"] === "POST") {  
-            //echo '3';
-            if (isset($_POST["tipoLogin"])) {
-                //echo '4';
-                if(isset($_SESSION['usuario'])){ 
-                    //echo '5';
-                    // Obter o valor do input radio
-                    $usuario = $_SESSION['usuario'];
-                    $valorSelecionado = $_POST["tipoLogin"];
-                    $admin = $valorSelecionado;
 
-                    if($admin == 0){
-                        //echo '6';
-                        $_SESSION['usuario'];
-                        header(header: "Location: ../clientes/cliente_home.php");       
-                    }else if($admin == 1){
-                        //echo '7';
-                        $usuario = $_SESSION['usuario'];
-                        $admin = $_SESSION['admin'];
-                        $_SESSION['usuario'];
-                        $_SESSION['admin'];  
-                        
-                        $id = $_SESSION['usuario'];
-                        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
-                        $usuario = $sql_query->fetch_assoc();    
-                    }else{
-                        //echo '8';
-                        session_unset();
-                        session_destroy();
-                        header("Location: ../../../../index.php"); 
-                    }
-                }else{
-
-                    session_unset();
-                    session_destroy();
-                    header("Location: ../../../../index.php"); 
-                }    
-            }else{
-
-                session_unset();
-                session_destroy();
-                header("Location: ../../../../index.php"); 
-            }  
-        }else if(isset($_SESSION['usuario'])){    
-            //echo '3';
-            //die();
-            $usuario = $_SESSION['usuario'];
-            $admin = $_SESSION['admin'];
-            $_SESSION['usuario'];
-            $_SESSION['admin'];  
-    
-            $id = $_SESSION['usuario'];
-            $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
-            $usuario = $sql_query->fetch_assoc();    
-    
-        }else{
-
-            session_unset();
-            session_destroy();
-            header("Location: ../../../../index.php"); 
-        }
-    }else if(isset($_SESSION['usuario'])){    
-        //echo '3';
-        //die();
-        $usuario = $_SESSION['usuario'];
-        $admin = $_SESSION['admin'];
-        $_SESSION['usuario'];
-        $_SESSION['admin'];  
-
-        $id = $_SESSION['usuario'];
-        $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
-        $usuario = $sql_query->fetch_assoc();    
-
-    }else{
-        //echo '4';
-        //die();
-        if($_SERVER["REQUEST_METHOD"] === "POST") {  
-
-            if (isset($_POST["tipoLogin"])) {
-                // Obter o valor do input radio
-                $usuario = $_SESSION['usuario'];
-                $valorSelecionado = $_POST["tipoLogin"];
-                $admin = $valorSelecionado;
-
-                if($admin == 0){
-
-                    $_SESSION['usuario'];
-                    header("Location: ../cliente_home.php");       
-                }else if($admin == 1){
-                    $usuario = $_SESSION['usuario'];
-                    $admin = $_SESSION['admin'];
-                    $_SESSION['usuario'];
-                    $_SESSION['admin'];  
-
-                    $id = $_SESSION['usuario'];
-                    $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
-                    $usuario = $sql_query->fetch_assoc();    
-
-                }else{
-
-                    session_unset();
-                    session_destroy();
-                    header("Location: ../../../../index.php"); 
-                }
-            }  
-        }else{
-
-            session_unset();
-            session_destroy();
-            header("Location: ../../../../index.php"); 
-        }
+    if (!isset($_SESSION)) {
+        session_start();
     }
 
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        // Verifica se o tipo de login foi enviado
+        if (isset($_POST["tipoLogin"]) && isset($_SESSION['id'])) {
+            $id = $_SESSION['id'];
+            $usuario = $_SESSION['usuario'];
+            $valorSelecionado = $_POST["tipoLogin"];
+            $admin = $valorSelecionado;
+
+            // Se for usuário normal
+            if ($admin == 0) {
+                header(header: "Location: ../clientes/cliente_home.php");
+                exit();
+            } 
+            // Se for administrador
+            else if ($admin == 1) {
+                $sql_query = $mysqli->query(query: "SELECT * FROM administradores WHERE id_cliente = '$id'") or die($mysqli->error);
+                if ($sql_query->num_rows > 0) {
+                    $usuario = $sql_query->fetch_assoc();
+                    $_SESSION['usuario'] = $usuario;
+
+                    // Verifica se o administrador tem configuração
+                    $sql_config = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
+                    $config_admin = $sql_config->fetch_assoc();
+
+                    //$logo = $config_admin['logo'];
+                    if(isset($config_admin['logo'])) {
+                        $logo = $config_admin['logo'];
+                        if($logo == ''){
+                            $logo = '../arquivos_fixos/imagem_credgas.jpg';
+                        }else{
+                            $logo = '../arquivos_fixos/'. $logo;
+                        }
+                    }
+
+                    header(header: "Location: ../admin_home.php");
+                    exit();
+                } else {
+                    session_unset();
+                    session_destroy();
+                    header(header: "Location: ../../../../index.php");
+                    exit();
+                }
+            }
+        } else {
+            session_unset();
+            session_destroy();
+            header(header: "Location: ../../../../index.php");
+            exit();
+        }
+
+    // Se não for um POST, verifica se a sessão existe
+    }/*else if (isset($_SESSION['id'])) { 
+
+        $id = $_SESSION['id'];
+
+        // Consulta para buscar o usuário
+        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
+        $usuario = $sql_query->fetch_assoc();
+        $_SESSION['usuario'] = $usuario;
+
+        // Consulta para buscar a configuração do admin
+        $sql_config = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
+        $admin_conf = $sql_config->fetch_assoc();
+
+        // Configura a logo
+        $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
+        $config_admin = $dados->fetch_assoc();
+    
+        //$logo = $config_admin['logo'];
+        if(isset($config_admin['logo'])) {
+            $logo = $config_admin['logo'];
+            if($logo == ''){
+                $logo = '../arquivos_fixos/imagem_credgas.jpg';
+            }else{
+                $logo = '../arquivos_fixos/'. $logo;
+            }
+        }
+    } */
+    // Caso nenhuma sessão exista, redireciona para o login
+    else {
+        session_unset();
+        session_destroy();
+        header(header: "Location: ../../../../index.php");
+        exit();
+    }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Painel Administrativo</title>
     <link rel="stylesheet" href="admin_home.css">
-    <script>
-        //atualiza a pagian a cada 10 min
-        setTimeout(function() {
-            location.reload();
-        }, 1000000);
-        
-        // Função para carregar o conteúdo na div
-        function abrirNaDiv(pagina) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("iconteudo").innerHTML = this.responseText;
-                }
-            };
-            xhttp.open("GET", pagina, true);
-            xhttp.send();
-        }
-
-        // Carregar a página de início ao carregar a página
-        window.onload = function() {
-            abrirNaDiv('paginas_div/inicio.php');
-        }
-    </script>
-    <title>Tela Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div id="idivMenu">
-        <div id="imenuBtn" onclick="toggleMenu()">
-            <div class="iconeMenu"></div>
-            <div class="iconeMenu"></div>
-            <div class="iconeMenu"></div>
-        </div> 
-        <div id="iusuario"> 
-            <a> Olá, <?php echo $usuario['apelido']; ?></a> 
-        </div> 
-    </div>
-    <div class="titulo">
-        <div class="menu" id="imenu">
-            <ul id="ilista" class="lista">
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/inicio.php');toggleMenu()">Inicío</a></li>
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/admin_config.php');toggleMenu()">Configurações</a></li> 
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/integrarSocio.php');toggleMenu()">Integrar de Sócios</a></li>  
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/incluir_joia.php');toggleMenu()">Incluir Jóia</a></li> 
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/joia_para_receber.php');toggleMenu()">Jóia á Receber</a></li>
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/listaSocios.php');toggleMenu()">Lista de Sócios</a></li>              
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/GerarMensalidades.php');toggleMenu()">Gerar Mensalidades</a></li>
-                <li><a href="#" onclick="abrirNaDiv('paginas_div/CarregarMensalidades.php');toggleMenu()">Carregar Mensalidades</a></li>
-                <li><a href="admin_logout.php">Sair</a></li>
-            </ul> 
-        </div> 
-        <div id="ititulo">
-           <H1>Associação 40Ribas</H1> 
-        </div>      
-    </div>
-    <div class="container">
-        <div class="conteudo" id="iconteudo">
-            <!-- Conteúdo central (dados escolhidos) -->
+
+    <!-- Cabeçalho com logo e notificações -->
+    <header>
+        <div class="logo">
+            <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
         </div>
-    </div>
+        <h1>Painel Administrativo</h1>
+        <div class="menu-superior-direito">
+            <span>Olá, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-bars" onclick="toggleMenu()"></i>
+        </div>
+    </header>
+
+    <!-- Barra lateral/menu -->
+    <aside id="menu-lateral">
+        <ul>
+            <li><i class="fas fa-home"></i> Dashboard</li>
+            <li><i class="fas fa-users"></i> Solicitações de Cadastro</li>
+            <li><i class="fas fa-cog"></i> Configurações</li>
+            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+        </ul>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <main>
+        <div class="opcoes">
+            <div class="dashboard">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="solicitacoes">
+                <i class="fas fa-users"></i>
+                <span>Solicitações de Cadastro</span>
+            </div>
+        </div>
+
+        <div class="configuracoes-pagamento">
+            <h2>Configurações de Métodos de Pagamento</h2>
+            <p>Aqui você pode adicionar ou editar os métodos de pagamento aceitos na plataforma.</p>
+            <button onclick="adicionarMetodoPagamento()">Adicionar Método de Pagamento</button>
+        </div>
+
+        <div class="lista-aprovacao">
+            <h2>Solicitações de Cadastro para Aprovação</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>CNPJ</th>
+                        <th>Email</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-solicitacoes">
+                    <!-- Conteúdo gerado dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <footer class="menu-mobile">
+        <ul>
+            <li><i class="fas fa-home"></i> Dashboard</li>
+            <li><i class="fas fa-users"></i> Solicitações</li>
+            <li><i class="fas fa-cog"></i> Configurações</li>
+            <li><i class="fas fa-sign-out-alt"></i> Sair</li>
+        </ul>
+    </footer>
+
     <script src="admin_home.js"></script>
 </body>
-<footer>
-    <div class="container-rodape">
-        <div class="row">
-            <div class="col-md-6">
-                <h3>Links Úteis</h3>
-                <ul>
-                    <li><a href="#">Sobre Nós</a></li>
-                    <li><a href="#">Contato</a></li>
-                    <li><a href="#">Política de Privacidade</a></li>
-                </ul>
-            </div>
-            <div class="col-md-6">
-                <h3>Redes Sociais</h3>
-                <ul>
-                    <li><a href="#">Facebook</a></li>
-                    <li><a href="#">Twitter</a></li>
-                    <li><a href="#">Instagram</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="bottom-bar">
-        <p>&copy; 2023 <?php echo 'Associação 40 Ribas';?>. Todos os direitos reservados.</p>
-    </div>
-</footer>
-
 </html>
