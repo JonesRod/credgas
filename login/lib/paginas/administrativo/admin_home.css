@@ -213,7 +213,14 @@ main .tab.active {
     display: none;
     justify-content: space-around;
 }
-
+#menu-mobile i {
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: inherit; /* Herda a cor do item pai */
+}
+#menu-mobile i:hover {
+    background-color: #f0f0f0; /* Efeito de hover */
+    color: #007BFF; /* Cor ao passar o mouse */
+}
 .menu-mobile ul {
     list-style: none;  
     display: flex;
@@ -244,6 +251,80 @@ main .tab.active {
     cursor: pointer;
     transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
     color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Estilo para o ícone de notificações com o número de notificações */
+.notificacoes {
+    position: relative;
+    display: inline-block;
+}
+/* Efeito de movimento no ícone de notificação e no número de notificações ao passar o mouse */
+.notificacoes:hover i, 
+.notificacoes:hover .notificacao-count {
+    animation: moverNotificacao 0.5s ease-in-out forwards;
+}
+
+/* Definição da animação de movimento */
+@keyframes moverNotificacao {
+    0% {
+        transform: translateY(0); /* Posição inicial */
+    }
+    50% {
+        transform: translateY(-10px); /* Movimento para cima */
+    }
+    100% {
+        transform: translateY(0); /* Volta à posição original */
+    }
+}
+
+.notificacao-count {
+    position: absolute;
+    top: -8px;
+    right: -1px;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+/* Painel de notificações estilo semelhante ao menu lateral */
+#painel-notificacoes {
+    display: none;
+    position: fixed;
+    top: 40px; /* Ajuste conforme a altura do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    width: 300px;
+    height: 400px;
+    background-color: white;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    padding: 10px;
+}
+
+#painel-notificacoes h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#painel-notificacoes ul {
+    list-style: none;
+    padding: 0;
+}
+
+#painel-notificacoes li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+#painel-notificacoes li:hover {
+    background-color: #f0f0f0;
 }
 /* Responsividade para telas pequenas */
 @media (max-width: 768px) {

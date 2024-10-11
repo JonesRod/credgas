@@ -153,5 +153,3 @@ function atualizarContagemNotificacoes(contagem) {
 
 // Atualize a contagem de notificações no início (exemplo: 3 notificações)
 atualizarContagemNotificacoes(4);
-
-

@@ -106,84 +106,6 @@
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        
-        /* Estilo para o ícone de notificações com o número de notificações */
-.notificacoes {
-    position: relative;
-    display: inline-block;
-}
-/* Efeito de movimento no ícone de notificação e no número de notificações ao passar o mouse */
-.notificacoes:hover i, 
-.notificacoes:hover .notificacao-count {
-    animation: moverNotificacao 0.5s ease-in-out forwards;
-}
-
-/* Definição da animação de movimento */
-@keyframes moverNotificacao {
-    0% {
-        transform: translateY(0); /* Posição inicial */
-    }
-    50% {
-        transform: translateY(-10px); /* Movimento para cima */
-    }
-    100% {
-        transform: translateY(0); /* Volta à posição original */
-    }
-}
-
-.notificacao-count {
-    position: absolute;
-    top: -8px;
-    right: -1px;
-    background-color: red;
-    color: white;
-    padding: 5px;
-    border-radius: 50%;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-
-/* Painel de notificações estilo semelhante ao menu lateral */
-#painel-notificacoes {
-    display: none;
-    position: fixed;
-    top: 40px; /* Ajuste conforme a altura do cabeçalho */
-    right: 0;
-    width: 300px;
-    height: 400px;
-    background-color: white;
-    border: 2px solid #ffb300;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    padding: 10px;
-}
-
-#painel-notificacoes h2 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-}
-
-#painel-notificacoes ul {
-    list-style: none;
-    padding: 0;
-}
-
-#painel-notificacoes li {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #ddd;
-}
-
-#painel-notificacoes li:hover {
-    background-color: #f0f0f0;
-}
-
-    </style>
 </head>
 <body>
 
@@ -229,7 +151,7 @@
 
 
     <!-- Conteúdo principal -->
-    <main>
+    <main id="main-content">
         <div class="opcoes">
             <div class="tab active" onclick="mostrarConteudo('dashboard',this)">
                 <span>Dashboard</span>
@@ -253,14 +175,31 @@
 
     <footer class="menu-mobile">
         <ul>
-            <li><i class="fas fa-home"></i></li>
+            <li><a href="admin_home.php"><i class="fas fa-home"></i></a></li>
             <li><i class="fas fa-user"></i></li>
             <li><i class="fas fa-users"></i></li>
             <li><i class="fas fa-cog"></i></li>
-            <li><i class="fas fa-sign-out-alt"></i></li>
+            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
+    <script src="admin_home.js"></script> 
+    <script>
+        // Obtém o ID da sessão do PHP
+        var sessionId = <?php echo $id; ?>;
 
-    <script src="admin_home.js"></script>
+        function abrirNotificacao(id) {
+            // Verifique se o ID da notificação e o ID da sessão estão definidos corretamente
+            //console.log("ID da Notificação:", id);
+            //console.log("ID da Sessão:", sessionId);
+            
+            // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
+            var url = `detalhes_notificacao.php?id=${id}&session_id=${sessionId}`;
+            //console.log("Redirecionando para:", url);
+            
+            // Verifica se a URL está correta antes de redirecionar
+            window.location.href = url;
+        }
+    </script>
+
 </body>
 </html>
