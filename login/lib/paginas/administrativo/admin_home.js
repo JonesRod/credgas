@@ -1,10 +1,18 @@
-// Função para abrir e fechar o menu lateral
+// Função para alternar o menu lateral
 function toggleMenu() {
-    const menu = document.getElementById('menu-lateral');
-    if (menu.style.display === 'block') {
-        menu.style.display = 'none';
+    var menuLateral = document.getElementById("menu-lateral");
+    var notificacoesPopup = document.getElementById("painel-notificacoes");
+
+    // Fecha as notificações se o menu for aberto
+    if (notificacoesPopup.style.display === "block") {
+        notificacoesPopup.style.display = "none";
+    }
+
+    // Alterna a visibilidade do menu lateral
+    if (menuLateral.style.display === "block") {
+        menuLateral.style.display = "none";
     } else {
-        menu.style.display = 'block';
+        menuLateral.style.display = "block";
     }
 }
 // Função para esconder a barra lateral ao clicar em qualquer item
@@ -87,19 +95,63 @@ checkScreenSize();
 // Carregar solicitações quando a página for carregada
 window.onload = carregarSolicitacoes;
 
-// Função para alternar entre os conteúdos das abas
-function mostrarConteudo(aba) {
-    // Esconde todo o conteúdo das abas
-    document.getElementById('conteudo-dashboard').style.display = 'none';
-    document.getElementById('conteudo-gerenciamento').style.display = 'none';
+// Função para mostrar o conteúdo da aba selecionada
+function mostrarConteudo(aba, element) {
+    // Oculta todos os conteúdos das abas
+    var conteudos = document.querySelectorAll('.conteudo-aba');
+    conteudos.forEach(function(conteudo) {
+        conteudo.style.display = 'none';
+    });
 
     // Remove a classe 'active' de todas as abas
-    const abas = document.querySelectorAll('.tab');
-    abas.forEach(aba => aba.classList.remove('active'));
+    var tabs = document.querySelectorAll('.tab');
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
 
-    // Mostra o conteúdo correspondente à aba clicada
-    document.getElementById(`conteudo-${aba}`).style.display = 'block';
+    // Mostra o conteúdo da aba clicada
+    document.getElementById('conteudo-' + aba).style.display = 'block';
 
     // Adiciona a classe 'active' à aba clicada
-    event.currentTarget.classList.add('active');
+    element.classList.add('active');
 }
+
+// Define que a aba "Dashboard" está ativa ao carregar a página
+window.onload = function() {
+    mostrarConteudo('dashboard', document.querySelector('.tab.active'));
+};
+// Função para alternar as notificações
+function toggleNotificacoes() {
+    var notificacoesPopup = document.getElementById("painel-notificacoes");
+    var menuLateral = document.getElementById("menu-lateral");
+
+    // Fecha o menu lateral se as notificações forem abertas
+    if (menuLateral.style.display === "block") {
+        menuLateral.style.display = "none";
+    }
+
+    // Alterna a visibilidade das notificações
+    if (notificacoesPopup.style.display === "block") {
+        notificacoesPopup.style.display = "none";
+    } else {
+        notificacoesPopup.style.display = "block";
+    }
+}
+
+// Função para abrir o conteúdo da notificação clicada
+function abrirNotificacao(id) {
+    alert('Abrindo conteúdo da notificação ' + id);
+    // Aqui você pode adicionar a lógica para exibir o conteúdo da notificação
+}
+
+// Exemplo de atualização da contagem de notificações (chame essa função quando houver novas notificações)
+function atualizarContagemNotificacoes(contagem) {
+    const countElement = document.getElementById('notificacao-count');
+    countElement.textContent = contagem;
+    countElement.style.display = contagem > 0 ? 'block' : 'none';
+}
+
+// Atualize a contagem de notificações no início (exemplo: 3 notificações)
+atualizarContagemNotificacoes(4);
+
+

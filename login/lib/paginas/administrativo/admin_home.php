@@ -107,85 +107,82 @@
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
+        
+        /* Estilo para o ícone de notificações com o número de notificações */
+.notificacoes {
+    position: relative;
+    display: inline-block;
+}
+/* Efeito de movimento no ícone de notificação e no número de notificações ao passar o mouse */
+.notificacoes:hover i, 
+.notificacoes:hover .notificacao-count {
+    animation: moverNotificacao 0.5s ease-in-out forwards;
+}
 
-            background-color: #007BFF;
+/* Definição da animação de movimento */
+@keyframes moverNotificacao {
+    0% {
+        transform: translateY(0); /* Posição inicial */
+    }
+    50% {
+        transform: translateY(-10px); /* Movimento para cima */
+    }
+    100% {
+        transform: translateY(0); /* Volta à posição original */
+    }
+}
 
-        }
-        /* Estilos para o contêiner principal */
-        main {
-            display: flex;
-            flex-direction: column;
-            height: 100vh; /* O contêiner principal ocupa a altura total da tela */
-            box-sizing: border-box;
-        }
-        /* Estilos para as abas */
-        main .opcoes {
-            background-color:#007BFF;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 0px;
-            padding: auto;
-        }
+.notificacao-count {
+    position: absolute;
+    top: -8px;
+    right: -1px;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
 
-        main .tab {
-            padding: 10px 20px;
-            border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
-            background-color: #f0f0f0;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
 
-        main .tab:hover {
-            background-color: #afa791;
-            color: white;
-            transform: scale(1.05);
-        }
+/* Painel de notificações estilo semelhante ao menu lateral */
+#painel-notificacoes {
+    display: none;
+    position: fixed;
+    top: 40px; /* Ajuste conforme a altura do cabeçalho */
+    right: 0;
+    width: 300px;
+    height: 400px;
+    background-color: white;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    padding: 10px;
+}
 
-        main .tab.active {
-            background-color: #ffb300; /* Aba ativa com cor diferente */
-            color: white;
-            transform: scale(1.05);
-        }
+#painel-notificacoes h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
 
-        /* Estilos para o conteúdo das abas */
-        .conteudo-aba {
-            flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
-            margin-left: 2px;
-            margin-right: 2px;
-            margin-top: 0px;
-            padding: 10px;
-            border: 2px solid #ffb300;
-            border-radius: 8px;
-            display: none; /* Por padrão, todos os conteúdos estão escondidos */
-            padding-top: 5px;
-            box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
-            overflow: auto; /* Para que o conteúdo role se for maior que a tela */
-            background-color: #d3d0ce;
+#painel-notificacoes ul {
+    list-style: none;
+    padding: 0;
+}
 
-        }
-        /* Responsividade para telas pequenas */
-        @media (max-width: 768px) {
-            main .opcoes {
-                /*flex-direction: column;*/
-                gap: 10px;
+#painel-notificacoes li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
 
-            }
-            /* Diminui o tamanho das letras em telas menores */
-            main .tab span {
-                font-size: 15px; /* Ajuste conforme o necessário */
-            }
+#painel-notificacoes li:hover {
+    background-color: #f0f0f0;
+}
 
-            main .tab {
-                width: 30%;
-                max-width: 200px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -198,10 +195,26 @@
         <h1>Painel Administrativo</h1>
         <div class="menu-superior-direito">
             <span>Olá, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
-            <i class="fas fa-bell"></i>
+            <!-- Ícone de notificações com contagem -->
+            <div class="notificacoes">
+                <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
+                <span id="notificacao-count" class="notificacao-count">4</span> <!-- Exemplo de contagem -->
+            </div>
             <i class="fas fa-bars" onclick="toggleMenu()"></i>
         </div>
     </header>
+
+    <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
+    <aside id="painel-notificacoes">
+        <h2>Notificações</h2>
+        <ul id="lista-notificacoes">
+            <li onclick="abrirNotificacao(1)">Solicitação de cadastro de Parceiro</li>
+            <li onclick="abrirNotificacao(2)">Solicitação de crediario</li>
+            <li onclick="abrirNotificacao(3)">Novo Produto</li>            
+            <li onclick="abrirNotificacao(4)">Nova mensagem recebida</li>
+        </ul>
+    </aside>
+
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral">
@@ -218,16 +231,16 @@
     <!-- Conteúdo principal -->
     <main>
         <div class="opcoes">
-            <div class="tab" onclick="mostrarConteudo('dashboard')">
+            <div class="tab active" onclick="mostrarConteudo('dashboard',this)">
                 <span>Dashboard</span>
             </div>
-            <div class="tab" onclick="mostrarConteudo('gerenciamento')">
+            <div class="tab" onclick="mostrarConteudo('gerenciamento',this)">
                 <span>Gerenciamento</span>
             </div>
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
-        <div id="conteudo-dashboard" class="conteudo-aba">
+        <div id="conteudo-dashboard" class="conteudo-aba" style="display: block;">
             <h2>Dashboard</h2>
             <p>Conteúdo do Dashboard aparece aqui.</p>
         </div>
@@ -237,8 +250,6 @@
             <p>Conteúdo do Gerenciamento aparece aqui.</p>
         </div>
     </main>
-
-
 
     <footer class="menu-mobile">
         <ul>
