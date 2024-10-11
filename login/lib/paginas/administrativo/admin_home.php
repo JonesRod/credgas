@@ -1,97 +1,103 @@
 <?php
     include('../../conexao.php');
-
-    if (!isset($_SESSION)) {
-        session_start();
+    //echo '1';
+    //die();
+    if(!isset($_SESSION)){
+        session_start(); 
+        //echo '2';
+        //die();
     }
+        if($_SERVER["REQUEST_METHOD"] === "POST") {  
+            //echo '3';
+            if (isset($_POST["tipoLogin"])) {
+                //echo '4';
+                if(isset($_SESSION['id'])){ 
+                    //echo '5';
+                    // Obter o valor do input radio
+                    $usuario = $_SESSION['id'];
+                    $valorSelecionado = $_POST["tipoLogin"];
+                    $admin = $valorSelecionado;
 
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        // Verifica se o tipo de login foi enviado
-        if (isset($_POST["tipoLogin"]) && isset($_SESSION['id'])) {
-            $id = $_SESSION['id'];
-            $usuario = $_SESSION['usuario'];
-            $valorSelecionado = $_POST["tipoLogin"];
-            $admin = $valorSelecionado;
+                    if($admin == 0){
+                        //echo '6';
+                        
+                        header(header: "Location: ../clientes/cliente_home.php"); 
 
-            // Se for usuário normal
-            if ($admin == 0) {
-                header(header: "Location: ../clientes/cliente_home.php");
-                exit();
-            } 
-            // Se for administrador
-            else if ($admin == 1) {
-                $sql_query = $mysqli->query(query: "SELECT * FROM administradores WHERE id_cliente = '$id'") or die($mysqli->error);
-                if ($sql_query->num_rows > 0) {
-                    $usuario = $sql_query->fetch_assoc();
-                    $_SESSION['usuario'] = $usuario;
+                    }else if($admin == 1){
+                        //echo '7';
+                        //echo($_SESSION['id']);
+                        //var_dump(value: $_POST["tipoLogin"]);
+                        $usuario = $_SESSION['id'];
+                        $admin = $_SESSION['admin'];
+                        $_SESSION['id'];
+                        $_SESSION['admin'];  
+                        
+                        $id = $_SESSION['id'];
+                        $sql_query = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->$error);
+                        $usuario = $sql_query->fetch_assoc(); 
 
-                    // Verifica se o administrador tem configuração
-                    $sql_config = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
-                    $config_admin = $sql_config->fetch_assoc();
-
-                    //$logo = $config_admin['logo'];
-                    if(isset($config_admin['logo'])) {
-                        $logo = $config_admin['logo'];
-                        if($logo == ''){
-                            $logo = '../arquivos_fixos/imagem_credgas.jpg';
-                        }else{
-                            $logo = '../arquivos_fixos/'. $logo;
+                        //$logo = $dadosEscolhido['logo'];
+                        if(isset($usuario['logo'])) {
+                            $logo = $usuario['logo'];
+                            
+                            if($logo == ''){
+                                $logo = '../arquivos_fixos/imagem_credgas.jpg';
+                            }else{
+                                $logo = '../arquivos_fixos/'. $logo;
+                                //echo $logo;
+                            }
                         }
-                    }
 
-                    header(header: "Location: ../admin_home.php");
-                    exit();
-                } else {
+                    }else{
+                        //echo '8';
+                        session_unset();
+                        session_destroy();
+                        header(header: "Location: ../../../../index.php"); 
+                    }
+                }else{
+
                     session_unset();
                     session_destroy();
-                    header(header: "Location: ../../../../index.php");
-                    exit();
+                    header(header: "Location: ../../../../index.php"); 
+                }    
+            }else{
+
+                session_unset();
+                session_destroy();
+                header(header: "Location: ../../../../index.php"); 
+            }  
+        }else if(isset($_SESSION['id'])){    
+            //echo '3';
+            //die();
+            $usuario = $_SESSION['id'];
+            $admin = $_SESSION['admin'];
+            $_SESSION['id'];
+            $_SESSION['admin'];  
+    
+            $id = $_SESSION['id'];
+            $sql_query = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->$error);
+            $usuario = $sql_query->fetch_assoc(); 
+            
+            //$logo = $dadosEscolhido['logo'];
+            if(isset($usuario['logo'])) {
+                $logo = $usuario['logo'];
+                
+                if($logo == ''){
+                    $logo = '../arquivos_fixos/imagem_credgas.jpg';
+                }else{
+                    $logo = '../arquivos_fixos/'. $logo;
+                    //echo $logo;
                 }
             }
-        } else {
+    
+        }else{
+
             session_unset();
             session_destroy();
-            header(header: "Location: ../../../../index.php");
-            exit();
+            header(header: "Location: ../../../../index.php"); 
         }
 
-    // Se não for um POST, verifica se a sessão existe
-    }/*else if (isset($_SESSION['id'])) { 
-
-        $id = $_SESSION['id'];
-
-        // Consulta para buscar o usuário
-        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
-        $usuario = $sql_query->fetch_assoc();
-        $_SESSION['usuario'] = $usuario;
-
-        // Consulta para buscar a configuração do admin
-        $sql_config = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
-        $admin_conf = $sql_config->fetch_assoc();
-
-        // Configura a logo
-        $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->error);
-        $config_admin = $dados->fetch_assoc();
-    
-        //$logo = $config_admin['logo'];
-        if(isset($config_admin['logo'])) {
-            $logo = $config_admin['logo'];
-            if($logo == ''){
-                $logo = '../arquivos_fixos/imagem_credgas.jpg';
-            }else{
-                $logo = '../arquivos_fixos/'. $logo;
-            }
-        }
-    } */
-    // Caso nenhuma sessão exista, redireciona para o login
-    else {
-        session_unset();
-        session_destroy();
-        header(header: "Location: ../../../../index.php");
-        exit();
-    }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -116,15 +122,17 @@
         </div>
     </header>
 
-    <!-- Barra lateral/menu -->
+    <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral">
         <ul>
-            <li><i class="fas fa-home"></i> Dashboard</li>
-            <li><i class="fas fa-users"></i> Solicitações de Cadastro</li>
-            <li><i class="fas fa-cog"></i> Configurações</li>
-            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
+            <li><i class="fas fa-home"></i><span>Inicio</span></li>
+            <li><i class="fas fa-user"></i> <span>Perfil da Loja</span></li>
+            <li><i class="fas fa-users"></i><span>Solicitações</span></li>
+            <li><i class="fas fa-cog"></i> <span>Configurações</span></li>
+            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></a></li>
         </ul>
     </aside>
+
 
     <!-- Conteúdo principal -->
     <main>
@@ -166,10 +174,11 @@
 
     <footer class="menu-mobile">
         <ul>
-            <li><i class="fas fa-home"></i> Dashboard</li>
-            <li><i class="fas fa-users"></i> Solicitações</li>
-            <li><i class="fas fa-cog"></i> Configurações</li>
-            <li><i class="fas fa-sign-out-alt"></i> Sair</li>
+            <li><i class="fas fa-home"></i></li>
+            <li><i class="fas fa-user"></i></li>
+            <li><i class="fas fa-users"></i></li>
+            <li><i class="fas fa-cog"></i></li>
+            <li><i class="fas fa-sign-out-alt"></i></li>
         </ul>
     </footer>
 

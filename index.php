@@ -55,7 +55,7 @@
                 } else {
                     var_dump( $cliente['id']);
 
-                    die();
+                    //die();
                     // Caso o usuário não seja admin, é cliente
                     $_SESSION['id'] = $cliente['id'];
                     $_SESSION['cliente_info'] = $cliente; // Armazena mais informações do cliente, se necessário
@@ -107,7 +107,7 @@
         $logo = $dadosEscolhido['logo'];
         
         if($logo == ''){
-            $logo = 'login/lib/paginas/arquivos_fixos/avatar_icone.jpg';
+            $logo = 'login/lib/paginas/arquivos_fixos/imagem_credgas.jpg';
         }else{
             $logo = 'login/lib/paginas/arquivos_fixos/'. $logo;
         }

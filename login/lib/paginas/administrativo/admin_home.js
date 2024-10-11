@@ -1,14 +1,68 @@
-// Função para alternar a exibição do menu lateral em telas pequenas
+// Função para abrir e fechar o menu lateral abaixo do menu superior
 function toggleMenu() {
-    var menu = document.getElementById('menu-lateral');
-    if (menu.style.display === 'block') {
-        menu.style.display = 'none';
+    const menu = document.getElementById('menu-lateral');
+    const isMenuVisible = menu.style.display === 'block' || menu.style.display === ''; // Verifica se o menu está visível
+
+    // Oculta a barra lateral ao clicar no ícone de menu
+    menu.style.display = isMenuVisible ? 'none' : 'block'; // Alterna a exibição
+}
+
+// Função para adicionar um método de pagamento (exemplo simples)
+function adicionarMetodoPagamento() {
+    alert('Adicionando novo método de pagamento...');
+}
+
+// Função para gerar dinamicamente a lista de solicitações de cadastro
+function carregarSolicitacoes() {
+    const solicitacoes = [
+        { empresa: 'Empresa 1', cnpj: '12.345.678/0001-90', email: 'empresa1@example.com' },
+        { empresa: 'Empresa 2', cnpj: '23.456.789/0001-90', email: 'empresa2@example.com' }
+    ];
+
+    const listaSolicitacoes = document.getElementById('lista-solicitacoes');
+    listaSolicitacoes.innerHTML = ''; // Limpa a lista antes de carregar novos dados
+
+    solicitacoes.forEach(solicitacao => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${solicitacao.empresa}</td>
+            <td>${solicitacao.cnpj}</td>
+            <td>${solicitacao.email}</td>
+            <td>
+                <button onclick="aprovarSolicitacao('${solicitacao.empresa}')">Aprovar</button>
+                <button onclick="rejeitarSolicitacao('${solicitacao.empresa}')">Rejeitar</button>
+            </td>
+        `;
+        listaSolicitacoes.appendChild(row);
+    });
+}
+
+// Funções para aprovar ou rejeitar solicitações
+function aprovarSolicitacao(empresa) {
+    alert(`Solicitação da empresa ${empresa} aprovada!`);
+}
+
+function rejeitarSolicitacao(empresa) {
+    alert(`Solicitação da empresa ${empresa} rejeitada.`);
+}
+
+// Função para verificar o tamanho da tela e ocultar ou mostrar a barra lateral
+function checkScreenSize() {
+    const menuLateral = document.getElementById('menu-lateral');
+    const isMenuVisible = menuLateral.style.display === 'block' || menuLateral.style.display === ''; // Verifica se o menu está visível
+
+    if (window.innerWidth < 768) { // Ajuste a largura conforme necessário
+        menuLateral.style.display = 'none'; // Oculta a barra lateral em telas pequenas
     } else {
-        menu.style.display = 'block';
+        menuLateral.style.display = isMenuVisible ? 'block' : 'none'; // Mantém o estado atual
     }
 }
 
-// Função para adicionar um novo método de pagamento (exemplo simples)
-function adicionarMetodoPagamento() {
-    alert('Função para adicionar um método de pagamento');
-}
+// Adiciona o evento de redimensionamento da janela
+window.addEventListener('resize', checkScreenSize);
+
+// Chama a função inicialmente para definir o estado correto da barra lateral
+checkScreenSize();
+
+// Carregar solicitações quando a página for carregada
+window.onload = carregarSolicitacoes;

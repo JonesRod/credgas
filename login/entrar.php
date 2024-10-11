@@ -16,28 +16,28 @@ if (isset($_POST['email']) || isset($_POST['senha'])) {
 
     // Primeiro, verificamos se há algum registro na tabela 'socios'
     $sql_primeiro_registro = "SELECT * FROM socios";
-    $registros = $mysqli->query($sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
+    $registros = $mysqli->query(query: $sql_primeiro_registro) or die("Falha na execução do código SQL: " . $mysqli->error);
 
     if ($registros->num_rows == 0) {
-        header("Location: lib/cadastro_usuario.php");
+        header(header: "Location: lib/cadastro_usuario.php");
         exit();
     }
 
     // Validação dos campos
-    if (strlen($_POST['email']) == 0) {
+    if (strlen(string: $_POST['email']) == 0) {
         $msg = "Preencha o campo Usuário.";
-    } else if (strlen($_POST['senha']) == 0) {
+    } else if (strlen(string: $_POST['senha']) == 0) {
         $msg = "Preencha sua senha.";
     } else {
         // Consulta no banco de dados com base no email
         $sql_code = "SELECT * FROM socios WHERE email = '$email' LIMIT 1";
-        $sql_query = $mysqli->query($sql_code) or die("Falha na execução do código SQL: " . $mysqli->error);
+        $sql_query = $mysqli->query(query: $sql_code) or die("Falha na execução do código SQL: " . $mysqli->error);
         $usuario = $sql_query->fetch_assoc();
         $quantidade = $sql_query->num_rows;
 
         if ($quantidade == 1) {
             // Verificação da senha usando password_verify
-            if (password_verify($senha, $usuario['senha'])) {
+            if (password_verify(password: $senha, hash: $usuario['senha'])) {
                 $admin = $usuario['admin'];
 
                 // Sessões são iniciadas com o ID do usuário e seu status de admin
@@ -61,21 +61,21 @@ if (isset($_POST['email']) || isset($_POST['senha'])) {
         } else {
             // Se o email não foi encontrado, verificar o CPF
             $sql_cpf = "SELECT * FROM socios WHERE cpf = '$email' LIMIT 1"; // Email também é CPF
-            $sql_query = $mysqli->query($sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
+            $sql_query = $mysqli->query(query: $sql_cpf) or die("Falha na execução do código SQL: " . $mysqli->error);
             $usuario = $sql_query->fetch_assoc();
             $quantidade_cpf = $sql_query->num_rows;
 
             if ($quantidade_cpf == 1) {
-                if (password_verify($senha, $usuario['senha'])) {
+                if (password_verify(password: $senha, hash: $usuario['senha'])) {
                     $admin = $usuario['admin'];
 
                     $_SESSION['usuario'] = $usuario['id'];
                     $_SESSION['admin'] = $admin;
 
                     if ($admin == 1) {
-                        header("Location: lib/tipo_login.php");
+                        header(header: "Location: lib/tipo_login.php");
                     } else {
-                        header("Location: lib/paginas/usuario_home.php");
+                        header(header: "Location: lib/paginas/usuario_home.php");
                     }
                     exit();
                 } else {
