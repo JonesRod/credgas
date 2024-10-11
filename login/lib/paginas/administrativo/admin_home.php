@@ -141,36 +141,13 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </div>
-            <div class="solicitacoes">
-                <i class="fas fa-users"></i>
-                <span>Solicitações de Cadastro</span>
+            <div class="gerenciamento">
+                <i class="fas fa-tasks"></i>
+                <span>Gerenciamento</span>
             </div>
         </div>
-
-        <div class="configuracoes-pagamento">
-            <h2>Configurações de Métodos de Pagamento</h2>
-            <p>Aqui você pode adicionar ou editar os métodos de pagamento aceitos na plataforma.</p>
-            <button onclick="adicionarMetodoPagamento()">Adicionar Método de Pagamento</button>
-        </div>
-
-        <div class="lista-aprovacao">
-            <h2>Solicitações de Cadastro para Aprovação</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Empresa</th>
-                        <th>CNPJ</th>
-                        <th>Email</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-solicitacoes">
-                    <!-- Conteúdo gerado dinamicamente -->
-                </tbody>
-            </table>
-        </div>
-
     </main>
+
 
     <footer class="menu-mobile">
         <ul>

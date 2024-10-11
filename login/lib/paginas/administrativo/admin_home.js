@@ -1,11 +1,31 @@
-// Função para abrir e fechar o menu lateral abaixo do menu superior
+// Função para abrir e fechar o menu lateral
 function toggleMenu() {
     const menu = document.getElementById('menu-lateral');
-    const isMenuVisible = menu.style.display === 'block' || menu.style.display === ''; // Verifica se o menu está visível
-
-    // Oculta a barra lateral ao clicar no ícone de menu
-    menu.style.display = isMenuVisible ? 'none' : 'block'; // Alterna a exibição
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        menu.style.display = 'block';
+    }
 }
+// Função para esconder a barra lateral ao clicar em qualquer item
+function hideMenuOnClick() {
+    const menu = document.getElementById('menu-lateral');
+    menu.style.display = 'none';
+}
+
+// Adiciona o evento de clique a cada item do menu lateral
+document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
+    item.addEventListener('click', hideMenuOnClick);
+});
+
+// Função para fechar o menu lateral ao clicar fora dele
+window.addEventListener('click', function(event) {
+    const menu = document.getElementById('menu-lateral');
+    const menuIcon = document.querySelector('.fas.fa-bars'); // Ícone de menu
+    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== menuIcon) {
+        menu.style.display = 'none'; // Fecha a barra lateral
+    }
+});
 
 // Função para adicionar um método de pagamento (exemplo simples)
 function adicionarMetodoPagamento() {
@@ -49,12 +69,12 @@ function rejeitarSolicitacao(empresa) {
 // Função para verificar o tamanho da tela e ocultar ou mostrar a barra lateral
 function checkScreenSize() {
     const menuLateral = document.getElementById('menu-lateral');
-    const isMenuVisible = menuLateral.style.display === 'block' || menuLateral.style.display === ''; // Verifica se o menu está visível
+    const isMenuVisible = menuLateral.style.display === 'none' || menuLateral.style.display === ''; // Verifica se o menu está visível
 
     if (window.innerWidth < 768) { // Ajuste a largura conforme necessário
         menuLateral.style.display = 'none'; // Oculta a barra lateral em telas pequenas
     } else {
-        menuLateral.style.display = isMenuVisible ? 'block' : 'none'; // Mantém o estado atual
+        menuLateral.style.display = isMenuVisible ? 'none' : 'block'; // Mantém o estado atual
     }
 }
 
@@ -66,3 +86,4 @@ checkScreenSize();
 
 // Carregar solicitações quando a página for carregada
 window.onload = carregarSolicitacoes;
+

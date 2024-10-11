@@ -45,17 +45,33 @@ header .logo img {
 
 .menu-superior-direito span {
     margin-right: 15px; /* Espaçamento entre o nome do usuário e os ícones */
+    transition: color 0.3s ease; /* Transição suave para a cor */
 }
 
 .menu-superior-direito i {
     font-size: 24px; /* Aumenta o tamanho dos ícones */
     margin-left: 15px;
-    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para o movimento e cor */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+}
+/* Efeito ao passar o mouse */
+.menu-superior-direito span:hover {
+    color: #f0a309; /* Muda a cor do texto ao passar o mouse */
 }
 
+.menu-superior-direito i:hover {
+    transform: translateY(-5px); /* Move o ícone para cima ao passar o mouse */
+    color: #ff9d00; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeito ao clicar */
+.menu-superior-direito i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ff9d09; /* Muda a cor do ícone ao passar o mouse */
+}
 aside#menu-lateral {
-    background-color: #343a40;
-    color: white;
+    font-weight: bold; /* Aplica negrito ao texto */
+    background-color: #d3d0ce;
+    color: rgb(24, 8, 235);
     width: 200px; /* Largura fixa da barra lateral */
     padding: 20px;
     position: absolute; /* Mantém a barra lateral fixa */
@@ -77,10 +93,59 @@ aside#menu-lateral ul li {
     font-size: 16px; /* Tamanho da fonte */
     display: flex; /* Flexbox para alinhar ícone e texto */
     align-items: center; /* Alinha verticalmente */
+    transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
+    border-radius: 5px; /* Bordas arredondadas */
+    padding: 10px; /* Espaçamento interno */
+    font-weight: bold; /* Aplica negrito ao texto */
+}
+/* Remove o sublinhado do link "Sair" */
+#menu-lateral a {
+    text-decoration: none; /* Remove o sublinhado */
+    color: inherit; /* Mantém a cor do texto herdada */
+    transition: color 0.3s ease; /* Suave transição de cor */
 }
 
+/* Efeito ao passar o mouse sobre o link */
+#menu-lateral a:hover {
+    cursor: pointer;
+    color: #007BFF; /* Muda a cor ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+aside#menu-lateral ul li:hover {
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.1); /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilo para ícones */
 aside#menu-lateral ul li i {
     margin-right: 10px; /* Espaçamento entre ícone e texto */
+    font-size: 20px; /* Tamanho dos ícones */
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o ícone */
+aside#menu-lateral ul li:hover i {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Efeito ao clicar em um ícone */
+aside#menu-lateral ul li i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeitos para os spans */
+aside#menu-lateral ul li span {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o span */
+aside#menu-lateral ul li:hover span {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
+    /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
 }
 
 main {
@@ -140,13 +205,29 @@ table th {
     width: 100%; /* Garantir que o menu ocupe toda a largura */
 }
 
+/* Efeitos para os itens do menu mobile */
+.menu-mobile ul li {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+.menu-mobile ul li:hover {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o item para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
 .menu-mobile ul li i {
     font-size: 24px; /* Aumente o tamanho dos ícones aqui */
     margin: 0; /* Remova a margem, se necessário */
     display: block; /* Garante que o ícone seja exibido como um bloco */
     text-align: center; /* Centraliza o ícone dentro do item do menu */
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
 }
-
+/* Efeito ao passar o mouse sobre o ícone */
+.menu-mobile ul li:hover i {
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
 /* Responsividade para telas pequenas */
 @media (max-width: 768px) {
     header h1 {
