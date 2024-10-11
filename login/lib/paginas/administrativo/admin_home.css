@@ -6,7 +6,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #007BFF;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -148,45 +148,6 @@ aside#menu-lateral ul li:hover span {
     /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
 }
 
-main {
-    padding: 20px;
-    flex-grow: 1;
-}
-
-main h2 {
-    margin-bottom: 10px;
-}
-
-.configuracoes-pagamento button {
-    background-color: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.configuracoes-pagamento button:hover {
-    background-color: #218838;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-table th {
-    background-color: #007BFF;
-    color: white;
-}
-
 .menu-mobile {
     background-color: #343a40;
     color: white;
@@ -221,6 +182,7 @@ table th {
     display: block; /* Garante que o ícone seja exibido como um bloco */
     text-align: center; /* Centraliza o ícone dentro do item do menu */
     transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    /*color: #afa791; /* Muda a cor do ícone ao passar o mouse */
 }
 /* Efeito ao passar o mouse sobre o ícone */
 .menu-mobile ul li:hover i {
@@ -252,5 +214,8 @@ table th {
     .menu-mobile {
         display: flex; /* Exibe o menu mobile em telas pequenas */
     }
+
 }
+
+
 

@@ -106,6 +106,87 @@
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+
+            background-color: #007BFF;
+
+        }
+        /* Estilos para o contêiner principal */
+        main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+            box-sizing: border-box;
+        }
+        /* Estilos para as abas */
+        main .opcoes {
+            background-color:#007BFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0px;
+            padding: auto;
+        }
+
+        main .tab {
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+            background-color: #f0f0f0;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        main .tab:hover {
+            background-color: #afa791;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        main .tab.active {
+            background-color: #ffb300; /* Aba ativa com cor diferente */
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Estilos para o conteúdo das abas */
+        .conteudo-aba {
+            flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+            margin-left: 2px;
+            margin-right: 2px;
+            margin-top: 0px;
+            padding: 10px;
+            border: 2px solid #ffb300;
+            border-radius: 8px;
+            display: none; /* Por padrão, todos os conteúdos estão escondidos */
+            padding-top: 5px;
+            box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+            overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+            background-color: #d3d0ce;
+
+        }
+        /* Responsividade para telas pequenas */
+        @media (max-width: 768px) {
+            main .opcoes {
+                /*flex-direction: column;*/
+                gap: 10px;
+
+            }
+            /* Diminui o tamanho das letras em telas menores */
+            main .tab span {
+                font-size: 15px; /* Ajuste conforme o necessário */
+            }
+
+            main .tab {
+                width: 30%;
+                max-width: 200px;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -137,16 +218,26 @@
     <!-- Conteúdo principal -->
     <main>
         <div class="opcoes">
-            <div class="dashboard">
-                <i class="fas fa-home"></i>
+            <div class="tab" onclick="mostrarConteudo('dashboard')">
                 <span>Dashboard</span>
             </div>
-            <div class="gerenciamento">
-                <i class="fas fa-tasks"></i>
+            <div class="tab" onclick="mostrarConteudo('gerenciamento')">
                 <span>Gerenciamento</span>
             </div>
         </div>
+
+        <!-- Conteúdos correspondentes às abas -->
+        <div id="conteudo-dashboard" class="conteudo-aba">
+            <h2>Dashboard</h2>
+            <p>Conteúdo do Dashboard aparece aqui.</p>
+        </div>
+
+        <div id="conteudo-gerenciamento" class="conteudo-aba" style="display:none;">
+            <h2>Gerenciamento</h2>
+            <p>Conteúdo do Gerenciamento aparece aqui.</p>
+        </div>
     </main>
+
 
 
     <footer class="menu-mobile">

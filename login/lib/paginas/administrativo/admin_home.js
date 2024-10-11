@@ -87,3 +87,19 @@ checkScreenSize();
 // Carregar solicitações quando a página for carregada
 window.onload = carregarSolicitacoes;
 
+// Função para alternar entre os conteúdos das abas
+function mostrarConteudo(aba) {
+    // Esconde todo o conteúdo das abas
+    document.getElementById('conteudo-dashboard').style.display = 'none';
+    document.getElementById('conteudo-gerenciamento').style.display = 'none';
+
+    // Remove a classe 'active' de todas as abas
+    const abas = document.querySelectorAll('.tab');
+    abas.forEach(aba => aba.classList.remove('active'));
+
+    // Mostra o conteúdo correspondente à aba clicada
+    document.getElementById(`conteudo-${aba}`).style.display = 'block';
+
+    // Adiciona a classe 'active' à aba clicada
+    event.currentTarget.classList.add('active');
+}
