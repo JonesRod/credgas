@@ -7,7 +7,6 @@ if (!isset($_SESSION)) {
 
 if (isset($_SESSION['id'])) {
     $id = $_SESSION['id'];
-    //$id = $_SESSION['usuario'];
     $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
     $usuario = $sql_query->fetch_assoc();
 } else {
@@ -15,7 +14,7 @@ if (isset($_SESSION['id'])) {
     session_unset();
     session_destroy();
     header("Location: ../../../../index.php");
-    exit(); // Importante adicionar exit() após o redirecionamento
+    exit();
 }
 
 // Pega o ID da notificação e o ID da sessão da URL
@@ -23,7 +22,7 @@ $id = $_GET['id'];
 $session_id = $_GET['session_id'];
 
 // Construa a consulta SQL para buscar os parceiros com analize_inscricao = 0
-$sql_query = "SELECT * FROM meus_parceiros WHERE analize_inscricao = 0" or die($mysqli->$error);
+$sql_query = "SELECT * FROM meus_parceiros WHERE analize_inscricao = 1" or die($mysqli->$error);
 
 // Execute a consulta SQL
 $result = $mysqli->query($sql_query);
@@ -52,7 +51,7 @@ $result = $mysqli->query($sql_query);
 </head>
 <body>
 
-<h1>Parceiros em Análise</h1>
+<h1>Solicitação de Análise de novos Parceiros</h1>
 
 <?php
 if ($result->num_rows > 0) {
@@ -60,35 +59,24 @@ if ($result->num_rows > 0) {
     echo "<table>";
     echo "<tr>
             <th>Data de Cadastro</th>
-            <th>Razão</th>
             <th>Nome Fantasia</th>
             <th>CNPJ</th>
-            <th>Inscrição Estadual</th>
             <th>Categoria</th>
-            <th>Anexo</th>
-            <th>Telefone Comercial</th>
-            <th>Telefone do Responsável</th>
-            <th>E-MAIL</th>
-            <th>CEP</th>
-            <th>Estado</th>
-            <th>Cidade</th>
+            <th>Detalhes</th>
           </tr>";
 
     while ($parceiro = $result->fetch_assoc()) {
+        // Formatar a data de cadastro
+        $data_cadastro = date("d/m/Y", strtotime($parceiro['data_cadastro']));
+        
         echo "<tr>";
-        echo "<td>" . htmlspecialchars($parceiro['data_cadastro']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['razao']) . "</td>";
+        echo "<td>" . htmlspecialchars($data_cadastro) . "</td>";
         echo "<td>" . htmlspecialchars($parceiro['nomeFantasia']) . "</td>";
         echo "<td>" . htmlspecialchars($parceiro['cnpj']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['inscricaoEstadual']) . "</td>";
         echo "<td>" . htmlspecialchars($parceiro['categoria']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['anexo_comprovante']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['telefoneComercial']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['telefoneResponsavel']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['email']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['cep']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['estado']) . "</td>";
-        echo "<td>" . htmlspecialchars($parceiro['cidade']) . "</td>";
+        
+        // Adicionar link para página de detalhes, passando o ID do parceiro via URL
+        echo "<td><a href='detalhes_parceiro.php?id=" . htmlspecialchars($parceiro['id']) . "'>Ver Detalhes</a></td>";
         echo "</tr>";
     }
 

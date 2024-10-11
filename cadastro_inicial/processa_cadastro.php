@@ -59,7 +59,8 @@
                 estado, 
                 cidade,
                 status,
-                termos) 
+                termos,
+                analize_inscricao) 
                 VALUES (
                 NOW(),
                 '$razao', 
@@ -76,7 +77,8 @@
                 '$estado', 
                 '$cidade',
                 '$status',
-                '$termos')";
+                '$termos',
+                '1')";
 
                 $deu_certo = $mysqli->query(query: $sql_code) or die($mysqli->error);
 
@@ -87,7 +89,7 @@
                     $msg2 = "";
                     //echo $msg;
 
-                    enviar_email(destinatario: $email, assunto: "Cadastro foi enviado para analiza!", mensagemHTML: "
+                    enviar_email(destinatario: $email, assunto: "Cadastro foi enviado para analize!", mensagemHTML: "
                     <h1>È um prazer ter você, " . $nomeFantasia . " de parceiria. Boas vendas!</h1>
                     <p><b>Faça login com seu CNPJ.</p>
                     <p><b>Senha: </b>$senha</p>
