@@ -16,6 +16,7 @@ form {
     padding: 30px; /* Ajusta o preenchimento */
     width: 90%;
     max-width: 600px; /* Largura máxima do formulário */
+    height: 100vh; /* Ocupa toda a altura da tela */
     box-sizing: border-box; /* Inclui padding na largura total */
 }
 

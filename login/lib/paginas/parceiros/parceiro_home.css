@@ -54,9 +54,14 @@ header {
     margin-left: 15px;
     cursor: pointer;
     color: white;
-    font-size: 20px;
+    font-size: 25px;
 }
-
+.store-dropdown i {
+    margin-left: 15px;
+    cursor: pointer;
+    color: white;
+    font-size: 25px;
+}
 .profile-dropdown {
     position: relative;
     display: inline-block;
@@ -66,7 +71,7 @@ header {
     display: none;
     position: absolute;
     right: 0;
-    background-color: #fff;
+    background-color: #cbc799;
     box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     z-index: 1;
     list-style-type: none;
@@ -88,6 +93,7 @@ header {
 }
 
 .dropdown-menu li a i {
+    font-size: 24px;
     margin-right: 10px;
 }
 
@@ -96,7 +102,8 @@ header {
 }
 
 .dropdown-menu li:hover {
-    background-color: #f1f1f1;
+    background-color: #dfde74;
+    border-radius: 10px;
 }
 
 .show {
@@ -222,21 +229,7 @@ h2 {
     background-color: #555;
 }
 
-/* Footer */
-footer {
-    text-align: center;
-    padding: 30px 0;
-    background-color: #333;
-    color: white;
-    margin-top: 30px;
-}
-
-footer .contato {
-    margin: 10px 0;
-}
-
 /* Responsividade */
-
 /* Para telas menores que 1024px */
 @media (max-width: 1024px) {
     .logo-img {
@@ -254,6 +247,17 @@ footer .contato {
     }
 }
 
+/* Efeito de transição suave para os ícones */
+.user-area i {
+    font-size: 24px; /* Tamanho padrão */
+    transition: transform 0.3s ease, color 0.3s ease; /* Suave transição de 0.3 segundos */
+}
+
+/* Efeito ao passar o mouse: ícone aumenta e move ligeiramente */
+.user-area i:hover {
+    transform: scale(1.2) translateY(-3px); /* Aumenta o ícone em 20% e move um pouco para cima */
+    color: #e7bd13; /* Muda a cor quando o mouse estiver em cima (opcional) */
+}
 /* Para telas menores que 768px */
 @media (max-width: 768px) {
     .logo-img {

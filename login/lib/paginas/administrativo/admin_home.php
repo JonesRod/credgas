@@ -1,32 +1,27 @@
 <?php
     include('../../conexao.php');
-    //echo '1';
-    //die();
+
     if(!isset($_SESSION)){
         session_start(); 
-        //echo '2';
-        //die();
+
     }
         if($_SERVER["REQUEST_METHOD"] === "POST") {  
-            //echo '3';
+
             if (isset($_POST["tipoLogin"])) {
-                //echo '4';
+
                 if(isset($_SESSION['id'])){ 
-                    //echo '5';
+
                     // Obter o valor do input radio
                     $usuario = $_SESSION['id'];
                     $valorSelecionado = $_POST["tipoLogin"];
                     $admin = $valorSelecionado;
 
                     if($admin == 0){
-                        //echo '6';
-                        
+
                         header(header: "Location: ../clientes/cliente_home.php"); 
 
                     }else if($admin == 1){
-                        //echo '7';
-                        //echo($_SESSION['id']);
-                        //var_dump(value: $_POST["tipoLogin"]);
+
                         $usuario = $_SESSION['id'];
                         $admin = $_SESSION['admin'];
                         $_SESSION['id'];
@@ -67,8 +62,7 @@
                 header(header: "Location: ../../../../index.php"); 
             }  
         }else if(isset($_SESSION['id'])){    
-            //echo '3';
-            //die();
+
             $usuario = $_SESSION['id'];
             $admin = $_SESSION['admin'];
             $_SESSION['id'];
@@ -97,6 +91,18 @@
             header(header: "Location: ../../../../index.php"); 
         }
 
+        // Consulta para obter o valor de not_inscr_parceiro da primeira linha
+        $sql_query = "SELECT * FROM contador_notificacoes WHERE id = 1";
+        $result = $mysqli->query($sql_query);
+        $row = $result->fetch_assoc();
+        $not_inscr_parceiro = $row['not_inscr_parceiro'] ?? 0; // Define 0 se não houver resultado
+        $not_crediario = $row['not_crediario'] ?? 0; // Define 0 se não houver resultado
+        $not_novos_produtos = $row['not_novos_produtos'] ?? 0; // Define 0 se não houver resultado
+        $not_msg = $row['not_msg'] ?? 0; // Define 0 se não houver resultado
+
+        // Soma todos os valores de notificações
+        $total_notificacoes = $not_inscr_parceiro + $not_crediario + $not_novos_produtos + $not_msg;
+        //echo $total_notificacoes; 
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -106,6 +112,9 @@
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="admin_home.js"></script> 
+    <script src="admin_home.js.js?v=<?php echo time(); ?>"></script><!--força a tualização-->
+
 </head>
 <body>
 
@@ -120,7 +129,13 @@
             <!-- Ícone de notificações com contagem -->
             <div class="notificacoes">
                 <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
-                <span id="notificacao-count" class="notificacao-count">4</span> <!-- Exemplo de contagem -->
+                <!-- Exibir a contagem de notificações -->
+                <?php if ($total_notificacoes > 0): ?>
+                    <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
+                <?php else: ?>
+                    <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
+                <?php endif; ?>
+
             </div>
             <i class="fas fa-bars" onclick="toggleMenu()"></i>
         </div>
@@ -128,22 +143,22 @@
 
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">
-        <h2>Notificações</h2>
+        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Solicitação de cadastro de Parceiro</li>
-            <li onclick="abrirNotificacao(2)">Solicitação de crediario</li>
-            <li onclick="abrirNotificacao(3)">Novo Produto</li>            
-            <li onclick="abrirNotificacao(4)">Nova mensagem recebida</li>
+            <li onclick="abrirNotificacao(1)">Solicitação de cadastro de Parceiro: <?php echo $not_inscr_parceiro; ?></li>
+            <li onclick="abrirNotificacao(2)">Solicitação de crediario: <?php echo $not_crediario; ?></li>
+            <li onclick="abrirNotificacao(3)">Novo Produto: <?php echo $not_novos_produtos; ?></li>            
+            <li onclick="abrirNotificacao(4)">Nova mensagem recebida: <?php echo $not_msg; ?></li>
         </ul>
     </aside>
 
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
-    <aside id="menu-lateral">
+    <aside id="menu-lateral" >
         <ul>
             <li><i class="fas fa-home"></i><span>Inicio</span></li>
             <li><i class="fas fa-user"></i> <span>Perfil da Loja</span></li>
-            <li><i class="fas fa-users"></i><span>Solicitações</span></li>
+            <li onclick="solicitacoes()"><i class="fas fa-users"></i><span>Solicitações</span></li>
             <li><i class="fas fa-cog"></i> <span>Configurações</span></li>
             <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></a></li>
         </ul>
@@ -188,9 +203,6 @@
         var sessionId = <?php echo $id; ?>;
 
         function abrirNotificacao(id) {
-            // Verifique se o ID da notificação e o ID da sessão estão definidos corretamente
-            //console.log("ID da Notificação:", id);
-            //console.log("ID da Sessão:", sessionId);
             
             // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
             var url = `detalhes_notificacao.php?id=${id}&session_id=${sessionId}`;
@@ -199,6 +211,40 @@
             // Verifica se a URL está correta antes de redirecionar
             window.location.href = url;
         }
+
+        function solicitacoes() {
+
+            // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
+            var url = `detalhes_notificacao.php?id=&session_id=${sessionId}`;
+            //console.log("Redirecionando para:", url);
+            
+            // Verifica se a URL está correta antes de redirecionar
+            window.location.href = url;
+        }
+
+
+        function fetchNotifications() {
+            fetch('get_notifications.php')
+                .then(response => response.json())
+                .then(data => {
+                    const notificationCount = document.getElementById('notificacao-count');
+                    notificationCount.innerText = data.total_notificacoes;
+
+                    // Ocultar o contador se for zero
+                    if (data.total_notificacoes > 0) {
+                        notificationCount.style.display = 'inline';
+                    } else {
+                        notificationCount.style.display = 'none';
+                    }
+                }).catch(error => console.error('Error fetching notifications:', error));
+        }
+
+        // Chama a função pela primeira vez
+        fetchNotifications();
+
+        // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
+        setInterval(fetchNotifications, 5000);
+
     </script>
 
 </body>

@@ -58,9 +58,9 @@
                 <h1><?php echo $parceiro['nomeFantasia']; ?></h1>
             </div>
             <div class="user-area">
-                <i class="fas fa-bell"></i>
+                <i class="fas fa-bell"></i><!--notificação-->
                 <div class="store-dropdown">
-                    <i class="fas fa-store" id="storeIcon"></i>
+                    <i class="fas fa-store" id="storeIcon"></i><!--Configuraçõa da Loja-->
                     <ul class="dropdown-menu" id="storeDropdown">
                         <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
                         <li><a href="configuracoes.php"><i class="fas fa-cog"></i> Configurações</a></li>
@@ -115,15 +115,6 @@
             <p>Nenhum produto com frete grátis disponível.</p>
         <?php endif; ?>
     </div>
-
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 <?php echo $parceiro['nomeFantasia']; ?> - Todos os direitos reservados</p>
-        <div class="contato">
-            <p><strong>Contato:</strong></p>
-            <p>Email: <?php echo $parceiro['email']; ?> | Telefone: <?php echo $parceiro['telefoneComercial']; ?></p>
-        </div>
-    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

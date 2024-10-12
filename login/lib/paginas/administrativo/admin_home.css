@@ -75,7 +75,7 @@ aside#menu-lateral {
     width: 200px; /* Largura fixa da barra lateral */
     padding: 20px;
     position: absolute; /* Mantém a barra lateral fixa */
-    top: 40px; /* Ajusta a posição abaixo do cabeçalho */
+    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
     display: none; /* Inicialmente escondido */
     transition: all 0.3s ease; /* Transição suave */
@@ -293,15 +293,15 @@ main .tab.active {
 #painel-notificacoes {
     display: none;
     position: fixed;
-    top: 40px; /* Ajuste conforme a altura do cabeçalho */
+    top: 60px; /* Ajuste conforme a altura do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
-    width: 300px;
+    width: 320px;
     height: 400px;
     background-color: white;
     border: 2px solid #ffb300;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 999;
+    z-index: 1000;
     padding: 10px;
 }
 

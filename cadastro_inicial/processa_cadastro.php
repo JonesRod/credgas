@@ -15,7 +15,6 @@
         $cnpj = $_POST['cnpj'];
         $inscricaoEstadual = $_POST['inscricaoEstadual'];
         $categoria = $_POST['categoria'];
-        $arquivoEmpresa =$_POST['arquivoEmpresa'];
         $telefoneComercial = $_POST['telefoneComercial'];
         $telefoneResponsavel = $_POST['telefoneResponsavel'];
         $email = $_POST['email'];
@@ -23,9 +22,48 @@
         $cep = $_POST['cep'];
         $estado = $_POST['uf'];
         $cidade = $_POST['cidade'];
+        $rua = $_POST['rua'];
+        $numero = $_POST['numero'];
+        $bairro = $_POST['bairro'];
         $termos =$_POST['aceito'];
 
-        //var_dump(value: $_POST);
+        // Verifica se o arquivo foi enviado pelo formulário
+        if (isset($_FILES['arquivoEmpresa'])) {
+            $arquivo = $_FILES['arquivoEmpresa'];
+        
+            // Definir o diretório onde o arquivo será salvo
+            $diretorioDestino = '../login/lib/paginas/parceiros/arquivos/'; // Certifique-se de que essa pasta exista e tenha permissões de gravação
+        
+            // Verifica se o diretório existe, senão cria
+            if (!is_dir(filename: $diretorioDestino)) {
+                mkdir(directory: $diretorioDestino, permissions: 0777, recursive: true);
+            }
+        
+            // Obtém o nome do arquivo original
+            $nomeArquivo = basename(path: $arquivo['name']);
+        
+            // Gera um nome único para evitar substituições
+            $novoNomeArquivo = uniqid() . '_' . $nomeArquivo;
+        
+            // Caminho completo para o arquivo no servidor
+            $caminhoCompleto = $diretorioDestino . $novoNomeArquivo;
+        
+            // Verifica se houve erro no upload
+            if ($arquivo['error'] === UPLOAD_ERR_OK) {
+                // Move o arquivo para a pasta de destino
+                if (move_uploaded_file(from: $arquivo['tmp_name'], to: $caminhoCompleto)) {
+                    //echo "Arquivo enviado com sucesso!";
+                    // Aqui você pode salvar o caminho no banco de dados, se necessário
+                    // Exemplo: $sql = "INSERT INTO tabela (caminho_arquivo) VALUES ('$caminhoCompleto')";
+                } else {
+                    echo "Erro ao mover o arquivo para o diretório de destino.";
+                }
+            } else {
+                echo "Erro no upload do arquivo: " . $arquivo['error'];
+            }
+        } else {
+            echo "Nenhum arquivo foi enviado.";
+        }
 
         // Verifica se o CNPJ já está cadastrado
         $sqlCNPJ = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE cnpj = '$cnpj'");
@@ -58,6 +96,9 @@
                 cep, 
                 estado, 
                 cidade,
+                endereco,
+                numero,
+                bairro,
                 status,
                 termos,
                 analize_inscricao) 
@@ -68,7 +109,7 @@
                 '$cnpj', 
                 '$inscricaoEstadual', 
                 '$categoria', 
-                '$arquivoEmpresa',
+                '$novoNomeArquivo',
                 '$telefoneComercial', 
                 '$telefoneResponsavel', 
                 '$email', 
@@ -76,6 +117,9 @@
                 '$cep', 
                 '$estado', 
                 '$cidade',
+                '$rua',
+                '$numero',
+                '$bairro',
                 '$status',
                 '$termos',
                 '1')";
@@ -83,6 +127,11 @@
                 $deu_certo = $mysqli->query(query: $sql_code) or die($mysqli->error);
 
                 if($deu_certo){
+
+                    // Atualizando o contador de notificações para a primeira linha (id = 1)
+                    $sql_update = "UPDATE contador_notificacoes SET not_inscr_parceiro = not_inscr_parceiro + 1 WHERE id = '1'";
+                    $stmt = $mysqli->prepare($sql_update);
+
                     $msg = true;
                     $msg = "Cadastro foi enviado para analiza!";
                     $msg1 = "";

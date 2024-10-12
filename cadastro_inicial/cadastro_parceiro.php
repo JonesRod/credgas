@@ -10,7 +10,7 @@
 </head>
 <body>
     
-    <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST">
+    <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
 
         <h2>Cadastre-se e comece a vender Online.</h2>
 
@@ -89,6 +89,15 @@
 
         <label for="cidade">Cidade:</label>
         <input type="text" id="cidade" name="cidade" required>
+
+        <label for="rua">RUA/AV:</label>
+        <input type="text" id="rua" name="rua" required>
+
+        <label for="numero">Numero:</label>
+        <input type="text" id="numero" name="numero" required>
+
+        <label for="bairro">Bairro:</label>
+        <input type="text" id="bairro" name="bairro" required>
 
         <div class="checkbox-container">
             <input type="checkbox" id="aceito" name="aceito" value="sim" required onchange="verificarAceite()">Eu aceito os <a href="termos.php" target="_blank"><b>Termos</b></a>.

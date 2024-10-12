@@ -1,26 +1,38 @@
-// Função para alternar o menu lateral
 function toggleMenu() {
     var menuLateral = document.getElementById("menu-lateral");
     var notificacoesPopup = document.getElementById("painel-notificacoes");
 
-    // Fecha as notificações se o menu for aberto
     if (notificacoesPopup.style.display === "block") {
         notificacoesPopup.style.display = "none";
     }
-
-    // Alterna a visibilidade do menu lateral
     if (menuLateral.style.display === "block") {
         menuLateral.style.display = "none";
     } else {
         menuLateral.style.display = "block";
     }
 }
+
+function toggleNotificacoes() {
+    var notificacoesPopup = document.getElementById("painel-notificacoes");
+    var menuLateral = document.getElementById("menu-lateral");
+
+    if (menuLateral.style.display === "block") {
+        menuLateral.style.display = "none";
+    }
+    if (notificacoesPopup.style.display === "block") {
+        notificacoesPopup.style.display = "none";
+    } else {
+        notificacoesPopup.style.display = "block";
+    }
+
+}
+
+
 // Função para esconder a barra lateral ao clicar em qualquer item
 function hideMenuOnClick() {
     const menu = document.getElementById('menu-lateral');
     menu.style.display = 'none';
 }
-
 // Adiciona o evento de clique a cada item do menu lateral
 document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
     item.addEventListener('click', hideMenuOnClick);
@@ -35,54 +47,24 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// Função para adicionar um método de pagamento (exemplo simples)
-function adicionarMetodoPagamento() {
-    alert('Adicionando novo método de pagamento...');
-}
-
-// Função para gerar dinamicamente a lista de solicitações de cadastro
-function carregarSolicitacoes() {
-    const solicitacoes = [
-        { empresa: 'Empresa 1', cnpj: '12.345.678/0001-90', email: 'empresa1@example.com' },
-        { empresa: 'Empresa 2', cnpj: '23.456.789/0001-90', email: 'empresa2@example.com' }
-    ];
-
-    const listaSolicitacoes = document.getElementById('lista-solicitacoes');
-    listaSolicitacoes.innerHTML = ''; // Limpa a lista antes de carregar novos dados
-
-    solicitacoes.forEach(solicitacao => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${solicitacao.empresa}</td>
-            <td>${solicitacao.cnpj}</td>
-            <td>${solicitacao.email}</td>
-            <td>
-                <button onclick="aprovarSolicitacao('${solicitacao.empresa}')">Aprovar</button>
-                <button onclick="rejeitarSolicitacao('${solicitacao.empresa}')">Rejeitar</button>
-            </td>
-        `;
-        listaSolicitacoes.appendChild(row);
-    });
-}
-
-// Funções para aprovar ou rejeitar solicitações
-function aprovarSolicitacao(empresa) {
-    alert(`Solicitação da empresa ${empresa} aprovada!`);
-}
-
-function rejeitarSolicitacao(empresa) {
-    alert(`Solicitação da empresa ${empresa} rejeitada.`);
-}
+window.addEventListener('click', function(event) {
+    const notif = document.getElementById('painel-notificacoes');
+    const notifIcon = document.querySelector('.fas.fa-bell');
+    if (notif.style.display === 'block' && !notif.contains(event.target) && event.target !== notifIcon) {
+        notif.style.display = 'none';
+    }
+});
 
 // Função para verificar o tamanho da tela e ocultar ou mostrar a barra lateral
-function checkScreenSize() {
+/*function checkScreenSize() {
     const menuLateral = document.getElementById('menu-lateral');
-    const isMenuVisible = menuLateral.style.display === 'none' || menuLateral.style.display === ''; // Verifica se o menu está visível
+    const computedStyle = window.getComputedStyle(menuLateral); // Pega os estilos computados
+    const isMenuVisible = computedStyle.display !== 'none'; // Verifica se o menu está visível
 
     if (window.innerWidth < 768) { // Ajuste a largura conforme necessário
         menuLateral.style.display = 'none'; // Oculta a barra lateral em telas pequenas
     } else {
-        menuLateral.style.display = isMenuVisible ? 'none' : 'block'; // Mantém o estado atual
+        menuLateral.style.display = isMenuVisible ? 'block' : 'none'; // Mostra ou mantém o estado atual
     }
 }
 
@@ -90,12 +72,10 @@ function checkScreenSize() {
 window.addEventListener('resize', checkScreenSize);
 
 // Chama a função inicialmente para definir o estado correto da barra lateral
-checkScreenSize();
+checkScreenSize();*/
 
-// Carregar solicitações quando a página for carregada
-window.onload = carregarSolicitacoes;
 
-// Função para mostrar o conteúdo da aba selecionada
+// -----------------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
     // Oculta todos os conteúdos das abas
     var conteudos = document.querySelectorAll('.conteudo-aba');
@@ -120,8 +100,20 @@ function mostrarConteudo(aba, element) {
 window.onload = function() {
     mostrarConteudo('dashboard', document.querySelector('.tab.active'));
 };
+
+
+// Função para fechar as notificações ao clicar fora dele
+/*window.addEventListener('click', function(event) {
+    const notif = document.getElementById('painel-notificacoes');
+    const notifIcon = document.querySelector('fas fa-bell'); // Ícone de menu
+    //console.log(reee);
+    if (notif.style.display === 'block' && !notif.contains(event.target) && event.target !== notifIcon) {
+        notif.style.display = 'none'; // Fecha a barra lateral
+    }
+});*/
+
 // Função para alternar as notificações
-function toggleNotificacoes() {
+/*function toggleNotificacoes() {
     var notificacoesPopup = document.getElementById("painel-notificacoes");
     var menuLateral = document.getElementById("menu-lateral");
 
@@ -130,13 +122,19 @@ function toggleNotificacoes() {
         menuLateral.style.display = "none";
     }
 
+    // Obtém o estilo calculado das notificações
+    var displayStyle = window.getComputedStyle(notificacoesPopup).display;
+
     // Alterna a visibilidade das notificações
-    if (notificacoesPopup.style.display === "block") {
-        notificacoesPopup.style.display = "none";
+    if (displayStyle === "none") {
+        notificacoesPopup.style.display = "block"; // Mostra o painel
+        console.log('Notificações abertas');
     } else {
-        notificacoesPopup.style.display = "block";
+        notificacoesPopup.style.display = "none"; // Oculta o painel
+        console.log('Notificações fechadas');
     }
-}
+}*/
+
 
 // Função para abrir o conteúdo da notificação clicada
 function abrirNotificacao(id) {
@@ -150,6 +148,3 @@ function atualizarContagemNotificacoes(contagem) {
     countElement.textContent = contagem;
     countElement.style.display = contagem > 0 ? 'block' : 'none';
 }
-
-// Atualize a contagem de notificações no início (exemplo: 3 notificações)
-atualizarContagemNotificacoes(4);
