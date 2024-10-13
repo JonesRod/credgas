@@ -29,7 +29,20 @@
         header("Location: ../../../../index.php");
         exit();
     }
-    
+
+    $id = $_SESSION['id'];
+    $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
+    $dados = $sql_query->fetch_assoc();
+
+    if(isset($dados['logo'])) {
+        $logo = $dados['logo'];
+        if($logo == ''){
+            $logo = 'arquivos/'.$logo;
+        }
+    }
+    if(!isset($logo['foto'])) {
+        $logo = '../arquivos_fixos/icone_loja.jpg';
+    }
 
     // Consulta para buscar produtos do catálogo
     $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
@@ -54,6 +67,8 @@
     <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
 
         <h2>Dados da Loja.</h2>
+
+        <img src="<?php echo $logo; ?>" alt="" style="max-width: 200px;">
 
         <span id="msgAlerta"></span><br>
 
