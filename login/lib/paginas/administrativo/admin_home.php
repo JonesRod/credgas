@@ -92,7 +92,7 @@
         }
 
         // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-        $sql_query = "SELECT * FROM contador_notificacoes WHERE id = 1";
+        $sql_query = "SELECT * FROM contador_notificacoes_admin WHERE id = 1";
         $result = $mysqli->query($sql_query);
         $row = $result->fetch_assoc();
         $not_inscr_parceiro = $row['not_inscr_parceiro'] ?? 0; // Define 0 se não houver resultado
@@ -123,7 +123,9 @@
         <div class="logo">
             <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
         </div>
+
         <h1>Painel Administrativo</h1>
+        
         <div class="menu-superior-direito">
             <span>Olá, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
             <!-- Ícone de notificações com contagem -->
@@ -151,7 +153,6 @@
             <li onclick="abrirNotificacao(4)">Nova mensagem recebida: <?php echo $not_msg; ?></li>
         </ul>
     </aside>
-
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral" >

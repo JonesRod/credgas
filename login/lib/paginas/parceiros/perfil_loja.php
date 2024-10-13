@@ -29,6 +29,7 @@
         header("Location: ../../../../index.php");
         exit();
     }
+    
 
     // Consulta para buscar produtos do catálogo
     $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
@@ -44,7 +45,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="localizador.js" defer></script> <!-- Inclui o arquivo JS -->
+    <!-- <script src="localizador.js" defer></script> //Inclui o arquivo JS -->
     <title>perfil da Loja</title>
     <link rel="stylesheet" href="perfil_loja.css">
 </head>
@@ -143,7 +144,7 @@
             <input type="checkbox" id="aceito" name="aceito" value="sim" required onchange="verificarAceite()">Eu aceito os <a href="termos.php" target="_blank"><b>Termos</b></a>.
         </div>
         <div class="action-buttons">
-            <a href="cadastro_inicial.html" class="link-voltar"><b>Voltar</b></a>
+            <a href="parceiro_home.php" class="link-voltar"><b>Voltar</b></a>
             <button type="submit" id="cadastrar" disabled>Cadastrar</button>
         </div>
 

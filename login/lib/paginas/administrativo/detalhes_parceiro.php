@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_notificacao = 1;
 
         // Primeiro, obtenha o valor atual da notificação
-        $sql_get_value = "SELECT not_inscr_parceiro FROM contador_notificacoes WHERE id = ?";
+        $sql_get_value = "SELECT not_inscr_parceiro FROM contador_notificacoes_admin WHERE id = ?";
         $stmt_get_value = $mysqli->prepare($sql_get_value);
         $stmt_get_value->bind_param("i", $id_notificacao);
         $stmt_get_value->execute();
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $valor = max(0, $not_inscr_parceiro - 1); // Não deixe o valor ficar negativo
 
         // Atualizando a notificação com o novo valor
-        $sql_update_notif = "UPDATE contador_notificacoes SET not_inscr_parceiro = ? WHERE id = ?";
+        $sql_update_notif = "UPDATE contador_notificacoes_admin SET not_inscr_parceiro = ? WHERE id = ?";
         $notificacao = $mysqli->prepare($sql_update_notif);
         $notificacao->bind_param("ii", $valor, $id_notificacao); // 'ii' indica que são dois inteiros
         $notificacao->execute();
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_notificacao = 1;
 
         // Primeiro, obtenha o valor atual da notificação
-        $sql_get_value = "SELECT not_inscr_parceiro FROM contador_notificacoes WHERE id = ?";
+        $sql_get_value = "SELECT not_inscr_parceiro FROM contador_notificacoes_admin WHERE id = ?";
         $stmt_get_value = $mysqli->prepare($sql_get_value);
         $stmt_get_value->bind_param("i", $id_notificacao);
         $stmt_get_value->execute();
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $valor = max(0, $not_inscr_parceiro - 1); // Não deixe o valor ficar negativo
 
         // Atualizando a notificação com o novo valor
-        $sql_update_notif = "UPDATE contador_notificacoes SET not_inscr_parceiro = ? WHERE id = ?";
+        $sql_update_notif = "UPDATE contador_notificacoes_admin SET not_inscr_parceiro = ? WHERE id = ?";
         $notificacao = $mysqli->prepare($sql_update_notif);
         $notificacao->bind_param("ii", $valor, $id_notificacao); // 'ii' indica que são dois inteiros
         $notificacao->execute();

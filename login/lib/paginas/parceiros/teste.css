@@ -26,7 +26,7 @@ header {
 header h1 {
     flex-grow: 1; /* Faz o título ocupar o espaço disponível */
     text-align: center; /* Centraliza o título horizontalmente */
-    font-size: 40px; /* Tamanho padrão do título */
+    font-size: 30px; /* Tamanho padrão do título */
     line-height: 100px; /* Alinha verticalmente o título com a altura do cabeçalho */
     margin: 0; /* Remove margens padrão */
 }
@@ -73,7 +73,7 @@ aside#menu-lateral {
     font-weight: bold; /* Aplica negrito ao texto */
     background-color: #d3d0ce;
     color: rgb(24, 8, 235);
-    width: 250px; /* Largura fixa da barra lateral */
+    width: 200px; /* Largura fixa da barra lateral */
     padding: 20px;
     position: absolute; /* Mantém a barra lateral fixa */
     top: 60px; /* Ajusta a posição abaixo do cabeçalho */
@@ -165,7 +165,6 @@ h2 {
 /* Botão "Inclua seu primeiro produto" */
 .button {
     /*display: inline-block;*/
-    margin-top: 50px;
     font-weight: bold; /* Deixa o texto em negrito */
     padding: 15px 30px;
     background-color: #4CAF50;
@@ -237,19 +236,11 @@ main .tab.active {
     overflow: auto; /* Para que o conteúdo role se for maior que a tela */
     background-color: #d3d0ce;
 
-    text-align: center; /* Centraliza o texto */
-    /*isplay: flex; /* Define um layout flexível */
-    flex-direction: column; /* Coloca os elementos verticalmente */
-    align-items: center; /* Centraliza horizontalmente os itens */
-    justify-content: center; /* Centraliza verticalmente os itens */
-    min-height: 200px; /* Define uma altura mínima para centralização adequada */
-    /*padding: 20px; /* Adiciona espaçamento interno */
 }
-
 .menu-mobile {
     background-color: #343a40;
     color: white;
-    padding: 15px;
+    padding: 5px;
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -338,7 +329,7 @@ main .tab.active {
     position: fixed;
     top: 60px; /* Ajuste conforme a altura do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
-    width: 250px;
+    width: 200px;
     height: 400px;
     background-color: white;
     border: 2px solid #ffb300;
@@ -370,53 +361,53 @@ main .tab.active {
     background-color: #f0f0f0;
 }
 
+/* Seção de Produtos, Promoções, Mais Vendidos e Frete Grátis */
+.section {
+    margin: 40px auto;
+    width: 70%;
+    max-width: 1200px;
+    text-align: center;
+}
+
 h2 {
     margin-bottom: 20px;
     font-size: 24px;
     color: #333;
 }
 
+/* Responsividade */
+/* Para telas menores que 1024px */
+@media (max-width: 1024px) {
+    .logo-img {
+        width: 120px;
+    }
+    .logo-text {
+        font-size: 22px;
+    }
+}
 
 
 
 
 /* Para telas menores que 768px */
 @media (max-width: 768px) {
-    header h1 {
-        font-size: 20px; /* Diminui o tamanho do título em telas pequenas */
-        /*margin: 20px 0; /* Adiciona margem para descer o título em telas pequenas */
+    .logo-img {
+        width: 100px;
     }
-
-    header .logo img {
-        height: 100px; /* Diminui o tamanho do logo em telas pequenas */
-        width: 100px; /* Ajuste proporcional ao tamanho */
-    }
-
-    aside#menu-lateral {
-        display: none; /* Oculta a barra lateral em telas pequenas */
-    }
-
-    /* Adicionando esta linha para esconder o ícone do menu */
-    .menu-superior-direito .fa-store {
-        display: none; /* Oculta o ícone do menu em telas pequenas */
-    }
-
-    .menu-mobile {
-        display: flex; /* Exibe o menu mobile em telas pequenas */
+    .logo-text {
+        font-size: 18px;
     }
     main .opcoes {
         /*flex-direction: column;*/
         gap: 10px;
 
     }
-    /* Diminui o tamanho das letras em telas menores */
-    main .tab span {
-        font-size: 15px; /* Ajuste conforme o necessário */
+    .menu-mobile {
+        display: flex; /* Exibe o menu mobile em telas pequenas */
     }
-
-    main .tab {
-        width: 30%;
-        max-width: 200px;
+    /* Adicionando esta linha para esconder o ícone do menu */
+    .menu-superior-direito .fa-store {
+        display: none; /* Oculta o ícone do menu em telas pequenas */
     }
 }
 
@@ -437,3 +428,9 @@ h2 {
         display: flex; /* Exibe o menu mobile em telas pequenas */
     }
 }
+
+
+
+
+
+
