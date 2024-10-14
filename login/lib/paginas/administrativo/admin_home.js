@@ -55,26 +55,6 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// Função para verificar o tamanho da tela e ocultar ou mostrar a barra lateral
-/*function checkScreenSize() {
-    const menuLateral = document.getElementById('menu-lateral');
-    const computedStyle = window.getComputedStyle(menuLateral); // Pega os estilos computados
-    const isMenuVisible = computedStyle.display !== 'none'; // Verifica se o menu está visível
-
-    if (window.innerWidth < 768) { // Ajuste a largura conforme necessário
-        menuLateral.style.display = 'none'; // Oculta a barra lateral em telas pequenas
-    } else {
-        menuLateral.style.display = isMenuVisible ? 'block' : 'none'; // Mostra ou mantém o estado atual
-    }
-}
-
-// Adiciona o evento de redimensionamento da janela
-window.addEventListener('resize', checkScreenSize);
-
-// Chama a função inicialmente para definir o estado correto da barra lateral
-checkScreenSize();*/
-
-
 // -----------------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
     // Oculta todos os conteúdos das abas
@@ -94,47 +74,13 @@ function mostrarConteudo(aba, element) {
 
     // Adiciona a classe 'active' à aba clicada
     element.classList.add('active');
+
 }
 
 // Define que a aba "Dashboard" está ativa ao carregar a página
 window.onload = function() {
     mostrarConteudo('dashboard', document.querySelector('.tab.active'));
 };
-
-
-// Função para fechar as notificações ao clicar fora dele
-/*window.addEventListener('click', function(event) {
-    const notif = document.getElementById('painel-notificacoes');
-    const notifIcon = document.querySelector('fas fa-bell'); // Ícone de menu
-    //console.log(reee);
-    if (notif.style.display === 'block' && !notif.contains(event.target) && event.target !== notifIcon) {
-        notif.style.display = 'none'; // Fecha a barra lateral
-    }
-});*/
-
-// Função para alternar as notificações
-/*function toggleNotificacoes() {
-    var notificacoesPopup = document.getElementById("painel-notificacoes");
-    var menuLateral = document.getElementById("menu-lateral");
-
-    // Fecha o menu lateral se as notificações forem abertas
-    if (menuLateral.style.display === "block") {
-        menuLateral.style.display = "none";
-    }
-
-    // Obtém o estilo calculado das notificações
-    var displayStyle = window.getComputedStyle(notificacoesPopup).display;
-
-    // Alterna a visibilidade das notificações
-    if (displayStyle === "none") {
-        notificacoesPopup.style.display = "block"; // Mostra o painel
-        console.log('Notificações abertas');
-    } else {
-        notificacoesPopup.style.display = "none"; // Oculta o painel
-        console.log('Notificações fechadas');
-    }
-}*/
-
 
 // Função para abrir o conteúdo da notificação clicada
 function abrirNotificacao(id) {

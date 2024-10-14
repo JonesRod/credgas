@@ -1,0 +1,31 @@
+/* Estilos para a pré-visualização das imagens */
+#preview {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+#preview img {
+    width: 250px; /* Tamanho da imagem */
+    margin-right: 10px; /* Espaçamento entre as imagens */
+    margin-bottom: 10px; /* Espaçamento abaixo das imagens */
+    position: relative; /* Para posicionar o botão de exclusão */
+}
+
+.delete-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza o botão */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: red; /* Cor do ícone de exclusão */
+    font-size: 16px; /* Tamanho do ícone */
+    z-index: 1; /* Garante que o botão fique acima da imagem */
+    font-size: 24px; /* Aumente o tamanho do ícone */
+}
+
+.delete-button:hover {
+    color: darkred; /* Cor ao passar o mouse */
+}

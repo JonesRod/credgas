@@ -11,11 +11,7 @@ function validateForm() {
         document.querySelector('#imsgAlerta').textContent = "Adicione uma logo.1";
         return false; // Impede o envio do formulário
     }
-    /*if (arqLogo.files.length === 0) {
-        //alert('Por favor, preencha todos os campos.');
-        document.querySelector('#imsgAlerta').textContent = "Adicione uma logo.2";
-        return false; // Impede o envio do formulário
-    }*/
+    
     if(uf === sem_escolha){
         document.querySelector('#imsgAlerta').textContent = "Selecione o Estado!";
         document.getElementById('iuf').focus();
@@ -119,15 +115,6 @@ async function fetchCityByCEP() {
 }
 
 function baixarArq_estatuto() {
-    // Obter o conteúdo da textarea
-    /*var conteudo = document.getElementById("iEst").value;
-
-    // Criar um link de download
-    var link = document.createElement('a');
-    link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(conteudo);
-    link.download = 'Estatuto_interno.txt';
-    link.click();*/
-    //console.log('oi');
     
     var nomeArquivo = document.getElementById('iEst').value;
     var link = document.createElement("a");
@@ -138,15 +125,6 @@ function baixarArq_estatuto() {
     document.body.removeChild(link);
 }
 function baixarArq_regimento() {
-    // Obter o conteúdo da textarea
-    /*var conteudo = document.getElementById("iEst").value;
-
-    // Criar um link de download
-    var link = document.createElement('a');
-    link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(conteudo);
-    link.download = 'Estatuto_interno.txt';
-    link.click();*/
-    //console.log('oi');
     
     var nomeArquivo = document.getElementById('iReg').value;
     var link = document.createElement("a");
@@ -168,23 +146,4 @@ function perguntarSalvar() {
         window.location.href = 'admin_home.php';
     }
 }
-
-/*window.addEventListener('popstate', function(event) {
-    history.pushState(null, document.title, location.href);
-  });
-
-window.onbeforeunload = function() {
-    return "Tem certeza que deseja sair sem salvar?";
-};
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === "ArrowLeft") { // Verifica se a tecla pressionada é a seta à esquerda
-        var confirmacao = confirm("Tem certeza que deseja sair sem salvar?");
-        if (confirmacao) {
-            window.onbeforeunload = null; // Remove a mensagem de confirmação
-        } else {
-            event.preventDefault(); // Previne o comportamento padrão do navegador (navegar para trás)
-        }
-    }
-});*/
 

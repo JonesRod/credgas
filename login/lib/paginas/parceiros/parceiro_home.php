@@ -110,7 +110,7 @@
         <!-- Conteúdo -->
         <div class="opcoes">
             <!-- Conteúdo -->
-            <div class="tab" onclick="mostrarConteudo('catalogo',this)">
+            <div class="tab active" onclick="mostrarConteudo('catalogo',this)">
                 <span>Catálogo</span>
             </div>
 
@@ -134,7 +134,12 @@
                 <h2>Catálogo de Produtos</h2>
                 <!-- Lista de produtos aqui -->
             <?php else: ?>
-                <button class="button">Inclua seu primeiro produto</button>
+                <a href="produtos/adicionar_produto.php">
+                    <form method="POST" action="produtos/adicionar_produto.php">
+                        <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                        <button class="button">Inclua seu primeiro produto</button>
+                    </form>
+                </a>
             <?php endif; ?>
         </div>
         

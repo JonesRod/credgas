@@ -55,7 +55,7 @@ document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item =
     item.addEventListener('click', hideMenuOnClick);
 });
 
-// -----------------Função para mostrar o conteúdo da aba selecionada
+// ------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
     // Oculta todos os conteúdos das abas
     var conteudos = document.querySelectorAll('.conteudo-aba');
@@ -74,9 +74,10 @@ function mostrarConteudo(aba, element) {
 
     // Adiciona a classe 'active' à aba clicada
     element.classList.add('active');
+    console.log('eee');
 }
 
-// Define que a aba "Dashboard" está ativa ao carregar a página
+// Define que a aba "catalogo" está ativa ao carregar a página
 window.onload = function() {
     mostrarConteudo('catalogo', document.querySelector('.tab.active'));
 };
