@@ -61,7 +61,7 @@
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
     <style>
-        .catalogo-container {
+        .container {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -70,39 +70,39 @@
             /*margin-top: -30px;*/
         }
 
-.catalogo-titulo {
-    font-size: 20px;
-    font-weight: bold;
-}
+        .titulo {
+            font-size: 20px;
+            font-weight: bold;
+        }
 
-.catalogo-input {
-    width: 60%;
-    padding: 8px;
-    font-size: 30px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    text-align: left;
-}
+        .input {
+            width: 60%;
+            padding: 5px;
+            font-size: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            text-align: left;
+        }
 
-.catalogo-form {
-    margin: 0;
-}
+        .form {
+            margin: 0;
+        }
 
-.button {
-    margin: 5px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 18px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+        .button {
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
 
-.button:hover {
-    background-color: #45a049;
-}
+        .button:hover {
+            background-color: #45a049;
+        }
 
     </style>
 </head>
@@ -175,54 +175,108 @@
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: block;">
-            <div class="catalogo-container">
+            <div class="container">
                 <?php if ($produtos_catalogo->num_rows > 0): ?>
-                    <span class="catalogo-titulo">Catálogo de Produtos</span>
-                    <input class="catalogo-input" type="text" placeholder="Produto.">
+                    <span class="titulo">Catálogo de Produtos</span>
+                    <input class="input" type="text" placeholder="Pesquizar Produto.">
                     <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
                         <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
                         <button class="button">Cadastrar produto</button>    
-                    </form>           
-                <!-- Lista de produtos aqui -->
-                <?php else: ?>
-            </div>
-
-                <a href="produtos/adicionar_produto.php">
-                    <form method="POST" action="produtos/adicionar_produto.php">
-                        <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
-                        <p>Nenhuma produto cadastrado ainda!.</p>
-                        <button class="button">Inclua seu primeiro produto</button>
                     </form>
-                </a>
 
-            <?php endif; ?>
+                <!-- Lista de produtos aqui -->
+                <div class="lista-produtos">
+                    <?php while ($produto = $produtos_catalogo->fetch_assoc()): ?>
+                        <div class="produto-item">
+
+                        <?php
+                            // Verifica se o campo 'imagens' está definido e não está vazio
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por /
+                                $imagensArray = explode(separator: '/', string: $produto['imagens']);
+                                
+                                // Pega a primeira imagem do array
+                                $primeiraImagem = $imagensArray[1];
+                                //echo $primeiraImagem;
+                                // Exibe a primeira imagem
+                                ?>
+                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="pro" class="produto-imagem">
+                                <?php
+                            } else {
+                                // Caso não haja imagens, exibe uma imagem padrão
+                                ?>
+                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                                <?php
+                            }
+
+
+                        ?>
+                        <div class="produto-detalhes">
+                                <h3 class="produto-nome"><?php echo $produto['nome_produto']; ?></h3>
+                                <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                                <!-- Converte o valor do produto para float e formata -->
+                                 
+                                <?php
+                                    $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
+                                    $valor_produto = floatval(value: $valor_produto);
+                                ?>
+                                <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                                <a href="produtos/editar_produto.php?id=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                            </div>
+                        </div>
+
+                    <?php endwhile; ?>
+                </div>
+
+                <?php else: ?>
+                    <a href="produtos/adicionar_produto.php">
+                        <form method="POST" action="produtos/adicionar_produto.php">
+                            <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                            <p>Nenhuma produto cadastrado ainda!.</p>
+                            <button class="button">Inclua seu primeiro produto</button>
+                        </form>
+                    </a>
+
+                <?php endif; ?>                    
+            </div>
         </div>
         
         <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
-            <?php if ($promocoes->num_rows > 0): ?>
-                <span>Promoções</span>
-                <!-- Lista de promoções aqui -->
-            <?php else: ?>
-                <p>Nenhuma promoção disponível.</p>
-            <?php endif; ?>
+            <div class="container">
+                <?php if ($promocoes->num_rows > 0): ?>
+                    <span class="titulo">Promoções</span>
+                    <input class="input" type="text" placeholder="Pesquizar Produto.">
+                    <!-- Lista de promoções aqui -->
+                <?php else: ?>
+                    <p>Nenhuma promoção disponível.</p>
+                <?php endif; ?>
+            </div>
         </div>
 
         <div id="conteudo-vendidos" class="conteudo-aba" style="display: none;">
-            <?php if ($vendidos->num_rows > 0): ?>
-                <span>+ vendidos</span>
-                <!-- Lista de frete grátis aqui -->
-            <?php else: ?>
-                <p>Nenhum produto na categoria "Mais Vendidos".</p>
-            <?php endif; ?>
+            <div class="container">
+                <?php if ($vendidos->num_rows > 0): ?>
+                    <span class="titulo">+ vendidos</span>
+                    <input class="input" type="text" placeholder="Pesquizar Produto.">
+                    <!-- Lista de frete grátis aqui -->
+                <?php else: ?>
+                    <p>Nenhum produto na categoria "Mais Vendidos".</p>
+                <?php endif; ?>
+            </div>
         </div>
 
         <div id="conteudo-frete" class="conteudo-aba" style="display: none;">
-            <?php if ($frete_gratis->num_rows > 0): ?>
-                <span>Frete Grátis</span>
-                <!-- Lista de frete grátis aqui -->
-            <?php else: ?>
-                <p>Nenhum produto com frete grátis disponível.</p>
-            <?php endif; ?>
+            <div class="container">
+                <?php if ($frete_gratis->num_rows > 0): ?>
+                    <span class="titulo">Frete Grátis</span>
+                    <input class="input" type="text" placeholder="Pesquizar Produto.">
+                    <!-- Lista de frete grátis aqui -->
+                <?php else: ?>
+                    <p>Nenhum produto com frete grátis disponível.</p>
+                <?php endif; ?>
+            </div>
         </div>
 
     </main>

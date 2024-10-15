@@ -74,7 +74,7 @@ function mostrarConteudo(aba, element) {
 
     // Adiciona a classe 'active' à aba clicada
     element.classList.add('active');
-    console.log('eee');
+    //console.log('eee');
 }
 
 // Define que a aba "catalogo" está ativa ao carregar a página
