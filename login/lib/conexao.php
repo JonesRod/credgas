@@ -3,7 +3,7 @@
     $host = "localhost";
     $usuario = "root";
     $senha = "";
-    $banco = "credgas";
+    $banco = "jr_comercio";
 
     //acesso do banco no site
     /*$host = "localhost";

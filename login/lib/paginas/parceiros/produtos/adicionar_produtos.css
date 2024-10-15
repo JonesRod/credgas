@@ -29,3 +29,9 @@
 .delete-button:hover {
     color: darkred; /* Cor ao passar o mouse */
 }
+
+/* Estilos adicionais para ocultar ou mostrar o campo de frete */
+.frete-group {
+    display: block; /* Oculta o grupo de frete inicialmente */
+    margin-top: 10px; /* Espaçamento superior */
+}

@@ -31,7 +31,7 @@
     }
 
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_loja = '$id'") or die($mysqli->error);
+    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
     $promocoes = $mysqli->query(query: "SELECT * FROM produtos WHERE promocao = 1 AND id_loja = '$id'");
@@ -40,7 +40,7 @@
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id = 1";
-    $result = $mysqli->query($sql_query_not_par);
+    $result = $mysqli->query(query: $sql_query_not_par);
     $row = $result->fetch_assoc();
     $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
@@ -60,6 +60,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
+    <style>
+        .catalogo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px;
+            /*margin-top: -30px;*/
+        }
+
+.catalogo-titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.catalogo-input {
+    width: 60%;
+    padding: 8px;
+    font-size: 30px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.catalogo-form {
+    margin: 0;
+}
+
+.button {
+    margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+    </style>
 </head>
 <body>
 
@@ -130,16 +175,26 @@
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: block;">
-            <?php if ($produtos_catalogo->num_rows > 0): ?>
-                <h2>Catálogo de Produtos</h2>
+            <div class="catalogo-container">
+                <?php if ($produtos_catalogo->num_rows > 0): ?>
+                    <span class="catalogo-titulo">Catálogo de Produtos</span>
+                    <input class="catalogo-input" type="text" placeholder="Produto.">
+                    <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
+                        <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                        <button class="button">Cadastrar produto</button>    
+                    </form>           
                 <!-- Lista de produtos aqui -->
-            <?php else: ?>
+                <?php else: ?>
+            </div>
+
                 <a href="produtos/adicionar_produto.php">
                     <form method="POST" action="produtos/adicionar_produto.php">
                         <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                        <p>Nenhuma produto cadastrado ainda!.</p>
                         <button class="button">Inclua seu primeiro produto</button>
                     </form>
                 </a>
+
             <?php endif; ?>
         </div>
         
