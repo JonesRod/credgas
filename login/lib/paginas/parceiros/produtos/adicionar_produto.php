@@ -71,7 +71,7 @@
             <input type="text" id="valor_frete" name="valor_frete" step="0.01" oninput="formatarValorFrete(this)" >
         </div>
 
-        <!-- Upload de Imagens (até 10) -->
+        <!-- Upload de Imagens (até 6) -->
         <div class="form-group">
             <div id="preview"></div>
             <label for="produtoImagens">Selecione no máximo 6 imagens do produto:</label>
@@ -85,7 +85,6 @@
         </div>
         <script src="adicionar_produto.js"></script>        
     </form>
-    
 
 </body>
 </html>

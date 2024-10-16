@@ -12,6 +12,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     position: relative;
+    overflow-y: scroll; /* Garante que o corpo da página possa rolar */
 }
 
 header {
@@ -200,11 +201,11 @@ main .opcoes {
 }
 
 main .tab {
-    padding: 10px 20px;
+    padding: 10px;
     border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
     background-color: #007BFF;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     text-align: center;
     transition: background-color 0.3s ease, transform 0.3s ease;
@@ -238,12 +239,13 @@ main .tab.active {
     background-color: #d3d0ce;
 
     text-align: center; /* Centraliza o texto */
-    /*isplay: flex; /* Define um layout flexível */
+    display: flex; /* Define um layout flexível */
     flex-direction: column; /* Coloca os elementos verticalmente */
     align-items: center; /* Centraliza horizontalmente os itens */
     justify-content: center; /* Centraliza verticalmente os itens */
     min-height: 200px; /* Define uma altura mínima para centralização adequada */
     /*padding: 20px; /* Adiciona espaçamento interno */
+    padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
 }
 
 .menu-mobile {
@@ -376,6 +378,100 @@ h2 {
     color: #333;
 }
 
+/* Estilos para telas maiores (desktops) */
+.lista-produtos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+.produto-item {
+    background-color: aliceblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.produto-item:hover {
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.2);
+}
+
+.produto-imagem {
+    width: 100%;
+    height: auto;
+    max-width: 200px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.produto-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+
+.produto-nome {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.produto-descricao {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.produto-preco {
+    font-size: 1.2em;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.button-editar {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.button-editar:hover {
+    background-color:darkorange;
+}
+.button {
+    margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: darkorange;
+}
+
+.catalogo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
 
 
 
@@ -404,19 +500,76 @@ h2 {
     .menu-mobile {
         display: flex; /* Exibe o menu mobile em telas pequenas */
     }
+    /* Botão "Inclua seu primeiro produto" */
+    .button {
+        font-weight: bold; /* Deixa o texto em negrito */
+        padding: 10px 10px;
+        font-size: 12px;
+    }
     main .opcoes {
         /*flex-direction: column;*/
         gap: 10px;
-
+        background-color: #007BFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 0px;
+        padding: auto;
     }
     /* Diminui o tamanho das letras em telas menores */
     main .tab span {
         font-size: 15px; /* Ajuste conforme o necessário */
     }
-
+    main {
+        display: flex;
+        flex-direction: column;
+        height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+        box-sizing: border-box;
+    }
     main .tab {
-        width: 25%;
-        max-width: 150px;
+        max-width: 10px;
+        border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+        background-color: #007BFF;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        display: flex; /* Garante que o conteúdo interno seja flexível */
+        padding: 10px 50px;
+        width: auto; /* Garante que as abas se ajustem ao conteúdo */
+        /*width: 5%; /* Garante que as abas ocupem a largura completa em telas pequenas */
+        justify-content: center; /* Centraliza o texto dentro da aba */
+        align-items: center;
+    }
+
+    main .tab:hover {
+        background-color: #afa791;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    main .tab.active {
+        background-color: #ffb300; /* Aba ativa com cor diferente */
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .produto-item {
+        width: 180px;
+        padding: 3px;
+    }
+
+    .produto-imagem {
+        max-width: 180px;
+    }
+
+    .produto-nome {
+        font-size: 1.1em;
+    }
+
+    .button-editar {
+        padding: 6px 12px;
     }
 }
 
@@ -436,4 +589,61 @@ h2 {
     .menu-mobile {
         display: flex; /* Exibe o menu mobile em telas pequenas */
     }
+    main {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Garante que o main ocupe no mínimo a altura da tela */
+        overflow: auto; /* Permite que o conteúdo do main role se for maior que a tela */
+    }
+    
+    .conteudo-aba {
+        flex-grow: 1;
+        overflow-y: auto; /* Permite que o conteúdo dentro das abas role */
+        max-height: calc(100vh - 100px); /* Ajuste para que o conteúdo role corretamente */
+    }
+    main .tab:hover {
+        background-color: #afa791;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    main .tab.active {
+        background-color: #ffb300; /* Aba ativa com cor diferente */
+        color: white;
+        transform: scale(1.05);
+
+        word-spacing: -10px; /* Junta as palavras mais próximas */
+        justify-content: center; /* Centraliza o texto dentro da aba */
+        align-items: center;
+    }
+    .produto-item {
+        width: 100%;
+        max-width: 300px;
+        padding: 5px;
+    }
+
+    .produto-imagem {
+        max-width: 100%;
+    }
+
+    .produto-nome {
+        font-size: 1.1em;
+    }
+
+    .button-editar {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .produto-descricao {
+        font-size: 0.85em;
+    }
 }
+
+
+
+
+
+
+
+

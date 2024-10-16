@@ -87,23 +87,6 @@
         .form {
             margin: 0;
         }
-
-        .button {
-            margin: 5px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .button:hover {
-            background-color: #45a049;
-        }
-
     </style>
 </head>
 <body>
@@ -183,24 +166,24 @@
                         <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
                         <button class="button">Cadastrar produto</button>    
                     </form>
-
-                <!-- Lista de produtos aqui -->
-                <div class="lista-produtos">
-                    <?php while ($produto = $produtos_catalogo->fetch_assoc()): ?>
-                        <div class="produto-item">
+            </div>
+            <!-- Lista de produtos aqui -->
+            <div class="lista-produtos">
+                <?php while ($produto = $produtos_catalogo->fetch_assoc()): ?>
+                    <div class="produto-item">
 
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
                             if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por /
-                                $imagensArray = explode(separator: '/', string: $produto['imagens']);
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                                $imagensArray = explode(separator: ',', string: $produto['imagens']);
                                 
                                 // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[1];
+                                $primeiraImagem = $imagensArray[0];
                                 //echo $primeiraImagem;
                                 // Exibe a primeira imagem
                                 ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="pro" class="produto-imagem">
+                                <img src="produtos/<?php echo $primeiraImagem; ?>" alt="pro" class="produto-imagem">
                                 <?php
                             } else {
                                 // Caso não haja imagens, exibe uma imagem padrão
@@ -208,39 +191,35 @@
                                 <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
                                 <?php
                             }
-
-
                         ?>
                         <div class="produto-detalhes">
-                                <h3 class="produto-nome"><?php echo $produto['nome_produto']; ?></h3>
-                                <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <h3 class="produto-nome"><?php echo $produto['nome_produto']; ?></h3>
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
-                                <!-- Converte o valor do produto para float e formata -->
-                                 
-                                <?php
-                                    $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
-                                    $valor_produto = floatval(value: $valor_produto);
-                                ?>
-                                <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                            <!-- Converte o valor do produto para float e formata -->
+                                
+                            <?php
+                                $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
+                                $valor_produto = floatval(value: $valor_produto);
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format(num: $valor_produto, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?></p>
 
-                                <a href="produtos/editar_produto.php?id=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                            </div>
+                            <a href="produtos/editar_produto.php?id=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
                         </div>
+                    </div>
 
-                    <?php endwhile; ?>
-                </div>
-
-                <?php else: ?>
-                    <a href="produtos/adicionar_produto.php">
-                        <form method="POST" action="produtos/adicionar_produto.php">
-                            <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
-                            <p>Nenhuma produto cadastrado ainda!.</p>
-                            <button class="button">Inclua seu primeiro produto</button>
-                        </form>
-                    </a>
-
-                <?php endif; ?>                    
+                <?php endwhile; ?>
             </div>
+
+            <?php else: ?>
+                <a href="produtos/adicionar_produto.php">
+                    <form method="POST" action="produtos/adicionar_produto.php">
+                        <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                        <p>Nenhuma produto cadastrado ainda!.</p>
+                        <button class="button">Inclua seu primeiro produto</button>
+                    </form>
+                </a>
+            <?php endif; ?>                               
         </div>
         
         <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
