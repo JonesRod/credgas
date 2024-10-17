@@ -71,12 +71,28 @@
             <input type="text" id="valor_frete" name="valor_frete" step="0.01" oninput="formatarValorFrete(this)" >
         </div>
 
-        <!-- Upload de Imagens (até 6) -->
-        <div class="form-group">
-            <div id="preview"></div>
-            <label for="produtoImagens">Selecione no máximo 6 imagens do produto:</label>
-            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple >
+<!-- Upload de Imagens (até 6) -->
+<div class="form-group">
+    <div id="preview"></div>
+    <label for="produtoImagens">Selecione no máximo 6 imagens do produto:</label>
+
+    <div id="imageUploadContainer" style="display: flex; flex-wrap: wrap;">
+        <div class="image-upload">
+            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" onchange="addImage(this)" style="display:none;">
+            <label for="produtoImagens" class="add-image-btn">
+                <i class="fas fa-plus-circle"></i> Adicionar Imagem
+            </label>
         </div>
+
+        <!-- Espaço para as imagens e botões de excluir -->
+        <div class="image-preview-container" id="imagePreviewContainer" style="display: flex; flex-wrap: wrap; margin-left: 10px;">
+            <!-- As pré-visualizações das imagens serão adicionadas aqui pelo JavaScript -->
+        </div>
+    </div>
+</div>
+
+
+
 
         <!-- Botões -->
         <div class="form-group">

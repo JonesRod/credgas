@@ -8,11 +8,11 @@ session_start();
 // Verifica se o ID do produto foi passado via GET
 if (isset($_GET['id'])) {
     // Obtém o ID do produto da URL e faz o tratamento adequado para evitar injeção SQL
-    $id_produto = intval($_GET['id']);
+    $id_produto = intval(value: $_GET['id']);
 
     // Consulta para obter os dados do produto
     $sql_produto = "SELECT * FROM produtos WHERE id_produto = ?";
-    $stmt = $mysqli->prepare($sql_produto); // Prepara a consulta
+    $stmt = $mysqli->prepare(query: $sql_produto); // Prepara a consulta
     if ($stmt) {
         $stmt->bind_param("i", $id_produto); // Liga o parâmetro ID ao SQL
         $stmt->execute(); // Executa a consulta
@@ -54,6 +54,7 @@ if (isset($_GET['id'])) {
         <h1>Editar Produto</h1>
 
         <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $produto['id_parceiro']; ?>">
+        <input type="hidden" name="id_produto" value="<?php echo htmlspecialchars(string: $produto['id_produto']); ?>">
 
         <!-- Nome do Produto -->
         <div class="form-group">
@@ -75,19 +76,20 @@ if (isset($_GET['id'])) {
 
         <div class="form-group">
             <label for="valor_produto_taxa">Valor do Produto + taxa (10%) da plataforma (R$):</label>
-            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" step="0.01" value="" required readonly>
+            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" step="0.01" value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" required readonly>
         </div>
 
         <!-- Opção de Frete Grátis -->
         <div class="form-group">
             <label>Frete Grátis:</label>
-            <select id="frete_gratis" name="frete_gratis">
+            <select id="frete_gratis" name="frete_gratis" onchange="toggleFreteValor()">
                 <option value="nao" <?php echo ($produto['frete_gratis'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                 <option value="sim" <?php echo ($produto['frete_gratis'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
-        <div class="frete-group" id="frete-group">
+        <!-- Campo para valor de frete -->
+        <div class="frete-group" id="frete-group" style="<?php echo ($produto['frete_gratis'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
             <label for="valor_frete">Valor do Frete (R$):</label>
             <input type="text" id="valor_frete" name="valor_frete" step="0.01" value="<?php echo htmlspecialchars($produto['valor_frete']); ?>" oninput="formatarValorFrete(this)">
         </div>
@@ -113,7 +115,7 @@ if (isset($_GET['id'])) {
                 <?php endif; endforeach; ?>
             </div>
             <label for="produtoImagens">Atualizar Imagens (até 6):</label>
-            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple>
+            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple required>
         </div>
 
         <!-- Botões -->
@@ -124,10 +126,61 @@ if (isset($_GET['id'])) {
         
         <script src="adicionar_produto.js"></script>
         <script>
-                window.onload = function() {
-                    formatarValor(document.getElementById('valor_produto'));
-                };
+            var originalFreteValue = "<?php echo htmlspecialchars(string: $produto['valor_frete']); ?>"; // Valor original do frete vindo do BD
+
+            function toggleFreteValor() {
+                var select = document.getElementById("frete_gratis");
+                var freteGroup = document.getElementById("frete-group");
+                var valorFreteInput = document.getElementById("valor_frete");
+
+                if (select.value === "sim") {
+                    // Esconde o campo e zera o valor
+                    freteGroup.style.display = "none";
+                    valorFreteInput.value = "0.00";
+                } else {
+                    // Mostra o campo e restaura o valor do BD
+                    freteGroup.style.display = "block";
+                    setTimeout(function() {
+                        valorFreteInput.value = originalFreteValue; // Força atribuição com um pequeno delay
+                    }, 10);
+                    //console.log("Original frete value: ", originalFreteValue);
+                }
+            }
+
+            // Ao carregar a página, executa a função para ajustar o campo de valor de frete
+            window.onload = function() {
+                toggleFreteValor();
+            };
+
+            function removerImagem(index) {
+                if (confirm("Tem certeza que deseja remover esta imagem?")) {
+                    var produtoId = <?php echo $id_produto; ?>;
+                    // Envia o índice da imagem e o ID do produto para o servidor
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "remover_imagem.php", true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    xhr.onload = function () {
+                        if (xhr.status === 200) {
+                            var response = xhr.responseText.trim(); // Obtém a resposta do servidor
+                            if (response === "success") {
+                                alert("Imagem removida com sucesso!");
+                                // Atualiza a página para refletir a remoção da imagem
+                                location.reload();
+                            } else {
+                                console.log("Erro do servidor: " + response); // Exibe a resposta do servidor no console
+                                alert("Erro ao remover a imagem: " + response);
+                            }
+                        } else {
+                            alert("Erro ao remover a imagem: Status HTTP " + xhr.status);
+                        }
+                    };
+                    xhr.send("index=" + index + "&produto_id=" + produtoId);
+                }
+            }
+
+
         </script>
+
     </form>
     
 </body>

@@ -174,9 +174,9 @@
 
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                            if (isset($produto['img1']) && !empty($produto['img1'])) {
                                 // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(separator: ',', string: $produto['imagens']);
+                                $imagensArray = explode(separator: ',', string: $produto['img1']);
                                 
                                 // Pega a primeira imagem do array
                                 $primeiraImagem = $imagensArray[0];

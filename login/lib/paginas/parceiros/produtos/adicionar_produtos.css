@@ -35,3 +35,42 @@
     display: block; /* Oculta o grupo de frete inicialmente */
     margin-top: 10px; /* Espaçamento superior */
 }
+
+.image-upload {
+    position: relative; /* Para posicionar o ícone de excluir em relação à imagem */
+    display: inline-block; /* Para manter as imagens lado a lado */
+    margin-right: 10px; /* Espaçamento entre as imagens */
+    width: 100px; /* Largura fixa para o contêiner da imagem */
+    height: 100px; /* Altura fixa para o contêiner da imagem */
+    overflow: hidden; /* Para ocultar qualquer conteúdo que ultrapasse o contêiner */
+}
+
+.image-preview img {
+    width: 100%; /* Faz com que a imagem preencha o contêiner */
+    height: auto; /* Mantém a proporção da imagem */
+    object-fit: cover; /* Faz com que a imagem se ajuste ao contêiner sem distorcer */
+}
+
+.add-image-btn {
+    display: inline-block;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: green; /* Cor verde para o botão */
+    color: white; /* Cor do texto */
+    cursor: pointer;
+}
+
+.add-image-btn:hover {
+    background-color: darkgreen; /* Cor mais escura ao passar o mouse */
+}
+
+.delete-icon {
+    cursor: pointer;
+    color: red; /* Cor do ícone de excluir */
+    position: absolute; /* Para posicionar o ícone de excluir sobre a imagem */
+    top: 5px; /* Distância do topo */
+    right: 5px; /* Distância da direita */
+}
+
+

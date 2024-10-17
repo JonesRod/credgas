@@ -56,55 +56,46 @@ function formatarValorFrete(input) {
 
 }
 
-document.getElementById('produtoImagens').addEventListener('change', function(event) {
-    const previewDiv = document.getElementById('preview');
-    previewDiv.innerHTML = ''; // Limpa a pré-visualização anterior
-    const files = event.target.files; // Arquivos selecionados
+let imageCount = 0; // Contador de imagens adicionadas
 
-    // Limite máximo de 6 imagens
-    const maxImagens = 6;
+function addImage(input) {
+    const files = input.files;
+    const container = document.getElementById('imagePreviewContainer');
 
-    if (files.length > maxImagens) {
-        alert('Você pode selecionar no máximo ' + maxImagens + ' imagens.');
-        event.target.value = ''; // Limpa o campo de seleção se ultrapassar o limite
-        return;
-    }
+    for (let i = 0; i < files.length; i++) {
+        if (imageCount < 6) { // Limitar a 6 imagens
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imagePreview = document.createElement('div');
+                imagePreview.className = 'image-upload';
+                imagePreview.innerHTML = `
+                    <img src="${e.target.result}" alt="Imagem do Produto ${imageCount + 1}" />
+                    <i class="fas fa-trash delete-icon" onclick="removeImage(this)"></i>
+                `;
+                container.appendChild(imagePreview);
+                imageCount++;
 
-    if (files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const fileReader = new FileReader();
-
-            fileReader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.width = '100px'; // Defina o tamanho da imagem
-                img.style.marginRight = '10px'; // Adiciona um espaçamento
-
-                // Cria o botão de exclusão
-                const deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>'; // Ícone de lixeira
-                deleteButton.type = 'button';
-                deleteButton.classList.add('delete-button');
-                deleteButton.style.position = 'absolute';
-                //deleteButton.style.top = '5px';
-                //deleteButton.style.right = '5px';
-                deleteButton.onclick = function() {
-                    previewDiv.removeChild(imgContainer);
-                };
-
-                // Cria um contêiner para imagem e botão de exclusão
-                const imgContainer = document.createElement('div');
-                imgContainer.style.position = 'relative'; // Para posicionar o botão de exclusão
-                imgContainer.style.display = 'inline-block'; // Para alinhar as imagens na horizontal
-                imgContainer.style.marginBottom = '10px'; // Margem entre as imagens
-                imgContainer.appendChild(img);
-                imgContainer.appendChild(deleteButton);
-
-                previewDiv.appendChild(imgContainer);
-            };
-
-            fileReader.readAsDataURL(file); // Converte o arquivo em URL base64 para exibir no <img>
+                // Se já houver 6 imagens, esconder o ícone de adicionar
+                if (imageCount >= 6) {
+                    document.getElementById('produtoImagens').style.display = 'none';
+                }
+            }
+            reader.readAsDataURL(files[i]);
         }
     }
-});
+}
+
+function removeImage(element) {
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    imagePreviewContainer.removeChild(element.parentElement); // Remove a imagem e o ícone de lixeira
+    imageCount--; // Decrementar o contador
+
+    // Se houver espaço para adicionar imagens, mostrar o ícone de adicionar novamente
+    if (imageCount < 6) {
+        document.getElementById('produtoImagens').style.display = 'block';
+    }
+}
+
+
+
+
