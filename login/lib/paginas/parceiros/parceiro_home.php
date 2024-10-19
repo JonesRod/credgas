@@ -174,16 +174,16 @@
 
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['img1']) && !empty($produto['img1'])) {
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
                                 // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(separator: ',', string: $produto['img1']);
+                                $imagensArray = explode(separator: ',', string: $produto['imagens']);
                                 
                                 // Pega a primeira imagem do array
                                 $primeiraImagem = $imagensArray[0];
                                 //echo $primeiraImagem;
                                 // Exibe a primeira imagem
                                 ?>
-                                <img src="produtos/<?php echo $primeiraImagem; ?>" alt="pro" class="produto-imagem">
+                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="pro" class="produto-imagem">
                                 <?php
                             } else {
                                 // Caso não haja imagens, exibe uma imagem padrão

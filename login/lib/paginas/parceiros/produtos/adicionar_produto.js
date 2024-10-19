@@ -56,46 +56,4 @@ function formatarValorFrete(input) {
 
 }
 
-let imageCount = 0; // Contador de imagens adicionadas
-
-function addImage(input) {
-    const files = input.files;
-    const container = document.getElementById('imagePreviewContainer');
-
-    for (let i = 0; i < files.length; i++) {
-        if (imageCount < 6) { // Limitar a 6 imagens
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imagePreview = document.createElement('div');
-                imagePreview.className = 'image-upload';
-                imagePreview.innerHTML = `
-                    <img src="${e.target.result}" alt="Imagem do Produto ${imageCount + 1}" />
-                    <i class="fas fa-trash delete-icon" onclick="removeImage(this)"></i>
-                `;
-                container.appendChild(imagePreview);
-                imageCount++;
-
-                // Se já houver 6 imagens, esconder o ícone de adicionar
-                if (imageCount >= 6) {
-                    document.getElementById('produtoImagens').style.display = 'none';
-                }
-            }
-            reader.readAsDataURL(files[i]);
-        }
-    }
-}
-
-function removeImage(element) {
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    imagePreviewContainer.removeChild(element.parentElement); // Remove a imagem e o ícone de lixeira
-    imageCount--; // Decrementar o contador
-
-    // Se houver espaço para adicionar imagens, mostrar o ícone de adicionar novamente
-    if (imageCount < 6) {
-        document.getElementById('produtoImagens').style.display = 'block';
-    }
-}
-
-
-
 
