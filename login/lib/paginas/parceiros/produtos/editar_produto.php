@@ -107,7 +107,7 @@ if (isset($_GET['id'])) {
                     if (!empty($imagem)): // Verifica se há uma imagem válida
                 ?>
                     <div>
-                        <img src="<?php echo htmlspecialchars(string: $imagem); ?>" alt="Imagem do produto" style="width: 100px; height: 100px;">
+                        <img src="img_produtos/<?php echo htmlspecialchars(string: $imagem); ?>" alt="Imagem do produto" style="width: 100px; height: 100px;">
                         <button type="button" class="remove-btn" onclick="removerImagem(<?php echo $index; ?>)">
                             <i class="fas fa-trash"></i> <!-- Ícone de lixeira -->
                         </button>

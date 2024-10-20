@@ -65,6 +65,7 @@ header .logo img {
     transform: translateY(-5px); /* Move o ícone para cima ao passar o mouse */
     color: #ff9d00; /* Muda a cor do ícone ao passar o mouse */
 }
+
 /* Efeito ao clicar */
 .menu-superior-direito i:active {
     transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
@@ -100,6 +101,7 @@ aside#menu-lateral ul li {
     padding: 10px; /* Espaçamento interno */
     font-weight: bold; /* Aplica negrito ao texto */
 }
+
 /* Remove o sublinhado do link "Sair" */
 #menu-lateral a {
     text-decoration: none; /* Remove o sublinhado */
@@ -197,6 +199,7 @@ justify-content: center; /* Centraliza verticalmente */
 text-align: center;
 
 }
+
 /* Estilos para as abas */
 main .opcoes {
     background-color: #007BFF;
@@ -245,7 +248,7 @@ main .tab.active {
     box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
     overflow: auto; /* Para que o conteúdo role se for maior que a tela */
     background-color: #d3d0ce;
-
+    width: 100%;
     text-align: center; /* Centraliza o texto */
     display: flex; /* Define um layout flexível */
     flex-direction: column; /* Coloca os elementos verticalmente */
@@ -253,45 +256,44 @@ main .tab.active {
     justify-content: center; /* Centraliza verticalmente os itens */
     min-height: 200px; /* Define uma altura mínima para centralização adequada */
     /*padding: 20px; /* Adiciona espaçamento interno */
-    padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+   /* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
 }
+
 .container{
     display: flex;
+    /*flex-direction: column;*/
     align-items: center; /* Centraliza horizontalmente */
     justify-content: center; /* Centraliza verticalmente */
+    /*left: 50vh;
+    height: 40vh; /* Altura total da tela */
     text-align: center;
     width: 100%;
     padding: 10px;
-}
-.container input{
-    width: 50%;
-    margin: 10px;
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 15px;
+    /*margin-top: -30px;*/
 }
 
 .titulo {
-    font-size: 20px;
-    font-weight: bold;
+font-size: 20px;
+font-weight: bold;
 }
 
 .input {
-    width: 60%;
-    padding: 5px;
-    font-size: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    text-align: left;
+width: 50%;
+padding: 10px;
+font-size: 20px;
+border: 1px solid #ccc;
+border-radius: 10px;
+text-align: left;
+margin: 10px;
 }
 .conteudo {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centraliza horizontalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    left: 50vh;
-    height: 40vh; /* Altura total da tela */
-    text-align: center;
+display: flex;
+flex-direction: column;
+align-items: center; /* Centraliza horizontalmente */
+justify-content: center; /* Centraliza verticalmente */
+left: 50vh;
+height: 40vh; /* Altura total da tela */
+text-align: center;
 }
 
 .conteudo p {
@@ -301,6 +303,8 @@ main .tab.active {
 .conteudo .button {
     padding: 10px 20px;
 }
+
+
 
 .menu-mobile {
     background-color: #343a40;
@@ -446,9 +450,9 @@ h2 {
     flex-direction: column;
     align-items: center;
     border: 1px solid #ccc;
-    padding: 10px;
+    padding: 3px;
     border-radius: 8px;
-    width: 150px;
+    width: 200px;
     text-align: center;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease;
@@ -462,7 +466,7 @@ h2 {
     width: 100%;
     height: auto;
     max-width: 200px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     border-radius: 5px;
 }
 
@@ -473,15 +477,31 @@ h2 {
     width: 100%;
 }
 
+/* Estilo para o nome do produto com limite de espaço */
 .produto-nome {
-    font-size: 1.2em;
+    /*font-size: 1.2em;*/
     margin: 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap; /* Não permite quebra de linha */
+    overflow: hidden;    /* Oculta o conteúdo que ultrapassa */
+    text-overflow: ellipsis; /* Adiciona os três pontos '...' */
 }
 
+/* Estilo para a descrição do produto com limite de linhas */
 .produto-descricao {
+    font-size: 14px;
+    line-height: 1.4; /* Espaçamento entre as linhas */
+    max-height: 4.2em; /* Limita a altura da descrição para 3 linhas (1.4 * 3) */
+    overflow: hidden;  /* Oculta o conteúdo que ultrapassa */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
+    text-overflow: ellipsis; /* Adiciona os três pontos '...' */
     font-size: 0.9em;
     color: #666;
     margin-bottom: 10px;
+
 }
 
 .produto-preco {
@@ -526,9 +546,6 @@ h2 {
     justify-content: space-between;
     margin-bottom: 20px;
 }
-
-
-
 
 /* Para telas menores que 768px */
 @media (max-width: 768px) {
@@ -610,7 +627,8 @@ h2 {
     }
     
     .produto-item {
-        width: 180px;
+        width: 100%;
+        max-width: 200px;
         padding: 3px;
     }
 
@@ -672,12 +690,12 @@ h2 {
     }
     .produto-item {
         width: 100%;
-        max-width: 300px;
-        padding: 5px;
+        max-width: 200px;
+        padding: 3px;
     }
 
     .produto-imagem {
-        max-width: 100%;
+        max-width: 150%;
     }
 
     .produto-nome {
@@ -693,11 +711,4 @@ h2 {
         font-size: 0.85em;
     }
 }
-
-
-
-
-
-
-
 
