@@ -58,6 +58,7 @@ document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item =
 // ------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
     // Oculta todos os conteúdos das abas
+    //console.log('eee');
     var conteudos = document.querySelectorAll('.conteudo-aba');
     conteudos.forEach(function(conteudo) {
         conteudo.style.display = 'none';

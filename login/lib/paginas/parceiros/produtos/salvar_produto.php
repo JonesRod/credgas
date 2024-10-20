@@ -2,13 +2,13 @@
 include('../../../conexao.php');  // Inclui o arquivo de conexão com o banco de dados
 
 // Verifica se as imagens foram enviadas e se há pelo menos uma imagem
-if (isset($_FILES['produtoImagens']) && count($_FILES['produtoImagens']['name']) > 0) {
+/*if (isset($_FILES['produtoImagens']) && count($_FILES['produtoImagens']['name']) > 0) {
     var_dump($_FILES['produtoImagens']);
-}
+}*/
 
 // Verifica se o formulário foi enviado via método POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    var_dump($_POST);
+    //var_dump($_POST);
     //die();
     // Coleta e sanitiza os dados do formulário
     $id_parceiro = $_POST['id_parceiro'];
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $extensao = pathinfo($nome_original, PATHINFO_EXTENSION);  // Obtém a extensão do arquivo
 
                 // Verifica se a extensão do arquivo é permitida (jpg, jpeg, png, gif)
-                if (in_array(strtolower($extensao), ['jpg', 'jpeg', 'png', 'gif'])) {
+                if (in_array(needle: strtolower(string: $extensao), haystack: ['jpg', 'jpeg', 'png', 'gif'])) {
                     $novo_nome = uniqid() . '.' . $extensao;  // Renomeia a imagem com um nome único
                     $caminho_completo = $diretorio_upload . $novo_nome;  // Define o caminho completo da imagem
 
@@ -110,9 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
         // Redireciona após 5 segundos
-        /*setTimeout(function() {
+        setTimeout(function() {
             window.location.href = '../parceiro_home.php';
-        }, 5000);*/
+        }, 5000);
     </script>
     <title>Produto Salvo</title>
     <style>

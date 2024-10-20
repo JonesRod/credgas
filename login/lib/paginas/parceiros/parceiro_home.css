@@ -188,6 +188,14 @@ main {
     flex-direction: column;
     height: 100vh; /* O contêiner principal ocupa a altura total da tela */
     box-sizing: border-box;
+
+
+
+align-items: center; /* Centraliza horizontalmente */
+justify-content: center; /* Centraliza verticalmente */
+
+text-align: center;
+
 }
 /* Estilos para as abas */
 main .opcoes {
@@ -246,6 +254,52 @@ main .tab.active {
     min-height: 200px; /* Define uma altura mínima para centralização adequada */
     /*padding: 20px; /* Adiciona espaçamento interno */
     padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+}
+.container{
+    display: flex;
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+}
+.container input{
+    width: 50%;
+    margin: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 15px;
+}
+
+.titulo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.input {
+    width: 60%;
+    padding: 5px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: left;
+}
+.conteudo {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    left: 50vh;
+    height: 40vh; /* Altura total da tela */
+    text-align: center;
+}
+
+.conteudo p {
+    margin-bottom: 10px; /* Espaçamento entre o parágrafo e o botão */
+}
+
+.conteudo .button {
+    padding: 10px 20px;
 }
 
 .menu-mobile {
@@ -394,7 +448,7 @@ h2 {
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 8px;
-    width: 200px;
+    width: 150px;
     text-align: center;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease;

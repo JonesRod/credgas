@@ -25,38 +25,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="adicionar_produtos.css">
     <title>Adicionar Produtos</title>
-    <style>
-        /* Estilos da caixa de upload de imagens */
-        .image-upload-box {
-            width: 100px;
-            height: 100px;
-            border: 2px dashed #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            position: relative;
-            margin-bottom: 10px;
-        }
-        .image-upload-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .delete-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-        }
-        .delete-button i {
-            font-size: 1.5rem;
-            color: red;
-        }
-    </style>
 </head>
 <body>
     <form action="salvar_produto.php" method="POST" enctype="multipart/form-data">
@@ -105,7 +73,7 @@
         </div>
 
         <!-- Upload de imagens (máximo de 6) -->
-        <div class="form-group">
+        <div class="form-img">
             <label for="produtoImagens">Selecione até 6 imagens do produto:</label>
             
             <!-- Aqui está o input de arquivo para selecionar imagens -->
@@ -118,7 +86,7 @@
         </div>
 
         <!-- Botões para voltar e salvar o produto -->
-        <div class="form-group">
+        <div class="form-buton">
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
             <button type="submit" class="btn btn-primary">Salvar Produto</button>
         </div>
@@ -131,12 +99,12 @@
     <script>
         // Array para armazenar as imagens carregadas
         let imagens = [];
-        const maxFileSize = 6 * 1024 * 1024; // 6 MB em bytes
+        const maxFileSize = 5 * 1024 * 1024; // 6 MB em bytes
 
         document.getElementById('produtoImagens').addEventListener('change', function() {
             const imageContainer = document.getElementById('image-container');
             const files = Array.from(this.files); // Converte FileList para array
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            const validTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif'];
 
             // Verificar se excedeu o limite de 6 imagens (considerando as já carregadas)
             if (imagens.length + files.length > maxFileSize) {

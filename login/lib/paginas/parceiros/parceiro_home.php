@@ -61,32 +61,9 @@
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
     <style>
-        .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 10px;
-            /*margin-top: -30px;*/
-        }
 
-        .titulo {
-            font-size: 20px;
-            font-weight: bold;
-        }
 
-        .input {
-            width: 60%;
-            padding: 5px;
-            font-size: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            text-align: left;
-        }
 
-        .form {
-            margin: 0;
-        }
     </style>
 </head>
 <body>
@@ -212,13 +189,13 @@
             </div>
 
             <?php else: ?>
-                <a href="produtos/adicionar_produto.php">
+                <div class="conteudo">
                     <form method="POST" action="produtos/adicionar_produto.php">
                         <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
                         <p>Nenhuma produto cadastrado ainda!.</p>
                         <button class="button">Inclua seu primeiro produto</button>
                     </form>
-                </a>
+                </div>    
             <?php endif; ?>                               
         </div>
         

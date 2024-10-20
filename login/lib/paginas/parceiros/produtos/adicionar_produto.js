@@ -5,7 +5,7 @@ document.getElementById('frete_gratis').addEventListener('change', function() {
         freteGroup.style.display = 'none'; // Mostra o campo de frete
     } else {
         freteGroup.style.display = 'block'; // Oculta o campo de frete
-        document.getElementById('valor_frete').value = ''; // Limpa o campo se não for frete grátis
+        document.getElementById('valor_frete').value = '0,00'; // Limpa o campo se não for frete grátis
     }
 });
 
