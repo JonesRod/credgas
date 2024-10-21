@@ -46,7 +46,7 @@ if (isset($_GET['id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="adicionar_produtos.css">
+    <link rel="stylesheet" href="editar_produtos.css">
     <title>Editar Produto</title>
 </head>
 <body>
@@ -55,7 +55,8 @@ if (isset($_GET['id'])) {
 
         <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $produto['id_parceiro']; ?>">
         <input type="hidden" name="id_produto" value="<?php echo htmlspecialchars(string: $produto['id_produto']); ?>">
-
+        <input type="hidden" id="imagens_salvas" name="imagens_salvas" value="<?php echo htmlspecialchars($produto['imagens']); ?>">
+        
         <!-- Nome do Produto -->
         <div class="form-group">
             <label for="nome_produto">Nome do Produto:</label>
@@ -115,7 +116,7 @@ if (isset($_GET['id'])) {
                 <?php endif; endforeach; ?>
             </div>
             <label for="produtoImagens">Atualizar Imagens (até 6):</label>
-            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple required>
+            <input type="file" id="produtoImagens" name="produtoImagens[]" src="<?php echo htmlspecialchars($produto['imagens']); ?>" accept="image/*" multiple required>
         </div>
 
         <!-- Botões -->
