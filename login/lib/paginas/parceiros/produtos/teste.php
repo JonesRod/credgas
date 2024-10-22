@@ -39,6 +39,8 @@ if (isset($_GET['id'])) {
 }
 
 ?>
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -46,6 +48,7 @@ if (isset($_GET['id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="editar_produtos.css">
+    <script src="editar_produto.js"></script>
     <title>Editar Produto</title>
 </head>
 <body>
@@ -65,13 +68,24 @@ if (isset($_GET['id'])) {
         <!-- Descrição do Produto -->
         <div class="form-group">
             <label for="descricao_produto">Descrição do Produto:</label>
-            <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?></textarea>
+            <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?>
+            </textarea>
         </div>
 
         <!-- Valor do Produto -->
         <div class="form-group">
             <label for="valor_produto">Valor do Produto (R$):</label>
-            <input type="text" id="valor_produto" name="valor_produto" step="0.01" value="<?php echo htmlspecialchars($produto['valor_produto']); ?>" required oninput="formatarValor(this)">
+            <input type="text" id="valor_produto" name="valor_produto" 
+            value="<?php echo htmlspecialchars($produto['valor_produto']); ?>" 
+            required
+            oninput="formatarValor(this)">
+        </div>
+
+        <!-- Valor do Produto + Taxa -->
+        <div class="form-group">
+            <label for="valor_produto_taxa">Valor do Produto + Taxa (10%) da Plataforma (R$):</label>
+            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
+            value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" readonly required>
         </div>
 
         <!-- Frete Grátis -->
@@ -86,7 +100,9 @@ if (isset($_GET['id'])) {
         <!-- Valor do Frete -->
         <div class="form-group" id="frete-group" style="<?php echo ($produto['frete_gratis'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
             <label for="valor_frete">Valor do Frete (R$):</label>
-            <input type="text" id="valor_frete" name="valor_frete" step="0.01" value="<?php echo htmlspecialchars($produto['valor_frete']); ?>" oninput="formatarValorFrete(this)">
+            <input type="text" id="valor_frete" name="valor_frete" 
+            value="<?php echo htmlspecialchars($produto['valor_frete']); ?>" 
+            oninput="formatarValorFrete(this)">
         </div>
 
         <!-- Imagens Salvas (até 6) -->
@@ -119,12 +135,16 @@ if (isset($_GET['id'])) {
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
-
+        <script src="editar_produto.js"></script>
         <script>
-            // Exibir pré-visualização das imagens carregadas
-            const inputImagens = document.getElementById('produtoImagens');
-            const preview = document.getElementById('preview');
-            const imagensSalvasInput = document.getElementById('imagens_salvas');
+
+            // Função para calcular o valor com a taxa
+            function calcularValorComTaxa() {
+                const valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(',', '.')) || 0;
+                const taxa = 0.10;
+                const valorComTaxa = valorProduto + (valorProduto * taxa);
+                document.getElementById('valor_produto_taxa').value = valorComTaxa.toFixed(2).replace('.', ',');
+            }
 
             // Valor original do frete vindo do BD
             var originalFreteValue = "<?php echo htmlspecialchars($produto['valor_frete']); ?>";
@@ -147,20 +167,19 @@ if (isset($_GET['id'])) {
                 }
             }
 
-            // Ao carregar a página, executa a função para ajustar o campo de valor de frete
-            window.onload = function() {
-                toggleFreteValor();
-            };
-
             // Função para remover imagem
             function removerImagem(imagem) {
                 if (confirm("Tem certeza que deseja remover esta imagem?")) {
-                    const imagensSalvas = imagensSalvasInput.value.split(',');
+                    const imagensSalvas = document.getElementById('imagens_salvas').value.split(',');
                     const novaListaImagens = imagensSalvas.filter(img => img.trim() !== imagem.trim());
-                    imagensSalvasInput.value = novaListaImagens.join(',');
+                    document.getElementById('imagens_salvas').value = novaListaImagens.join(',');
                     location.reload(); // Atualiza a página
                 }
             }
+
+            // Função de pré-visualização de imagens
+            const inputImagens = document.getElementById('produtoImagens');
+            const preview = document.getElementById('preview');
 
             inputImagens.addEventListener('change', function() {
                 preview.innerHTML = ''; // Limpa o preview
@@ -187,6 +206,13 @@ if (isset($_GET['id'])) {
                     reader.readAsDataURL(file); // Lê o arquivo de imagem
                 }
             });
+
+            // Executa a função para ajustar o campo de frete ao carregar a página
+            window.onload = function() {
+                toggleFreteValor();
+                calcularValorComTaxa(); // Calcula o valor com a taxa ao carregar a página
+                //calcularTaxa()
+            };
         </script>
     </form>
 </body>

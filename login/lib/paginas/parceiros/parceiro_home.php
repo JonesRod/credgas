@@ -175,7 +175,7 @@
                             <!-- Converte o valor do produto para float e formata -->
                                 
                             <?php
-                                $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
+                                $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto_taxa']);
                                 $valor_produto = floatval(value: $valor_produto);
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format(num: $valor_produto, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?></p>
