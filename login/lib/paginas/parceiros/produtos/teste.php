@@ -74,9 +74,14 @@ if (isset($_GET['id'])) {
 
         <!-- Valor do Produto -->
         <div class="form-group">
+            <!-- Converte o valor do produto para float e formata -->
+            <?php
+                $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
+                $valor_produto = floatval(value: $valor_produto);
+            ?>
             <label for="valor_produto">Valor do Produto (R$):</label>
             <input type="text" id="valor_produto" name="valor_produto" 
-            value="<?php echo htmlspecialchars($produto['valor_produto']); ?>" 
+            value="<?php echo number_format(num: $valor_produto, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>" 
             required
             oninput="formatarValor(this)">
         </div>
@@ -98,10 +103,15 @@ if (isset($_GET['id'])) {
         </div>
 
         <!-- Valor do Frete -->
-        <div class="form-group" id="frete-group" style="<?php echo ($produto['frete_gratis'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+        <div class="form-group" id="frete-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+            <!-- Converte o valor do frete para float e formata -->
+            <?php
+                $valor_frete = str_replace(search: ',', replace: '.', subject: $produto['valor_frete']);
+                $valor_frete = floatval(value: $valor_frete);
+            ?>            
             <label for="valor_frete">Valor do Frete (R$):</label>
             <input type="text" id="valor_frete" name="valor_frete" 
-            value="<?php echo htmlspecialchars($produto['valor_frete']); ?>" 
+            value="<?php echo number_format(num: $valor_frete, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>" 
             oninput="formatarValorFrete(this)">
         </div>
 
@@ -147,7 +157,7 @@ if (isset($_GET['id'])) {
             }
 
             // Valor original do frete vindo do BD
-            var originalFreteValue = "<?php echo htmlspecialchars($produto['valor_frete']); ?>";
+            var originalFreteValue = "<?php echo number_format(num: $valor_frete, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>";
 
             function toggleFreteValor() {
                 var select = document.getElementById("frete_gratis");
@@ -165,6 +175,7 @@ if (isset($_GET['id'])) {
                         valorFreteInput.value = originalFreteValue;
                     }, 10);
                 }
+                formatarValorFrete();
             }
 
             // Função para remover imagem
@@ -206,13 +217,26 @@ if (isset($_GET['id'])) {
                     reader.readAsDataURL(file); // Lê o arquivo de imagem
                 }
             });
+            // Função para formatar o valor digitado no campo "valor_produto"
+            /*function formatarValorFrete() {
+                let valor = document.getElementById('valor_frete').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
+                valor = (valor / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
+
+                valor = valor.replace('.', ',');            // Substitui o ponto pela vírgula
+                valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+
+                document.getElementById('valor_frete').value = valor;                        // Atualiza o valor no campo
+                //console.log('oii');
+            }*/
 
             // Executa a função para ajustar o campo de frete ao carregar a página
             window.onload = function() {
-                toggleFreteValor();
+                //toggleFreteValor();
                 calcularValorComTaxa(); // Calcula o valor com a taxa ao carregar a página
+                formatarValorFrete();
                 //calcularTaxa()
             };
+
         </script>
     </form>
 </body>

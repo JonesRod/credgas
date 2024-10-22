@@ -1,5 +1,5 @@
 // Exibir ou ocultar o campo de frete com base na seleção
-document.getElementById('frete_gratis').addEventListener('change', function() {
+/*document.getElementById('frete_gratis').addEventListener('change', function() {
     const freteGroup = document.getElementById('frete-group');
     if (this.value === 'sim') {
         freteGroup.style.display = 'none'; // Mostra o campo de frete
@@ -7,17 +7,17 @@ document.getElementById('frete_gratis').addEventListener('change', function() {
         freteGroup.style.display = 'block'; // Oculta o campo de frete
         document.getElementById('valor_frete').value = '0,00'; // Limpa o campo se não for frete grátis
     }
-});
+});*/
 
 // Função para formatar o valor digitado no campo "valor_produto"
-function formatarValor(input) {
-    let valor = input.value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
-    valor = (valor / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
+function formatarValor() {
+    let valor_produto = document.getElementById('valor_produto').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
+    valor_produto = (valor_produto / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
 
-    valor = valor.replace('.', ',');            // Substitui o ponto pela vírgula
-    valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+    valor_produto = valor_produto.replace('.', ',');            // Substitui o ponto pela vírgula
+    valor_produto = valor_produto.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
-    input.value = valor;                        // Atualiza o valor no campo
+    document.getElementById('valor_produto').value = valor_produto;                        // Atualiza o valor no campo
 
     //chama a função para calcular
     calcularTaxa();
@@ -42,7 +42,7 @@ function calcularTaxa() {
     } else {
         document.getElementById('valor_produto_taxa').value = "0,00";       
     }
-    formatarValorFrete();
+    //formatarValorFrete();
 }
 
 // Função para formatar o valor digitado no campo "valor_produto"
@@ -54,7 +54,7 @@ function formatarValorFrete() {
     valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
     document.getElementById('valor_frete').value = valor;                        // Atualiza o valor no campo
-console.log('oii');
+    //console.log('oii');
 }
 
 

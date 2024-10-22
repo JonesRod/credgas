@@ -172,8 +172,7 @@
                             <h3 class="produto-nome"><?php echo $produto['nome_produto']; ?></h3>
                             <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
-                            <!-- Converte o valor do produto para float e formata -->
-                                
+                            <!-- Converte o valor do produto para float e formata -->       
                             <?php
                                 $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto_taxa']);
                                 $valor_produto = floatval(value: $valor_produto);
