@@ -38,10 +38,14 @@ function calcularTaxa() {
         });
 
         // Exibe o valor formatado no campo de valor_produto_taxa
+        valorFormatado = valorFormatado.replace('.', ',');            // Substitui o ponto pela vírgula
+        valorFormatado = valorFormatado.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+
         document.getElementById('valor_produto_taxa').value = valorFormatado;
     } else {
         document.getElementById('valor_produto_taxa').value = "0,00";       
     }
+    //console.log('oii');
     //formatarValorFrete();
 }
 

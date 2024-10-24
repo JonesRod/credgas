@@ -40,6 +40,7 @@ if (isset($_GET['id'])) {
 
 ?>
 
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -47,6 +48,7 @@ if (isset($_GET['id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="editar_produtos.css">
+    <script src="editar_produto.js"></script>
     <title>Editar Produto</title>
 </head>
 <body>
@@ -54,9 +56,10 @@ if (isset($_GET['id'])) {
         <h1>Editar Produto</h1>
 
         <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $produto['id_parceiro']; ?>">
-        <input type="hidden" name="id_produto" value="<?php echo htmlspecialchars(string: $produto['id_produto']); ?>">
+        <input type="hidden" name="id_produto" value="<?php echo htmlspecialchars($produto['id_produto']); ?>">
         <input type="hidden" id="imagens_salvas" name="imagens_salvas" value="<?php echo htmlspecialchars($produto['imagens']); ?>">
-        
+        <input type="hidden" id="imagens_removidas" name="imagens_removidas" value="">
+
         <!-- Nome do Produto -->
         <div class="form-group">
             <label for="nome_produto">Nome do Produto:</label>
@@ -71,52 +74,73 @@ if (isset($_GET['id'])) {
 
         <!-- Valor do Produto -->
         <div class="form-group">
+            <!-- Converte o valor do produto para float e formata -->
+            <?php
+                $valor_produto = str_replace(',', '.', $produto['valor_produto']);
+                $valor_produto = floatval($valor_produto);
+            ?>
             <label for="valor_produto">Valor do Produto (R$):</label>
-            <input type="text" id="valor_produto" name="valor_produto" step="0.01" value="<?php echo htmlspecialchars($produto['valor_produto']); ?>" required oninput="formatarValor(this)" >
+            <input type="text" id="valor_produto" name="valor_produto" 
+            value="<?php echo number_format($valor_produto, 2, ',', '.'); ?>" 
+            required
+            oninput="formatarValor(this)">
         </div>
 
+        <!-- Valor do Produto + Taxa -->
         <div class="form-group">
-            <label for="valor_produto_taxa">Valor do Produto + taxa (10%) da plataforma (R$):</label>
-            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" step="0.01" value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" required readonly>
+            <label for="valor_produto_taxa">Valor do Produto + Taxa (10%) da Plataforma (R$):</label>
+            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
+            value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" readonly required>
         </div>
 
-        <!-- Opção de Frete Grátis -->
+        <!-- Frete Grátis -->
         <div class="form-group">
-            <label>Frete Grátis:</label>
+            <label for="frete_gratis">Frete Grátis:</label>
             <select id="frete_gratis" name="frete_gratis" onchange="toggleFreteValor()">
                 <option value="nao" <?php echo ($produto['frete_gratis'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                 <option value="sim" <?php echo ($produto['frete_gratis'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
-        <!-- Campo para valor de frete -->
-        <div class="frete-group" id="frete-group" style="<?php echo ($produto['frete_gratis'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+        <!-- Valor do Frete -->
+        <div class="form-group" id="frete-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+            <?php
+                $valor_frete = str_replace(',', '.', $produto['valor_frete']);
+                $valor_frete = floatval($valor_frete);
+            ?>            
             <label for="valor_frete">Valor do Frete (R$):</label>
-            <input type="text" id="valor_frete" name="valor_frete" step="0.01" value="<?php echo htmlspecialchars($produto['valor_frete']); ?>" oninput="formatarValorFrete(this)">
+            <input type="text" id="valor_frete" name="valor_frete" 
+            value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>" 
+            oninput="formatarValorFrete(this)">
         </div>
 
-        <!-- Upload de Imagens (até 6) -->
+        <!-- Imagens Salvas (até 6) -->
         <div class="form-group">
             <div id="preview">
                 <?php
-                // Converte a string de imagens em um array
-                $imagens = isset($produto['imagens']) ? explode(separator: ',', string: $produto['imagens']) : [];
-                
-                // Itera sobre as imagens
-                foreach ($imagens as $index => $imagem):
-                    $imagem = trim($imagem); // Remove espaços em branco ao redor da string da imagem
-                    if (!empty($imagem)): // Verifica se há uma imagem válida
+                $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                if (count($imagens) > 0) {
+                    foreach ($imagens as $index => $imagem):
+                        $imagem = trim($imagem);
+                        if (!empty($imagem)):
                 ?>
-                    <div>
-                        <img src="img_produtos/<?php echo htmlspecialchars(string: $imagem); ?>" alt="Imagem do produto" style="width: 100px; height: 100px;">
-                        <button type="button" class="remove-btn" onclick="removerImagem(<?php echo $index; ?>)">
-                            <i class="fas fa-trash"></i> <!-- Ícone de lixeira -->
-                        </button>
-                    </div>
-                <?php endif; endforeach; ?>
+                            <div class="preview-img" id="imagem-<?php echo $index; ?>">
+                                <img src="img_produtos/<?php echo htmlspecialchars($imagem); ?>" alt="Imagem do produto" style="width: 100px; height: 100px;" required>
+                                <button type="button" class="remove-btn" onclick="removerImagem('<?php echo htmlspecialchars($imagem); ?>', <?php echo $index; ?>)">
+                                    <i class="fas fa-trash"></i> <!-- Ícone de lixeira -->
+                                </button>
+                            </div>
+                <?php
+                        endif;
+                    endforeach;
+                } else {
+                    echo "<p class='alert alert-warning'>É necessário adicionar pelo menos uma imagem do produto.</p>";
+                }
+                ?>
             </div>
+
             <label for="produtoImagens">Atualizar Imagens (até 6):</label>
-            <input type="file" id="produtoImagens" name="produtoImagens[]" src="<?php echo htmlspecialchars($produto['imagens']); ?>" accept="image/*" multiple required>
+            <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple>
         </div>
 
         <!-- Botões -->
@@ -124,65 +148,89 @@ if (isset($_GET['id'])) {
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
-        
-        <script src="adicionar_produto.js"></script>
+
+        <script src="editar_produto.js"></script>
         <script>
-            var originalFreteValue = "<?php echo htmlspecialchars(string: $produto['valor_frete']); ?>"; // Valor original do frete vindo do BD
-
-            function toggleFreteValor() {
-                var select = document.getElementById("frete_gratis");
-                var freteGroup = document.getElementById("frete-group");
-                var valorFreteInput = document.getElementById("valor_frete");
-
-                if (select.value === "sim") {
-                    // Esconde o campo e zera o valor
-                    freteGroup.style.display = "none";
-                    valorFreteInput.value = "0.00";
-                } else {
-                    // Mostra o campo e restaura o valor do BD
-                    freteGroup.style.display = "block";
-                    setTimeout(function() {
-                        valorFreteInput.value = originalFreteValue; // Força atribuição com um pequeno delay
-                    }, 10);
-                    //console.log("Original frete value: ", originalFreteValue);
-                }
-            }
-
-            // Ao carregar a página, executa a função para ajustar o campo de valor de frete
-            window.onload = function() {
-                toggleFreteValor();
-            };
-
-            function removerImagem(index) {
+            // Função para remover imagem
+            function removerImagem(imagem, index) {
                 if (confirm("Tem certeza que deseja remover esta imagem?")) {
-                    var produtoId = <?php echo $id_produto; ?>;
-                    // Envia o índice da imagem e o ID do produto para o servidor
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "remover_imagem.php", true);
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onload = function () {
-                        if (xhr.status === 200) {
-                            var response = xhr.responseText.trim(); // Obtém a resposta do servidor
-                            if (response === "success") {
-                                alert("Imagem removida com sucesso!");
-                                // Atualiza a página para refletir a remoção da imagem
-                                location.reload();
-                            } else {
-                                console.log("Erro do servidor: " + response); // Exibe a resposta do servidor no console
-                                alert("Erro ao remover a imagem: " + response);
-                            }
-                        } else {
-                            alert("Erro ao remover a imagem: Status HTTP " + xhr.status);
-                        }
-                    };
-                    xhr.send("index=" + index + "&produto_id=" + produtoId);
+                    const imagensRemovidas = document.getElementById('imagens_removidas').value.split(',');
+                    imagensRemovidas.push(imagem);
+                    document.getElementById('imagens_removidas').value = imagensRemovidas.join(',');
+
+                    document.getElementById('imagem-' + index).remove();
                 }
             }
 
+            // Função de pré-visualização de imagens
+            const inputImagens = document.getElementById('produtoImagens');
+            const preview = document.getElementById('preview');
 
+            inputImagens.addEventListener('change', function() {
+                const imagensAtuais = preview.querySelectorAll('.preview-img');
+                const totalImagensSalvas = imagensAtuais.length;
+
+                const files = inputImagens.files;
+
+                if (files.length + totalImagensSalvas > 6) {
+                    alert('Você pode carregar até 6 imagens no total (incluindo as já existentes).');
+                    inputImagens.value = '';
+                    return;
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.classList.add('preview-img');
+                        div.id = 'nova-imagem-' + (totalImagensSalvas + i); // Novo ID para a nova imagem
+
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100px';
+                        img.style.height = '100px';
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.classList.add('remove-btn');
+                        removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        removeBtn.onclick = function() {
+                            div.remove();
+                            const dataTransfer = new DataTransfer();
+                            for (let j = 0; j < inputImagens.files.length; j++) {
+                                if (j !== i) {
+                                    dataTransfer.items.add(inputImagens.files[j]);
+                                }
+                            }
+                            inputImagens.files = dataTransfer.files; // Atualiza o campo de arquivo
+                        };
+
+                        div.appendChild(img);
+                        div.appendChild(removeBtn);
+                        preview.appendChild(div);
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Validação do formulário antes de enviar
+            document.querySelector('form').addEventListener('submit', function(event) {
+                const previewImages = document.querySelectorAll('.preview-img');
+                if (previewImages.length === 0) {
+                    event.preventDefault(); // Impede o envio do formulário
+                    alert('É necessário adicionar pelo menos uma imagem do produto.');
+                }
+            });
+            
+            // Ajusta o valor do frete e exibe ou oculta o campo de frete
+            window.onload = function() {
+                //Calcula o valor com a taxa ao carregar a página
+                formatarValor();
+            };
         </script>
-
     </form>
-    
 </body>
 </html>

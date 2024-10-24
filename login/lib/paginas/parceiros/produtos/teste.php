@@ -58,6 +58,7 @@ if (isset($_GET['id'])) {
         <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $produto['id_parceiro']; ?>">
         <input type="hidden" name="id_produto" value="<?php echo htmlspecialchars($produto['id_produto']); ?>">
         <input type="hidden" id="imagens_salvas" name="imagens_salvas" value="<?php echo htmlspecialchars($produto['imagens']); ?>">
+        <input type="hidden" id="imagens_removidas" name="imagens_removidas" value="">
 
         <!-- Nome do Produto -->
         <div class="form-group">
@@ -68,20 +69,19 @@ if (isset($_GET['id'])) {
         <!-- Descrição do Produto -->
         <div class="form-group">
             <label for="descricao_produto">Descrição do Produto:</label>
-            <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?>
-            </textarea>
+            <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?></textarea>
         </div>
 
         <!-- Valor do Produto -->
         <div class="form-group">
             <!-- Converte o valor do produto para float e formata -->
             <?php
-                $valor_produto = str_replace(search: ',', replace: '.', subject: $produto['valor_produto']);
-                $valor_produto = floatval(value: $valor_produto);
+                $valor_produto = str_replace(',', '.', $produto['valor_produto']);
+                $valor_produto = floatval($valor_produto);
             ?>
             <label for="valor_produto">Valor do Produto (R$):</label>
             <input type="text" id="valor_produto" name="valor_produto" 
-            value="<?php echo number_format(num: $valor_produto, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>" 
+            value="<?php echo number_format($valor_produto, 2, ',', '.'); ?>" 
             required
             oninput="formatarValor(this)">
         </div>
@@ -106,12 +106,12 @@ if (isset($_GET['id'])) {
         <div class="form-group" id="frete-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
             <!-- Converte o valor do frete para float e formata -->
             <?php
-                $valor_frete = str_replace(search: ',', replace: '.', subject: $produto['valor_frete']);
-                $valor_frete = floatval(value: $valor_frete);
+                $valor_frete = str_replace(',', '.', $produto['valor_frete']);
+                $valor_frete = floatval($valor_frete);
             ?>            
             <label for="valor_frete">Valor do Frete (R$):</label>
             <input type="text" id="valor_frete" name="valor_frete" 
-            value="<?php echo number_format(num: $valor_frete, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>" 
+            value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>" 
             oninput="formatarValorFrete(this)">
         </div>
 
@@ -127,9 +127,9 @@ if (isset($_GET['id'])) {
                     $imagem = trim($imagem);
                     if (!empty($imagem)):
                 ?>
-                    <div class="preview-img">
+                    <div class="preview-img" id="imagem-<?php echo $index; ?>">
                         <img src="img_produtos/<?php echo htmlspecialchars($imagem); ?>" alt="Imagem do produto" style="width: 100px; height: 100px;">
-                        <button type="button" class="remove-btn" onclick="removerImagem('<?php echo htmlspecialchars($imagem); ?>')">
+                        <button type="button" class="remove-btn" onclick="removerImagem('<?php echo htmlspecialchars($imagem); ?>', <?php echo $index; ?>)">
                             <i class="fas fa-trash"></i> <!-- Ícone de lixeira -->
                         </button>
                     </div>
@@ -145,99 +145,95 @@ if (isset($_GET['id'])) {
             <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
+        
         <script src="editar_produto.js"></script>
         <script>
+    // Função para remover imagem
+    function removerImagem(imagem, index) {
+        if (confirm("Tem certeza que deseja remover esta imagem?")) {
+            const imagensRemovidas = document.getElementById('imagens_removidas').value.split(',');
+            imagensRemovidas.push(imagem); // Adiciona a imagem à lista de removidas
+            document.getElementById('imagens_removidas').value = imagensRemovidas.join(',');
 
-            // Função para calcular o valor com a taxa
-            function calcularValorComTaxa() {
-                const valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(',', '.')) || 0;
-                const taxa = 0.10;
-                const valorComTaxa = valorProduto + (valorProduto * taxa);
-                document.getElementById('valor_produto_taxa').value = valorComTaxa.toFixed(2).replace('.', ',');
-            }
+            // Remove a imagem do preview
+            document.getElementById('imagem-' + index).remove();
+        }
+    }
 
-            // Valor original do frete vindo do BD
-            var originalFreteValue = "<?php echo number_format(num: $valor_frete, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?>";
+    // Função de pré-visualização de imagens
+    const inputImagens = document.getElementById('produtoImagens');
+    const preview = document.getElementById('preview');
 
-            function toggleFreteValor() {
-                var select = document.getElementById("frete_gratis");
-                var freteGroup = document.getElementById("frete-group");
-                var valorFreteInput = document.getElementById("valor_frete");
-
-                if (select.value === "sim") {
-                    // Esconde o campo e zera o valor
-                    freteGroup.style.display = "none";
-                    valorFreteInput.value = "0.00";
-                } else {
-                    // Mostra o campo e restaura o valor do BD
-                    freteGroup.style.display = "block";
-                    setTimeout(function() {
-                        valorFreteInput.value = originalFreteValue;
-                    }, 10);
-                }
-                formatarValorFrete();
-            }
-
-            // Função para remover imagem
-            function removerImagem(imagem) {
-                if (confirm("Tem certeza que deseja remover esta imagem?")) {
-                    const imagensSalvas = document.getElementById('imagens_salvas').value.split(',');
-                    const novaListaImagens = imagensSalvas.filter(img => img.trim() !== imagem.trim());
-                    document.getElementById('imagens_salvas').value = novaListaImagens.join(',');
-                    location.reload(); // Atualiza a página
-                }
-            }
-
-            // Função de pré-visualização de imagens
-            const inputImagens = document.getElementById('produtoImagens');
-            const preview = document.getElementById('preview');
-
-            inputImagens.addEventListener('change', function() {
-                preview.innerHTML = ''; // Limpa o preview
-                const files = inputImagens.files;
-
-                if (files.length > 6) {
-                    alert('Você pode carregar até 6 imagens.');
-                    inputImagens.value = ''; // Limpa o campo de arquivo se exceder
-                    return;
-                }
-
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const reader = new FileReader();
-
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.style.width = '100px';
-                        img.style.height = '100px';
-                        preview.appendChild(img);
-                    };
-
-                    reader.readAsDataURL(file); // Lê o arquivo de imagem
-                }
+    inputImagens.addEventListener('change', function() {
+        // Limpa o preview e continua a exibir imagens anteriores
+        const imagensAtuais = preview.querySelectorAll('.preview-img');
+        if (imagensAtuais.length > 0) {
+            // Se já houver imagens prévias, mantê-las no preview
+            imagensAtuais.forEach(img => {
+                preview.appendChild(img);
             });
-            // Função para formatar o valor digitado no campo "valor_produto"
-            /*function formatarValorFrete() {
-                let valor = document.getElementById('valor_frete').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
-                valor = (valor / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
+        }
 
-                valor = valor.replace('.', ',');            // Substitui o ponto pela vírgula
-                valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+        const files = inputImagens.files;
 
-                document.getElementById('valor_frete').value = valor;                        // Atualiza o valor no campo
-                //console.log('oii');
-            }*/
+        // Limita a adição de mais de 6 imagens no total (incluindo as já salvas)
+        if (files.length + imagensAtuais.length > 6) {
+            alert('Você pode carregar até 6 imagens no total (incluindo as já existentes).');
+            inputImagens.value = ''; // Limpa o campo de arquivo se exceder o limite
+            return;
+        }
 
-            // Executa a função para ajustar o campo de frete ao carregar a página
-            window.onload = function() {
-                //toggleFreteValor();
-                calcularValorComTaxa(); // Calcula o valor com a taxa ao carregar a página
-                formatarValorFrete();
-                //calcularTaxa()
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                // Cria o contêiner para a nova imagem
+                const div = document.createElement('div');
+                div.classList.add('preview-img');
+                div.id = 'nova-imagem-' + i; // Novo ID para a nova imagem
+
+                // Cria o elemento da imagem
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.width = '100px';
+                img.style.height = '100px';
+
+                // Cria o botão de remover com o ícone de lixeira
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                removeBtn.onclick = function() {
+                    div.remove(); // Remove a imagem nova do preview
+                };
+
+                // Adiciona a imagem e o botão de remover ao contêiner
+                div.appendChild(img);
+                div.appendChild(removeBtn);
+
+                // Adiciona o contêiner ao preview
+                preview.appendChild(div);
             };
 
-        </script>
+            reader.readAsDataURL(file); // Lê o arquivo de imagem
+        }
+    });
+
+    // Função para calcular o valor com a taxa
+    function calcularValorComTaxa() {
+        const valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(',', '.')) || 0;
+        const taxa = 0.10;
+        const valorComTaxa = valorProduto + (valorProduto * taxa);
+        document.getElementById('valor_produto_taxa').value = valorComTaxa.toFixed(2).replace('.', ',');
+    }
+
+    // Ajusta o valor do frete e exibe ou oculta o campo de frete
+    window.onload = function() {
+        calcularValorComTaxa(); // Calcula o valor com a taxa ao carregar a página
+    };
+</script>
+
     </form>
 </body>
 </html>

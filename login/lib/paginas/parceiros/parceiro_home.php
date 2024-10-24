@@ -179,7 +179,7 @@
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format(num: $valor_produto, decimals: 2, decimal_separator: ',', thousands_separator: '.'); ?></p>
 
-                            <a href="produtos/teste.php?id=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                            <a href="produtos/editar_produto.php?id=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
                         </div>
                     </div>
 
