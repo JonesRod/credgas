@@ -442,6 +442,7 @@ h2 {
     flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
+    padding-bottom: 50px;
 }
 
 .produto-item {
@@ -452,7 +453,8 @@ h2 {
     border: 1px solid #ccc;
     padding: 3px;
     border-radius: 8px;
-    width: 200px;
+    width: 170px;
+    height: 310px; /* Adjusted height */
     text-align: center;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease;
@@ -465,7 +467,7 @@ h2 {
 .produto-imagem {
     width: 100%;
     height: auto;
-    max-width: 200px;
+    height: 160px;
     margin-bottom: 5px;
     border-radius: 5px;
 }
@@ -480,8 +482,8 @@ h2 {
 /* Estilo para o nome do produto com limite de espaço */
 .produto-nome {
     /*font-size: 1.2em;*/
-    margin: 10px 0;
-    font-size: 18px;
+    margin: 5px 0;
+    font-size: 16px;
     font-weight: bold;
     white-space: nowrap; /* Não permite quebra de linha */
     overflow: hidden;    /* Oculta o conteúdo que ultrapassa */
@@ -500,7 +502,7 @@ h2 {
     text-overflow: ellipsis; /* Adiciona os três pontos '...' */
     font-size: 0.9em;
     color: #666;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 
 }
 
@@ -547,7 +549,7 @@ h2 {
     margin-bottom: 20px;
 }
 
-/* Para telas menores que 768px */
+ /* Para telas menores que 768px */
 @media (max-width: 768px) {
     header h1 {
         font-size: 20px; /* Diminui o tamanho do título em telas pequenas */
@@ -628,7 +630,8 @@ h2 {
     
     .produto-item {
         width: 100%;
-        max-width: 200px;
+        width: 160px;
+        height: 160;
         padding: 3px;
     }
 
@@ -643,10 +646,9 @@ h2 {
     .button-editar {
         padding: 6px 12px;
     }
+
 }
-
-
-
+        
 /* Para telas menores que 480px */
 @media (max-width: 480px) {
     .logo-img {
@@ -688,13 +690,23 @@ h2 {
         justify-content: center; /* Centraliza o texto dentro da aba */
         align-items: center;
     }
+    /* Estilos para telas maiores (desktops) */
+    .lista-produtos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }
     .produto-item {
         width: 100%;
         max-width: 200px;
         padding: 3px;
+
     }
 
     .produto-imagem {
+        width: 100%;
         max-width: 150%;
     }
 
@@ -711,4 +723,7 @@ h2 {
         font-size: 0.85em;
     }
 }
+
+
+
 

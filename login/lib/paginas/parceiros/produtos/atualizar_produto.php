@@ -16,20 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $frete_gratis = $_POST['frete_gratis'];
     $valor_frete = ($frete_gratis == 'sim') ? 0.00 : floatval($_POST['valor_frete']);
     
-// Verifica se as imagens salvas foram enviadas corretamente
-$imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
-$imagens_removidas = isset($_POST['imagens_removidas']) ? explode(',', $_POST['imagens_removidas']) : [];
+    // Verifica se as imagens salvas foram enviadas corretamente
+    $imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
+    $imagens_removidas = isset($_POST['imagens_removidas']) ? explode(',', $_POST['imagens_removidas']) : [];
 
-// Debug: verificar o conteúdo dos arrays
-echo "Imagens existentes (antes de remover): " . implode(',', $imagens_existentes) . "<br>"; // Debug
+    // Debug: verificar o conteúdo dos arrays
+    //echo "Imagens existentes (antes de remover): " . implode(',', $imagens_existentes) . "<br>"; // Debug
 
-// Verifica se não há imagens existentes e garante que seja uma string vazia se não houver
-if (empty($imagens_existentes) || (count($imagens_existentes) === 0 && $imagens_existentes[0] === '')) {
-    $imagens_existentes = []; // Garantindo que seja um array vazio
-}
+    // Verifica se não há imagens existentes e garante que seja uma string vazia se não houver
+    if (empty($imagens_existentes) || (count($imagens_existentes) === 0 && $imagens_existentes[0] === '')) {
+        $imagens_existentes = []; // Garantindo que seja um array vazio
+    }
 
-// Debug: verificar novamente o conteúdo do array após a verificação
-echo "Imagens existentes (após a verificação): " . implode(',', $imagens_existentes) . "<br>"; // Debug
+    // Debug: verificar novamente o conteúdo do array após a verificação
+    //echo "Imagens existentes (após a verificação): " . implode(',', $imagens_existentes) . "<br>"; // Debug
 
     // Remove as imagens marcadas para remoção
     $imagens = array_diff($imagens_existentes, $imagens_removidas);
@@ -58,28 +58,28 @@ echo "Imagens existentes (após a verificação): " . implode(',', $imagens_exis
                     // Tenta mover o arquivo carregado para o diretório de destino
                     if (move_uploaded_file($tmp_name, $upload_file)) {
                         $novas_imagens[] = $novo_nome_imagem; // Adiciona a nova imagem ao array de novas imagens
-                        echo "Imagem carregada com sucesso: " . $novo_nome_imagem . "<br>"; // Depuração
+                        //echo "Imagem carregada com sucesso: " . $novo_nome_imagem . "<br>"; // Depuração
                     } else {
-                        echo "Erro ao mover o arquivo para " . $upload_file . "<br>"; // Depuração
+                       // echo "Erro ao mover o arquivo para " . $upload_file . "<br>"; // Depuração
                     }
                 } else {
-                    echo "Extensão de arquivo inválida: " . htmlspecialchars($extensao) . "<br>"; // Depuração
+                   // echo "Extensão de arquivo inválida: " . htmlspecialchars($extensao) . "<br>"; // Depuração
                 }
             } else {
-                echo "Nenhum arquivo foi carregado para o índice: " . $i . "<br>"; // Depuração
+                //echo "Nenhum arquivo foi carregado para o índice: " . $i . "<br>"; // Depuração
             }
         }
     } else {
-        echo "Nenhuma imagem enviada.<br>"; // Depuração
+        //echo "Nenhuma imagem enviada.<br>"; // Depuração
     }
 
     // Debug: verificar o conteúdo das novas imagens
-    echo "Novas imagens: " . implode(',', $novas_imagens) . "<br>"; // Debug
+    //echo "Novas imagens: " . implode(',', $novas_imagens) . "<br>"; // Debug
 
     // Junta imagens existentes com novas imagens
     $imagens = array_merge($imagens, $novas_imagens);
     $imagens_string = implode(',', $imagens);
-    echo "Imagens finais (para salvar no BD): " . $imagens_string . "<br>"; // Depuração
+    //echo "Imagens finais (para salvar no BD): " . $imagens_string . "<br>"; // Depuração
 
     // Verificação do estado da conexão com o banco de dados
     if ($mysqli->connect_error) {
@@ -87,20 +87,35 @@ echo "Imagens existentes (após a verificação): " . implode(',', $imagens_exis
     }
 
     // Atualiza o produto no banco de dados
-    $sql = "UPDATE produtos SET nome_produto = ?, descricao_produto = ?, valor_produto = ?, valor_produto_taxa = ?, frete_gratis = ?, valor_frete = ?, imagens = ? WHERE id_produto = ?";
-    $stmt = $mysqli->prepare($sql);
-    
-    if ($stmt) {
-        $stmt->bind_param("ssdsdsdi", $nome_produto, $descricao_produto, $valor_produto, $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_string, $id_produto);
+    $sql = "UPDATE produtos SET 
+    nome_produto = '$nome_produto', 
+    descricao_produto = '$descricao_produto', 
+    valor_produto = '$valor_produto', 
+    valor_produto_taxa = '$valor_produto_taxa', 
+    frete_gratis = '$frete_gratis', 
+    valor_frete = '$valor_frete', 
+    imagens = '$imagens_string'
+    WHERE id_produto = '$id_produto'";
 
-        if ($stmt->execute()) {
-            echo "Produto atualizado com sucesso!<br>"; // Depuração
-        } else {
-            echo "Erro ao executar a atualização: " . $stmt->error . "<br>"; // Depuração
-        }
+    $deu_certo = $mysqli->query($sql) or die($mysqli->$erro);
+
+    if ($deu_certo) {
+        // Exibe a mensagem de sucesso
+        echo "<div>Produto atualizado com sucesso!</div>"; // Mensagem de sucesso
+    
+        // Redireciona após 5 segundos
+        echo "<script>
+                setTimeout(function() {
+                    window.location.href = 'editar_produto.php?id=" . $id_produto . "';
+                }, 5000);
+              </script>";
+    
+        exit; // Para garantir que não há mais execução do código PHP após isso
     } else {
-        echo "Erro na preparação da consulta: " . $mysqli->error . "<br>"; // Depuração
+        echo "Erro ao executar a atualização: " . $stmt->error . "<br>"; // Depuração
     }
+    
+
 } else {
     echo "Método de solicitação não permitido.";
 }

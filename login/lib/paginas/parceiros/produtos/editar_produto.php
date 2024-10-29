@@ -50,6 +50,42 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="editar_produtos.css">
     <script src="editar_produto.js"></script>
     <title>Editar Produto</title>
+    <style>
+.preview-img {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+}
+
+.preview-img img {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px; /* Opção para bordas arredondadas */
+}
+
+.remove-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: transparent; /* Fundo transparente */
+    border: none;
+    cursor: pointer;
+    color: red;
+    font-size: 20px;
+    border-radius: 50%; /* Torna o botão circular */
+    padding: 5px; /* Ajusta o tamanho para maior usabilidade */
+    transition: transform 0.2s ease-in-out;
+    z-index: 1; /* Garante que o botão fique sobre a imagem */
+}
+
+.remove-btn:hover {
+    color: darkred;
+    transform: translate(-50%, -50%) scale(1.1); /* Efeito de leve ampliação no hover */
+}
+
+    </style>
 </head>
 <body>
     <form action="atualizar_produto.php" method="POST" enctype="multipart/form-data">
