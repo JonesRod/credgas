@@ -50,42 +50,6 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="editar_produtos.css">
     <script src="editar_produto.js"></script>
     <title>Editar Produto</title>
-    <style>
-.preview-img {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    margin: 5px;
-}
-
-.preview-img img {
-    width: 100%;
-    height: 100%;
-    border-radius: 8px; /* Opção para bordas arredondadas */
-}
-
-.remove-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: transparent; /* Fundo transparente */
-    border: none;
-    cursor: pointer;
-    color: red;
-    font-size: 20px;
-    border-radius: 50%; /* Torna o botão circular */
-    padding: 5px; /* Ajusta o tamanho para maior usabilidade */
-    transition: transform 0.2s ease-in-out;
-    z-index: 1; /* Garante que o botão fique sobre a imagem */
-}
-
-.remove-btn:hover {
-    color: darkred;
-    transform: translate(-50%, -50%) scale(1.1); /* Efeito de leve ampliação no hover */
-}
-
-    </style>
 </head>
 <body>
     <form action="atualizar_produto.php" method="POST" enctype="multipart/form-data">
@@ -181,8 +145,58 @@ if (isset($_GET['id'])) {
 
         <!-- Botões -->
         <div class="form-group">
-            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='../parceiro_home.php'">Voltar</button>
             <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        </div>
+
+        <!-- Configurações de Promoção -->
+        <h2>Promoção</h2>
+
+        <!-- Ativar Promoção -->
+        <div class="form-group">
+            <label for="promocao">Colocar em Promoção:</label>
+            <select id="promocao" name="promocao" onchange="togglePromocaoFields()">
+                <option value="nao" <?php echo ($produto['promocao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
+                <option value="sim" <?php echo ($produto['promocao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+            </select>
+        </div>
+
+        <!-- Valor do Produto na Promoção -->
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+            <label for="valor_promocao">Valor do Produto na Promoção (R$):</label>
+            <input type="text" id="valor_promocao" name="valor_promocao" 
+            value="<?php echo number_format($produto['valor_promocao'], 2, ',', '.'); ?>" 
+            oninput="formatarValorPromocao(this)">
+        </div>
+
+        <!-- Valor com Taxa na Promoção -->
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+            <label for="valor_produto_taxa">Valor com Taxa (10%) (R$):</label>
+            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
+            value="<?php echo number_format($produto['valor_produto_taxa'], 2, ',', '.'); ?>" readonly>
+        </div>
+
+        <!-- Frete Grátis na Promoção -->
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+            <label for="frete_gratis_promocao">Frete Grátis na Promoção:</label>
+            <select id="frete_gratis_promocao" name="frete_gratis_promocao">
+                <option value="nao" <?php echo ($produto['frete_gratis_promocao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
+                <option value="sim" <?php echo ($produto['frete_gratis_promocao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+            </select>
+        </div>
+
+        <!-- Campo Data de Início da Promoção -->
+        <div class="form-group promocao-field">
+            <label for="ini_promocao">Data de Início da Promoção:</label>
+            <input type="date" id="ini_promocao" name="ini_promocao" 
+                value="<?php echo !empty($produto['ini_promocao']) ? $produto['ini_promocao'] : date('Y-m-d'); ?>">
+        </div>
+
+        <!-- Data Final da Promoção -->
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+            <label for="fim_promocao">Data Final da Promoção:</label>
+            <input type="date" id="fim_promocao" name="fim_promocao"
+            value="<?php echo !empty($produto['fim_promocao']) ? $produto['fim_promocao'] : date('Y-m-d'); ?>">
         </div>
 
         <script src="editar_produto.js"></script>
@@ -260,12 +274,30 @@ if (isset($_GET['id'])) {
                     alert('É necessário adicionar pelo menos uma imagem do produto.');
                 }
             });
-            
-            // Ajusta o valor do frete e exibe ou oculta o campo de frete
+
+            // Exibe ou oculta os campos da promoção com base na seleção
+            function togglePromocaoFields() {
+                const promocaoSelect = document.getElementById('promocao').value;
+                const promocaoFields = document.querySelectorAll('.promocao-field');
+                
+                promocaoFields.forEach(field => {
+                    field.style.display = promocaoSelect === 'sim' ? 'block' : 'none';
+                });
+                
+                // Calcula o valor com a taxa da promoção
+                if (promocaoSelect === 'sim') formatarValorPromocao();
+            }
+
+
+
+            // Carrega os campos corretamente ao carregar a página
             window.onload = function() {
+                togglePromocaoFields();
+                
                 //Calcula o valor com a taxa ao carregar a página
                 formatarValor();
             };
+
         </script>
     </form>
 </body>

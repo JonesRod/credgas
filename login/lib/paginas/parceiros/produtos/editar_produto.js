@@ -18,7 +18,7 @@ function formatarValor() {
     valor_produto = valor_produto.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
     document.getElementById('valor_produto').value = valor_produto;                        // Atualiza o valor no campo
-
+    console.log('oii');
     //chama a função para calcular
     calcularTaxa();
 }
@@ -37,19 +37,19 @@ function calcularTaxa() {
             maximumFractionDigits: 2
         });
 
-        // Exibe o valor formatado no campo de valor_produto_taxa
+        // Exibe o valor formatado no campo de valor_promocao_taxa
         valorFormatado = valorFormatado.replace('.', ',');            // Substitui o ponto pela vírgula
         valorFormatado = valorFormatado.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
-        document.getElementById('valor_produto_taxa').value = valorFormatado;
+        document.getElementById('valor_promocao_taxa').value = valorFormatado;
     } else {
-        document.getElementById('valor_produto_taxa').value = "0,00";       
+        document.getElementById('valor_promocao_taxa').value = "0,00";       
     }
     //console.log('oii');
     //formatarValorFrete();
 }
 
-// Função para formatar o valor digitado no campo "valor_produto"
+// Função para formatar o valor digitado no campo "valor_promocao"
 function formatarValorFrete() {
     let valor = document.getElementById('valor_frete').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
     valor = (valor / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
@@ -59,6 +59,20 @@ function formatarValorFrete() {
 
     document.getElementById('valor_frete').value = valor;                        // Atualiza o valor no campo
     //console.log('oii');
+}
+// Função para formatar o valor digitado no campo "valor_promocao"
+function formatarValorPromocao() {
+    let valor_promocao = document.getElementById('valor_promocao').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
+    valor_promocao = (valor_promocao / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
+
+    valor_promocao = valor_promocao.replace('.', ',');            // Substitui o ponto pela vírgula
+    valor_promocao = valor_promocao.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+
+    document.getElementById('valor_promocao').value = valor_promocao;                        // Atualiza o valor no campo
+
+    console.log('oii');
+    //chama a função para calcular
+    //calcularTaxa();
 }
 
 
