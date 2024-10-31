@@ -10,10 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $valor_produto_taxa = floatval($_POST['valor_produto_taxa']);
     $frete_gratis = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';
     $valor_frete = $frete_gratis === 'sim' ? 0.00 : floatval($_POST['valor_frete']);
-    
+
     $imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
     $imagens_removidas = isset($_POST['imagens_removidas']) ? explode(',', $_POST['imagens_removidas']) : [];
-    
+
+    $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
+    $valor_promocao = floatval($_POST['valor_promocao']);  
+    $frete_gratis_promocao = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';  
+    $frete_gratis_promocao = frete_gratis_promocao
+
     $imagens = array_diff($imagens_existentes, $imagens_removidas);
     $novas_imagens = [];
     $upload_dir = 'img_produtos/';

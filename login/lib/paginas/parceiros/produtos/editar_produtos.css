@@ -32,6 +32,15 @@ h1 {
     display: block;
     margin-bottom: 5px;
 }
+
+input:focus, 
+textarea:focus, 
+select:focus {
+    border-color: #007bff; /* Blue color */
+    outline: none; /* Removes the default outline */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Optional: adds a subtle shadow */
+}
+
 /* Estilos para a pré-visualização das imagens */
 #preview {
     display: flex;

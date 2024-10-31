@@ -6,9 +6,9 @@ include('../../../conexao.php');
 session_start();
 
 // Verifica se o ID do produto foi passado via GET
-if (isset($_GET['id'])) {
+if (isset($_GET['id_produto'])) {
     // Obtém o ID do produto da URL e faz o tratamento adequado para evitar injeção SQL
-    $id_produto = intval(value: $_GET['id']);
+    $id_produto = intval(value: $_GET['id_produto']);
 
     // Consulta para obter os dados do produto
     $sql_produto = "SELECT * FROM produtos WHERE id_produto = ?";
@@ -82,8 +82,7 @@ if (isset($_GET['id'])) {
             <label for="valor_produto">Valor do Produto (R$):</label>
             <input type="text" id="valor_produto" name="valor_produto" 
             value="<?php echo number_format($valor_produto, 2, ',', '.'); ?>" 
-            required
-            oninput="formatarValor(this)">
+            required oninput="formatarValor(this)">
         </div>
 
         <!-- Valor do Produto + Taxa -->
@@ -96,7 +95,7 @@ if (isset($_GET['id'])) {
         <!-- Frete Grátis -->
         <div class="form-group">
             <label for="frete_gratis">Frete Grátis:</label>
-            <select id="frete_gratis" name="frete_gratis" onchange="toggleFreteValor()">
+            <select id="frete_gratis" name="frete_gratis" ><!--onchange="toggleFreteValor(this)"-->
                 <option value="nao" <?php echo ($produto['frete_gratis'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                 <option value="sim" <?php echo ($produto['frete_gratis'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
             </select>
@@ -143,12 +142,6 @@ if (isset($_GET['id'])) {
             <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple>
         </div>
 
-        <!-- Botões -->
-        <div class="form-group">
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='../parceiro_home.php'">Voltar</button>
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-        </div>
-
         <!-- Configurações de Promoção -->
         <h2>Promoção</h2>
 
@@ -171,8 +164,8 @@ if (isset($_GET['id'])) {
 
         <!-- Valor com Taxa na Promoção -->
         <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
-            <label for="valor_produto_taxa">Valor com Taxa (10%) (R$):</label>
-            <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
+            <label for="valor_promocao_taxa">Valor com Taxa (10%) (R$):</label>
+            <input type="text" id="valor_promocao_taxa" name="valor_promocao_taxa" 
             value="<?php echo number_format($produto['valor_produto_taxa'], 2, ',', '.'); ?>" readonly>
         </div>
 
@@ -183,6 +176,18 @@ if (isset($_GET['id'])) {
                 <option value="nao" <?php echo ($produto['frete_gratis_promocao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
                 <option value="sim" <?php echo ($produto['frete_gratis_promocao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
             </select>
+        </div>
+
+        <!-- Valor do Frete -->
+        <div class="form-group promocao-field" id="frete-gratis-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+            <?php
+                $valor_frete = str_replace(',', '.', $produto['valor_frete']);
+                $valor_frete = floatval($valor_frete);
+            ?>            
+            <label for="valor_frete_promocao">Valor do Frete (R$):</label>
+            <input type="text" id="valor_frete_promocao" name="valor_frete_promocao" 
+            value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>" 
+            oninput="formatarValorFreteGratis(this)">
         </div>
 
         <!-- Campo Data de Início da Promoção -->
@@ -197,6 +202,12 @@ if (isset($_GET['id'])) {
             <label for="fim_promocao">Data Final da Promoção:</label>
             <input type="date" id="fim_promocao" name="fim_promocao"
             value="<?php echo !empty($produto['fim_promocao']) ? $produto['fim_promocao'] : date('Y-m-d'); ?>">
+        </div>
+
+        <!-- Botões -->
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='../parceiro_home.php'">Voltar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
         </div>
 
         <script src="editar_produto.js"></script>
