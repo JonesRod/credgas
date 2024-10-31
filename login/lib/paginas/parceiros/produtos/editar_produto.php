@@ -193,14 +193,14 @@ if (isset($_GET['id_produto'])) {
         <!-- Campo Data de Início da Promoção -->
         <div class="form-group promocao-field">
             <label for="ini_promocao">Data de Início da Promoção:</label>
-            <input type="date" id="ini_promocao" name="ini_promocao" 
+            <input type="date" id="ini_promocao" name="ini_promocao" required
                 value="<?php echo !empty($produto['ini_promocao']) ? $produto['ini_promocao'] : date('Y-m-d'); ?>">
         </div>
 
         <!-- Data Final da Promoção -->
         <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
             <label for="fim_promocao">Data Final da Promoção:</label>
-            <input type="date" id="fim_promocao" name="fim_promocao"
+            <input type="date" id="fim_promocao" name="fim_promocao" required
             value="<?php echo !empty($produto['fim_promocao']) ? $produto['fim_promocao'] : date('Y-m-d'); ?>">
         </div>
 

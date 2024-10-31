@@ -52,9 +52,9 @@
             $dataFormatada = DateTime::createFromFormat(format: 'd/m/Y', datetime: $dataStr);
 
             if ($dataFormatada !== false) {
-            // echo $dataFormatada->format('Y-m-d'); // Formato de data: yyyy-mm-dd
-            $dataFormatada->format(format: 'Y-m-d');
-            //$nasc = new DateTime($dataFormatada);
+                // echo $dataFormatada->format('Y-m-d'); // Formato de data: yyyy-mm-dd
+                $dataFormatada->format(format: 'Y-m-d');
+                //$nasc = new DateTime($dataFormatada);
             } else {
             // echo "Formato de data inválido.";
             }

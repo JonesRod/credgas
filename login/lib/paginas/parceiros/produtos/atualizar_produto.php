@@ -16,9 +16,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
     $valor_promocao = floatval($_POST['valor_promocao']);  
-    $frete_gratis_promocao = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';  
-    $frete_gratis_promocao = frete_gratis_promocao
-
+    $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
+    $valor_frete_gratis_promocao = $frete_gratis_promocao === 'sim' ? 0.00 : floatval($_POST['valor_frete_promocao']);
+    $ini_promocao = $_POST['ini_promocao'];
+    $fim_promocao = $_POST['fim_promocao'];
+    
+    var_dump($_POST);
+    
+    // Converte as datas usando o formato esperado
+    $dataFormatada_ini_promocao = DateTime::createFromFormat('Y-m-d', $ini_promocao);
+    $dataFormatada_fim_promocao = DateTime::createFromFormat('Y-m-d', $fim_promocao);
+    
+    // Verifica se as datas foram formatadas corretamente
+    if ($dataFormatada_ini_promocao && $dataFormatada_fim_promocao) {
+        // Formata as datas para exibição
+        $ini = $dataFormatada_ini_promocao->format('Y-m-d');
+        $fim = $dataFormatada_fim_promocao->format('Y-m-d');
+    } else {
+        //echo "Erro na formatação das datas. Verifique o formato das datas enviadas.";
+    }
+    
+    //die();
+    
     $imagens = array_diff($imagens_existentes, $imagens_removidas);
     $novas_imagens = [];
     $upload_dir = 'img_produtos/';
@@ -57,10 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         valor_produto_taxa = ?, 
         frete_gratis = ?, 
         valor_frete = ?, 
-        imagens = ? 
+        imagens = ?,
+        promocao = ?,
+        valor_promocao = ?,
+        frete_gratis_promocao = ?,
+        valor_frete_promocao = ?,
+        ini_promocao = ?,
+        fim_promocao = ?
         WHERE id_produto = ?");
     
-    $stmt->bind_param("ssddsssi", $nome_produto, $descricao_produto, $valor_produto, $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_string, $id_produto);
+    $stmt->bind_param("ssddssdssddssi", $nome_produto, $descricao_produto, $valor_produto, $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_string, $promocao, $valor_promocao, $frete_gratis_promocao, $valor_frete_gratis_promocao, $ini, $fim, $id_produto);
     
     if ($stmt->execute()) {
         $msg = "<div class='message-box'>Produto atualizado com sucesso!</div>";
@@ -108,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <script>
         setTimeout(function() {
-            window.location.href = 'editar_produto.php?id=<?php echo $id_produto; ?>';
+            window.location.href = 'editar_produto.php?id_produto=<?php echo $id_produto; ?>';
         }, 5000);
     </script>
 </body>
