@@ -14,11 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
     $imagens_removidas = isset($_POST['imagens_removidas']) ? explode(',', $_POST['imagens_removidas']) : [];
 
+    // Mantém apenas as imagens não removidas
     $imagens = array_diff($imagens_existentes, $imagens_removidas);
     $novas_imagens = [];
     $upload_dir = 'img_produtos/';
     $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
 
+    // Upload das novas imagens
     if (isset($_FILES['produtoImagens']) && count($_FILES['produtoImagens']['name']) > 0) {
         for ($i = 0; $i < count($_FILES['produtoImagens']['name']); $i++) {
             $imagem = $_FILES['produtoImagens']['name'][$i];
@@ -44,61 +46,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Adiciona as novas imagens à lista final de imagens
+    // Combina imagens existentes (não removidas) com as novas imagens
     $imagens = array_merge($imagens, $novas_imagens);
     $imagens_string = implode(',', $imagens);
+
+    // Excluir as imagens removidas do servidor
+    foreach ($imagens_removidas as $imagemRemovida) {
+        $caminhoImagem = $upload_dir . $imagemRemovida;
+        if (file_exists($caminhoImagem) && !empty($imagemRemovida)) {
+            unlink($caminhoImagem); // Remove o arquivo
+        }
+    }
+
+    // Código de atualização SQL, etc.
+    // Resto do código permanece o mesmo...
+
+    // Verifique o conteúdo e o tamanho de $imagens_string
+    //echo "<pre>Tamanho de \$imagens_string: " . strlen($imagens_string) . " bytes</pre>";
+    //echo "<pre>Conteúdo de \$imagens_string: $imagens_string</pre>";
 
     $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
     $valor_promocao = floatval(str_replace(',', '.', $_POST['valor_promocao']));
     $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
     $valor_frete_promocao = $frete_gratis_promocao === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete_promocao']));
+
+    // Converte as datas para o formato esperado
     $ini_promocao = $_POST['ini_promocao'];
     $fim_promocao = $_POST['fim_promocao'];
-
-    // Converte as datas usando o formato esperado
     $dataFormatada_ini_promocao = DateTime::createFromFormat('Y-m-d', $ini_promocao);
     $dataFormatada_fim_promocao = DateTime::createFromFormat('Y-m-d', $fim_promocao);
 
-    if ($dataFormatada_ini_promocao && $dataFormatada_fim_promocao) {
-        $ini = $dataFormatada_ini_promocao->format('Y-m-d');
-        $fim = $dataFormatada_fim_promocao->format('Y-m-d');
-    } else {
+    $ini = $dataFormatada_ini_promocao ? $dataFormatada_ini_promocao->format('Y-m-d') : null;
+    $fim = $dataFormatada_fim_promocao ? $dataFormatada_fim_promocao->format('Y-m-d') : null;
+
+    if (!$ini || !$fim) {
         echo "Erro na formatação das datas. Verifique o formato das datas enviadas.";
     }
 
+    // Verifica a conexão
     if ($mysqli->connect_error) {
         die("Erro de conexão: " . $mysqli->connect_error);
     }
-    var_dump($_POST);
-die();
-    $stmt = $mysqli->prepare("UPDATE produtos SET 
-        nome_produto = ?, 
-        descricao_produto = ?, 
-        valor_produto = ?, 
-        valor_produto_taxa = ?, 
-        frete_gratis = ?, 
-        valor_frete = ?, 
-        imagens = ?,
-        promocao = ?,
-        valor_promocao = ?,
-        frete_gratis_promocao = ?,
-        valor_frete_promocao = ?,
-        ini_promocao = ?,
-        fim_promocao = ?
-        WHERE id_produto = ?");
-    
-    $stmt->bind_param("ssddssdssddssi", $nome_produto, $descricao_produto, $valor_produto, $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_string, $promocao, $valor_promocao, $frete_gratis_promocao, $valor_frete_gratis_promocao, $ini, $fim, $id_produto);
-    
-    if ($stmt->execute()) {
+
+    // Executa o UPDATE diretamente para evitar truncamento
+    $sql = "UPDATE produtos SET 
+        nome_produto = '$nome_produto', 
+        descricao_produto = '$descricao_produto', 
+        valor_produto = $valor_produto, 
+        valor_produto_taxa = $valor_produto_taxa, 
+        frete_gratis = '$frete_gratis', 
+        valor_frete = $valor_frete, 
+        imagens = '$imagens_string',
+        promocao = '$promocao',
+        valor_promocao = $valor_promocao,
+        frete_gratis_promocao = '$frete_gratis_promocao',
+        valor_frete_promocao = $valor_frete_promocao,
+        ini_promocao = '$ini',
+        fim_promocao = '$fim'
+        WHERE id_produto = $id_produto";
+
+    if ($mysqli->query($sql)) {
         $msg = "<div class='message-box'>Produto atualizado com sucesso!</div>";
     } else {
-        $msg = "Erro ao executar a atualização: " . $stmt->error;
+        $msg = "Erro ao executar a atualização: " . $mysqli->error;
     }
-    $stmt->close();
 } else {
     $msg = "Método de solicitação não permitido.";
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt">
@@ -137,4 +153,4 @@ die();
         }, 5000);
     </script>
 </body>
-</html>
+</html> 
