@@ -6,38 +6,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_produto = intval($_POST['id_produto']);
     $nome_produto = mysqli_real_escape_string($mysqli, $_POST['nome_produto']);
     $descricao_produto = mysqli_real_escape_string($mysqli, $_POST['descricao_produto']);
-    $valor_produto = floatval($_POST['valor_produto']);
-    $valor_produto_taxa = floatval($_POST['valor_produto_taxa']);
+    $valor_produto = floatval(str_replace(',', '.', $_POST['valor_produto']));
+    $valor_produto_taxa = floatval(str_replace(',', '.', $_POST['valor_produto_taxa']));
     $frete_gratis = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';
-    $valor_frete = $frete_gratis === 'sim' ? 0.00 : floatval($_POST['valor_frete']);
+    $valor_frete = $frete_gratis === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete']));
 
     $imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
     $imagens_removidas = isset($_POST['imagens_removidas']) ? explode(',', $_POST['imagens_removidas']) : [];
 
-    $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
-    $valor_promocao = floatval($_POST['valor_promocao']);  
-    $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
-    $valor_frete_gratis_promocao = $frete_gratis_promocao === 'sim' ? 0.00 : floatval($_POST['valor_frete_promocao']);
-    $ini_promocao = $_POST['ini_promocao'];
-    $fim_promocao = $_POST['fim_promocao'];
-    
-    var_dump($_POST);
-    
-    // Converte as datas usando o formato esperado
-    $dataFormatada_ini_promocao = DateTime::createFromFormat('Y-m-d', $ini_promocao);
-    $dataFormatada_fim_promocao = DateTime::createFromFormat('Y-m-d', $fim_promocao);
-    
-    // Verifica se as datas foram formatadas corretamente
-    if ($dataFormatada_ini_promocao && $dataFormatada_fim_promocao) {
-        // Formata as datas para exibição
-        $ini = $dataFormatada_ini_promocao->format('Y-m-d');
-        $fim = $dataFormatada_fim_promocao->format('Y-m-d');
-    } else {
-        //echo "Erro na formatação das datas. Verifique o formato das datas enviadas.";
-    }
-    
-    //die();
-    
     $imagens = array_diff($imagens_existentes, $imagens_removidas);
     $novas_imagens = [];
     $upload_dir = 'img_produtos/';
@@ -56,19 +32,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (move_uploaded_file($tmp_name, $upload_file)) {
                         $novas_imagens[] = $novo_nome_imagem;
+                    } else {
+                        echo "Erro ao mover a imagem: $imagem";
                     }
+                } else {
+                    echo "Extensão de arquivo não permitida: $imagem";
                 }
+            } else {
+                echo "Erro no upload da imagem: $imagem";
             }
         }
     }
 
+    // Adiciona as novas imagens à lista final de imagens
     $imagens = array_merge($imagens, $novas_imagens);
     $imagens_string = implode(',', $imagens);
+
+    $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
+    $valor_promocao = floatval(str_replace(',', '.', $_POST['valor_promocao']));
+    $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
+    $valor_frete_promocao = $frete_gratis_promocao === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete_promocao']));
+    $ini_promocao = $_POST['ini_promocao'];
+    $fim_promocao = $_POST['fim_promocao'];
+
+    // Converte as datas usando o formato esperado
+    $dataFormatada_ini_promocao = DateTime::createFromFormat('Y-m-d', $ini_promocao);
+    $dataFormatada_fim_promocao = DateTime::createFromFormat('Y-m-d', $fim_promocao);
+
+    if ($dataFormatada_ini_promocao && $dataFormatada_fim_promocao) {
+        $ini = $dataFormatada_ini_promocao->format('Y-m-d');
+        $fim = $dataFormatada_fim_promocao->format('Y-m-d');
+    } else {
+        echo "Erro na formatação das datas. Verifique o formato das datas enviadas.";
+    }
 
     if ($mysqli->connect_error) {
         die("Erro de conexão: " . $mysqli->connect_error);
     }
-
+    var_dump($_POST);
+die();
     $stmt = $mysqli->prepare("UPDATE produtos SET 
         nome_produto = ?, 
         descricao_produto = ?, 
@@ -89,12 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($stmt->execute()) {
         $msg = "<div class='message-box'>Produto atualizado com sucesso!</div>";
-       
     } else {
         $msg = "Erro ao executar a atualização: " . $stmt->error;
     }
     $stmt->close();
-    //exit;
 } else {
     $msg = "Método de solicitação não permitido.";
 }

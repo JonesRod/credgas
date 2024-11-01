@@ -117,7 +117,7 @@ if (isset($_GET['id_produto'])) {
         <div class="form-group">
             <div id="preview">
                 <?php
-                $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                $imagens = isset($produto['imagens']) ? explode(separator: ',', string: $produto['imagens']) : [];
                 if (count($imagens) > 0) {
                     foreach ($imagens as $index => $imagem):
                         $imagem = trim($imagem);
@@ -207,7 +207,7 @@ if (isset($_GET['id_produto'])) {
         <!-- Botões -->
         <div class="form-group">
             <button type="button" class="btn btn-secondary" onclick="window.location.href='../parceiro_home.php'">Voltar</button>
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            <button type="submit" class="btn btn-primary" onclick="checkPromocao()">Salvar Alterações</button>
         </div>
 
         <script src="editar_produto.js"></script>
@@ -299,15 +299,22 @@ if (isset($_GET['id_produto'])) {
                 if (promocaoSelect === 'sim') formatarValorPromocao();
             }
 
-
-
             // Carrega os campos corretamente ao carregar a página
             window.onload = function() {
                 togglePromocaoFields();
-                
                 //Calcula o valor com a taxa ao carregar a página
                 formatarValor();
             };
+            function checkPromocao() {
+                const promocao = document.getElementById('promocao').value;
+                if (promocao === 'nao') {
+                    document.getElementById('valor_promocao').value = '';
+                    document.getElementById('valor_promocao_taxa').value = '';
+                    document.getElementById('frete_gratis_promocao').value = 'sim';
+                    document.getElementById('ini_promocao').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('fim_promocao').value = new Date().toISOString().split('T')[0];
+                }
+            }
 
         </script>
     </form>
