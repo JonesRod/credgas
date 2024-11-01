@@ -35,13 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (move_uploaded_file($tmp_name, $upload_file)) {
                         $novas_imagens[] = $novo_nome_imagem;
                     } else {
-                        echo "Erro ao mover a imagem: $imagem";
+                        //echo "Erro ao mover a imagem: $imagem";
                     }
                 } else {
-                    echo "Extensão de arquivo não permitida: $imagem";
+                    //echo "Extensão de arquivo não permitida: $imagem";
                 }
             } else {
-                echo "Erro no upload da imagem: $imagem";
+                //echo "Erro no upload da imagem: $imagem";
             }
         }
     }
@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unlink($caminhoImagem); // Remove o arquivo
         }
     }
+    //echo $imagemRemovida;
 
     // Código de atualização SQL, etc.
     // Resto do código permanece o mesmo...
@@ -148,9 +149,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php echo $msg; ?>
     </div>
     <script>
-        setTimeout(function() {
+        /*setTimeout(function() {
             window.location.href = 'editar_produto.php?id_produto=<?php echo $id_produto; ?>';
-        }, 5000);
+        }, 5000);*/
     </script>
 </body>
 </html> 
