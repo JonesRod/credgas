@@ -134,7 +134,7 @@ function formatarValorFretePromocao() {
     valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
     document.getElementById('valor_frete_promocao').value = valor;                        // Atualiza o valor no campo
-    //console.log('oii');
+    console.log('oii');
 }
 
 

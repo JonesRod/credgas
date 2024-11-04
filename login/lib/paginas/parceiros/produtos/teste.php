@@ -139,3 +139,37 @@ echo $imagens_string;
     </script>
 </body>
 </html>
+
+
+// Carrega os campos corretamente ao carregar a página
+window.onload = function() {
+    togglePromocaoFields();
+    // Calcula o valor com a taxa ao carregar a página
+    formatarValor();
+
+    const freteGratisSelect = document.getElementById('frete_gratis_promocao');
+    const freteGroup = document.getElementById('frete-gratis-group');
+    const valorFrete = document.getElementById('valor_frete_promocao');
+    
+    // Exibir ou ocultar o campo de frete com base no valor de frete grátis ao carregar a página
+    if (freteGratisSelect && freteGroup && valorFrete) {
+        // Verifica o valor do campo frete grátis na promoção e ajusta a exibição
+        if (freteGratisSelect.value === 'sim') {
+            freteGroup.style.display = 'none'; // Oculta o campo de frete
+            valorFrete.value = '0,00'; // Define o valor do frete como 0,00
+        } else {
+            freteGroup.style.display = 'block'; // Exibe o campo de frete
+        }
+
+        // Adiciona evento de mudança para atualizar conforme o usuário altera o frete grátis na promoção
+        freteGratisSelect.addEventListener('change', function() {
+            if (this.value === 'sim') {
+                freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
+                valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
+            } else {
+                freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
+            }
+        });
+    }
+};
+

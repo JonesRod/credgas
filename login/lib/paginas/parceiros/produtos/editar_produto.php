@@ -187,7 +187,7 @@ if (isset($_GET['id_produto'])) {
             <label for="valor_frete_promocao">Valor do Frete (R$):</label>
             <input type="text" id="valor_frete_promocao" name="valor_frete_promocao" 
             value="<?php echo number_format($valor_frete_promocao, 2, ',', '.'); ?>" 
-            oninput="formatarValorFreteGratis(this)">
+            oninput="formatarValorFretePromocao(this)">
         </div>
 
         <!-- Campo Data de Início da Promoção -->
@@ -316,31 +316,35 @@ if (isset($_GET['id_produto'])) {
             // Carrega os campos corretamente ao carregar a página
             window.onload = function() {
                 togglePromocaoFields();
-                //Calcula o valor com a taxa ao carregar a página
+                // Calcula o valor com a taxa ao carregar a página
                 formatarValor();
 
-                const freteGratisPromocao = document.getElementById('frete_gratis_promocao').value;
+                const freteGratisSelect = document.getElementById('frete_gratis_promocao');
+                const freteGroup = document.getElementById('frete-gratis-group');
+                const valorFrete = document.getElementById('valor_frete_promocao');
+                
+                // Exibir ou ocultar o campo de frete com base no valor de frete grátis ao carregar a página
+                if (freteGratisSelect && freteGroup && valorFrete) {
+                    // Verifica o valor do campo frete grátis na promoção e ajusta a exibição
+                    if (freteGratisSelect.value === 'sim') {
+                        freteGroup.style.display = 'none'; // Oculta o campo de frete
+                        valorFrete.value = '0,00'; // Define o valor do frete como 0,00
+                    } else {
+                        freteGroup.style.display = 'block'; // Exibe o campo de frete
+                    }
 
-                if (freteGratisPromocao === 'sim'){
-                    // Exibir ou ocultar o campo de frete com base na seleção
-                    document.addEventListener("DOMContentLoaded", function() {
-                        const freteGratisSelect = document.getElementById('frete_gratis_promocao');
-                        const freteGroup = document.getElementById('frete-gratis-group');
-                        const valorFrete = document.getElementById('valor_frete_promocao');
-                        
-                        if (freteGratisSelect && freteGroup && valorFrete) {
-                            freteGratisSelect.addEventListener('change', function() {
-                                if (this.value === 'sim') {
-                                    freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
-                                    valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
-                                } else {
-                                    freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
-                                }
-                            });
+                    // Adiciona evento de mudança para atualizar conforme o usuário altera o frete grátis na promoção
+                    freteGratisSelect.addEventListener('change', function() {
+                        if (this.value === 'sim') {
+                            freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
+                            valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
+                        } else {
+                            freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
                         }
                     });
                 }
             };
+
             function checkPromocao() {
                 const promocao = document.getElementById('promocao').value;
                 if (promocao === 'nao') {
