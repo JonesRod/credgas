@@ -149,9 +149,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php echo $msg; ?>
     </div>
     <script>
-        /*setTimeout(function() {
+        setTimeout(function() {
             window.location.href = 'editar_produto.php?id_produto=<?php echo $id_produto; ?>';
-        }, 5000);*/
+        }, 5000);
     </script>
 </body>
 </html> 

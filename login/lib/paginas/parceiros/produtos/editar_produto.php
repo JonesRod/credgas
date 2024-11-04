@@ -181,12 +181,12 @@ if (isset($_GET['id_produto'])) {
         <!-- Valor do Frete -->
         <div class="form-group promocao-field" id="frete-gratis-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
             <?php
-                $valor_frete = str_replace(',', '.', $produto['valor_frete']);
-                $valor_frete = floatval($valor_frete);
+                $valor_frete_promocao = str_replace(',', '.', $produto['valor_frete_promocao']);
+                $valor_frete_promocao = floatval($valor_frete_promocao);
             ?>            
             <label for="valor_frete_promocao">Valor do Frete (R$):</label>
             <input type="text" id="valor_frete_promocao" name="valor_frete_promocao" 
-            value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>" 
+            value="<?php echo number_format($valor_frete_promocao, 2, ',', '.'); ?>" 
             oninput="formatarValorFreteGratis(this)">
         </div>
 
@@ -280,11 +280,25 @@ if (isset($_GET['id_produto'])) {
             // Validação do formulário antes de enviar
             document.querySelector('form').addEventListener('submit', function(event) {
                 const previewImages = document.querySelectorAll('.preview-img');
+                const freteGratisPromocao = document.getElementById('frete_gratis_promocao').value;
+                const valorFretePromocao = document.getElementById('valor_frete_promocao').value.replace(',', '.');
+
+                // Verificação de imagem
                 if (previewImages.length === 0) {
                     event.preventDefault(); // Impede o envio do formulário
                     alert('É necessário adicionar pelo menos uma imagem do produto.');
+                    return;
+                }
+
+                // Verificação de valor de frete quando o frete grátis não está ativado
+                if (freteGratisPromocao === 'nao' && (valorFretePromocao === '' || parseFloat(valorFretePromocao) === 0)) {
+                    event.preventDefault(); // Impede o envio do formulário
+                    alert('O valor do frete promocional deve ser maior que 0.');
+                    return;
                 }
             });
+
+
 
             // Exibe ou oculta os campos da promoção com base na seleção
             function togglePromocaoFields() {
@@ -304,6 +318,28 @@ if (isset($_GET['id_produto'])) {
                 togglePromocaoFields();
                 //Calcula o valor com a taxa ao carregar a página
                 formatarValor();
+
+                const freteGratisPromocao = document.getElementById('frete_gratis_promocao').value;
+
+                if (freteGratisPromocao === 'sim'){
+                    // Exibir ou ocultar o campo de frete com base na seleção
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const freteGratisSelect = document.getElementById('frete_gratis_promocao');
+                        const freteGroup = document.getElementById('frete-gratis-group');
+                        const valorFrete = document.getElementById('valor_frete_promocao');
+                        
+                        if (freteGratisSelect && freteGroup && valorFrete) {
+                            freteGratisSelect.addEventListener('change', function() {
+                                if (this.value === 'sim') {
+                                    freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
+                                    valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
+                                } else {
+                                    freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
+                                }
+                            });
+                        }
+                    });
+                }
             };
             function checkPromocao() {
                 const promocao = document.getElementById('promocao').value;
