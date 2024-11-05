@@ -143,8 +143,8 @@
                 <?php 
                     if ($produtos_catalogo->num_rows > 0): 
                 ?>
-                <span class="titulo">Catálogo de Produtos</span>
-                <input class="input" type="text" placeholder="Pesquisar Produto.">
+                <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
+
                 <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
                     <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
                     <button class="button">Cadastrar produto</button>    
@@ -202,6 +202,10 @@
 
                 <?php endwhile; ?>
             </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Produto não encontrado.</p>
+
         </div>
 
         <?php else: ?>
@@ -217,39 +221,51 @@
         
         <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
             <div class="container">
-                <?php if ($promocoes->num_rows > 0): ?>
-                    <span class="titulo">Promoções</span>
-                    <input class="input" type="text" placeholder="Pesquisar Produto.">
-                    
-                    <!-- Lista de promoções aqui -->
-                    <div class="lista-promocoes">
-                        <?php while ($produto = $promocoes->fetch_assoc()): ?>
-                            <div class="produto-item">
-                                <?php
-                                    // Exibe a imagem do produto, caso haja uma
-                                    $imagensArray = explode(',', $produto['imagens']);
-                                    $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                <?php 
+                    if ($promocoes->num_rows > 0): 
+                ?>
+                <input id="inputPesquisaPromocao" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>        
 
-                                <div class="produto-detalhes">
-                                    <h3 class="produto-nome"><?php echo $produto['nome_produto']; ?></h3>
-                                    <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+            <!-- Lista de promoções aqui -->
+            <div class="lista-promocoes">
+                <?php while ($produto = $promocoes->fetch_assoc()): ?>
+                    <div class="produto-item">
+                        <?php
+                            // Exibe a imagem do produto, caso haja uma
+                            $imagensArray = explode(',', $produto['imagens']);
+                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
+                        ?>
+                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
 
-                                    <?php
-                                        // Formatação do valor promocional
-                                        $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                                    ?>
-                                    <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
+                        <div class="produto-detalhes">
+                            <h3 class="produto-nome">
+                                <?php echo $produto['nome_produto']; ?>
+                                <?php if ($produto['promocao'] === 'sim'): ?>
+                                    <!-- Ícone de promoção ao lado do nome do produto -->
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php endif; ?>
+                            </h3>
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                            <?php
+                                // Formatação do valor promocional
+                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                        </div>
                     </div>
-
-                <?php else: ?>
-                    <p>Nenhuma promoção disponível.</p>
-                <?php endif; ?>
+                <?php endwhile; ?>
             </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            
+            <?php else: ?>
+                <p>Nenhuma promoção disponível.</p>
+            <?php endif; ?>
+
         </div>
 
 
@@ -335,6 +351,52 @@
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 5000);
+
+        ///pesquizador de produto no catalogo
+        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {
+            const termoPesquisa = this.value.toLowerCase();
+            const produtos = document.querySelectorAll('.produto-item');
+            let produtoEncontrado = false;
+
+            produtos.forEach(produto => {
+                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                
+                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                    produto.style.display = 'block';
+                    produtoEncontrado = true;
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+
+            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
+            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
+            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+        });
+
+
+        ///pesquizador de produto na promoção
+        document.getElementById('inputPesquisaPromocao').addEventListener('input', function() {
+            const termoPesquisa = this.value.toLowerCase();
+            const produtos = document.querySelectorAll('.produto-item');
+            let produtoEncontrado = false;
+
+            produtos.forEach(produto => {
+                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                
+                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                    produto.style.display = 'block';
+                    produtoEncontrado = true;
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+
+            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
+            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+        });
+
 
     </script>
 
