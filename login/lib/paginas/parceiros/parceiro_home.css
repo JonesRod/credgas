@@ -445,6 +445,14 @@ h2 {
     padding-bottom: 50px;
 }
 
+.lista-promocoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+
 .produto-item {
     background-color: aliceblue;
     display: flex;
@@ -692,6 +700,14 @@ h2 {
     }
     /* Estilos para telas maiores (desktops) */
     .lista-produtos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }
+
+    .lista-promocoes {
         display: flex;
         flex-wrap: wrap;
         gap: 5px;
