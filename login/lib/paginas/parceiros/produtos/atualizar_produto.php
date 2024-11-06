@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifique o conteúdo e o tamanho de $imagens_string
     //echo "<pre>Tamanho de \$imagens_string: " . strlen($imagens_string) . " bytes</pre>";
     //echo "<pre>Conteúdo de \$imagens_string: $imagens_string</pre>";
-
+    $ocultar = $_POST['ocultar'] === 'sim' ? 'sim' : 'não';
     $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
     $valor_promocao = floatval(str_replace(',', '.', $_POST['valor_promocao']));
     $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
@@ -103,7 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         frete_gratis_promocao = '$frete_gratis_promocao',
         valor_frete_promocao = $valor_frete_promocao,
         ini_promocao = '$ini',
-        fim_promocao = '$fim'
+        fim_promocao = '$fim',
+        oculto = '$ocultar'
         WHERE id_produto = $id_produto";
 
     if ($mysqli->query($sql)) {

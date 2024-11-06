@@ -142,6 +142,15 @@ if (isset($_GET['id_produto'])) {
             <input type="file" id="produtoImagens" name="produtoImagens[]" accept="image/*" multiple>
         </div>
 
+        <!-- Ocultar -->
+        <div class="form-group">
+            <label for="ocultar">Ocultar:</label>
+            <select id="ocultar" name="ocultar" >
+                <option value="nao" <?php echo ($produto['oculto'] == 'nao') ? 'selected' : ''; ?>>Não</option>
+                <option value="sim" <?php echo ($produto['oculto'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+            </select>
+        </div>
+
         <!-- Configurações de Promoção -->
         <h2>Promoção</h2>
 
