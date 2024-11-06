@@ -1,4 +1,3 @@
-
 <script>
 // ------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
@@ -20,11 +19,17 @@ function mostrarConteudo(aba, element) {
 
     // Limpa o campo de pesquisa específico e atualiza os produtos
     if (aba === 'catalogo') {
-        document.getElementById('pesquisaCatalogo').value = '';
-        atualizarProdutos('catalogo'); // Chama a função para atualizar os produtos do catálogo
+        const pesquisaCatalogoInput = document.getElementById('pesquisaCatalogo');
+        if (pesquisaCatalogoInput) {
+            pesquisaCatalogoInput.value = '';
+            atualizarProdutos('catalogo'); // Atualiza os produtos do catálogo
+        }
     } else if (aba === 'promocoes') {
-        document.getElementById('pesquisaPromocoes').value = '';
-        atualizarProdutos('promocoes'); // Chama a função para atualizar os produtos das promoções
+        const pesquisaPromocoesInput = document.getElementById('pesquisaPromocoes');
+        if (pesquisaPromocoesInput) {
+            pesquisaPromocoesInput.value = '';
+            atualizarProdutos('promocoes'); // Atualiza os produtos das promoções
+        }
     }
 
     // Adiciona a classe 'active' à aba clicada
@@ -33,15 +38,15 @@ function mostrarConteudo(aba, element) {
 
 // Função para atualizar os produtos exibidos
 function atualizarProdutos(tipo) {
-    let pesquisaInput = document.getElementById('pesquisa' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
-    let query = pesquisaInput.value.trim().toLowerCase();
+    const pesquisaInput = document.getElementById('pesquisa' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
+    const query = pesquisaInput ? pesquisaInput.value.trim().toLowerCase() : '';
 
-    let listaProdutos = document.querySelectorAll('#conteudo-' + tipo + ' .produto-item');
+    const listaProdutos = document.querySelectorAll('#conteudo-' + tipo + ' .produto-item');
     let encontrouProduto = false;
 
     listaProdutos.forEach(function(produto) {
-        let nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-        
+        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+
         if (query === '' || nomeProduto.includes(query)) {
             produto.style.display = 'block';
             encontrouProduto = true;
@@ -51,17 +56,18 @@ function atualizarProdutos(tipo) {
     });
 
     // Exibe mensagem se nenhum produto encontrado
-    let mensagemNaoEncontrado = document.getElementById(tipo + '-nao-encontrado');
-    if (!encontrouProduto && query !== '') {
-        mensagemNaoEncontrado.style.display = 'block';
-    } else {
-        mensagemNaoEncontrado.style.display = 'none';
+    const mensagemNaoEncontrado = document.getElementById(tipo + '-nao-encontrado');
+    if (mensagemNaoEncontrado) {
+        mensagemNaoEncontrado.style.display = !encontrouProduto && query !== '' ? 'block' : 'none';
     }
 }
 
 // Define que a aba "catalogo" está ativa ao carregar a página
 window.onload = function() {
-    mostrarConteudo('catalogo', document.querySelector('.tab.active'));
+    const activeTab = document.querySelector('.tab.active') || document.querySelector('.tab');
+    if (activeTab) {
+        mostrarConteudo('catalogo', activeTab);
+    }
 };
 
 </script>

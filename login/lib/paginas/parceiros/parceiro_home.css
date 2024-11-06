@@ -452,6 +452,13 @@ h2 {
     justify-content: center;
     padding-bottom: 50px;
 }
+.lista-frete_gratis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
 
 .produto-item {
     background-color: aliceblue;
@@ -714,6 +721,13 @@ h2 {
         justify-content: center;
         padding-bottom: 50px;
     }
+    .lista-frete_gratis{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }   
     .produto-item {
         width: 100%;
         max-width: 200px;

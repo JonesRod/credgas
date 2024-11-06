@@ -39,8 +39,13 @@
     $queryPromocoes = "SELECT * FROM produtos WHERE promocao = 'sim' AND id_parceiro = $id";
     $promocoes = $mysqli->query($queryPromocoes);
 
-    $mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
-    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE frete_gratis = 1 AND id_parceiro = '$id'");
+    //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
+    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE 
+            (promocao = 'sim' AND frete_gratis_promocao = 'sim' AND id_parceiro = '$id') 
+            OR 
+            (promocao = 'nao' AND frete_gratis = 'sim' AND id_parceiro = '$id')
+    ");
+
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id = 1";
@@ -127,11 +132,7 @@
                 <span>Promoções</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('vendidos',this)">
-                <span>Mais Vendidos</span>
-            </div>
-
-            <div class="tab" onclick="mostrarConteudo('frete',this)">
+            <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
                 <span>Frete Grátis</span>
             </div>
 
@@ -178,14 +179,25 @@
                     ?>
 
                     <div class="produto-detalhes">
-                        <h3 class="produto-nome">
-                            <?php echo $produto['nome_produto']; ?>
-                            
-                            <?php if ($produto['promocao'] === 'sim'): ?>
-                                <!-- Ícone de promoção ao lado do nome do produto -->
-                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?>
-                        </h3>
+                    <h3 class="produto-nome">
+                        <?php 
+                            // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                            if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                        ?>
+                            <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                        <?php 
+                            endif;
+
+                            // Exibe o ícone de promoção, se o produto estiver em promoção
+                            if ($produto['promocao'] === 'sim'): 
+                        ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php 
+                            endif; 
+                        ?>
+                        <?php echo $produto['nome_produto']; ?>
+                    </h3>
+
                         
                         <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
@@ -240,12 +252,24 @@
 
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
-                                <?php echo $produto['nome_produto']; ?>
-                                <?php if ($produto['promocao'] === 'sim'): ?>
-                                    <!-- Ícone de promoção ao lado do nome do produto -->
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php endif; ?>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <?php echo $produto['nome_produto']; ?>
                             </h3>
+
                             <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
                             <?php
@@ -268,29 +292,64 @@
 
         </div>
 
-
-        <div id="conteudo-vendidos" class="conteudo-aba" style="display: none;">
+        <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
             <div class="container">
-                <?php if ($vendidos->num_rows > 0): ?>
-                    <span class="titulo">+ vendidos</span>
-                    <input class="input" type="text" placeholder="Pesquizar Produto.">
-                    <!-- Lista de frete grátis aqui -->
-                <?php else: ?>
-                    <p>Nenhum produto na categoria "Mais Vendidos".</p>
-                <?php endif; ?>
-            </div>
-        </div>
+                <?php 
+                    if ($frete_gratis->num_rows > 0): 
+                ?>
+                <input id="inputPesquisafreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div> 
 
-        <div id="conteudo-frete" class="conteudo-aba" style="display: none;">
-            <div class="container">
-                <?php if ($frete_gratis->num_rows > 0): ?>
-                    <span class="titulo">Frete Grátis</span>
-                    <input class="input" type="text" placeholder="Pesquizar Produto.">
-                    <!-- Lista de frete grátis aqui -->
-                <?php else: ?>
-                    <p>Nenhum produto com frete grátis disponível.</p>
-                <?php endif; ?>
+            <!-- Lista de promoções aqui -->
+            <div class="lista-frete_gratis">
+                <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
+                    <div class="produto-item">
+                        <?php
+                            // Exibe a imagem do produto, caso haja uma
+                            $imagensArray = explode(',', $produto['imagens']);
+                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
+                        ?>
+                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                        <div class="produto-detalhes">
+                            <h3 class="produto-nome">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <?php echo $produto['nome_produto']; ?>
+                            </h3>
+
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                            <?php
+                                // Formatação do valor promocional
+                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
             </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            
+            <?php else: ?>
+                <p>Nenhuma frete Grátis disponível.</p>
+            <?php endif; ?>
         </div>
 
     </main>
@@ -396,8 +455,7 @@
             const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
             mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
         });
-
-
+        
     </script>
 
 </body>

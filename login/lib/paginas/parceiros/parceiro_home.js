@@ -106,9 +106,12 @@ function mostrarConteudo(aba, element) {
 
     // Limpa o campo de pesquisa específico baseado no ID da aba selecionada
     if (aba === 'catalogo') {
-        document.getElementById('inputPesquisaCatalogo').value = '';
+        document.getElementById('inputPesquisaCatalogo').value = document.getElementById('inputPesquisaPromocao').value;
+        //mostrarConteudo('catalogo', document.querySelector('.tab.active'));
     } else if (aba === 'promocoes') {
-        document.getElementById('inputPesquisaPromocao').value = '';
+        document.getElementById('inputPesquisaPromocao').value = document.getElementById('inputPesquisaCatalogo').value ;
+    }else if (aba === 'frete_gratis') {
+        document.getElementById('inputPesquisafreteGratis').value = document.getElementById('inputPesquisaPromocao').value ;
     }
 
     // Adiciona a classe 'active' à aba clicada
