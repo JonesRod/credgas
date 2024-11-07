@@ -58,6 +58,10 @@
     // Soma todos os valores de notificações
     $total_notificacoes = $platafoma + $pedidos;
     //echo $total_notificacoes; 
+
+    // Consulta para buscar produtos ocultos do catálogo
+    $produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$id' AND oculto = 'sim'") or die($mysqli->error);
+
 ?>
 
 <!DOCTYPE html>
@@ -70,8 +74,6 @@
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
     <style>
-
-
 
     </style>
 </head>
@@ -136,6 +138,10 @@
                 <span>Frete Grátis</span>
             </div>
 
+            <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
+                <span>Produtos Ocultos</span>
+            </div>
+
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
@@ -168,6 +174,13 @@
                             $primeiraImagem = $imagensArray[0];
                             // Exibe a primeira imagem
                             ?>
+                            <?php 
+                                // Exibe o ícone de oculto, se o produto estiver oculto
+                                if ($produto['oculto'] === 'sim'): 
+                            ?>
+                                <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                            <?php endif; ?>
+
                             <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
                             <?php
                         } else {
@@ -352,6 +365,66 @@
             <?php endif; ?>
         </div>
 
+        <div id="conteudo-produtos_ocultos" class="conteudo-aba" style="display: none;">
+            <div class="container">
+                <?php 
+                    if ($frete_gratis->num_rows > 0): 
+                ?>
+                <input id="inputPesquisaProdutosOcultos" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div> 
+
+            <!-- Lista de promoções aqui -->
+            <div class="lista-produtos_ocultos">
+                <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
+                    <div class="produto-item">
+                        <?php
+                            // Exibe a imagem do produto, caso haja uma
+                            $imagensArray = explode(',', $produto['imagens']);
+                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
+                        ?>
+                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                        <div class="produto-detalhes">
+                            <h3 class="produto-nome">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <?php echo $produto['nome_produto']; ?>
+                            </h3>
+
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                            <?php
+                                // Formatação do valor promocional
+                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            
+            <?php else: ?>
+                <p>Nenhuma Produto Oculto.</p>
+            <?php endif; ?>
+        </div>
+
     </main>
 
     <footer class="menu-mobile">
@@ -436,6 +509,28 @@
 
         ///pesquizador de produto na promoção
         document.getElementById('inputPesquisaPromocao').addEventListener('input', function() {
+            const termoPesquisa = this.value.toLowerCase();
+            const produtos = document.querySelectorAll('.produto-item');
+            let produtoEncontrado = false;
+
+            produtos.forEach(produto => {
+                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                
+                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                    produto.style.display = 'block';
+                    produtoEncontrado = true;
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+
+            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
+            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+        });
+
+        ///pesquizador de produto na promoção
+        document.getElementById('inputPesquisaProdutosOcultos').addEventListener('input', function() {
             const termoPesquisa = this.value.toLowerCase();
             const produtos = document.querySelectorAll('.produto-item');
             let produtoEncontrado = false;
