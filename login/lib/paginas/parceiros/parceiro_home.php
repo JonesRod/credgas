@@ -59,9 +59,33 @@
     $total_notificacoes = $platafoma + $pedidos;
     //echo $total_notificacoes; 
 
-    // Consulta para buscar produtos ocultos do catálogo
+    //Consulta para buscar produtos ocultos do catálogo
     $produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$id' AND oculto = 'sim'") or die($mysqli->error);
+    
+    // Obtenha a data atual
+    $data_atual = date('Y-m-d');
 
+    // Consulta para buscar todos os produtos com promoção
+    $produtos_promocao = $mysqli->query("SELECT id_produto, promocao, ini_promocao, fim_promocao FROM produtos") or die($mysqli->error);
+
+    while ($produtos_encontrados = $produtos_promocao->fetch_assoc()) {
+        $id_produto = $produtos_encontrados['id_produto'];
+        $promocao = $produtos_encontrados['promocao'];
+        $data_inicio = $produtos_encontrados['ini_promocao'];
+        $data_fim = $produtos_encontrados['fim_promocao'];
+
+        // Verifica se a promoção deve estar ativa ou inativa
+        if ($promocao === 'sim' && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
+            // A promoção deve continuar como "sim"
+            continue;
+        } elseif ($data_fim < $data_atual) {
+            // A promoção terminou; atualize para "não"
+            $mysqli->query("UPDATE produtos SET promocao = 'não' WHERE id_produto = '$id_produto'");
+        } elseif ($data_inicio > $data_atual) {
+            // A promoção ainda não começou; continue com "sim" se for o caso
+            $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -74,6 +98,7 @@
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
     <style>
+
 
     </style>
 </head>
@@ -261,6 +286,12 @@
                             $imagensArray = explode(',', $produto['imagens']);
                             $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
                         ?>
+                        <?php 
+                            // Exibe o ícone de oculto, se o produto estiver oculto
+                            if ($produto['oculto'] === 'sim'): 
+                        ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
                         <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
 
                         <div class="produto-detalhes">
@@ -322,6 +353,12 @@
                             $imagensArray = explode(',', $produto['imagens']);
                             $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
                         ?>
+                        <?php 
+                            // Exibe o ícone de oculto, se o produto estiver oculto
+                            if ($produto['oculto'] === 'sim'): 
+                        ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>                        
                         <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
 
                         <div class="produto-detalhes">
@@ -361,68 +398,76 @@
             <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
             
             <?php else: ?>
-                <p>Nenhuma frete Grátis disponível.</p>
+                <p>Nenhum produto com o frete Grátis disponível.</p>
             <?php endif; ?>
         </div>
 
         <div id="conteudo-produtos_ocultos" class="conteudo-aba" style="display: none;">
             <div class="container">
                 <?php 
-                    if ($frete_gratis->num_rows > 0): 
+                    // Verifica se há produtos ocultos
+                    if ($produtos_ocultos->num_rows > 0): 
+                        //echo $produtos_ocultos->num_rows;
                 ?>
-                <input id="inputPesquisaProdutosOcultos" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div> 
+                    <input id="inputPesquisaProdutosOcultos" class="input" type="text" placeholder="Pesquisar Produto.">
+                </div> 
 
-            <!-- Lista de promoções aqui -->
-            <div class="lista-produtos_ocultos">
-                <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
-                    <div class="produto-item">
-                        <?php
-                            // Exibe a imagem do produto, caso haja uma
-                            $imagensArray = explode(',', $produto['imagens']);
-                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                        ?>
-                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
-                            </h3>
-
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
-
+                <!-- Lista de produtos ocultos aqui -->
+                <div class="lista-produtos_ocultos">
+                    <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
+                        <div class="produto-item">
                             <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                                // Exibe a imagem do produto, caso haja uma
+                                $imagensArray = explode(',', $produto['imagens']);
+                                $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
                             ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
+                            <?php 
+                                // Exibe o ícone de oculto, se o produto estiver oculto
+                                if ($produto['oculto'] === 'sim'): 
+                            ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                            <?php endif; ?>
+                            <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
 
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
-            
-            <?php else: ?>
-                <p>Nenhuma Produto Oculto.</p>
-            <?php endif; ?>
+                            <div class="produto-detalhes">
+                                <h3 class="produto-nome">
+                                    <?php 
+                                        // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                        if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    ?>
+                                        <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                    <?php 
+                                        endif;
+
+                                        // Exibe o ícone de promoção, se o produto estiver em promoção
+                                        if ($produto['promocao'] === 'sim'): 
+                                    ?>
+                                        <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                    <?php 
+                                        endif; 
+                                    ?>
+                                    <?php echo $produto['nome_produto']; ?>
+                                </h3>
+
+                                <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                                <?php
+                                    // Formatação do valor promocional
+                                    $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                                ?>
+                                <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                                <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+
+                <!-- Mensagem de produto não encontrado -->
+                <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+                
+                <?php else: ?>
+                    <p>Nenhum Produto Oculto.</p>
+                <?php endif; ?>
         </div>
 
     </main>

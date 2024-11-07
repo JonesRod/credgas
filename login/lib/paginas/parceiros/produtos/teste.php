@@ -1,73 +1,71 @@
-<script>
-// ------Função para mostrar o conteúdo da aba selecionada
-function mostrarConteudo(aba, element) {
-    // Oculta todos os conteúdos das abas
-    var conteudos = document.querySelectorAll('.conteudo-aba');
-    conteudos.forEach(function(conteudo) {
-        conteudo.style.display = 'none';
-    });
+<!-- Consulta para buscar produtos ocultos do catálogo -->
+<?php
+$produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$id' AND oculto = 'sim'") or die($mysqli->error);
+?>
 
-    // Remove a classe 'active' de todas as abas
-    var tabs = document.querySelectorAll('.tab');
-    tabs.forEach(function(tab) {
-        tab.classList.remove('active');
-    });
+<div id="conteudo-produtos_ocultos" class="conteudo-aba" style="display: none;">
+    <div class="container">
+        <?php 
+            // Verifica se há produtos ocultos
+            if ($produtos_ocultos->num_rows > 0): 
+        ?>
+            <input id="inputPesquisaProdutosOcultos" class="input" type="text" placeholder="Pesquisar Produto.">
+        </div> 
 
-    // Mostra o conteúdo da aba clicada
-    var conteudoAba = document.getElementById('conteudo-' + aba);
-    conteudoAba.style.display = 'block';
+        <!-- Lista de produtos ocultos aqui -->
+        <div class="lista-produtos_ocultos">
+            <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
+                <div class="produto-item">
+                    <?php
+                        // Exibe a imagem do produto, caso haja uma
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
+                    ?>
+                    <?php 
+                        // Exibe o ícone de oculto, se o produto estiver oculto
+                        if ($produto['oculto'] === 'sim'): 
+                    ?>
+                        <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                    <?php endif; ?>
+                    <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
 
-    // Limpa o campo de pesquisa específico e atualiza os produtos
-    if (aba === 'catalogo') {
-        const pesquisaCatalogoInput = document.getElementById('pesquisaCatalogo');
-        if (pesquisaCatalogoInput) {
-            pesquisaCatalogoInput.value = '';
-            atualizarProdutos('catalogo'); // Atualiza os produtos do catálogo
-        }
-    } else if (aba === 'promocoes') {
-        const pesquisaPromocoesInput = document.getElementById('pesquisaPromocoes');
-        if (pesquisaPromocoesInput) {
-            pesquisaPromocoesInput.value = '';
-            atualizarProdutos('promocoes'); // Atualiza os produtos das promoções
-        }
-    }
+                    <div class="produto-detalhes">
+                        <h3 class="produto-nome">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
 
-    // Adiciona a classe 'active' à aba clicada
-    element.classList.add('active');
-}
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+                            ?>
+                            <?php echo $produto['nome_produto']; ?>
+                        </h3>
 
-// Função para atualizar os produtos exibidos
-function atualizarProdutos(tipo) {
-    const pesquisaInput = document.getElementById('pesquisa' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
-    const query = pesquisaInput ? pesquisaInput.value.trim().toLowerCase() : '';
+                        <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
-    const listaProdutos = document.querySelectorAll('#conteudo-' + tipo + ' .produto-item');
-    let encontrouProduto = false;
+                        <?php
+                            // Formatação do valor promocional
+                            $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        </div>
 
-    listaProdutos.forEach(function(produto) {
-        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-
-        if (query === '' || nomeProduto.includes(query)) {
-            produto.style.display = 'block';
-            encontrouProduto = true;
-        } else {
-            produto.style.display = 'none';
-        }
-    });
-
-    // Exibe mensagem se nenhum produto encontrado
-    const mensagemNaoEncontrado = document.getElementById(tipo + '-nao-encontrado');
-    if (mensagemNaoEncontrado) {
-        mensagemNaoEncontrado.style.display = !encontrouProduto && query !== '' ? 'block' : 'none';
-    }
-}
-
-// Define que a aba "catalogo" está ativa ao carregar a página
-window.onload = function() {
-    const activeTab = document.querySelector('.tab.active') || document.querySelector('.tab');
-    if (activeTab) {
-        mostrarConteudo('catalogo', activeTab);
-    }
-};
-
-</script>
+        <!-- Mensagem de produto não encontrado -->
+        <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+        
+        <?php else: ?>
+            <p>Nenhum Produto Oculto.</p>
+        <?php endif; ?>
+</div>

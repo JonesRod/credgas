@@ -98,6 +98,7 @@ function mostrarConteudo(aba, element) {
     var tabs = document.querySelectorAll('.tab');
     tabs.forEach(function(tab) {
         tab.classList.remove('active');
+        //console.log('oii');
     });
 
     // Mostra o conteúdo da aba clicada
@@ -112,6 +113,8 @@ function mostrarConteudo(aba, element) {
         document.getElementById('inputPesquisaPromocao').value = document.getElementById('inputPesquisaCatalogo').value ;
     }else if (aba === 'frete_gratis') {
         document.getElementById('inputPesquisafreteGratis').value = document.getElementById('inputPesquisaPromocao').value ;
+    }else if (aba === 'produtos_ocultos') {
+        document.getElementById('inputPesquisaProdutosOcultos').value = document.getElementById('inputPesquisaCatalogo').value ;
     }
 
     // Adiciona a classe 'active' à aba clicada
