@@ -97,7 +97,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
+<style>
 
+
+</style>
 </head>
 <body>
 
@@ -202,8 +205,15 @@
                                 if ($produto['oculto'] === 'sim'): 
                             ?>
                                 <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                            <?php endif; ?>
+                            <?php endif;
 
+                                // Exibe o ícone de relógio, se o produto não estiver aprovado
+                                if ($produto['produto_aprovado'] !== 'sim'): 
+                            ?>
+                                <i class="fas fa-clock"></i>
+                            <?php 
+                                endif; 
+                            ?>
                             <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
                             <?php
                         } else {
@@ -233,21 +243,20 @@
                         ?>
                         <?php echo $produto['nome_produto']; ?>
                     </h3>
-
                         
-                        <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                    <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
-                        <!-- Converte o valor do produto para float e formata -->
-                        <?php
-                            $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
-                            $valor_produto = floatval($valor_produto);
-                        ?>
-                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                    <!-- Converte o valor do produto para float e formata -->
+                    <?php
+                        $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
+                        $valor_produto = floatval($valor_produto);
+                    ?>
 
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                    <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                    <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
                     </div>
                 </div>
-
                 <?php endwhile; ?>
             </div>
 
@@ -280,18 +289,38 @@
                 <?php while ($produto = $promocoes->fetch_assoc()): ?>
                     <div class="produto-item">
                         <?php
-                            // Exibe a imagem do produto, caso haja uma
-                            $imagensArray = explode(',', $produto['imagens']);
-                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                        ?>
-                        <?php 
-                            // Exibe o ícone de oculto, se o produto estiver oculto
-                            if ($produto['oculto'] === 'sim'): 
-                        ?>
-                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                        <?php endif; ?>
-                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                            // Verifica se o campo 'imagens' está definido e não está vazio
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                                $imagensArray = explode(',', $produto['imagens']);
+                                
+                                // Pega a primeira imagem do array
+                                $primeiraImagem = $imagensArray[0];
+                                // Exibe a primeira imagem
+                                ?>
+                                <?php 
+                                    // Exibe o ícone de oculto, se o produto estiver oculto
+                                    if ($produto['oculto'] === 'sim'): 
+                                ?>
+                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                                <?php endif;
 
+                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
+                                    if ($produto['produto_aprovado'] !== 'sim'): 
+                                ?>
+                                    <i class="fas fa-clock"></i>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <?php
+                            } else {
+                                // Caso não haja imagens, exibe uma imagem padrão
+                                ?>
+                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                                <?php
+                            }
+                        ?>
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
                                 <?php 
@@ -347,18 +376,38 @@
                 <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
                     <div class="produto-item">
                         <?php
-                            // Exibe a imagem do produto, caso haja uma
-                            $imagensArray = explode(',', $produto['imagens']);
-                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                        ?>
-                        <?php 
-                            // Exibe o ícone de oculto, se o produto estiver oculto
-                            if ($produto['oculto'] === 'sim'): 
-                        ?>
-                        <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                        <?php endif; ?>
-                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                            // Verifica se o campo 'imagens' está definido e não está vazio
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                                $imagensArray = explode(',', $produto['imagens']);
+                                
+                                // Pega a primeira imagem do array
+                                $primeiraImagem = $imagensArray[0];
+                                // Exibe a primeira imagem
+                                ?>
+                                <?php 
+                                    // Exibe o ícone de oculto, se o produto estiver oculto
+                                    if ($produto['oculto'] === 'sim'): 
+                                ?>
+                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                                <?php endif;
 
+                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
+                                    if ($produto['produto_aprovado'] !== 'sim'): 
+                                ?>
+                                    <i class="fas fa-clock"></i>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <?php
+                            } else {
+                                // Caso não haja imagens, exibe uma imagem padrão
+                                ?>
+                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                                <?php
+                            }
+                        ?>
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
                                 <?php 
@@ -413,18 +462,38 @@
                 <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
                     <div class="produto-item">
                         <?php
-                            // Exibe a imagem do produto, caso haja uma
-                            $imagensArray = explode(',', $produto['imagens']);
-                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                        ?>
-                        <?php 
-                            // Exibe o ícone de oculto, se o produto estiver oculto
-                            if ($produto['oculto'] === 'sim'): 
-                        ?>
-                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                        <?php endif; ?>
-                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                            // Verifica se o campo 'imagens' está definido e não está vazio
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                                $imagensArray = explode(',', $produto['imagens']);
+                                
+                                // Pega a primeira imagem do array
+                                $primeiraImagem = $imagensArray[0];
+                                // Exibe a primeira imagem
+                                ?>
+                                <?php 
+                                    // Exibe o ícone de oculto, se o produto estiver oculto
+                                    if ($produto['oculto'] === 'sim'): 
+                                ?>
+                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                                <?php endif;
 
+                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
+                                    if ($produto['produto_aprovado'] !== 'sim'): 
+                                ?>
+                                    <i class="fas fa-clock"></i>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <?php
+                            } else {
+                                // Caso não haja imagens, exibe uma imagem padrão
+                                ?>
+                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                                <?php
+                            }
+                        ?>
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
                                 <?php 
