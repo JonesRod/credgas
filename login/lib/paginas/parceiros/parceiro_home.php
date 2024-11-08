@@ -45,7 +45,7 @@
         OR 
         (id_parceiro = '$id' AND promocao = 'nao' AND frete_gratis = 'sim')
     ") or die($mysqli->error);
-echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
+    //echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id = 1";
@@ -61,7 +61,7 @@ echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
 
     //Consulta para buscar produtos ocultos do catálogo
     $produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$id' AND oculto = 'sim'") or die($mysqli->error);
-    echo "<p>Produtos ocultos encontrados: " . $produtos_ocultos->num_rows . "</p>";
+    //echo "<p>Produtos ocultos encontrados: " . $produtos_ocultos->num_rows . "</p>";
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
 
@@ -168,8 +168,8 @@ echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
-        <div id="conteudo-catalogo" class="conteudo-aba" style="display: block;">
-        <div class="container">
+        <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
+            <div class="container">
                 <?php 
                     if ($produtos_catalogo->num_rows > 0): 
                 ?>
@@ -333,72 +333,6 @@ echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
             <?php endif; ?>
         </div>
 
-        <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
-            <div class="container">
-                <?php 
-                    if ($frete_gratis->num_rows > 0): 
-                ?>
-                <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
-
-            <!-- Lista de promoções aqui -->
-            <div class="lista-promocoes">
-                <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
-                    <div class="produto-item">
-                        <?php
-                            // Exibe a imagem do produto, caso haja uma
-                            $imagensArray = explode(',', $produto['imagens']);
-                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
-                        ?>
-                        <?php 
-                            // Exibe o ícone de oculto, se o produto estiver oculto
-                            if ($produto['oculto'] === 'sim'): 
-                        ?>
-                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                        <?php endif; ?>
-                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
-                            </h3>
-
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
-
-                            <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
-            
-            <?php else: ?>
-                <p>Nenhuma promoção disponível.</p>
-            <?php endif; ?>
-        </div>
-
         <div id="conteudo-produtos_ocultos" class="conteudo-aba" style="display: none;">
             <div class="container">
                 <?php 
@@ -465,6 +399,74 @@ echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
                 <p>Nenhum Produto Oculto.</p>
             <?php endif; ?>
         </div>
+
+        <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
+            <div class="container">
+                <?php 
+                    if ($frete_gratis->num_rows > 0): 
+                ?>
+                <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>        
+
+            <!-- Lista de promoções aqui -->
+            <div class="lista-promocoes">
+                <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
+                    <div class="produto-item">
+                        <?php
+                            // Exibe a imagem do produto, caso haja uma
+                            $imagensArray = explode(',', $produto['imagens']);
+                            $primeiraImagem = !empty($imagensArray[0]) ? $imagensArray[0] : 'default_image.jpg';
+                        ?>
+                        <?php 
+                            // Exibe o ícone de oculto, se o produto estiver oculto
+                            if ($produto['oculto'] === 'sim'): 
+                        ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                        <div class="produto-detalhes">
+                            <h3 class="produto-nome">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>
+                                <?php echo $produto['nome_produto']; ?>
+                            </h3>
+
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+
+                            <?php
+                                // Formatação do valor promocional
+                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            
+            <?php else: ?>
+                <p>Nenhuma promoção disponível.</p>
+            <?php endif; ?>
+        </div>
+
+
 
     </main>
 
