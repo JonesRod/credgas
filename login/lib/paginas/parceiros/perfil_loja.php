@@ -68,8 +68,11 @@
     <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
 
         <h2>Dados da Loja.</h2>
-
-        <img src="<?php echo $logo; ?>" alt="" style="max-width: 200px;">
+        <div>
+            <input type="hidden" id="img_anterior" value="<?php echo $logo; ?>">
+            <img src="<?php echo $logo; ?>" alt="" style="max-width: 200px;"><br>
+            <input type="file">            
+        </div>
 
         <span id="msgAlerta"></span><br>
 
@@ -169,11 +172,11 @@
         <label for="bairro">Bairro:</label>
         <input type="text" id="bairro" name="bairro" required value="<?php echo $dados['bairro']?>">
 
-        <a href="termos.php" target="_blank"><b>Termos</b></a>.
+        // Leia os <a href="termos.php" target="_blank"><b>Termos</b></a>.
 
         <div class="action-buttons">
             <a href="parceiro_home.php" class="link-voltar"><b>Voltar</b></a>
-            <button type="submit" id="cadastrar" disabled>Cadastrar</button>
+            <button type="submit" id="cadastrar" <?php echo ($dados['analize_inscricao'] === 'aprovado') ? '' : 'disabled'; ?>>Cadastrar</button>
         </div>
 
     </form>

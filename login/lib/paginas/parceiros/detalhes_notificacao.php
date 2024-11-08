@@ -34,161 +34,50 @@ $result = $mysqli->query($sql_query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parceiros em Análise</title>
+    <link rel="stylesheet" href="detalhes_notificacao.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Estilização do botão "Voltar" */
-        .back-link {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 5px;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .back-link:hover {
-            background-color: #0056b3;
-        }
-
-        /* Centralização */
-        .center {
-            text-align: center; /* Centraliza o conteúdo */
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            th, td {
-                padding: 10px;
-                font-size: 14px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-            h2 {
-                font-size: 15px;
-            }
-            .back-link {
-                padding: 8px 16px;
-                font-size: 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            table, th, td {
-                display: block;
-                width: 100%;
-            }
-
-            th {
-                display: none; /* Esconde os cabeçalhos em telas pequenas */
-            }
-
-            td {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-bottom: none;
-            }
-
-            td:before {
-                content: attr(data-label); /* Usa o conteúdo dos cabeçalhos como labels */
-                flex-basis: 40%;
-                text-align: left;
-                font-weight: bold;
-                color: #333;
-            }
-
-            h1 {
-                font-size: 18px;
-            }
-            h2 {
-                font-size: 14px;
-            }
-            .back-link {
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-        }
     </style>
 </head>
 <body>
     <h2>Plataforma notificações</h2>
 
     <?php
-        if ($result->num_rows > 0) {
-            // Exibir os dados dos parceiros em uma tabela
-            echo "<table>";
-            echo "<tr>
-                    <th>Data</th>
-                    <th>Mesnagem</th>
-                    <th>Detalhes</th>
-                    <th>Apagar</th>
-                </tr>";
-
-            while ($parceiro = $result->fetch_assoc()) {
-                // Formatar a data de cadastro
-                $data = date(format: "d/m/Y", timestamp: strtotime(datetime: $parceiro['data_cadastro']));
-                
-                echo "<tr>";
-                echo "<td data-label='Data>" . htmlspecialchars(string: $data) . "</td>";
-                echo "<td data-label='Mensagem'>" . htmlspecialchars(string: $parceiro['nomeFantasia']) . "</td>";
-                echo "<td data-label='CNPJ'>" . htmlspecialchars(string: $parceiro['cnpj']) . "</td>";
-                echo "<td data-label='Categoria'>" . htmlspecialchars(string: $parceiro['categoria']) . "</td>";
-                
-                // Adicionar link para página de detalhes, passando o ID do parceiro via URL
-                echo "<td data-label='Detalhes'><a href='detalhes_notificacoes.php?id=" . htmlspecialchars(string: $parceiro['id']) . "'>Ver Detalhes</a></td>";
-                echo "</tr>";
-            }
-
-            echo "</table>";
+        if ($result === false) {
+            // Exibir uma mensagem de erro se a consulta falhar
+            echo "<div class='center'><p><p>Nenhum notificação encontrada.</p></div>";
         } else {
-            echo "<div class='center'><p>Nenhum parceiro encontrado em análise.</p></div>"; // Mensagem centralizada
+            if ($result->num_rows > 0) {
+                // Exibir os dados dos parceiros em uma tabela
+                echo "<table>";
+                echo "<tr>
+                        <th>Data</th>
+                        <th>Mensagem</th>
+                        <th>CNPJ</th>
+                        <th>Categoria</th>
+                        <th>Detalhes</th>
+                    </tr>";
+
+                while ($parceiro = $result->fetch_assoc()) {
+                    // Formatar a data de cadastro
+                    $data = date("d/m/Y", strtotime($parceiro['data_cadastro']));
+
+                    echo "<tr>";
+                    echo "<td data-label='Data'>" . htmlspecialchars($data) . "</td>";
+                    echo "<td data-label='Mensagem'>" . htmlspecialchars($parceiro['nomeFantasia']) . "</td>";
+                    echo "<td data-label='CNPJ'>" . htmlspecialchars($parceiro['cnpj']) . "</td>";
+                    echo "<td data-label='Categoria'>" . htmlspecialchars($parceiro['categoria']) . "</td>";
+                    
+                    // Adicionar link para página de detalhes, passando o ID do parceiro via URL
+                    echo "<td data-label='Detalhes'><a href='detalhes_notificacoes.php?id=" . htmlspecialchars($parceiro['id']) . "'>Ver Detalhes</a></td>";
+                    echo "</tr>";
+                }
+
+                echo "</table>";
+            } else {
+                // Exibir mensagem centralizada se não houver dados
+                echo "<div class='center'><p>Nenhum notificação encontrada.</p></div>";
+            }
         }
     ?>
 
