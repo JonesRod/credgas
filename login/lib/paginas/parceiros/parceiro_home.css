@@ -190,14 +190,9 @@ main {
     flex-direction: column;
     height: 100vh; /* O contêiner principal ocupa a altura total da tela */
     box-sizing: border-box;
-
-
-
-align-items: center; /* Centraliza horizontalmente */
-justify-content: center; /* Centraliza verticalmente */
-
-text-align: center;
-
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    text-align: center;
 }
 
 /* Estilos para as abas */
