@@ -282,32 +282,32 @@ document.getElementById('arquivoEmpresa').addEventListener('change', function(ev
         imagePreview.style.display = 'block';
     }
 });
-function rolarParaArquivo() {
-    // Rola a página até o campo de upload
+// Função para rolar a página até o campo de upload
+/*function rolarParaArquivo() {
     var arquivoInput = document.getElementById("arquivoEmpresa");
     arquivoInput.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    // Dá foco ao campo de upload
     arquivoInput.focus();
 }
-document.getElementById("cadastroEmpresa").onsubmit = function() {
-    var arquivoInput = document.getElementById("arquivoComprovante");
-    var arquivo = arquivoInput.value;
 
-    // Se nenhum arquivo for selecionado, rola até o campo e dá foco
-    if (arquivo == "") {
+// Validação do formulário no envio
+document.getElementById("cadastroEmpresa").onsubmit = function() {
+    var arquivoInput = document.getElementById("arquivoEmpresa");
+    
+    // Verifica se há um arquivo selecionado
+    if (arquivoInput.files.length === 0) {
         alert("Por favor, selecione um arquivo para enviar.");
-        rolarParaArquivo();  // Chama a função para rolar e dar foco no campo
+        rolarParaArquivo();
         return false; // Impede o envio do formulário
     }
 
-    // Verifica se o arquivo tem a extensão correta
+    // Verifica a extensão do arquivo
+    var arquivo = arquivoInput.value;
     var extensao = arquivo.split('.').pop().toLowerCase();
     if (extensao !== "pdf" && extensao !== "png") {
         alert("Por favor, selecione um arquivo PDF ou PNG.");
-        rolarParaArquivo();  // Chama a função para rolar e dar foco no campo
-        return false; // Impede o envio do formulário
+        rolarParaArquivo();
+        return false;
     }
 
-    return true; // Permite o envio do formulário
-}
+    return true; // Permite o envio do formulário se a validação for bem-sucedida
+}*/
