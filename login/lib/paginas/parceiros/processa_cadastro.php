@@ -1,239 +1,239 @@
+<?php
+include('../../conexao.php');
+
+// Inicia a sessão, se não estiver iniciada
+if (!isset($_SESSION)) {
+    session_start();
+}
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['id'])) {
+    header("Location: ../../../../index.php");
+    exit();
+}
+
+$id = $_SESSION['id'];
+
+// Valida e sanitiza os dados recebidos
+$razao = $mysqli->real_escape_string($_POST['razao']);
+$nomeFantasia = $mysqli->real_escape_string($_POST['nomeFantasia']);
+$cnpj = $mysqli->real_escape_string($_POST['cnpj']);
+$inscricaoEstadual = $mysqli->real_escape_string($_POST['inscricaoEstadual']);
+$categoria = $mysqli->real_escape_string($_POST['categoria']);
+$telefoneComercial = $mysqli->real_escape_string($_POST['telefoneComercial']);
+$telefoneResponsavel = $mysqli->real_escape_string($_POST['telefoneResponsavel']);
+$email = $mysqli->real_escape_string($_POST['email']);
+$cep = $mysqli->real_escape_string($_POST['cep']);
+$uf = $mysqli->real_escape_string($_POST['uf']);
+$cidade = $mysqli->real_escape_string($_POST['cidade']);
+$rua = $mysqli->real_escape_string($_POST['rua']);
+$numero = $mysqli->real_escape_string($_POST['numero']);
+$bairro = $mysqli->real_escape_string($_POST['bairro']);
+
+
+// Configuração do upload da nova logo (se houver)
+if (isset($_FILES['logoInput']) && $_FILES['logoInput']['error'] === 0) {
+    
+    // Verifica se já existe uma logo antiga e exclui
+    if (isset($_POST['img_anterior'])) {
+
+        $logoAntiga = 'arquivos/' . $_POST['img_anterior']; // Caminho do arquivo antigo
+
+        if (file_exists(filename: $logoAntiga)) {
+            unlink(filename: $logoAntiga);  // Exclui o arquivo antigo
+            echo "Logo anterior excluída. <br>";
+        }
+    }
+
+    $arquivo = $_FILES['logoInput']; // Pega os dados do arquivo de logo
+
+    // Obtém o nome do arquivo e a extensão
+    $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
+
+    // Verifica se a extensão do arquivo é permitida
+    if (in_array($extensao, ['jpg', 'jpeg', 'png', 'gif'])) {
+        // Gera um nome único para o arquivo
+        $novoNome = uniqid() . '.' . $extensao;
+        
+        // Define o destino do arquivo na pasta 'arquivos/'
+        $destino = 'arquivos/' . $novoNome;
+
+        // Tenta mover o arquivo para a pasta de destino
+        if (move_uploaded_file($arquivo['tmp_name'], $destino)) {
+            $logo = $novoNome;  // Atualiza o nome do arquivo com o novo nome gerado
+            $msg = "Logo salva como: $logo <br>"; // Exibe o nome do arquivo salvo
+        } else {
+            $msg =  "Erro ao mover a nova logo.<br>";
+        }
+    } else {
+        $msg =  "Extensão da logo não permitida. As extensões permitidas são: jpg, jpeg, png, gif.<br>";
+    }
+} elseif (!isset($_FILES['logoInput']) && isset($_POST['img_anterior'])) {
+    // Caso o arquivo de logo anterior tenha sido enviado e o upload de novo arquivo não tenha ocorrido
+    $verifica_arq = $_POST['img_anterior'];  // Pega o caminho completo do arquivo
+    
+    // Verifica se já existe uma logo anterior e exclui
+    if (file_exists('arquivos/' . $verifica_arq)) {
+        unlink('arquivos/' . $verifica_arq);  // Exclui o arquivo antigo
+        echo "Logo anterior excluída. <br>";
+    }
+
+    // Extrai o nome do arquivo do caminho completo
+    $arquivo = basename($verifica_arq);
+
+    // Obtém o nome do arquivo e a extensão
+    $extensao = strtolower(pathinfo($arquivo, PATHINFO_EXTENSION));
+
+    // Verifica se a extensão do arquivo é permitida
+    if (in_array($extensao, ['jpg', 'jpeg', 'png', 'gif'])) {
+        // Gera um nome único para o arquivo
+        $novoNome = uniqid() . '.' . $extensao;
+        $msg =  $novoNome;
+
+        // Define o destino do arquivo na pasta 'arquivos/'
+        $destino = 'arquivos/' . $novoNome;
+
+        // Copia o arquivo original para o destino (não usa move_uploaded_file, já que é um arquivo existente)
+        if (copy($verifica_arq, $destino)) {
+            $logo = $novoNome;  // Atualiza o nome do arquivo com o novo nome gerado
+            $msg = "Logo salva como: $logo <br>"; // Exibe o nome do arquivo salvo
+        } else {
+            echo "Erro ao copiar a logo anterior.<br>";
+        }
+    } else {
+        $msg = "Extensão da logo não permitida. As extensões permitidas são: jpg, jpeg, png, gif.<br>";
+    }
+} else {
+    $msg = "Nenhuma logo foi enviada ou ocorreu um erro.<br>";
+}
+
+
+
+//echo $logo;
+//die();
+
+// Configuração do upload do arquivo de comprovante
+$end_comprovante = isset($_POST['arquivoComprovante']) ? $_POST['arquivoComprovante'] : '';
+$filePath = $end_comprovante;
+$comprovante = basename($filePath); // Retorna 'icone_loja.jpg'
+$arquivoComprovante= basename($filePath); // Retorna 'icone_loja.jpg'
+
+//var_dump($arquivoComprovante);
+//var_dump($comprovante);
+
+if (isset($_FILES['arquivoEmpresa']) && $_FILES['arquivoEmpresa']['error'] === 0) {
+    // Verifica se já existe um comprovante anterior e exclui
+    if (isset($_POST['comprovante_anterior'])) {
+        $comprovanteAntigo = 'arquivos/' . $_POST['comprovante_anterior']; // Caminho do arquivo antigo
+        if (file_exists($comprovanteAntigo)) {
+            unlink($comprovanteAntigo);  // Exclui o arquivo antigo
+            echo "Comprovante anterior excluído. <br>";
+        }
+    }
+
+    $arquivoComprovante = $_FILES['arquivoEmpresa'];
+    $extensaoComprovante = strtolower(pathinfo($arquivoComprovante['name'], PATHINFO_EXTENSION));
+
+    // Verifica extensão permitida para o comprovante
+    if (in_array($extensaoComprovante, ['pdf', 'png'])) {
+        $novoNomeComprovante = uniqid() . '.' . $extensaoComprovante;
+        $destinoComprovante = 'arquivos/' . $novoNomeComprovante;
+
+        // Move o arquivo e atualiza o caminho do comprovante
+        if (move_uploaded_file($arquivoComprovante['tmp_name'], $destinoComprovante)) {
+            $comprovante = $novoNomeComprovante;
+            $msg = "Comprovante salvo como: $comprovante <br>"; // Debug
+        } else {
+            $msg = "Erro ao mover o comprovante.<br>";
+        }
+    } else {
+        $msg = "Extensão do comprovante não permitida.<br>";
+    }
+} else {
+    $msg = "Nenhum comprovante foi enviado ou ocorreu um erro.<br>";
+}
+
+// Exibe os valores que serão salvos (para depuração)
+//echo "Logo final: $logo <br>";
+//echo "Comprovante final: $comprovante <br>";
+
+// Atualiza os dados no banco de dados
+$sql_update = "
+    UPDATE meus_parceiros SET 
+        razao = '$razao',
+        logo = '$logo',
+        nomeFantasia = '$nomeFantasia',
+        cnpj = '$cnpj',
+        inscricaoEstadual = '$inscricaoEstadual',
+        categoria = '$categoria',
+        anexo_comprovante = '$comprovante',
+        telefoneComercial = '$telefoneComercial',
+        telefoneResponsavel = '$telefoneResponsavel',
+        email = '$email',
+        cep = '$cep',
+        estado = '$uf',
+        cidade = '$cidade',
+        endereco = '$rua',
+        numero = '$numero',
+        bairro = '$bairro'
+    WHERE id = '$id'";
+
+    // Executa a consulta e verifica o resultado
+    if ($mysqli->query($sql_update)) {
+        $msg =  "Dados atualizados com sucesso!<br>";
+        
+        // Exibe a mensagem de forma estilizada
+        echo "<div class='msg-container'>$msg</div>";
+
+        //sleep(3); // Aguarda 3 segundos
+        //header("Location: perfil_loja.php?status=sucesso");
+        //exit();
+    } else {
+        $msg =  "Erro ao atualizar dados: " . $mysqli->error;
+    }
+
+    $mysqli->close();
+?>
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <title>Cadastro</title>
-    <?php
-        include('../../conexao.php');
-        include('../../enviarEmail.php');
-        include('../../generateRandomString.php');
-
-        $razao = $_POST['razao'];
-        $nomeFantasia = $_POST['nomeFantasia'];
-        $cnpj = $_POST['cnpj'];
-        $inscricaoEstadual = $_POST['inscricaoEstadual'];
-        $categoria = $_POST['categoria'];
-        $telefoneComercial = $_POST['telefoneComercial'];
-        $telefoneResponsavel = $_POST['telefoneResponsavel'];
-        $email = $_POST['email'];
-        //$senha = $_POST['senha'];
-        $cep = $_POST['cep'];
-        $estado = $_POST['uf'];
-        $cidade = $_POST['cidade'];
-        $rua = $_POST['rua'];
-        $numero = $_POST['numero'];
-        $bairro = $_POST['bairro'];
-        //$termos =$_POST['aceito'];
-
-        // Verifica se o arquivo foi enviado pelo formulário
-        if (isset($_FILES['arquivoEmpresa'])) {
-            $arquivo = $_FILES['arquivoEmpresa'];
-        
-            // Definir o diretório onde o arquivo será salvo
-            $diretorioDestino = 'arquivos/'; // Certifique-se de que essa pasta exista e tenha permissões de gravação
-        
-            // Verifica se o diretório existe, senão cria
-            if (!is_dir(filename: $diretorioDestino)) {
-                mkdir(directory: $diretorioDestino, permissions: 0777, recursive: true);
-            }
-        
-            // Obtém o nome do arquivo original
-            $nomeArquivo = basename(path: $arquivo['name']);
-        
-            // Gera um nome único para evitar substituições
-            $novoNomeArquivo = uniqid() . '_' . $nomeArquivo;
-        
-            // Caminho completo para o arquivo no servidor
-            $caminhoCompleto = $diretorioDestino . $novoNomeArquivo;
-        
-            // Verifica se houve erro no upload
-            if ($arquivo['error'] === UPLOAD_ERR_OK) {
-                // Move o arquivo para a pasta de destino
-                if (move_uploaded_file(from: $arquivo['tmp_name'], to: $caminhoCompleto)) {
-                    //echo "Arquivo enviado com sucesso!";
-                    // Aqui você pode salvar o caminho no banco de dados, se necessário
-                    // Exemplo: $sql = "INSERT INTO tabela (caminho_arquivo) VALUES ('$caminhoCompleto')";
-                } else {
-                    echo "Erro ao mover o arquivo para o diretório de destino.";
-                }
-            } else {
-                echo "Erro no upload do arquivo: " . $arquivo['error'];
-            }
-        } else {
-            echo "Nenhum arquivo foi enviado.";
-        }
-
-        // Verifica se o CNPJ já está cadastrado
-        $sqlCNPJ = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE cnpj = '$cnpj'");
-        $resultCNPJ = $sqlCNPJ->num_rows;
-
-        // Verifica se o e-mail já está cadastrado
-        $sqlEmail = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE email = '$email'");
-        $resultEmail = $sqlEmail->num_rows;
-
-        if (($resultCNPJ)== 0) {
-            
-            if (($resultEmail) == 0){
-                //$senha = generateRandomString(length: 6);
-                $senha_criptografada = password_hash(password: $senha, algo: PASSWORD_DEFAULT);
-                $status = 'INATIVO';
-
-                // Insere os dados se o CNPJ e o e-mail não estiverem cadastrados
-                $sql_code = "INSERT INTO meus_parceiros (
-                data_cadastro,
-                razao, 
-                nomeFantasia, 
-                cnpj, 
-                inscricaoEstadual, 
-                categoria, 
-                anexo_comprovante,
-                telefoneComercial, 
-                telefoneResponsavel, 
-                email, 
-                senha,
-                cep, 
-                estado, 
-                cidade,
-                endereco,
-                numero,
-                bairro,
-                status,
-                termos,
-                analize_inscricao) 
-                VALUES (
-                NOW(),
-                '$razao', 
-                '$nomeFantasia', 
-                '$cnpj', 
-                '$inscricaoEstadual', 
-                '$categoria', 
-                '$novoNomeArquivo',
-                '$telefoneComercial', 
-                '$telefoneResponsavel', 
-                '$email', 
-                '$senha_criptografada',
-                '$cep', 
-                '$estado', 
-                '$cidade',
-                '$rua',
-                '$numero',
-                '$bairro',
-                '$status',
-                '$termos',
-                '1')";
-
-                $deu_certo = $mysqli->query(query: $sql_code) or die($mysqli->error);
-
-                if($deu_certo){
-
-                    // Atualizando o contador de notificações para a primeira linha (id = 1)
-                    $sql_update = "UPDATE contador_notificacoes SET not_inscr_parceiro = not_inscr_parceiro + 1 WHERE id = '1'";
-                    $stmt = $mysqli->prepare($sql_update);
-
-                    $msg = true;
-                    $msg = "Cadastro foi enviado para analiza!";
-                    $msg1 = "";
-                    $msg2 = "";
-                    //echo $msg;
-
-                    enviar_email(destinatario: $email, assunto: "Cadastro foi enviado para analize!", mensagemHTML: "
-                    <h1>È um prazer ter você, " . $nomeFantasia . " de parceiria. Boas vendas!</h1>
-                    <p><b>Faça login com seu CNPJ.</p>
-                    <p><b>Senha: </b>$senha</p>
-                    <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
-                    <p><b>Para entrar </b><a href='../index.php'>clique aqui.</a></p>
-                    <p>Menssagem automatica. Não responda!</p>");
-
-                    unset($_POST);
-                    $mysqli->close();
-                    header(header: "refresh: 5;../index.php"); //Atualiza a pagina em 5s e redireciona apagina
-                }           
-            } else { 
-                $msg = "Já existe um cadastrado com esse E-MAIL!";
-                $msg1 = "";
-                $msg2 = "";
-                //echo $msg;
-                $mysqli->close();
-                header(header: "refresh: 10;../index.php");
-                echo "Erro: " . $sql . "<br>" . $conn->$error;
-                //echo "E-mail já cadastrado!";
-            }
-        }else{
-            $msg = "Já existe um cadastrado com esse CNPJ!";
-            $msg1 = "";
-            $msg2 = "";
-            //echo $msg;
-            $mysqli->close();
-            header(header: "refresh: 10;../index.php");
-            //echo "CNPJ já cadastrado!";    
-        }
-
-        //$conn->close();
-    ?>
+    <title></title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4; /* Cor de fundo suave */
-            margin: 0;
+        /* Estilo para a div da mensagem */
+        .msg-container {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 100px;
+            margin: 20px auto; /* Centraliza horizontalmente */
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh; /* Ocupa toda a altura da tela */
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center; /* Centraliza o texto dentro da div */
+            font-size: 18px;
+            color: #333;
         }
 
-        #msg {
-            background-color: #fff; /* Fundo branco para o bloco de mensagens */
-            border-radius: 8px; /* Cantos arredondados */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para profundidade */
-            padding: 20px;
-            text-align: center; /* Centraliza o texto */
-            width: 90%;
-            max-width: 500px; /* Largura máxima */
+        .msg-container.success {
+            background-color: #d4edda; /* Cor verde para sucesso */
+            color: #155724;
         }
 
-        #msg span {
-            display: block; /* Cada mensagem em uma nova linha */
-            margin: 10px 0; /* Espaçamento entre as mensagens */
-            font-size: 1.2rem; /* Tamanho da fonte */
+        .msg-container.error {
+            background-color: #f8d7da; /* Cor vermelha para erro */
+            color: #721c24;
         }
 
-        /* Estilos para mensagens de erro e sucesso */
-        #msg span:nth-child(1) {
-            color: #28a745; /* Verde para sucesso */
-            font-weight: bold;
-        }
-
-        #msg span:nth-child(2), 
-        #msg span:nth-child(3) {
-            color: #dc3545; /* Vermelho para erro */
-            font-weight: bold;
-        }
-
-        /* Responsividade */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px; /* Reduz o preenchimento em telas menores */
-            }
-
-            #msg {
-                width: 100%; /* Largura total em telas pequenas */
-                padding: 15px; /* Reduz o preenchimento do bloco de mensagens */
-            }
-
-            #msg span {
-                font-size: 1rem; /* Tamanho da fonte menor em telas pequenas */
-            }
-        }
     </style>
 </head>
 <body>
-    <div id="msg">
-        <p><span><?php echo $msg; ?></span></p>
-        <p><span><?php echo $msg1; ?></span></p>
-        <p><span><?php echo $msg2; ?></span></p>
-    </div>
+    <script>
+       /* setTimeout(function() {    
+            window.location.href = 'perfil_loja.php?status=sucesso';
+        }, 3000);*/
+    </script>
 </body>
 </html>

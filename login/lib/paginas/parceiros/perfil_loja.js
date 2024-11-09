@@ -205,36 +205,109 @@ function verificarAceite() {
         botaoEnviar.disabled = true;
     }
 }
+
+document.getElementById('logoInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('logoPreview');
+    const previousImage = document.getElementById('img_anterior').value;
+    //console.log('oii');
+    // Verifica o tipo de arquivo
+    if (file && ['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+        const reader = new FileReader();
+        
+        // Ao carregar o arquivo, define a imagem de pré-visualização
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    } else if (file) {
+        alert("Apenas arquivos JPG, JPEG, PNG ou GIF são permitidos.");
+        event.target.value = ''; // Limpa o input se o arquivo for inválido
+    }
+    
+    // Restaura a imagem anterior se nenhum arquivo for selecionado
+    event.target.addEventListener('blur', function() {
+        if (!event.target.value) {
+            preview.src = previousImage;
+        }
+    });
+});  
+
 document.getElementById('arquivoEmpresa').addEventListener('change', function(event) {
     const file = event.target.files[0]; // Obtém o arquivo selecionado
     const previewDiv = document.getElementById('filePreview');
+    const previousFile = document.getElementById('arquivoAnterior')?.value;
+    const imagePreview = document.getElementById('arquivoPreview');
     
+    // Limpa qualquer visualização anterior
+    previewDiv.innerHTML = '';
+
     if (file) {
         const fileType = file.type;
         const reader = new FileReader();
 
-        // Limpa qualquer visualização anterior
-        previewDiv.innerHTML = '';
-
         // Verifica se o arquivo é uma imagem PNG
         if (fileType === 'image/png') {
             reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = 'Pré-visualização do arquivo';
-                img.style.maxWidth = '200px'; // Ajusta o tamanho da imagem
-                img.style.marginTop = '10px';
-                previewDiv.appendChild(img); // Exibe a imagem
+                // Exibe a nova imagem selecionada
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Pré-visualização do arquivo';
+                    img.style.maxWidth = '400px';
+                    previewDiv.appendChild(img);
+                }
             };
-            reader.readAsDataURL(file); // Lê o arquivo como URL de dados
+            reader.readAsDataURL(file);
         } else if (fileType === 'application/pdf') {
             // Apenas exibe o nome do arquivo se for PDF
             const fileName = document.createElement('p');
             fileName.textContent = `Arquivo selecionado: ${file.name}`;
             previewDiv.appendChild(fileName);
+
+            // Oculta a imagem anterior se houver
+            if (imagePreview) {
+                imagePreview.style.display = 'none';
+            }
         } else {
-            // Se for um arquivo inválido, exibe uma mensagem de erro
+            // Arquivo inválido
             previewDiv.textContent = 'Formato de arquivo não suportado. Por favor, selecione um arquivo PDF ou PNG.';
+            event.target.value = ''; // Limpa o campo de arquivo se o tipo for inválido
         }
+    } else if (previousFile && imagePreview) {
+        // Se o usuário cancelar, volta à imagem anterior
+        imagePreview.src = 'arquivos/' + previousFile;
+        imagePreview.style.display = 'block';
     }
 });
+function rolarParaArquivo() {
+    // Rola a página até o campo de upload
+    var arquivoInput = document.getElementById("arquivoEmpresa");
+    arquivoInput.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Dá foco ao campo de upload
+    arquivoInput.focus();
+}
+document.getElementById("cadastroEmpresa").onsubmit = function() {
+    var arquivoInput = document.getElementById("arquivoComprovante");
+    var arquivo = arquivoInput.value;
+
+    // Se nenhum arquivo for selecionado, rola até o campo e dá foco
+    if (arquivo == "") {
+        alert("Por favor, selecione um arquivo para enviar.");
+        rolarParaArquivo();  // Chama a função para rolar e dar foco no campo
+        return false; // Impede o envio do formulário
+    }
+
+    // Verifica se o arquivo tem a extensão correta
+    var extensao = arquivo.split('.').pop().toLowerCase();
+    if (extensao !== "pdf" && extensao !== "png") {
+        alert("Por favor, selecione um arquivo PDF ou PNG.");
+        rolarParaArquivo();  // Chama a função para rolar e dar foco no campo
+        return false; // Impede o envio do formulário
+    }
+
+    return true; // Permite o envio do formulário
+}

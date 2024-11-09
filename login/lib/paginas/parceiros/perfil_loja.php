@@ -34,16 +34,18 @@
     $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
     $dados = $sql_query->fetch_assoc();
 
-    if(isset($dados['logo'])) {
-        $logo = $dados['logo'];
-        if($logo == ''){
-            $logo = 'arquivos/'.$logo;
-        }
-    }
-    if(!isset($logo['foto'])) {
+    if (!isset($dados['logo']) && $dados['logo'] !== '') {
+        // Se existe e não está vazio, atribui o valor à variável logo
+        $logo = 'arquivos/'.$dados['logo'];
+    } else {
+        // Se não existe ou está vazio, define um valor padrão
         $logo = '../arquivos_fixos/icone_loja.jpg';
     }
-
+    
+    // Se a variável logo for apenas o nome do arquivo, adicionar o caminho completo
+    /*if ($logo !== '' && !preg_match('/^http/', $logo)) {
+        $logo = 'arquivos/' . $logo;
+    }*/
 
     // Consulta para buscar produtos do catálogo
     $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
@@ -68,10 +70,17 @@
     <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
 
         <h2>Dados da Loja.</h2>
-        <div>
-            <input type="hidden" id="img_anterior" value="<?php echo $logo; ?>">
-            <img src="<?php echo $logo; ?>" alt="" style="max-width: 200px;"><br>
-            <input type="file">            
+
+        <div style="text-align: center;">
+            
+            <!-- Armazena o caminho da imagem anterior -->
+            <input type="hidden" id="img_anterior" name="img_anterior" value="<?php echo $logo; ?>">
+            
+            <!-- Exibe a logo atual com um ID para ser acessado pelo JavaScript -->
+            <img id="logoPreview" class="file-preview" src="<?php echo $logo; ?>" alt="Pré-visualização da Logo" style="max-width: 200px;" required><br>
+            
+            <!-- Input de arquivo com restrição para tipos de arquivo permitidos -->
+            <input type="file" id="logoInput" accept=".jpg, .jpeg, .png, .gif">
         </div>
 
         <span id="msgAlerta"></span><br>
@@ -91,12 +100,39 @@
         <label for="categoria">Categoria:</label>
         <input type="text" id="categoria" name="categoria" required value="<?php echo $dados['categoria']?>">
 
-        <!-- Div para visualização da imagem ou do nome do arquivo -->
-        <div id="filePreview" class="file-preview"></div>
         <div class="file-upload-container">
             <label for="arquivoEmpresa">Comprovante de Inscrição e de Situação Cadastral (PDF ou PNG):</label>
-            <img src="arquivos/<?php echo $dados['anexo_comprovante'];?>" alt="" style="max-width: 400px;">
-            <input type="file" id="arquivoEmpresa" name="arquivoEmpresa" accept=".pdf, .png" required value="<?php echo $dados['anexo_comprovante']?>">
+
+            <!-- Mostra o arquivo existente, se houver -->
+            <?php if (!empty($dados['anexo_comprovante'])): ?>
+                <?php 
+                    // Verifica a extensão do arquivo para exibição adequada
+                    $extensao = pathinfo($dados['anexo_comprovante'], PATHINFO_EXTENSION);
+                    $filePath = 'arquivos/' . $dados['anexo_comprovante']; // Caminho completo para o arquivo
+
+                    // Verifica se o arquivo existe no diretório
+                    if (file_exists($filePath)): 
+                        if ($extensao === 'png'): 
+                ?>
+                            <input type="hidden" id="arquivoAnterior" name="arquivoAnterior" value="<?php echo $dados['anexo_comprovante']; ?>">
+                            <img id="arquivoPreview" name="arquivoPreview"  src="<?php echo $filePath; ?>" alt="Comprovante" style="max-width: 400px;">
+                        <?php else: ?>
+                            <p>Arquivo atual: <a href="<?php echo $filePath; ?>" target="_blank">Visualizar PDF</a></p>
+                            
+                            <!-- Adiciona um campo oculto para enviar o caminho do arquivo -->
+                            <input type="hidden" name="arquivoComprovante" value="<?php echo $filePath; ?>">
+                            
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <p>Arquivo não encontrado.</p>
+                    <?php endif; ?>
+            <?php endif; ?>
+
+            <!-- Div para visualização da imagem ou do nome do arquivo -->
+            <div id="filePreview" class="file-preview" required></div>
+
+            <!-- Input para upload do novo arquivo -->
+            <input type="file" id="arquivoEmpresa" name="arquivoEmpresa" accept=".pdf, .png" >
         </div>
 
         <label for="telefoneComercial">Telefone Comercial:(WhatsApp)</label>
@@ -182,6 +218,6 @@
     </form>
 
     <script src="perfil_loja.js"></script>
-    
+
 </body>
 </html>
