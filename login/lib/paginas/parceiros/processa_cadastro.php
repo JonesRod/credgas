@@ -33,129 +33,38 @@ $bairro = $mysqli->real_escape_string($_POST['bairro']);
 
 // Configuração do upload da nova logo (se houver)
 if (isset($_FILES['logoInput']) && $_FILES['logoInput']['error'] === 0) {
-    
-    // Verifica se já existe uma logo antiga e exclui
-    if (isset($_POST['img_anterior'])) {
-
-        $logoAntiga = 'arquivos/' . $_POST['img_anterior']; // Caminho do arquivo antigo
-
+    // Verifica se existe uma logo anterior e exclui
+    if (!empty($_POST['img_anterior'])) {
+        $logoAntiga = $_POST['img_anterior'];
+        //echo('oi'. $logoAntiga);
         if (file_exists(filename: $logoAntiga)) {
             unlink(filename: $logoAntiga);  // Exclui o arquivo antigo
-            echo "Logo anterior excluída. <br>";
+            //echo "Logo anterior excluída. <br>";
         }
     }
 
-    $arquivo = $_FILES['logoInput']; // Pega os dados do arquivo de logo
+    $arquivo = $_FILES['logoInput'];
 
-    // Obtém o nome do arquivo e a extensão
+    // Obtém a extensão do arquivo e gera um novo nome
     $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
-
-    // Verifica se a extensão do arquivo é permitida
     if (in_array($extensao, ['jpg', 'jpeg', 'png', 'gif'])) {
-        // Gera um nome único para o arquivo
         $novoNome = uniqid() . '.' . $extensao;
-        
-        // Define o destino do arquivo na pasta 'arquivos/'
         $destino = 'arquivos/' . $novoNome;
 
-        // Tenta mover o arquivo para a pasta de destino
+        // Move o novo arquivo e atualiza a variável $logo
         if (move_uploaded_file($arquivo['tmp_name'], $destino)) {
-            $logo = $novoNome;  // Atualiza o nome do arquivo com o novo nome gerado
-            $msg = "Logo salva como: $logo <br>"; // Exibe o nome do arquivo salvo
+            $logo = $novoNome;
+            //echo "Logo salva como: $logo <br>";
         } else {
-            $msg =  "Erro ao mover a nova logo.<br>";
+            echo "Erro ao mover a nova logo.<br>";
         }
     } else {
-        $msg =  "Extensão da logo não permitida. As extensões permitidas são: jpg, jpeg, png, gif.<br>";
-    }
-} elseif (!isset($_FILES['logoInput']) && isset($_POST['img_anterior'])) {
-    // Caso o arquivo de logo anterior tenha sido enviado e o upload de novo arquivo não tenha ocorrido
-    $verifica_arq = $_POST['img_anterior'];  // Pega o caminho completo do arquivo
-    
-    // Verifica se já existe uma logo anterior e exclui
-    if (file_exists('arquivos/' . $verifica_arq)) {
-        unlink('arquivos/' . $verifica_arq);  // Exclui o arquivo antigo
-        echo "Logo anterior excluída. <br>";
-    }
-
-    // Extrai o nome do arquivo do caminho completo
-    $arquivo = basename($verifica_arq);
-
-    // Obtém o nome do arquivo e a extensão
-    $extensao = strtolower(pathinfo($arquivo, PATHINFO_EXTENSION));
-
-    // Verifica se a extensão do arquivo é permitida
-    if (in_array($extensao, ['jpg', 'jpeg', 'png', 'gif'])) {
-        // Gera um nome único para o arquivo
-        $novoNome = uniqid() . '.' . $extensao;
-        $msg =  $novoNome;
-
-        // Define o destino do arquivo na pasta 'arquivos/'
-        $destino = 'arquivos/' . $novoNome;
-
-        // Copia o arquivo original para o destino (não usa move_uploaded_file, já que é um arquivo existente)
-        if (copy($verifica_arq, $destino)) {
-            $logo = $novoNome;  // Atualiza o nome do arquivo com o novo nome gerado
-            $msg = "Logo salva como: $logo <br>"; // Exibe o nome do arquivo salvo
-        } else {
-            echo "Erro ao copiar a logo anterior.<br>";
-        }
-    } else {
-        $msg = "Extensão da logo não permitida. As extensões permitidas são: jpg, jpeg, png, gif.<br>";
+        echo "Extensão da logo não permitida. <br>";
     }
 } else {
-    $msg = "Nenhuma logo foi enviada ou ocorreu um erro.<br>";
+    // Caso nenhum novo arquivo seja enviado, mantém a logo antiga ou define como nulo
+    $logo = !empty($_POST['img_anterior']) ? $_POST['img_anterior'] : '';
 }
-
-
-
-//echo $logo;
-//die();
-
-// Configuração do upload do arquivo de comprovante
-$end_comprovante = isset($_POST['arquivoComprovante']) ? $_POST['arquivoComprovante'] : '';
-$filePath = $end_comprovante;
-$comprovante = basename($filePath); // Retorna 'icone_loja.jpg'
-$arquivoComprovante= basename($filePath); // Retorna 'icone_loja.jpg'
-
-//var_dump($arquivoComprovante);
-//var_dump($comprovante);
-
-if (isset($_FILES['arquivoEmpresa']) && $_FILES['arquivoEmpresa']['error'] === 0) {
-    // Verifica se já existe um comprovante anterior e exclui
-    if (isset($_POST['comprovante_anterior'])) {
-        $comprovanteAntigo = 'arquivos/' . $_POST['comprovante_anterior']; // Caminho do arquivo antigo
-        if (file_exists($comprovanteAntigo)) {
-            unlink($comprovanteAntigo);  // Exclui o arquivo antigo
-            echo "Comprovante anterior excluído. <br>";
-        }
-    }
-
-    $arquivoComprovante = $_FILES['arquivoEmpresa'];
-    $extensaoComprovante = strtolower(pathinfo($arquivoComprovante['name'], PATHINFO_EXTENSION));
-
-    // Verifica extensão permitida para o comprovante
-    if (in_array($extensaoComprovante, ['pdf', 'png'])) {
-        $novoNomeComprovante = uniqid() . '.' . $extensaoComprovante;
-        $destinoComprovante = 'arquivos/' . $novoNomeComprovante;
-
-        // Move o arquivo e atualiza o caminho do comprovante
-        if (move_uploaded_file($arquivoComprovante['tmp_name'], $destinoComprovante)) {
-            $comprovante = $novoNomeComprovante;
-            $msg = "Comprovante salvo como: $comprovante <br>"; // Debug
-        } else {
-            $msg = "Erro ao mover o comprovante.<br>";
-        }
-    } else {
-        $msg = "Extensão do comprovante não permitida.<br>";
-    }
-} else {
-    $msg = "Nenhum comprovante foi enviado ou ocorreu um erro.<br>";
-}
-
-// Exibe os valores que serão salvos (para depuração)
-//echo "Logo final: $logo <br>";
-//echo "Comprovante final: $comprovante <br>";
 
 // Atualiza os dados no banco de dados
 $sql_update = "
@@ -166,7 +75,6 @@ $sql_update = "
         cnpj = '$cnpj',
         inscricaoEstadual = '$inscricaoEstadual',
         categoria = '$categoria',
-        anexo_comprovante = '$comprovante',
         telefoneComercial = '$telefoneComercial',
         telefoneResponsavel = '$telefoneResponsavel',
         email = '$email',
@@ -178,21 +86,15 @@ $sql_update = "
         bairro = '$bairro'
     WHERE id = '$id'";
 
-    // Executa a consulta e verifica o resultado
-    if ($mysqli->query($sql_update)) {
-        $msg =  "Dados atualizados com sucesso!<br>";
-        
-        // Exibe a mensagem de forma estilizada
-        echo "<div class='msg-container'>$msg</div>";
+// Executa a consulta
+if ($mysqli->query($sql_update)) {
+    echo "<div class='msg-container'>Dados atualizados com sucesso!</div>";
+} else {
+    echo "Erro ao atualizar dados: " . $mysqli->error;
+}
 
-        //sleep(3); // Aguarda 3 segundos
-        //header("Location: perfil_loja.php?status=sucesso");
-        //exit();
-    } else {
-        $msg =  "Erro ao atualizar dados: " . $mysqli->error;
-    }
+$mysqli->close();
 
-    $mysqli->close();
 ?>
 
 <!DOCTYPE html>
@@ -231,9 +133,9 @@ $sql_update = "
 </head>
 <body>
     <script>
-       /* setTimeout(function() {    
+       setTimeout(function() {    
             window.location.href = 'perfil_loja.php?status=sucesso';
-        }, 3000);*/
+        }, 3000);
     </script>
 </body>
 </html>

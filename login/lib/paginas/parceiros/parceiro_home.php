@@ -16,12 +16,15 @@
 
         // Verifica e ajusta a logo
         if(isset($parceiro['logo'])) {
-            $logo = $parceiro['logo'];
-            if($logo === ''){
-                $logo = '../arquivos_fixos/icone_loja.jpg';
-            } else {
-                $logo = '../arquivos_fixos/'. $logo;
+            $minhaLogo = $parceiro['logo'];
+
+            if ($minhaLogo !=''){
+                // Se existe e não está vazio, atribui o valor à variável logo
+                $logo = 'arquivos/'.$parceiro['logo'];
+                //echo ('oii');
             }
+        }else{
+            $logo = '../arquivos_fixos/icone_loja.jpg';
         }
     } else {
         session_unset();
