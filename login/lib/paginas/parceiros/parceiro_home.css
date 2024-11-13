@@ -545,12 +545,12 @@ h2 {
 
 .icone-oculto {
     position: absolute;
-    top: 0px;
-    right: 5px;
+    top: -5px;
+    right: 3px;
     font-size: 24px;
     color: red; /* Cor do ícone */
     border-radius: 50%;
-    padding: 2px;
+    padding: -3px;
 }
 
 .fa-clock {
@@ -558,7 +558,7 @@ h2 {
     top: 3px;
     /*right: 5px;*/
     left: 5px;
-    font-size: 22px;
+    font-size: 20px;
     color: black; /* Cor do ícone */
     border-radius: 50%;
     padding: 2px;
