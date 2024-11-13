@@ -3,6 +3,7 @@ include('../../../conexao.php');
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_parceiro = intval($_POST['id_parceiro']);
     $id_produto = intval($_POST['id_produto']);
     $nome_produto = mysqli_real_escape_string($mysqli, $_POST['nome_produto']);
     $descricao_produto = mysqli_real_escape_string($mysqli, $_POST['descricao_produto']);
@@ -99,19 +100,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         valor_frete = $valor_frete, 
         imagens = '$imagens_string',
         promocao = '$promocao',
-        valor_promocao = $valor_promocao,
+        valor_promocao = '$valor_promocao',
         frete_gratis_promocao = '$frete_gratis_promocao',
         valor_frete_promocao = $valor_frete_promocao,
         ini_promocao = '$ini',
         fim_promocao = '$fim',
-        oculto = '$ocultar'
+        oculto = '$ocultar',
+        produto_aprovado = 'nao'
         WHERE id_produto = $id_produto";
 
     if ($mysqli->query($sql)) {
+
+        $sql_not = "INSERT INTO contador_notificacoes_admin (data, id_parceiro, id_produto, not_atualizar_produto) VALUES (NOW(),'$id_parceiro', '$id_produto', '1')";
+        
+        $deu_certo = $mysqli->query(query: $sql_not) or die($mysqli->error);
+
+        if($deu_certo){
+           /* $msg = true;
+            $msg = "Cadastro realizado com sucesso!";
+            $msg1 = "";
+            $msg2 = "";
+            //echo $msg;
+
+            enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
+            <h1>Olá Sr. " . $primeiro_nome . ", seja bem vindo!</h1>
+            <p><b>Você pode logar com seu CPF ou E-MAIL.</p>
+            <p><b>Senha: </b>$senha</p>
+            <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
+            <p><b>Para entrar </b><a href='../index.php'>clique aqui.</a></p>
+            <p>Menssagem automatica. Não responda!</p>");*/
+        } 
+
         $msg = "<div class='message-box'>Produto atualizado com sucesso!</div>";
+
     } else {
         $msg = "Erro ao executar a atualização: " . $mysqli->error;
     }
+
 } else {
     $msg = "Método de solicitação não permitido.";
 }

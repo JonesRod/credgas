@@ -212,7 +212,7 @@
                                 // Exibe o ícone de relógio, se o produto não estiver aprovado
                                 if ($produto['produto_aprovado'] !== 'sim'): 
                             ?>
-                                <i class="fas fa-clock"></i>
+                                <i class="fas fa-clock" title="Em análise"></i>
                             <?php 
                                 endif; 
                             ?>
@@ -310,7 +310,7 @@
                                     // Exibe o ícone de relógio, se o produto não estiver aprovado
                                     if ($produto['produto_aprovado'] !== 'sim'): 
                                 ?>
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-clock" title="Em análise"></i>
                                 <?php 
                                     endif; 
                                 ?>
@@ -396,7 +396,7 @@
                                     // Exibe o ícone de relógio, se o produto não estiver aprovado
                                     if ($produto['produto_aprovado'] !== 'sim'): 
                                 ?>
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-clock" title="Em análise"></i>
                                 <?php 
                                     endif; 
                                 ?>
@@ -483,7 +483,7 @@
                                     // Exibe o ícone de relógio, se o produto não estiver aprovado
                                     if ($produto['produto_aprovado'] !== 'sim'): 
                                 ?>
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-clock" title="Em análise"></i>
                                 <?php 
                                     endif; 
                                 ?>
