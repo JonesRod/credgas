@@ -100,7 +100,7 @@
             SUM(not_atualizar_produto) AS total_not_edicao_produtos,
             SUM(not_msg) AS total_not_msg
         FROM contador_notificacoes_admin
-        WHERE id_parceiro = $id";
+        WHERE id_parceiro > '0'";
 
         // Executar a consulta
         $result = $mysqli->query($sql_query);
@@ -131,7 +131,7 @@
         $not_edicao_produtos = $row['total_not_edicao_produtos'] ?? 0; // Define 0 se não houver resultado
         $not_msg = $row['total_not_msg'] ?? 0; // Define 0 se não houver resultado
 
-echo ('oii') . $not_edicao_produtos . $id;
+        //echo ('oii') . $not_edicao_produtos . $id;
 
         // Soma todos os valores de notificações
         $total_notificacoes = $not_inscr_parceiro + $not_crediario + $not_novos_produtos + $not_edicao_produtos + $not_msg;
@@ -235,20 +235,38 @@ echo ('oii') . $not_edicao_produtos . $id;
     <script src="admin_home.js"></script> 
     <script>
         // Obtém o ID da sessão do PHP
-        var sessionId = <?php echo $id; ?>;
+        var sessionId = <?php echo json_encode($id); ?>;
 
         function abrirNotificacao(id) {
-            
-            // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
-            var url = `detalhes_notificacao.php?id=${id}&session_id=${sessionId}`;
-            //console.log("Redirecionando para:", url);
-            
-            // Verifica se a URL está correta antes de redirecionar
+            let url = ""; // Inicializa a URL como uma string vazia
+
+            // Define a URL com base no ID da notificação
+            switch (id) {
+                case 1:
+                    url = `not_detalhes_parceiro.php?session_id=${sessionId}`;
+                    break;
+                case 2:
+                    url = `not_detalhes_crediario.php?session_id=${sessionId}`;
+                    break;
+                case 3:
+                    url = `not_detalhes_novos_produtos.php?session_id=${sessionId}`;
+                    break;
+                case 4:
+                    url = `not_detalhes_edicao_produtos.php?session_id=${sessionId}`;
+                    break;
+                case 5:
+                    url = `not_detalhes_mensagens.php?session_id=${sessionId}`;
+                    break;
+                default:
+                    console.error("ID de notificação inválido:", id);
+                    return; // Sai da função se o ID não for válido
+            }
+
+            // Redireciona para a URL correspondente
             window.location.href = url;
         }
 
         function solicitacoes() {
-
             // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
             var url = `detalhes_notificacao.php?id=&session_id=${sessionId}`;
             //console.log("Redirecionando para:", url);

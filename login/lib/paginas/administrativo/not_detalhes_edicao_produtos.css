@@ -1,0 +1,165 @@
+/* Reset básico */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: normal;
+}
+
+/* Estilização da tabela */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px; /* Reduzi o padding */
+    text-align: center;
+    font-size: 13px; /* Tamanho da fonte reduzido */
+    height: 80px; /* Altura menor */
+}
+
+th {
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    font-size: 14px; /* Tamanho menor no cabeçalho */
+}
+
+td img {
+    display: block;
+    width: 100%; /* A largura da imagem ocupará toda a célula */
+    height: 100%; /* A altura da imagem será igual à célula */
+    object-fit: cover; /* Ajusta a imagem sem distorcer */
+}
+
+td {
+    vertical-align: middle;
+}
+
+/* Links */
+a {
+    text-decoration: none;
+    color: #007BFF;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+/* Botão "Voltar" */
+.back-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border-radius: 5px;
+    font-size: 14px;
+    text-align: center;
+    margin: 20px auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.back-link:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Centralização */
+.center {
+    text-align: center;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    th, td {
+        padding: 5px; /* Padding reduzido */
+        font-size: 12px; /* Fonte ainda menor */
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    .back-link {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    table, th, td {
+        display: block;
+        width: 100%;
+    }
+
+    th {
+        display: none; /* Esconde os cabeçalhos em telas muito pequenas */
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px; /* Padding reduzido */
+        font-size: 12px; /* Fonte menor */
+        border: 1px solid #ddd;
+        height: auto; /* Altura flexível em telas menores */
+    }
+
+    td:before {
+        content: attr(data-label); /* Usa o conteúdo dos cabeçalhos como labels */
+        flex-basis: 40%;
+        text-align: left;
+        font-weight: bold;
+        color: #555;
+        padding-right: 10px;
+    }
+
+    td img {
+        width: 100%; /* A largura da imagem ajusta à célula */
+        height: auto; /* Mantém a proporção em telas menores */
+        object-fit: contain; /* Evita cortes em telas pequenas */
+    }
+
+    h1 {
+        font-size: 18px;
+    }
+
+    h2 {
+        font-size: 14px;
+    }
+
+    .back-link {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
