@@ -1,257 +1,349 @@
 <?php
-include('../../conexao.php');
+    include('../../conexao.php');
 
-if (!isset($_SESSION)) {
-    session_start();
-}
+    if (!isset($_SESSION)) {
+        session_start();
+    }
 
-// Verificar se a sessão está ativa
-if (isset($_SESSION['id'])) {
-    $id = $_SESSION['id'];
-    $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
-    $usuario = $sql_query->fetch_assoc();
-} else {
-    // Redirecionar para a página de login caso a sessão não exista
-    session_unset();
-    session_destroy();
-    header("Location: ../../../../index.php");
-    exit();
-}
-
-// Obter os IDs da URL e validar
-$id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : null;
-$id_produto = isset($_GET['id_produto']) ? intval($_GET['id_produto']) : null;
-
-if ($id_parceiro && $id_produto) {
-    // Buscar informações do produto usando prepared statements
-    $stmt = $mysqli->prepare("SELECT * FROM produtos WHERE id_produto = ?");
-    $stmt->bind_param("i", $id_produto);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $produto = $result->fetch_assoc();
-    
-        // Informações do produto
-        $nome_produto = htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome');
-        $descricao = htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível');
-        $preco = htmlspecialchars($produto['valor_produto'] ?? 'Preço não informado');
-        $frete_gratis = htmlspecialchars($produto['frete_gratis'] ?? '??');
-
-        if ($frete_gratis == 'sim') {
-            $frete_gratis = 'SIM';  // Corrigido: alterando para 'SIM' caso seja 'sim'
-        } else {
-            $frete_gratis = 'NÃO';  // Corrigido: definindo como 'NÃO' caso contrário
-        }        
-
-        $frete = htmlspecialchars($produto['valor_frete'] ?? 'Frete não informado');
-
-        // Carregar imagens (assumindo que são armazenadas como uma string separada por vírgulas)
-        $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-        $imagens = array_map('htmlspecialchars', $imagens); // Prevenir XSS
-    
-        // Exibir informações do produto
-        echo "<h2>Detalhes do Produto</h2>";
-        echo "<p><strong>Nome:</strong> $nome_produto</p>";
-        echo "<p><strong>Descrição:</strong></p>";
-        echo "<div class='descricao-box'>$descricao</div>";
-        
-
-        // Formatar o preço com 2 casas decimais e separador de milhar
-        $preco_formatado = number_format($preco, 2, ',', '.'); 
-        echo "<p><strong>Preço:</strong> R$ $preco_formatado</p>";
-
-        echo "<p><strong>Frete Grátis:</strong>$frete_gratis</p>";
-
-        $frete_formatado = number_format($frete, 2, ',', '.'); 
-        echo "<p><strong>Preço:</strong> R$ $frete_formatado</p>";        
-
-        // Exibir imagens do produto
-        echo "<h3>Imagens do Produto</h3>";
-
-        if (!empty($imagens)) {
-            echo '<div class="image-slider">';
-
-            // Exibir a imagem principal em destaque
-            echo '<div class="main-image">';
-            echo "<img class='active' src='../parceiros/produtos/img_produtos/{$imagens[0]}' alt='Imagem Principal do Produto'>";
-            echo '</div>';
-
-            // Exibir as miniaturas das imagens embaixo
-            echo '<div class="thumbnail-container">';
-            foreach ($imagens as $index => $imagem) {
-                $activeClass = ($index === 0) ? 'active' : ''; // Marcar a primeira imagem como ativa
-                echo "<img class='thumbnail $activeClass' src='../parceiros/produtos/img_produtos/$imagem' alt='Imagem do Produto' onclick='changeMainImage(this)'>";
-            }
-            echo '</div>';
-
-            echo '</div>';
-        } else {
-            echo "<p>Sem imagens disponíveis para este produto.</p>";
-        }
-        // Exibir os botões de Aprovação/Reprovação
-        echo '<div class="buttons-container">';
-        echo '<form method="POST" action="">';
-        echo '<button type="submit" name="aprovar" class="btn btn-success">Aprovar</button>';
-        echo '<button type="submit" name="reprovar" class="btn btn-danger">Reprovar</button>';
-        echo '</form>';
-        echo '</div>';
-
+    // Verificar se a sessão está ativa
+    if (isset($_SESSION['id'])) {
+        $id = $_SESSION['id'];
+        $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
+        $usuario = $sql_query->fetch_assoc();
     } else {
-        // Mensagem de erro caso o produto não seja encontrado
-        echo "<p>Produto não encontrado ou indisponível para análise.</p>";
+        session_unset();
+        session_destroy();
+        header("Location: ../../../../index.php");
+        exit();
     }
-    
-    $stmt->close();
-} else {
-    echo "<p>ID do parceiro ou produto inválido.</p>";
-    exit();
-}
 
-// Verificar se o formulário foi enviado e processar a aprovação ou reprovação
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['aprovar'])) {
-        // Aprovar o produto
-        $id_produto = $_GET['id_produto']; // Garantir que o id_produto está sendo passado na URL
-        $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim' WHERE id_produto = '$id_produto'";
+    // Obter os IDs da URL
+    $id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : null;
+    $id_produto = isset($_GET['id_produto']) ? intval($_GET['id_produto']) : null;
 
+    $produto = [];
+    $imagens = [];
 
-        if ($mysqli->query($sql_aprovar)) {
-            //echo "<script>alert('Produto aprovado com sucesso!'); window.location.href='detalhes_produto.php?id_produto=$id_produto';</script>";
-            $sql_contador_notificacoes_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = '$id_produto'";
-            $mysqli->query(query: $sql_contador_notificacoes_admin) or die($mysqli->error);
+    if ($id_parceiro && $id_produto) {
+        $stmt = $mysqli->prepare("SELECT * FROM produtos WHERE id_produto = ?");
+        $stmt->bind_param("i", $id_produto);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-            $sql_contador_notificacoes_parceiro ="INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, not_edicao_produto, id_produto, msg) 
-            VALUES (NOW(), ?, ?, ?, ?"; 
-            $mysqli->query(query: $sql_contador_notificacoes_parceiro) or die($mysqli->error);   
-
-            $sql_produtos = "UPDATE produtos SET produto_aprovado = 'nao' WHERE id_produto = '$id_produto'";
-            $mysqli->query(query: $sql_produtos) or die($mysqli->error);       
-
+        if ($result->num_rows > 0) {
+            $produto = $result->fetch_assoc();
+            $nome_produto = $produto['nome_produto'];
+            $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
         } else {
-            echo "<script>alert('Erro ao aprovar o produto.');</script>";
-            $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim' WHERE id_produto = '$id_produto'";
+            $error_msg = "Produto não encontrado ou indisponível.";
         }
+        $stmt->close();
+    } else {
+        $error_msg = "ID do parceiro ou produto inválido.";
     }
 
-    if (isset($_POST['reprovar'])) {
-        // Reprovar o produto
-        $id_produto = $_GET['id_produto']; // Garantir que o id_produto está sendo passado na URL
-        $sql_reprovar = "UPDATE produtos SET produto_aprovado = 'nao' WHERE id_produto = '$id_produto'";
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id_produto = $_GET['id_produto'];
+        if (isset($_POST['aprovar'])) {
+            $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim' WHERE id_produto = ?";
+            $stmt = $mysqli->prepare($sql_aprovar);
+            $stmt->bind_param("i", $id_produto);
 
-        if ($mysqli->query($sql_reprovar)) {
-            echo "<script>alert('Produto reprovado com sucesso!'); window.location.href='detalhes_produto.php?id_produto=$id_produto';</script>";
-        } else {
-            echo "<script>alert('Erro ao reprovar o produto.');</script>";
+            if ($stmt->execute()) {
+                $sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
+                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, analize)
+                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'APROVADO')";
+            
+                if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
+                    // Redirecionar se todas as operações forem bem-sucedidas
+                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
+                    exit();
+                } else {
+                    $error_msg = "Erro ao processar notificações: " . $mysqli->error;
+                }
+            } else {
+                $error_msg = "Erro ao aprovar o produto.";
+            }
+            
+            $stmt->close();
+        } elseif (isset($_POST['reprovar'])) {
+            $sql_reprovar = "UPDATE produtos SET produto_aprovado = 'nao' WHERE id_produto = ?";
+            $stmt = $mysqli->prepare($sql_reprovar);
+            $stmt->bind_param("i", $id_produto);
+        
+            if ($stmt->execute()) {
+                // Atualizar a notificação para o administrador
+                $sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
+        
+                // Inserir notificação para o parceiro
+                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, msg, analize)
+                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique os dados editados do seu produto e tente novamente!', 'REPROVADO')";
+        
+                if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
+                    // Redirecionar se todas as operações forem bem-sucedidas
+                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
+                    exit();
+                } else {
+                    $error_msg = "Erro ao processar notificações: " . $mysqli->error;
+                }
+            } else {
+                $error_msg = "Erro ao reprovar o produto.";
+            }
+        
+            $stmt->close();
         }
+        
     }
-}
-
 ?>
-<style>
-    .descricao-box {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    padding: 10px;
-}
 
-    .image-slider {
-        text-align: center;
-    }
-
-    .main-image {
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Produto</title>
+    <style>
+        /* Estilo para o título */
+        h2 {
+            text-align: center;
+            font-size: 1.8em;
+            color: #333;
+            
+        
         margin-bottom: 20px;
-    }
+            text-transform: uppercase;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
 
-    .main-image img {
-        width: 400px; /* Tamanho da imagem principal */
-        height: auto;
-        border: 3px solid #ddd;
-        border-radius: 5px;
-    }
+        /* Estilo para o parágrafo */
+        p {
+            font-size: 1.1em;
+            
+        
+        line-height: 1.5;
+            
+        
+        color: #555;
+        margin: 10px 0;
+        }
 
-    .thumbnail-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 10px;
-        flex-wrap: wrap;
-    }
+        /* Destaque para os rótulos */
+        p strong {
+            color: #333;
+            font-weight: bold;
+        }
 
-    .thumbnail {
-        width: 100px; /* Tamanho das miniaturas */
-        height: auto;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: border 0.3s ease;
-    }
+        /* Estilo para o contêiner da descrição */
+        .descricao-box {   
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            font-size: 1em;
+            color: #444;
+            margin: 10px 0;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-    .thumbnail:hover {
-        border-color: #007BFF;
-    }
+        .image-slider {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente */
+            margin: 30px auto; /* Adiciona espaçamento e centraliza horizontalmente */
+            max-width: 600px; /* Define uma largura máxima */
+            padding: 15px; /* Espaçamento interno */
+            /*border: 1px solid #ddd; /* Borda para destaque */
+            border-radius: 10px; /* Bordas arredondadas */
+            /*background-color: #f9f9f9; /* Cor de fundo */
+        /*box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+        }
 
-    .thumbnail.active {
-        border-color: #007BFF; /* Destacar a miniatura ativa */
-        border-width: 3px;
-    }
+        /* Ajuste para a imagem principal */
+        .image-slider .main-image img {
+            width: 100%; /* Responsivo: Ajusta ao tamanho do contêiner */
+            max-width: 500px; /* Largura máxima da imagem */
+            height: auto; /* Mantém a proporção da imagem */
+            /*border: 3px solid #ddd;*/
+            border-radius: 5px;
+        }
 
-    /* Responsividade */
-    @media (max-width: 768px) {
-        .main-image img {
-            width: 80%;
+        /* Ajuste para o contêiner de miniaturas */
+        .image-slider .thumbnail-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Permite que as miniaturas quebrem linha */
+            gap: 10px; /* Espaço entre as miniaturas */ 
+            margin-top: 10px;
+        }
+
+        /* Ajuste para as miniaturas */
+        .image-slider .thumbnail {
+            width: 80px; /* Tamanho das miniaturas */
+            height: auto; /* Mantém a proporção */
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.3s ease;
+        }
+        .image-slider .thumbnail:hover {
+            border-color: #007BFF;
+        }
+
+        .image-slider .thumbnail.active {
+            border-color: #007BFF;
+            border-width: 3px;
+        }
+
+        .container {
+            margin: 30px auto; /* Centraliza horizontalmente e adiciona espaçamento */
+            max-width: 500px; /* Define a largura máxima */
+            text-align: center; /* Centraliza o conteúdo interno */
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .thumbnail-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .thumbnail {
-            width: 80px;
+            width: 100px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.3s;
         }
-    }
-    .buttons-container {
-    text-align: center;
-    margin-top: 20px;
-}
 
-.btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        .thumbnail:hover {
+            border-color: #007BFF;
+        }
 
-.btn-success {
-    background-color: #28a745;
-    color: white;
-    border: none;
-}
+        .thumbnail.active {
+            border-color: #007BFF;
+            border-width: 3px;
+        }
 
-.btn-success:hover {
-    background-color: #218838;
-}
+        .buttons-container {
+            text-align: center;
+            margin-top: 20px;
+        }
 
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-}
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-.btn-danger:hover {
-    background-color: #c82333;
-}
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
 
-</style>
+        .btn-success:hover {
+            background-color: #218838;
+        }
 
-<script>
-    function changeMainImage(thumbnail) {
-        // Trocar a imagem principal quando uma miniatura for clicada
-        const mainImage = document.querySelector('.main-image img');
-        mainImage.src = thumbnail.src;
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
 
-        // Remover a classe 'active' das miniaturas
-        const thumbnails = document.querySelectorAll('.thumbnail');
-        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
 
-        // Adicionar a classe 'active' à miniatura clicada
-        thumbnail.classList.add('active');
-    }
-</script>
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 1.5em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .descricao-box {
+                
+
+                font-size: 0.9em;
+            }
+            .container {
+                max-width: 95%;
+                padding: 15px;
+            }
+            .image-slider {
+                max-width: 90%; /* Ajusta a largura para telas menores */
+                padding: 10px;
+            }
+
+            .image-slider .main-image img {
+                max-width: 90%; /* Ajusta a imagem principal */
+            }
+
+            .image-slider .thumbnail {
+                width: 60px; /* Reduz o tamanho das miniaturas em telas menores */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <?php if (!empty($error_msg)) : ?>
+            <p class="error"><?= htmlspecialchars($error_msg); ?></p>
+        <?php elseif (!empty($produto)) : ?>
+            <h2>Detalhes do Produto</h2>
+            <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
+            <p><strong>Descrição:</strong></p>
+            <div class="descricao-box"><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></div>
+            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
+            <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
+            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
+            
+            <h3>Imagens do Produto</h3>
+            <?php if (!empty($imagens)) : ?>
+                <div class="image-slider">
+                    <div class="main-image">
+                        <img class="active" src="../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
+                    </div>
+                    <div class="thumbnail-container">
+                        <?php foreach ($imagens as $index => $imagem) : ?>
+                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php else : ?>
+                <p>Sem imagens disponíveis para este produto.</p>
+            <?php endif; ?>
+
+            <div class="buttons-container">
+                <form method="POST" action="">
+                    <button type="submit" name="aprovar" class="btn btn-success">Aprovar</button>
+                    <button type="submit" name="reprovar" class="btn btn-danger">Reprovar</button>
+                </form>
+            </div>
+        <?php endif; ?>
+    </div>
+    <script>
+        function changeMainImage(thumbnail) {
+            const mainImage = document.querySelector('.main-image img');
+            mainImage.src = thumbnail.src;
+
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            thumbnails.forEach((thumb) => thumb.classList.remove('active'));
+
+            thumbnail.classList.add('active');
+        }
+
+    </script>
+</body>
+</html>

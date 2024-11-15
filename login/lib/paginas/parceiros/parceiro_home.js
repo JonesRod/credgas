@@ -50,6 +50,7 @@ function hideMenuOnClick() {
     const menu = document.getElementById('menu-lateral');
     menu.style.display = 'none';
 }
+
 // Adiciona o evento de clique a cada item do menu lateral
 document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
     item.addEventListener('click', hideMenuOnClick);
@@ -76,7 +77,7 @@ function mostrarConteudo(aba, element) {
 
     // Adiciona a classe 'active' à aba clicada
     element.classList.add('active');
-    console.log('eee');
+    //console.log('eee');
 
 }
 
@@ -85,5 +86,10 @@ window.onload = function() {
     mostrarConteudo('catalogo', document.querySelector('.tab.active'));
 };
 
-
+// Exemplo de atualização da contagem de notificações (chame essa função quando houver novas notificações)
+function atualizarContagemNotificacoes(contagem) {
+    const countElement = document.getElementById('notificacao-count');
+    countElement.textContent = contagem;
+    countElement.style.display = contagem > 0 ? 'block' : 'none';
+}
 

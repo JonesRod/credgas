@@ -51,15 +51,16 @@
     //echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id = 1";
+    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $id";
     $result = $mysqli->query(query: $sql_query_not_par);
     $row = $result->fetch_assoc();
     $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
+    $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
 
 
     // Soma todos os valores de notificações
-    $total_notificacoes = $platafoma + $pedidos;
+    $total_notificacoes = $not_adicao_produto + $pedidos;
     //echo $total_notificacoes; 
 
     //Consulta para buscar produtos ocultos do catálogo
@@ -135,8 +136,9 @@
     <aside id="painel-notificacoes">
         <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Plataforma: <?php echo $platafoma; ?></li>
+            <li onclick="abrirNotificacao(1)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
             <li onclick="abrirNotificacao(2)">Pedidos: <?php echo $pedidos; ?></li>
+
         </ul>
     </aside>
 
@@ -551,31 +553,40 @@
     <script src="parceiro_home.js"></script> 
     <script>
         // Obtém o ID da sessão do PHP
-        var sessionId = <?php echo $id; ?>;
+        var sessionId = <?php echo json_encode($id); ?>;
+        var id_produto = <?php echo json_encode($id_produto); ?>;
 
         function abrirNotificacao(id) {
-            
-            // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
-            var url = `detalhes_notificacao.php?id=${id}&session_id=${sessionId}`;
-            //console.log("Redirecionando para:", url);
-            
-            // Verifica se a URL está correta antes de redirecionar
+            let url = ""; // Inicializa a URL como uma string vazia
+
+            // Define a URL com base no ID da notificação
+            switch (id) {
+                case 1:
+                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    break;
+                case 2:
+                    url = `not_detalhes_crediario.php?session_id=${sessionId}`;
+                    break;
+                default:
+                    console.error("ID de notificação inválido:", id);
+                    return; // Sai da função se o ID não for válido
+            }
+
+            // Redireciona para a URL correspondente
             window.location.href = url;
         }
 
         function solicitacoes() {
-
             // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
             var url = `detalhes_notificacao.php?id=&session_id=${sessionId}`;
             //console.log("Redirecionando para:", url);
-            
             // Verifica se a URL está correta antes de redirecionar
             window.location.href = url;
         }
 
 
-        function fetchNotifications() {
-            fetch('get_notifications.php')
+        function fetchNotifications(id) {
+            fetch(`get_notifications.php?id=${sessionId}`)
                 .then(response => response.json())
                 .then(data => {
                     const notificationCount = document.getElementById('notificacao-count');
@@ -617,7 +628,6 @@
             const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
             mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
         });
-
 
         ///pesquizador de produto na promoção
         document.getElementById('inputPesquisaPromocao').addEventListener('input', function() {

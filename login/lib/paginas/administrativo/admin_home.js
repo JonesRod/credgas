@@ -27,12 +27,12 @@ function toggleNotificacoes() {
 
 }
 
-
 // Função para esconder a barra lateral ao clicar em qualquer item
 function hideMenuOnClick() {
     const menu = document.getElementById('menu-lateral');
     menu.style.display = 'none';
 }
+
 // Adiciona o evento de clique a cada item do menu lateral
 document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
     item.addEventListener('click', hideMenuOnClick);
