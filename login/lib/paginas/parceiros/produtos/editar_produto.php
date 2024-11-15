@@ -1,42 +1,76 @@
 <?php
-// Inclui a conexão com o banco de dados
-include('../../../conexao.php');
+    // Inclui a conexão com o banco de dados
+    include('../../../conexao.php');
 
-// Inicia a sessão
-session_start();
+    // Inicia a sessão
+    session_start();
 
-// Verifica se o ID do produto foi passado via GET
-if (isset($_GET['id_produto'])) {
-    // Obtém o ID do produto da URL e faz o tratamento adequado para evitar injeção SQL
-    $id_produto = intval(value: $_GET['id_produto']);
+    if (isset($_GET['id'])) {
+        //echo ('oi');
+    
+        $id = $_GET['id'];
+    
+        // Consulta para buscar a notificação com o ID fornecido
+        $sql_not = "SELECT * FROM contador_notificacoes_parceiro WHERE id = $id";
+        $result = $mysqli->query($sql_not) or die($mysqli->error);
+    
+        if (isset($_GET['id'])) {
+            //echo ('oi');
+        
+            $id = $_GET['id'];
+        
+            // Consulta para buscar a notificação com o ID fornecido
+            $sql_not = "SELECT * FROM contador_notificacoes_parceiro WHERE id = $id";
+            $result = $mysqli->query($sql_not) or die($mysqli->error);
+        
+            // Verifica se a notificação foi encontrada
+            if ($result->num_rows > 0) {
+                // Exclui a notificação da tabela
+                $sql_delete = "DELETE FROM contador_notificacoes_parceiro WHERE id = $id";
+                if ($mysqli->query($sql_delete)) {
+                    //echo "Notificação excluída com sucesso.";
+                } else {
+                    //echo "Erro ao excluir a notificação: " . $mysqli->error;
+                }
+            } else {
+                //echo "Notificação não encontrada.";
+            }
+        }
+        
+    }
 
-    // Consulta para obter os dados do produto
-    $sql_produto = "SELECT * FROM produtos WHERE id_produto = ?";
-    $stmt = $mysqli->prepare(query: $sql_produto); // Prepara a consulta
-    if ($stmt) {
-        $stmt->bind_param("i", $id_produto); // Liga o parâmetro ID ao SQL
-        $stmt->execute(); // Executa a consulta
-        $result = $stmt->get_result(); // Obtém o resultado da consulta
+    // Verifica se o ID do produto foi passado via GET
+    if (isset($_GET['id_produto'])) {
+        // Obtém o ID do produto da URL e faz o tratamento adequado para evitar injeção SQL
+        $id_produto = intval(value: $_GET['id_produto']);
 
-        // Verifica se o produto foi encontrado
-        if ($result->num_rows > 0) {
-            // Armazena os dados do produto
-            $produto = $result->fetch_assoc();
+        // Consulta para obter os dados do produto
+        $sql_produto = "SELECT * FROM produtos WHERE id_produto = ?";
+        $stmt = $mysqli->prepare(query: $sql_produto); // Prepara a consulta
+        if ($stmt) {
+            $stmt->bind_param("i", $id_produto); // Liga o parâmetro ID ao SQL
+            $stmt->execute(); // Executa a consulta
+            $result = $stmt->get_result(); // Obtém o resultado da consulta
+
+            // Verifica se o produto foi encontrado
+            if ($result->num_rows > 0) {
+                // Armazena os dados do produto
+                $produto = $result->fetch_assoc();
+            } else {
+                echo "Produto não encontrado.";
+                exit;
+            }
+
+            // Libera o resultado e fecha a declaração
+            $stmt->close();
         } else {
-            echo "Produto não encontrado.";
+            echo "Erro na preparação da consulta: " . $mysqli->error;
             exit;
         }
-
-        // Libera o resultado e fecha a declaração
-        $stmt->close();
     } else {
-        echo "Erro na preparação da consulta: " . $mysqli->error;
+        echo "ID do produto não fornecido.";
         exit;
     }
-} else {
-    echo "ID do produto não fornecido.";
-    exit;
-}
 
 ?>
 

@@ -50,11 +50,45 @@
             $stmt->bind_param("i", $id_produto);
 
             if ($stmt->execute()) {
-                $sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
+                //$sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
+                if (isset($_GET['id'])) {
+                    //echo ('oi');
+                
+                    $id = $_GET['id'];
+                
+                    // Consulta para buscar a notificação com o ID fornecido
+                    $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
+                    $result = $mysqli->query($sql_not) or die($mysqli->error);
+                
+                    if (isset($_GET['id'])) {
+                        //echo ('oi');
+                    
+                        $id = $_GET['id'];
+                    
+                        // Consulta para buscar a notificação com o ID fornecido
+                        $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
+                        $result = $mysqli->query($sql_not) or die($mysqli->error);
+                    
+                        // Verifica se a notificação foi encontrada
+                        if ($result->num_rows > 0) {
+                            // Exclui a notificação da tabela
+                            $sql_delete = "DELETE FROM contador_notificacoes_admin WHERE id = $id";
+                            if ($mysqli->query($sql_delete)) {
+                                //echo "Notificação excluída com sucesso.";
+                            } else {
+                                //echo "Erro ao excluir a notificação: " . $mysqli->error;
+                            }
+                        } else {
+                            //echo "Notificação não encontrada.";
+                        }
+                    }
+                    
+                }
+                
                 $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, analize)
                 VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'APROVADO')";
             
-                if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
+                if ($mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
                     header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
                     exit();

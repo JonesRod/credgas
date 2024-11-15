@@ -34,6 +34,11 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
     <title>Produto em Análise</title>
     <link rel="stylesheet" href="not_detalhes_edicao_produtos.css">
 </head>
+ <style>
+            .hide-id-column {
+            display: none;
+        }
+ </style>
 <body>
     <h1>Notificação</h1>
     <h2>Produtos Editados</h2>
@@ -41,7 +46,8 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
     <?php if ($result->num_rows > 0): ?>
         <table>
             <tr>
-                <th>Data de Cadastro</th>
+                <th class="hide-id-column">id</th>
+                <th>Data</th>
                 <th>Logo</th>
                 <th>Nome Fantasia</th>
                 <th>Img Produto</th>
@@ -65,6 +71,7 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
                 $dados_produto = $result_prod_dados->fetch_assoc();
 
                 // Preparar os dados para exibição
+                $id = htmlspecialchars($parceiro['id']);
                 $data = date("d/m/Y", strtotime($parceiro['data']));
                 $logo = htmlspecialchars( ($dados_parceiro['logo'] ?? 'default.jpg'));
                 $nomeFantasia = htmlspecialchars($dados_parceiro['nomeFantasia'] ?? 'Nome não disponível');
@@ -75,13 +82,14 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
                 ?>
 
                 <tr>
+                    <td class="hide-id-column"><?php echo htmlspecialchars($id); ?></td>
                     <td data-label="Data"><?php echo htmlspecialchars($data); ?></td>
                     <td data-label="Logo"><img src="../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo" style="width: 100px; height: auto;"></td>
                     <td data-label="Nome Fantasia"><?php echo $nomeFantasia; ?></td>
                     <td data-label="Imagem"><img src="../parceiros/produtos/img_produtos/<?php echo $imagem_principal; ?>" alt="Imagem do Produto" style="width: 100px; height: auto;"></td>
                     <td data-label="Produto"><?php echo $nomeProduto; ?></td>
                     <td data-label="Detalhes">
-                        <a href="detalhes_produto.php?id_parceiro=<?php echo htmlspecialchars($parceiro['id_parceiro']); ?>&id_produto=<?php echo htmlspecialchars($parceiro['id_produto']); ?>">
+                        <a href="detalhes_produto.php?id=<?php echo htmlspecialchars($parceiro['id']); ?>&id_parceiro=<?php echo htmlspecialchars($parceiro['id_parceiro']); ?>&id_produto=<?php echo htmlspecialchars($parceiro['id_produto']); ?>">
                             Ver Detalhes
                         </a>
                     </td>

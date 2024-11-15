@@ -8,7 +8,7 @@ include('../../../conexao.php');  // Inclui o arquivo de conexão com o banco de
 
 // Verifica se o formulário foi enviado via método POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    var_dump($_POST);
+    //var_dump($_POST);
     //die();
     // Coleta e sanitiza os dados do formulário
     $id_parceiro = $_POST['id_parceiro'];
@@ -88,6 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_json
     );
 
+
+
+    
     // Executa a query e armazena o resultado
     if ($stmt->execute()) {
         $msg = 'Produto salvo com sucesso.';
