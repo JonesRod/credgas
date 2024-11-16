@@ -55,12 +55,13 @@
     $result = $mysqli->query(query: $sql_query_not_par);
     $row = $result->fetch_assoc();
     $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
+    $not_novo_produto= $row['not_novo_produto'] ?? 0;
     $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
 
 
     // Soma todos os valores de notificações
-    $total_notificacoes = $not_adicao_produto + $pedidos;
+    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
     //echo $total_notificacoes; 
 
     //Consulta para buscar produtos ocultos do catálogo
@@ -101,10 +102,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
-<style>
 
-
-</style>
 </head>
 <body>
 
@@ -136,8 +134,9 @@
     <aside id="painel-notificacoes">
         <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Pedidos: <?php echo $pedidos; ?></li>
+            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $not_novo_produto; ?></li>
+            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
+            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $pedidos; ?></li>
 
         </ul>
     </aside>
@@ -146,7 +145,7 @@
     <aside id="menu-lateral" >
         <ul>
             <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
-            <li><a href="configuracoes.php"><i class="fas fa-cog"></i> Configurações</a></li>
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
             <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
         </ul>
     </aside>
@@ -562,9 +561,12 @@
             // Define a URL com base no ID da notificação
             switch (id) {
                 case 1:
-                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    url = `detalhes_notificacao_novo_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
                     break;
                 case 2:
+                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    break;
+                case 3:
                     url = `not_detalhes_crediario.php?session_id=${sessionId}`;
                     break;
                 default:

@@ -251,7 +251,7 @@ main .tab.active {
     justify-content: center; /* Centraliza verticalmente os itens */
     min-height: 200px; /* Define uma altura mínima para centralização adequada */
     /*padding: 20px; /* Adiciona espaçamento interno */
-   /* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
 }
 
 .container{
@@ -483,7 +483,7 @@ h2 {
 .produto-imagem {
     width: 100%;
     height: auto;
-    height: 160px;
+    max-height: 160px;
     margin-bottom: 5px;
     border-radius: 5px;
 }
@@ -589,7 +589,7 @@ h2 {
     margin-bottom: 20px;
 }
 
- /* Para telas menores que 768px */
+/* Para telas menores que 768px */
 @media (max-width: 768px) {
     header h1 {
         font-size: 20px; /* Diminui o tamanho do título em telas pequenas */
@@ -676,7 +676,9 @@ h2 {
     }
 
     .produto-imagem {
-        max-width: 180px;
+        width: 100%;
+        height: auto;
+        max-height: 155px;
     }
 
     .produto-nome {
@@ -761,15 +763,17 @@ h2 {
         padding-bottom: 50px;
     }  
     .produto-item {
-        width: 100%;
-        max-width: 200px;
+        width: 40%;
+        max-width: 250px;
+        height: 350px;
         padding: 3px;
 
     }
 
     .produto-imagem {
         width: 100%;
-        max-width: 150%;
+        height: auto;
+        max-height: 190px;
     }
 
     .produto-nome {
@@ -785,7 +789,3 @@ h2 {
         font-size: 0.85em;
     }
 }
-
-
-
-

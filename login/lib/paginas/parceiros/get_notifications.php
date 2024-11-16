@@ -8,12 +8,13 @@ include('../../conexao.php');
     $result = $mysqli->query(query: $sql_query_not_par);
     $row = $result->fetch_assoc();
     $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
+    $not_novo_produto= $row['not_novo_produto'] ?? 0;
     $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
 
 
     // Soma todos os valores de notificações
-    $total_notificacoes = $not_adicao_produto + $pedidos;
+    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
 
     // Retorna os dados em formato JSON
     header('Content-Type: application/json');

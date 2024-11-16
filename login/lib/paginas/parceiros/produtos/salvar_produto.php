@@ -88,15 +88,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_json
     );
 
-
-
-    
     // Executa a query e armazena o resultado
     if ($stmt->execute()) {
         $msg = 'Produto salvo com sucesso.';
-    } else {
-        $msg = 'Erro ao salvar o produto: ' . $stmt->error;
+
+        // Pega o ID do produto inserido
+        $id_produto = $mysqli->insert_id;
+        $not_novos_produtos ='1';
+
+        // Monta a query SQL para inserir os dados do produto no banco de dados usando prepared statements
+        $sql_not = "INSERT INTO contador_notificacoes_admin (data, id_parceiro, id_produto, not_novos_produtos) 
+                    VALUES (NOW(), ?, ?, ?)";
+        $stmt_not = $mysqli->prepare($sql_not);
+
+        // Verifica se a query foi preparada com sucesso
+        if ($stmt_not === false) {
+            die('Erro na preparação da query: ' . $mysqli->error);
+        }
+
+        // Liga os parâmetros da query ao prepared statement
+        $stmt_not->bind_param('iii', $id_parceiro, $id_produto, $not_novos_produtos);
+
+        // Executa a query de notificação
+        /*if ($stmt_not->execute()) {
+            $msg = 'Notificação registrada com sucesso.';
+        } else {
+            $msg = 'Erro ao registrar a notificação: ' . $stmt_not->error;
+        }*/
     }
+
 
     // Fecha o statement e a conexão com o banco de dados
     $stmt->close();

@@ -50,7 +50,6 @@
             $stmt->bind_param("i", $id_produto);
 
             if ($stmt->execute()) {
-                //$sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
                 if (isset($_GET['id'])) {
                     //echo ('oi');
                 
@@ -85,7 +84,7 @@
                     
                 }
                 
-                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, analize)
+                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_novo_produto, analize)
                 VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'APROVADO')";
             
                 if ($mysqli->query($sql_not_parc)) {
@@ -141,7 +140,7 @@
                 }
         
                 // Inserir notificação para o parceiro
-                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, msg, analize)
+                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_novo_produto, msg, analize)
                 VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique os dados editados do seu produto e tente novamente!', 'REPROVADO')";
         
                 if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
