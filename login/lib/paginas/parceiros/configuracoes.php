@@ -14,17 +14,6 @@
         $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
         $parceiro = $sql_query->fetch_assoc();
 
-        // Verifica e ajusta a logo
-        if (isset($parceiro['logo'])) {
-            $minhaLogo = $parceiro['logo'];
-
-            if ($minhaLogo != '') {
-                // Se existe e não está vazio, atribui o valor à variável logo
-                $logo = 'arquivos/' . $parceiro['logo'];
-            }
-        } else {
-            $logo = '../arquivos_fixos/icone_loja.jpg';
-        }
     } else {
         session_unset();
         session_destroy(); 
@@ -53,32 +42,6 @@
         //echo "Nenhum cartão encontrado.";
     }
         
-        // Exibe os cartões para depuração (opcional)
-        /*echo "<pre>";
-        var_dump($lista_cartoes);
-        echo "</pre>";*/
-
-    // Salvando os dados enviados pelo formulário
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $id_parceiro = intval($_POST['id_parceiro']);
-        $horarios = $_POST['horarios'];
-        $formas_recebimento = isset($_POST['formas_recebimento']) ? implode(',', $_POST['formas_recebimento']) : '';
-        $valor_minimo_pedido = isset($_POST['valor_minimo_pedido']) ? floatval($_POST['valor_minimo_pedido']) : 0;
-
-        // Atualizar ou inserir os dados no banco de dados
-        $sql = "UPDATE parceiros 
-                SET horarios_funcionamento = ?, formas_recebimento = ?, valor_minimo_pedido = ? 
-                WHERE id = ?";
-        $stmt = $mysqli->prepare($sql);
-        $stmt->bind_param('ssdi', json_encode($horarios), $formas_recebimento, $valor_minimo_pedido, $id_parceiro);
-
-        if ($stmt->execute()) {
-            $msg = "Dados salvos com sucesso!";
-        } else {
-            $msg = "Erro ao salvar os dados: " . $stmt->error;
-        }
-    }
-
     // Obter os dados existentes do parceiro
     $id_parceiro = intval($_GET['id_parceiro']);
     $sql = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = $id_parceiro") or die($mysqli->error);
@@ -88,8 +51,8 @@
     $horarios_funcionamento = json_decode($formas['horarios_funcionamento'], true) ?? [];
     $formas_recebimento = explode(',', $formas['formas_recebimento'] ?? '');
     $car_debito = $formas['cartao_debito'];
-    $car_credito = $formas['cartao_credito'];
-    $pix = $formas['pix'];    
+    $car_credito = isset($formas['Cartão credito']) ? explode(',', $formas['Cartão credito']) : [];
+  
     $outras = $formas['outras_formas'];   
     $valor_minimo_pedido = $formas['valor_minimo_pedido'] ?? 0;
     $valor_min_entrega_gratis = $formas['valor_min_entrega_gratis'] ?? 0;
@@ -99,10 +62,9 @@
     print_r([
         'Horários de Funcionamento' => $horarios_funcionamento,
         'Formas de Recebimento' => $formas_recebimento,
-        'Cartão debito' => $car_debito,
-        'Cartão credito' => $car_credito,
-        'pix' => $pix,
-        'outras' => $outras,      
+        'Cartão Débito' => $car_debito,
+        'Cartão Crédito' => $car_credito,
+        'Outras' => $outras,      
         'Valor Mínimo do Pedido' => $valor_minimo_pedido,
         'Valor Mínimo para Entrega Grátis' => $valor_min_entrega_gratis
     ]);
@@ -180,7 +142,7 @@
 <body>
     <h2>Minhas Configurações</h2>
 
-    <form method="POST">
+    <form  action="salvar_configuracoes.php" method="POST">
         <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
 
         <!-- Horários de Funcionamento -->
@@ -206,46 +168,76 @@
         <!-- Formas de Recebimento -->
         <fieldset>
             <legend>Formas de Recebimento</legend>
+            <!-- Dinheiro -->
             <label>
-                <input type="checkbox" name="formas_recebimento[]" value="Dinheiro">
+                <input type="checkbox" name="formas_recebimento[]" value="Dinheiro" 
+                <?php echo in_array('Dinheiro', $formas_recebimento) ? 'checked' : ''; ?>>
                 Dinheiro
             </label>
+
             <label>
-                <input type="checkbox" id="cartao_credito" name="formas_recebimento[]" value="Cartão de Crédito">
-                Cartão de Crédito
-            </label>
-            <div id="opcoes_credito" class="card-options">
-                <?php foreach ($lista_cartoes as $cartao) : ?>
-                    <label>
-                        <input type="checkbox" name="cartoes_credito[]" value="<?php echo htmlspecialchars($cartao['nome']); ?>">
-                        <?php echo htmlspecialchars($cartao['nome']); ?>
-                    </label>
-                <?php endforeach; ?>
-            </div>
-            <label>
-                <input type="checkbox" id="cartao_debito" name="formas_recebimento[]" value="Cartão de Débito">
+                <input type="checkbox" id="cartao_debito" name="formas_recebimento[]" value="Cartão de Débito"
+                <?php echo in_array('Cartão de Débito', $formas_recebimento) ? 'checked' : ''; ?>>
                 Cartão de Débito
             </label>
-            <div id="opcoes_debito" class="card-options">
-                <?php foreach ($lista_cartoes as $cartao) : ?>
+            <div id="opcoes_debito" class="card-options" style="<?php echo in_array('Cartão de Débito', $formas_recebimento) ? 'display: block;' : 'display: none;'; ?>">
+                <?php
+                    // Converte a string de cartões em array
+                    $car_debito = isset($formas_recebimento_str) && in_array('Cartão de Débito', $formas_recebimento) 
+                        ? explode(',', $formas_recebimento_str) 
+                        : [];
+                    
+                    // Exibe os checkboxes para os cartões
+                    foreach ($lista_cartoes as $cartao) : 
+                ?>
+                <label>
+                    <input type="checkbox" name="cartoes_debito[]" value="<?php echo htmlspecialchars($cartao['nome']); ?>"
+                    <?php echo (in_array($cartao['nome'], $car_debito)) ? 'checked' : ''; ?>>
+                    <?php echo htmlspecialchars($cartao['nome']); ?>
+                </label>
+                <?php endforeach; ?>
+            </div>
+
+            <label>
+                <input type="checkbox" id="cartao_credito" name="formas_recebimento[]" value="Cartão de Crédito"
+                <?php echo in_array('Cartão de Crédito', $formas_recebimento) ? 'checked' : ''; ?>>
+                Cartão de Crédito
+            </label>
+            <div id="opcoes_credito" class="card-options" style="<?php echo in_array('Cartão de Crédito', $formas_recebimento) ? 'display: block;' : 'display: none;'; ?>">
+                <?php
+                // Converte a string em array
+                $car_credito = isset($formas_recebimento['Cartão Crédito']) ? explode(',', $formas_recebimento['Cartão Crédito']) : [];
+                
+                // Exibe os checkboxes para os cartões
+                foreach ($lista_cartoes as $cartao) : ?>
                     <label>
-                        <input type="checkbox" name="cartoes_debito[]" value="<?php echo htmlspecialchars($cartao['nome']); ?>">
+                        <input type="checkbox" name="cartoes_credito[]" value="<?php echo htmlspecialchars($cartao['nome']); ?>"
+                        <?php echo (in_array($cartao['nome'], $car_credito)) ? 'checked' : ''; ?>>
                         <?php echo htmlspecialchars($cartao['nome']); ?>
                     </label>
                 <?php endforeach; ?>
             </div>
+
             <label>
-                <input type="checkbox" id="pix" name="formas_recebimento[]" value="Pix">
+                <input type="checkbox" id="pix" name="formas_recebimento[]" value="Pix"
+                <?php echo in_array('Pix', $formas_recebimento) ? 'checked' : ''; ?>>
                 Pix
             </label>
 
-            <!-- Adiciona a opção de "Outros" após o Pix -->
-            <label>
-                <input type="checkbox" id="forma_outros" name="formas_recebimento[]" value="outros">
-                Outros
-            </label>
-            <!-- Campo de entrada escondido inicialmente -->
-            <input type="text" id="descricao_outros_forma" name="descricao_outros_forma" value="" placeholder="Vale, Cheque, ..." style="display: none; margin-top: 10px; width: 95%;">
+<!-- Adiciona a opção de "Outros" após o Pix -->
+<label>
+    <input type="checkbox" id="forma_outros" name="formas_recebimento[]" value="Outras"
+    <?php echo in_array('Outras', $formas_recebimento) ? 'checked' : ''; ?>>
+    Outros
+</label>
+
+<!-- Campo de entrada escondido inicialmente, mostrado se "Outras" estiver selecionado -->
+<input type="text" id="descricao_outros_forma" name="descricao_outros_forma" 
+    value="<?php echo htmlspecialchars($outras ?? ''); ?>" 
+    placeholder="Vale, Cheque, ..." 
+    style="display: <?php echo in_array('Outras', $formas_recebimento) ? 'block' : 'none'; ?>; 
+           margin-top: 10px; 
+           width: 95%;">
 
         </fieldset>
 
