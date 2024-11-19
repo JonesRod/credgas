@@ -28,8 +28,15 @@
                         $_SESSION['admin'];  
                         
                         $id = $_SESSION['id'];
-                        $sql_query = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->$error);
-                        $usuario = $sql_query->fetch_assoc(); 
+                        //echo ('').$id;
+                        $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") 
+                        or die($mysqli->error);
+                    
+                        $usuario = $sql_query->fetch_assoc();
+                        
+                        // Exemplo de como acessar a última alteração
+                        $data_alteracao = $usuario['data_alteracao']; // Certifique-se de que a coluna existe no BD
+                        //echo "Última alteração: $data_alteracao";
 
                         //$logo = $dadosEscolhido['logo'];
                         if(isset($usuario['logo'])) {
@@ -69,8 +76,17 @@
             $_SESSION['admin'];  
     
             $id = $_SESSION['id'];
-            $sql_query = $mysqli->query(query: "SELECT * FROM config_admin WHERE id_cliente = '$id'") or die($mysqli->$error);
-            $usuario = $sql_query->fetch_assoc(); 
+            
+            //echo ('').$id;
+            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") 
+            or die($mysqli->error);
+        
+            $usuario = $sql_query->fetch_assoc();
+            
+            // Exemplo de como acessar a última alteração
+            $data_alteracao = $usuario['data_alteracao']; // Certifique-se de que a coluna existe no BD
+            //echo "Última alteração: $data_alteracao";
+        
             
             //$logo = $dadosEscolhido['logo'];
             if(isset($usuario['logo'])) {
@@ -191,10 +207,11 @@
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral" >
         <ul>
-            <li><i class="fas fa-home"></i><span>Inicio</span></li>
-            <li><i class="fas fa-user"></i> <span>Perfil da Loja</span></li>
+            <!--<li><i class="fas fa-home"></i><span>Inicio</span></li>-->
+   
+            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i><span>Perfil</span></li>
             <li onclick="solicitacoes()"><i class="fas fa-users"></i><span>Solicitações</span></li>
-            <li><i class="fas fa-cog"></i> <span>Configurações</span></li>
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i></a> <span>Configurações</span></li>
             <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></a></li>
         </ul>
     </aside>
@@ -225,11 +242,12 @@
 
     <footer class="menu-mobile">
         <ul>
-            <li><a href="admin_home.php"><i class="fas fa-home"></i></a></li>
-            <li><i class="fas fa-user"></i></li>
-            <li><i class="fas fa-users"></i></li>
-            <li><i class="fas fa-cog"></i></li>
-            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i></a></li>
+            <!--<li><a href="admin_home.php"><i class="fas fa-home"></i></a></li>-->
+            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
+            <li><a href="" title="Solicitações" onclick="solicitacoes()"><i class="fas fa-users"></i></a></li>
+            <!--<li onclick="solicitacoes()"><i class="fas fa-users"></i><span></span></li>-->
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
+            <li><a href="admin_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
     <script src="admin_home.js"></script> 

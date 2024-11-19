@@ -140,10 +140,10 @@
                 }
         
                 // Inserir notificação para o parceiro
-                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_novo_produto, msg, analize)
-                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique os dados editados do seu produto e tente novamente!', 'REPROVADO')";
+                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, msg, analize)
+                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique as informações do seu produto e tente novamente!', 'REPROVADO')";
         
-                if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
+                if ($mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
                     header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
                     exit();

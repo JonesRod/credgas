@@ -84,7 +84,7 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
                 <tr>
                     <td class="hide-id-column"><?php echo htmlspecialchars($id); ?></td>
                     <td data-label="Data"><?php echo htmlspecialchars($data); ?></td>
-                    <td data-label="Logo"><img src="../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo" style="width: 100px; height: auto;"></td>
+                    <td data-label="Logo"><img src="../parceiros/<?php echo $logo; ?>" alt="Logo" style="width: 100px; height: auto;"></td>
                     <td data-label="Nome Fantasia"><?php echo $nomeFantasia; ?></td>
                     <td data-label="Imagem"><img src="../parceiros/produtos/img_produtos/<?php echo $imagem_principal; ?>" alt="Imagem do Produto" style="width: 100px; height: auto;"></td>
                     <td data-label="Produto"><?php echo $nomeProduto; ?></td>

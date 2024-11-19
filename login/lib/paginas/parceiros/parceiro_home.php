@@ -20,7 +20,7 @@
 
             if ($minhaLogo !=''){
                 // Se existe e não está vazio, atribui o valor à variável logo
-                $logo = 'arquivos/'.$parceiro['logo'];
+                $logo = $parceiro['logo'];
                 //echo ('oii');
             }
         }else{
@@ -542,11 +542,11 @@
 
     <footer class="menu-mobile">
         <ul>
-            <li><a href="admin_home.php"><i class="fas fa-home"></i></a></li>
-            <li><i class="fas fa-user"></i></li>
-            <li><i class="fas fa-box"></i></li> <!-- pedidos -->
-            <li><i class="fas fa-cog"></i></li>
-            <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i></a></li>
+            <!--<li><a href="parceiro_home.php" title="Página Inicial"><i class="fas fa-home"></i></a></li>-->
+            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
+            <li title="Pedidos"><i class="fas fa-box"></i></li> <!-- pedidos -->
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
+            <li><a href="parceiro_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
     <script src="parceiro_home.js"></script> 
