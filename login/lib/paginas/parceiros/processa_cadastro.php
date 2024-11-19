@@ -15,6 +15,7 @@ if (!isset($_SESSION['id'])) {
 $id = $_SESSION['id'];
 
 // Valida e sanitiza os dados recebidos
+$aberto_fechado = $mysqli->real_escape_string($_POST['statusLojaTexto']);
 $razao = $mysqli->real_escape_string($_POST['razao']);
 $nomeFantasia = $mysqli->real_escape_string($_POST['nomeFantasia']);
 $cnpj = $mysqli->real_escape_string($_POST['cnpj']);
@@ -31,6 +32,9 @@ $numero = $mysqli->real_escape_string($_POST['numero']);
 $bairro = $mysqli->real_escape_string($_POST['bairro']);
 
 
+
+//echo ('oi'). $aberto_fechado;
+//die();
 // Configuração do upload da nova logo (se houver)
 if (isset($_FILES['logoInput']) && $_FILES['logoInput']['error'] === 0) {
     // Verifica se existe uma logo anterior e exclui
@@ -83,7 +87,8 @@ $sql_update = "
         cidade = '$cidade',
         endereco = '$rua',
         numero = '$numero',
-        bairro = '$bairro'
+        bairro = '$bairro',
+        aberto_fechado ='$aberto_fechado'
     WHERE id = '$id'";
 
 // Executa a consulta

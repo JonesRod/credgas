@@ -15,14 +15,14 @@
         $parceiro = $sql_query->fetch_assoc();
 
         // Verifica e ajusta a logo
-        if(isset($parceiro['logo'])) {
+        /*if(isset($parceiro['logo'])) {
             $logo = $parceiro['logo'];
             if($logo === ''){
                 $logo = '../arquivos_fixos/icone_loja.jpg';
             } else {
-                $logo = '../arquivos_fixos/'. $logo;
+                $logo = 'arquivos/'. $logo;
             }
-        }
+        }*/
     } else {
         session_unset();
         session_destroy(); 
@@ -37,12 +37,20 @@
 
     if ($minhaLogo !=''){
         // Se existe e não está vazio, atribui o valor à variável logo
-        $logo = 'arquivos/'.$dados['logo'];
-        //echo ('oii');
+        $logo = $dados['logo'];
+        //echo ('oii').$logo;
     } else {
         // Se não existe ou está vazio, define um valor padrão
         $logo = '../arquivos_fixos/icone_loja.jpg';
     }
+
+    // Verifica se o valor 'aberto_fechado' está presente nos dados e atribui 'Aberto' ou 'Fechado'
+    $statusLoja =  $dados['aberto_fechado'];
+    $statusChecked = $statusLoja === 'Aberto' ? 'checked' : ''; // Define 'checked' se a loja estiver aberta
+
+    //echo ('').$statusLoja;
+    // Exibe o valor de $dados['aberto_fechado'] para depuração
+    //var_dump($dados['aberto_fechado']); // ou echo $dados['aberto_fechado'];
 
     // Consulta para buscar produtos do catálogo
     $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
@@ -58,9 +66,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- <script src="localizador.js" defer></script> //Inclui o arquivo JS -->
+    <script src="localizador.js" defer></script>
     <title>perfil da Loja</title>
     <link rel="stylesheet" href="perfil_loja.css">
+    <style>
+        .switch {
+            position: relative;
+            /*display: inline-block;*/
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4caf50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        #statusLojaTexto {
+            display: inline-block;
+            margin-top: 10px; /* Ajusta a distância do texto */
+            margin-left: 10px; /* Ajusta a posição horizontal, se necessário */
+            vertical-align: middle; /* Mantém alinhamento com o botão */
+            font-size: 16px; /* Ajuste do tamanho da fonte */
+            color: #333; /* Cor do texto */
+        }
+
+    </style>
 </head>
 <body>
     
@@ -69,6 +132,7 @@
         <h2>Dados da Loja.</h2>
 
         <div style="text-align: center;">
+            <input type="hidden" id="id_sessao" name="img_anterior" value="<?php echo $id; ?>">
             
             <!-- Armazena o caminho da imagem anterior -->
             <input type="hidden" id="img_anterior" name="img_anterior" value="<?php echo $logo; ?>">
@@ -81,6 +145,23 @@
         </div>
 
         <span id="msgAlerta"></span><br>
+
+        <div style="margin-bottom: 20px; text-align: center; display: flex; align-items: center; justify-content: center;">
+            <label for="statusLoja" style="margin-right: 10px;">Status da Loja:</label>
+            <label class="switch" style="margin-right: 10px;">
+                <!-- O checkbox reflete o valor de $statusChecked -->
+                <input type="checkbox" id="aberto_fechado" name="aberto_fechado" <?php echo $statusChecked; ?> onchange="atualizarStatus();">
+                <span class="slider"></span>
+            </label>
+            
+            <!-- Exibe o status do estado da loja -->
+            <span id="statusLojaTextoDisplay"><?php echo ($statusLoja == 'Aberto' ? 'Aberto' : 'Fechado'); ?></span>
+            
+            <!-- Input oculto para envio via POST -->
+            <input type="hidden" id="statusLojaTexto" name="statusLojaTexto" value="<?php echo $statusLoja; ?>">
+        </div>
+
+
 
         <label for="razao">Razão Social:</label>
         <input type="text" id="razao" name="razao" required value="<?php echo $dados['razao']?>">
@@ -180,6 +261,53 @@
     </form>
 
     <script src="perfil_loja.js"></script>
+    <script>
+        function atualizarStatus() {
+        var checkbox = document.getElementById('aberto_fechado');
+        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
+        var hiddenInput = document.getElementById('statusLojaTexto');
+        
+        if (checkbox.checked) {
+            statusDisplay.textContent = 'Aberto';
+            hiddenInput.value = 'Aberto';
+        } else {
+            statusDisplay.textContent = 'Fechado';
+            hiddenInput.value = 'Fechado';
+        }
+    }
+
+    function atualizarStatus1() {
+        var checkbox = document.getElementById('aberto_fechado');
+        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
+        var hiddenInput = document.getElementById('statusLojaTexto');
+        
+        // Verifica o valor de hiddenInput e ajusta o checkbox e o display de status
+        if (hiddenInput.value === 'Aberto') {
+            checkbox.checked = true; // Marca o checkbox
+            statusDisplay.textContent = 'Aberto';
+        } else {
+            checkbox.checked = false; // Desmarca o checkbox
+            statusDisplay.textContent = 'Fechado';
+        }
+        
+        // Atualiza o valor do campo oculto ao alterar o checkbox
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                statusDisplay.textContent = 'Aberto';
+                hiddenInput.value = 'Aberto';
+            } else {
+                statusDisplay.textContent = 'Fechado';
+                hiddenInput.value = 'Fechado';
+            }
+        });
+    }
+
+    // Chama a função ao carregar a página para ajustar o estado inicial
+    document.addEventListener('DOMContentLoaded', function() {
+        atualizarStatus1();
+    });
+
+</script>
 
 </body>
 </html>
