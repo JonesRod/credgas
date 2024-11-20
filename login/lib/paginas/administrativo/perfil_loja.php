@@ -11,19 +11,27 @@
         $id = $_SESSION['id'];
 
         // Consulta para buscar o parceiro
-        $sql_query = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
-        $parceiro = $sql_query->fetch_assoc();
+        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
+        $admin = $sql_query->fetch_assoc();
 
         // Consulta para buscar o parceiro
-        $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
+        $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
 
         // Verifica se o ID existe
         if ($sql_query->num_rows > 0) {
             // ID encontrado, continue com a lógica
             //$parceiro = $sql_query->fetch_assoc();
             
-            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+            $sql_query = $mysqli->query("
+                SELECT * 
+                FROM config_admin 
+                WHERE nomeFantasia != '' 
+                ORDER BY data_alteracao DESC 
+                LIMIT 1
+            ") or die($mysqli->error);
+            
             $dados = $sql_query->fetch_assoc();
+        
 
             //$sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
             //$dados = $sql_query->fetch_assoc();
@@ -38,6 +46,7 @@
                 $logo = '../arquivos_fixos/icone_loja.png';
             }
         } else {
+            //echo ('oi1');
             session_unset();
             session_destroy(); 
             header("Location: ../../../../index.php");
@@ -46,22 +55,13 @@
 
 
     } else {
+        //echo ('oi2');
         session_unset();
         session_destroy(); 
         header("Location: ../../../../index.php");
         exit();
     }
 
-
-//die();
-
-    // Consulta para buscar produtos do catálogo
-    //$produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
-
-    // Verifica se existem promoções, mais vendidos e frete grátis
-    //$promocoes = $mysqli->query(query: "SELECT * FROM produtos WHERE promocao = 1 AND id_parceiro = '$id'");
-    //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
-    //$frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE frete_gratis = 1 AND id_parceiro = '$id'");
 ?>      
 <!DOCTYPE html>
 <html lang="pt-BR">

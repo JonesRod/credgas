@@ -206,7 +206,7 @@
         <ul>
             <!-- Item Perfil da Loja -->
             <li>
-                <a href="perfil_loja.php" title="Perfil da Loja">
+                <a href="perfil_loja.php?id_admin=<?php echo urlencode($id); ?>" title="Perfil da Loja">
                     <i class="fas fa-user"></i>
                     <span >Perfil</span>
                 </a>
@@ -214,7 +214,7 @@
             
             <!-- Item Configurações -->
             <li>
-                <a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações">
+                <a href="configuracoes.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">
                     <i class="fas fa-cog"></i>
                     <span>Configurações</span>
                 </a>

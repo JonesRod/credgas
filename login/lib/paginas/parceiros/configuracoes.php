@@ -58,19 +58,6 @@
     $valor_min_entrega_gratis = $formas['valor_min_entrega_gratis'] ?? 0;
     $estimativa_entrega = isset($parceiro['estimativa_entrega']) ? $parceiro['estimativa_entrega'] : '';
 
-
-    // Exemplo de exibição (opcional)
-    /*echo "<pre>";
-    print_r([
-        'Horários de Funcionamento' => $horarios_funcionamento,
-        'Formas de Recebimento' => $formas_recebimento,
-        'Cartão Débito' => $car_debito,
-        'Cartão Crédito' => $car_credito,
-        'Outras' => $outras,      
-        'Valor Mínimo do Pedido' => $valor_minimo_pedido,
-        'Valor Mínimo para Entrega Grátis' => $valor_min_entrega_gratis
-    ]);
-    echo "</pre>";*/
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
