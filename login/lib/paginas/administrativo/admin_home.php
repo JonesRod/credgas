@@ -45,7 +45,7 @@
                             if($logo == ''){
                                 $logo = '../arquivos_fixos/imagem_credgas.jpg';
                             }else{
-                                $logo = '../arquivos_fixos/'. $logo;
+                                $logo = 'arquivos/'. $logo;
                                 //echo $logo;
                             }
                         }
@@ -78,8 +78,7 @@
             $id = $_SESSION['id'];
             
             //echo ('').$id;
-            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") 
-            or die($mysqli->error);
+            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
         
             $usuario = $sql_query->fetch_assoc();
             
@@ -95,13 +94,12 @@
                 if($logo == ''){
                     $logo = '../arquivos_fixos/imagem_credgas.jpg';
                 }else{
-                    $logo = '../arquivos_fixos/'. $logo;
+                    $logo = 'arquivos/'. $logo;
                     //echo $logo;
                 }
             }
     
         }else{
-
             session_unset();
             session_destroy();
             header(header: "Location: ../../../../index.php"); 
@@ -161,8 +159,7 @@
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="admin_home.js"></script> 
-    <script src="admin_home.js.js?v=<?php echo time(); ?>"></script><!--força a tualização-->
+    <script src="admin_home.js?v=<?php echo time(); ?>"></script><!--força a tualização-->
 
 </head>
 <body>
@@ -173,7 +170,7 @@
             <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
         </div>
 
-        <h1>Painel Administrativo</h1>
+        <h1><?php echo $usuario['nomeFantasia']; ?></h1>
         
         <div class="menu-superior-direito">
             <span>Olá, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
@@ -205,14 +202,31 @@
     </aside>
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
-    <aside id="menu-lateral" >
+    <aside id="menu-lateral">
         <ul>
-            <!--<li><i class="fas fa-home"></i><span>Inicio</span></li>-->
-   
-            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i><span>Perfil</span></li>
-            <li onclick="solicitacoes()"><i class="fas fa-users"></i><span>Solicitações</span></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i></a> <span>Configurações</span></li>
-            <li><a href="admin_logout.php"><i class="fas fa-sign-out-alt"></i> <span>Sair</span></a></li>
+            <!-- Item Perfil da Loja -->
+            <li>
+                <a href="perfil_loja.php" title="Perfil da Loja">
+                    <i class="fas fa-user"></i>
+                    <span >Perfil</span>
+                </a>
+            </li>
+            
+            <!-- Item Configurações -->
+            <li>
+                <a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </a>
+            </li>
+            
+            <!-- Item Sair -->
+            <li>
+                <a href="admin_logout.php" title="Sair">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sair</span>
+                </a>
+            </li>
         </ul>
     </aside>
 
@@ -242,10 +256,7 @@
 
     <footer class="menu-mobile">
         <ul>
-            <!--<li><a href="admin_home.php"><i class="fas fa-home"></i></a></li>-->
             <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
-            <li><a href="" title="Solicitações" onclick="solicitacoes()"><i class="fas fa-users"></i></a></li>
-            <!--<li onclick="solicitacoes()"><i class="fas fa-users"></i><span></span></li>-->
             <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
             <li><a href="admin_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>

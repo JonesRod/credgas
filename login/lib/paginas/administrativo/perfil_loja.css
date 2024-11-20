@@ -1,0 +1,119 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Cor de fundo suave */
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Alinhamento ao topo da tela */
+    height: 100vh; /* Ocupa toda a altura da tela */
+
+}
+
+form {
+    background-color: #fff; /* Fundo branco para o formulário */
+    border-radius: 8px; /* Cantos arredondados */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra para profundidade */
+    padding: 30px; /* Ajusta o preenchimento */
+    width: 90%;
+    max-width: 600px; /* Largura máxima do formulário */
+    box-sizing: border-box; /* Inclui padding na largura total */
+    margin-bottom: 30px;
+}
+
+h2 {
+    text-align: center; /* Centraliza o título */
+    color: #333; /* Cor do texto */
+    margin-bottom: 20px; /* Espaço abaixo do título */
+}
+
+label {
+    margin-top: 10px; /* Espaçamento entre os rótulos e campos */
+    display: block; /* Cada rótulo ocupa uma linha */
+    font-weight: bold; /* Texto em negrito para os rótulos */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%; /* Largura total dos campos */
+    padding: 12px; /* Preenchimento interno aumentado */
+    margin: 8px 0 20px 0; /* Margem entre os campos */
+    border: 1px solid #ccc; /* Borda cinza */
+    border-radius: 4px; /* Cantos arredondados */
+    box-sizing: border-box; /* Inclui padding e bordas na largura */
+    transition: border-color 0.3s; /* Transição suave para a borda */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+    border-color: #007bff; /* Borda azul ao focar no campo */
+}
+
+input[type="checkbox"] {
+    margin-right: 5px; /* Espaçamento entre checkbox e rótulo */
+}
+
+.checkbox-container {
+    margin-bottom: 20px; /* Espaçamento abaixo do container */
+}
+
+button {
+    background-color: #28a745; /* Cor verde do botão */
+    color: white; /* Texto branco */
+    border: none; /* Sem borda */
+    padding: 12px; /* Preenchimento do botão */
+    border-radius: 4px; /* Cantos arredondados */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+    width: 100%; /* Botão ocupa a largura total */
+    font-weight: bold; /* Texto em negrito */
+    transition: background-color 0.3s; /* Transição suave para a cor de fundo */
+}
+
+button:hover {
+    background-color: #218838; /* Cor mais escura ao passar o mouse */
+}
+
+button:disabled {
+    background-color: #ccc; /* Cor do botão desabilitado */
+    cursor: not-allowed; /* Cursor não permitido */
+}
+
+.action-buttons {
+    display: flex; /* Usa Flexbox para alinhar os elementos */
+    justify-content: center; /* Centraliza os elementos horizontalmente */
+    align-items: center; /* Alinha os elementos verticalmente */
+    margin-top: 15px; /* Espaçamento superior para separar dos elementos acima */
+}
+
+
+.link-voltar {
+    color: #007bff; /* Cor azul do link */
+    text-decoration: none; /* Remove o sublinhado */
+    margin-right: 10px; /* Espaçamento à direita do link */
+}
+
+.link-voltar:hover {
+    text-decoration: underline; /* Sublinhado ao passar o mouse */
+}
+
+button {
+    background-color: #28a745; /* Cor verde do botão */
+    color: white; /* Texto branco */
+    border: none; /* Sem borda */
+    padding: 10px 15px; /* Preenchimento do botão */
+    border-radius: 4px; /* Cantos arredondados */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+    width: auto; /* Largura do botão ajusta automaticamente */
+}
+.file-preview img {
+    display: block;
+    margin: 10px auto; /* Centraliza a imagem no preview */
+}
+
+.file-preview p {
+    text-align: center; /* Centraliza o nome do arquivo no preview */
+}

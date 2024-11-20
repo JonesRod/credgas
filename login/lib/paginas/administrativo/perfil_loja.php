@@ -14,15 +14,37 @@
         $sql_query = $mysqli->query(query: "SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
         $parceiro = $sql_query->fetch_assoc();
 
-        // Verifica e ajusta a logo
-        /*if(isset($parceiro['logo'])) {
-            $logo = $parceiro['logo'];
-            if($logo === ''){
-                $logo = '../arquivos_fixos/icone_loja.jpg';
+        // Consulta para buscar o parceiro
+        $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->error);
+
+        // Verifica se o ID existe
+        if ($sql_query->num_rows > 0) {
+            // ID encontrado, continue com a lógica
+            //$parceiro = $sql_query->fetch_assoc();
+            
+            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+            $dados = $sql_query->fetch_assoc();
+
+            //$sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
+            //$dados = $sql_query->fetch_assoc();
+            $minhaLogo = $dados['logo'];
+            //echo ('oii').$minhaLogo;
+            if ($minhaLogo !=''){
+                // Se existe e não está vazio, atribui o valor à variável logo
+                $logo = 'arquivos/'.$dados['logo'];
+                //echo ('oii').$logo;
             } else {
-                $logo = 'arquivos/'. $logo;
+                // Se não existe ou está vazio, define um valor padrão
+                $logo = '../arquivos_fixos/icone_loja.png';
             }
-        }*/
+        } else {
+            session_unset();
+            session_destroy(); 
+            header("Location: ../../../../index.php");
+            exit();
+        }
+
+
     } else {
         session_unset();
         session_destroy(); 
@@ -30,35 +52,16 @@
         exit();
     }
 
-    $id = $_SESSION['id'];
-    $sql_query = $mysqli->query("SELECT * FROM meus_parceiros WHERE id = '$id'") or die($mysqli->$error);
-    $dados = $sql_query->fetch_assoc();
-    $minhaLogo = $dados['logo'];
 
-    if ($minhaLogo !=''){
-        // Se existe e não está vazio, atribui o valor à variável logo
-        $logo = $dados['logo'];
-        //echo ('oii').$logo;
-    } else {
-        // Se não existe ou está vazio, define um valor padrão
-        $logo = '../arquivos_fixos/icone_loja.jpg';
-    }
-
-    // Verifica se o valor 'aberto_fechado' está presente nos dados e atribui 'Aberto' ou 'Fechado'
-    $statusLoja =  $dados['aberto_fechado'];
-    $statusChecked = $statusLoja === 'Aberto' ? 'checked' : ''; // Define 'checked' se a loja estiver aberta
-
-    //echo ('').$statusLoja;
-    // Exibe o valor de $dados['aberto_fechado'] para depuração
-    //var_dump($dados['aberto_fechado']); // ou echo $dados['aberto_fechado'];
+//die();
 
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
+    //$produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
-    $promocoes = $mysqli->query(query: "SELECT * FROM produtos WHERE promocao = 1 AND id_parceiro = '$id'");
-    $mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
-    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE frete_gratis = 1 AND id_parceiro = '$id'");
+    //$promocoes = $mysqli->query(query: "SELECT * FROM produtos WHERE promocao = 1 AND id_parceiro = '$id'");
+    //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
+    //$frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE frete_gratis = 1 AND id_parceiro = '$id'");
 ?>      
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -69,65 +72,11 @@
     <script src="localizador.js" defer></script>
     <title>perfil da Loja</title>
     <link rel="stylesheet" href="perfil_loja.css">
-    <style>
-        .switch {
-            position: relative;
-            /*display: inline-block;*/
-            width: 60px;
-            height: 30px;
-        }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 30px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #4caf50;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(30px);
-        }
-        #statusLojaTextoDisplay {
-            display: inline-block;
-            margin-top: 10px; /* Ajusta a distância do texto */
-            margin-left: 10px; /* Ajusta a posição horizontal, se necessário */
-            vertical-align: middle; /* Mantém alinhamento com o botão */
-            font-size: 16px; /* Ajuste do tamanho da fonte */
-            color: #333; /* Cor do texto */
-        }
-
-    </style>
 </head>
 <body>
     
-    <form id="cadastroEmpresa" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
+    <form id="cadastroEmpresa" action="atualizar.php" method="POST" enctype="multipart/form-data">
 
         <h2>Dados da Loja.</h2>
 
@@ -138,7 +87,7 @@
             <input type="hidden" id="img_anterior" name="img_anterior" value="<?php echo $logo; ?>">
             
             <!-- Exibe a logo atual com um ID para ser acessado pelo JavaScript -->
-            <img id="logoPreview" class="file-preview" src="<?php echo $logo; ?>" alt="Pré-visualização da Logo" style="max-width: 200px;" required><br>
+            <img id="logoPreview" class="file-preview" src="<?php echo $logo; ?>" alt="Pré-visualização da Logo" style="width: 100px; length: 100px;" required><br>
             
             <!-- Input de arquivo com restrição para tipos de arquivo permitidos -->
             <input type="file" id="logoInput" name="logoInput"  accept=".jpg, .jpeg, .png, .gif">
@@ -146,23 +95,8 @@
 
         <span id="msgAlerta"></span><br>
 
-        <div style="margin-bottom: 20px; text-align: center; display: flex; align-items: center; justify-content: center;">
-            <label for="statusLoja" style="margin-right: 10px;">Status da Loja:</label>
-            <label class="switch" style="margin-right: 10px;">
-                <!-- O checkbox reflete o valor de $statusChecked -->
-                <input type="checkbox" id="aberto_fechado" name="aberto_fechado" <?php echo $statusChecked; ?> onchange="atualizarStatus();">
-                <span class="slider"></span>
-            </label>
-            
-            <!-- Exibe o status do estado da loja -->
-            <span id="statusLojaTextoDisplay"><?php echo ($statusLoja == 'Aberto' ? 'Aberto' : 'Fechado'); ?></span>
-            
-            <!-- Input oculto para envio via POST -->
-            <input type="hidden" id="statusLojaTexto" name="statusLojaTexto" value="<?php echo $statusLoja; ?>">
-        </div>
-
-
-
+        <input type="hidden" id="primeiro_nome" name="primeiro_nome" required value="<?php echo $dados['primeiro_nome']?>">
+        
         <label for="razao">Razão Social:</label>
         <input type="text" id="razao" name="razao" required value="<?php echo $dados['razao']?>">
 
@@ -175,17 +109,11 @@
         <label for="inscricaoEstadual">Inscrição Estadual:</label>
         <input type="text" id="inscricaoEstadual" name="inscricaoEstadual" required value="<?php echo $dados['inscricaoEstadual'];?>" oninput="this.value = this.value.replace(/\D/g, '')">
 
-        <label for="categoria">Categoria:</label>
-        <input type="text" id="categoria" name="categoria" required value="<?php echo $dados['categoria']?>"> 
-
         <label for="telefoneComercial">Telefone Comercial:(WhatsApp)</label>
         <input type="text" id="telefoneComercial" name="telefoneComercial" required value="<?php echo $dados['telefoneComercial']?>" placeholder="(00) 00000-0000" oninput="formatarCelular(this)" onblur="verificaCelular1()">
 
-        <label for="telefoneResponsavel">Telefone do Responsável:(WhatsApp)</label>
-        <input type="text" id="telefoneResponsavel" name="telefoneResponsavel" required value="<?php echo $dados['telefoneResponsavel']?>" placeholder="(00) 00000-0000" oninput="formatarCelular(this)" onblur="verificaCelular2()">
-        
         <label for="email">E-mail:</label>
-        <input required name="email" id="email" type="email" required value="<?php echo $dados['email']?>" >
+        <input required name="email" id="email" type="email" required value="<?php echo $dados['email_suporte']?>" >
 
         <p id="status-localizacao">Localização: Ativa</p>
 
@@ -251,63 +179,14 @@
         <label for="bairro">Bairro:</label>
         <input type="text" id="bairro" name="bairro" required value="<?php echo $dados['bairro']?>">
 
-        // Leia os <a href="termos.php" target="_blank"><b>Termos</b></a>.
-
         <div class="action-buttons">
-            <a href="parceiro_home.php" class="link-voltar"><b>Voltar</b></a>
-            <button type="submit" id="cadastrar" <?php echo ($dados['analize_inscricao'] === 'aprovado') ? '' : 'disabled'; ?>>Cadastrar</button>
+            <a href="admin_home.php" class="link-voltar"><b>Voltar</b></a>
+            <button type="submit" id="salvar">Salvar</button>
         </div>
 
     </form>
 
     <script src="perfil_loja.js"></script>
-    <script>
-        function atualizarStatus() {
-        var checkbox = document.getElementById('aberto_fechado');
-        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
-        var hiddenInput = document.getElementById('statusLojaTexto');
-        
-        if (checkbox.checked) {
-            statusDisplay.textContent = 'Aberto';
-            hiddenInput.value = 'Aberto';
-        } else {
-            statusDisplay.textContent = 'Fechado';
-            hiddenInput.value = 'Fechado';
-        }
-    }
-
-    function atualizarStatus1() {
-        var checkbox = document.getElementById('aberto_fechado');
-        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
-        var hiddenInput = document.getElementById('statusLojaTexto');
-        
-        // Verifica o valor de hiddenInput e ajusta o checkbox e o display de status
-        if (hiddenInput.value === 'Aberto') {
-            checkbox.checked = true; // Marca o checkbox
-            statusDisplay.textContent = 'Aberto';
-        } else {
-            checkbox.checked = false; // Desmarca o checkbox
-            statusDisplay.textContent = 'Fechado';
-        }
-        
-        // Atualiza o valor do campo oculto ao alterar o checkbox
-        checkbox.addEventListener('change', function() {
-            if (checkbox.checked) {
-                statusDisplay.textContent = 'Aberto';
-                hiddenInput.value = 'Aberto';
-            } else {
-                statusDisplay.textContent = 'Fechado';
-                hiddenInput.value = 'Fechado';
-            }
-        });
-    }
-
-    // Chama a função ao carregar a página para ajustar o estado inicial
-    document.addEventListener('DOMContentLoaded', function() {
-        atualizarStatus1();
-    });
-
-</script>
 
 </body>
 </html>

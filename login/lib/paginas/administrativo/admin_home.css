@@ -72,8 +72,8 @@ aside#menu-lateral {
     font-weight: bold; /* Aplica negrito ao texto */
     background-color: #d3d0ce;
     color: rgb(24, 8, 235);
-    width: 200px; /* Largura fixa da barra lateral */
-    padding: 20px;
+    width: 210px; /* Largura fixa da barra lateral */
+    padding: 10px;
     position: absolute; /* Mantém a barra lateral fixa */
     top: 60px; /* Ajusta a posição abaixo do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
