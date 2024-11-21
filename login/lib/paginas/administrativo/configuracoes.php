@@ -61,14 +61,21 @@
     $termos_parceiro = $dados['termos_parceiro'];
     $termos_privacidade = $dados['termos_privacidade'];
 
-    $taxa_padrao = $dados['taxa_padrao'];
+    $taxa_padrao = str_replace('.', ',', $dados['taxa_padrao']);
     $formas_recebimento = explode(',', $dados['formas_recebimento'] ?? '');
     $car_debito = isset($dados['cartoes_debito']) ? explode(',', $dados['cartoes_debito']) : [];
     $car_credito = isset($dados['Cartoes_credito']) ? explode(',', $dados['Cartoes_credito']) : [];
-    $pix = $dados['taxa_pix'];
-  
-    $outras = $dados['outras_formas'];   
+    $pix = str_replace('.', ',', $dados['taxa_pix']);
+    $taxa_crediario = str_replace('.', ',', $dados['taxa_crediario']);
+    $taxa_outros = str_replace('.', ',', $dados['taxa_outros']);
+    $outras = str_replace('.', ',', $dados['outras_formas']);
 
+    $multa_inclu_spc = str_replace('.', ',', $dados['multa_inclu_spc']);
+    $juro_inclu_spc = str_replace('.', ',', $dados['juro_inclu_spc']);
+    $valor_dias_cli_fiel = str_replace('.', ',', $dados['valor_dias_cli_fiel']);
+    $valor_dias_cli_pontual = str_replace('.', ',', $dados['valor_dias_cli_pontual']);
+    $bonus_indicacao = str_replace('.', ',', $dados['bonus_indicacao']);
+    $bonus_aniversariante = str_replace('.', ',', $dados['bonus_aniversariante']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -263,7 +270,7 @@
         <fieldset>
             <legend>Configure as taxas</legend>
             <label for="taxa_padrao">Taxa Padrão %:</label>
-            <input type="text" id="taxa_padrao" name="taxa_padrao"  value="<?php echo $taxa_padrao; ?>">
+            <input type="text" id="taxa_padrao" name="taxa_padrao"  value="<?php echo $taxa_padrao; ?>" oninput="formatarValor(this)">
 
             <!--<label for="">Taxa Cartão de Débito:</label>
             <input type="text">
@@ -272,26 +279,26 @@
             <input type="text">-->
 
             <label for="taxa_pix">Pix %:</label>
-            <input type="text" id="taxa_pix" name="taxa_pix" value="<?php echo $pix;  ?>">
+            <input type="text" id="taxa_pix" name="taxa_pix" value="<?php echo $pix;  ?>" oninput="formatarValor(this)">
 
             <label for="taxa_crediario">Taxa Crediário %:</label>
-            <input type="text" id="taxa_crediario" name="taxa_crediario" value="<?php echo $dados['taxa_crediario']; ?>">
+            <input type="text" id="taxa_crediario" name="taxa_crediario" value="<?php echo $taxa_crediario; ?>" oninput="formatarValor(this)">
 
             <label for="taxa_outros">Taxa Outros %:</label>
-            <input type="text" id="taxa_outros" name="taxa_outros" value="<?php echo $dados['taxa_outros']; ?>">
+            <input type="text" id="taxa_outros" name="taxa_outros" value="<?php echo $taxa_outros ?>" oninput="formatarValor(this)">
         </fieldset>
 
         <!-- Multas e juros para o crediario -->
         <fieldset>
             <legend>Configure as Multas e Juros</legend>
             <label for="">Dias para inclusão ao SPC:</label>
-            <input type="number" id="dias_inclu_spc" name="dias_inclu_spc" value="<?php echo $dados['dias_inclu_spc']; ?>">
+            <input type="number" id="dias_inclu_spc" name="dias_inclu_spc" value="<?php echo $dados['dias_inclu_spc'];; ?>">
 
             <label for="multa_inclu_spc">Multa SPC R$:</label>
-            <input type="text" id="multa_inclu_spc" name="multa_inclu_spc" value="<?php echo $dados['multa_inclu_spc']; ?>">
+            <input type="text" id="multa_inclu_spc" name="multa_inclu_spc" value="<?php echo $multa_inclu_spc; ?>" oninput="formatarValor(this)">
 
             <label for="juro_inclu_spc">Juro sobre o Valor incluido no SPC %:</label>
-            <input type="text" id="juro_inclu_spc" name="juro_inclu_spc" value="<?php echo $dados['juro_inclu_spc']; ?>">
+            <input type="text" id="juro_inclu_spc" name="juro_inclu_spc" value="<?php echo $juro_inclu_spc; ?>" oninput="formatarValor(this)">
         </fieldset>
 
         <!-- Desconto cliente fiel -->
@@ -302,7 +309,7 @@
             <input type="number" id="dias_cli_fiel" name="dias_cli_fiel" value="<?php echo $dados['dias_cli_fiel']; ?>">
 
             <label for="">Valor do Desconto %:</label>
-            <input type="text" id="valor_dias_cli_fiel" name="valor_dias_cli_fiel" value="<?php echo $dados['valor_dias_cli_fiel']; ?>">
+            <input type="text" id="valor_dias_cli_fiel" name="valor_dias_cli_fiel" value="<?php echo $valor_dias_cli_fiel; ?>" oninput="formatarValor(this)">
         </fieldset>
 
         <!-- Desconto cliente pontual -->
@@ -312,7 +319,7 @@
                 <input type="number" id="dias_cli_pontual" name="dias_cli_pontual" value="<?php echo $dados['dias_cli_pontual']; ?>">
 
                 <label for="valor_dias_cli_pontual">Valor do Desconto %:</label>
-                <input type="text" id="valor_dias_cli_pontual" name="valor_dias_cli_pontual" value="<?php echo $dados['valor_dias_cli_pontual']; ?>">                
+                <input type="text" id="valor_dias_cli_pontual" name="valor_dias_cli_pontual" value="<?php echo $valor_dias_cli_pontual; ?>" oninput="formatarValor(this)">                
         </fieldset>
 
         <!-- Bonus de indicação-->
@@ -320,7 +327,7 @@
             <legend>Configure o Bonus de indicação</legend>
 
                 <label for="bonus_indicacao">Valor do Bonus R$:</label>
-                <input type="text" id="bonus_indicacao" name="bonus_indicacao" value="<?php echo $dados['bonus_indicacao']; ?>">                
+                <input type="text" id="bonus_indicacao" name="bonus_indicacao" value="<?php echo $bonus_indicacao; ?>" oninput="formatarValor(this)">                
         </fieldset>
 
         <!-- Bonus para aniversariantes-->
@@ -328,7 +335,7 @@
             <legend>Configure o Bonus para aniversáriantes</legend>
 
                 <label for="bonus_aniversariante">Valor do Bonus R$:</label>
-                <input type="text" id="bonus_aniversariante" name="bonus_aniversariante" value="<?php echo $dados['bonus_aniversariante']; ?>">                
+                <input type="text" id="bonus_aniversariante" name="bonus_aniversariante" value="<?php echo $bonus_aniversariante; ?>" oninput="formatarValor(this)">                
         </fieldset>
 
         <!-- Botões -->
@@ -368,7 +375,7 @@
         });
 
         // Função para formatar o valor digitado no campo "valor_produto"
-        function formatarValorMinimo(input) {
+        function formatarValor(input) {
             let valor = input.value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
             valor = (valor / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
 

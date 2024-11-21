@@ -40,29 +40,30 @@
     $cartoes_credito = isset($_POST['cartoes_credito']) ? implode(',', $_POST['cartoes_credito']) : '';
 
     // Taxas
-    $taxa_padrao = $_POST['taxa_padrao'];
-    $taxa_pix = $_POST['taxa_pix'];
-    $taxa_crediario = $_POST['taxa_crediario'];
-    $taxa_outros = $_POST['taxa_outros'];
+    $taxa_padrao = str_replace(',', '.', $_POST['taxa_padrao']);
+    $taxa_pix = str_replace(',', '.', $_POST['taxa_pix']);
+    $taxa_crediario = str_replace(',', '.', $_POST['taxa_crediario']);
+    $taxa_outros = str_replace(',', '.', $_POST['taxa_outros']);
 
     // Multas e juros
-    $dias_inclu_spc = $_POST['dias_inclu_spc'];
-    $multa_inclu_spc = $_POST['multa_inclu_spc'];
-    $juro_inclu_spc = $_POST['juro_inclu_spc'];
+    $dias_inclu_spc = $_POST['dias_inclu_spc'];  // Suponho que seja inteiro, não precisa de substituição
+    $multa_inclu_spc = str_replace(',', '.', $_POST['multa_inclu_spc']);
+    $juro_inclu_spc = str_replace(',', '.', $_POST['juro_inclu_spc']);
 
     // Desconto cliente fiel
-    $dias_cli_fiel = $_POST['dias_cli_fiel'];
-    $valor_dias_cli_fiel = $_POST['valor_dias_cli_fiel'];
+    $dias_cli_fiel = $_POST['dias_cli_fiel'];  // Suponho que seja inteiro, não precisa de substituição
+    $valor_dias_cli_fiel = str_replace(',', '.', $_POST['valor_dias_cli_fiel']);
 
     // Desconto cliente pontual
-    $dias_cli_pontual = $_POST['dias_cli_pontual'];
-    $valor_dias_cli_pontual = $_POST['valor_dias_cli_pontual'];
+    $dias_cli_pontual = $_POST['dias_cli_pontual'];  // Suponho que seja inteiro, não precisa de substituição
+    $valor_dias_cli_pontual = str_replace(',', '.', $_POST['valor_dias_cli_pontual']);
 
     // Bônus de indicação
-    $bonus_indicacao = $_POST['bonus_indicacao'];
+    $bonus_indicacao = $_POST['bonus_indicacao'];  // Suponho que seja inteiro, não precisa de substituição
 
     // Bônus para aniversariantes
-    $bonus_aniversariante = $_POST['bonus_aniversariante'];
+    $bonus_aniversariante = $_POST['bonus_aniversariante'];  // Suponho que seja inteiro, não precisa de substituição
+
 
     $data = date('Y-m-d H:i:s'); // Define a data atual
 

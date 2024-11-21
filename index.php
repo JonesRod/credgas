@@ -99,8 +99,13 @@
         }
     }
     $id = '1';
-    $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->error);
+    $dados = $mysqli->query("SELECT * FROM config_admin WHERE razao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+                    
     $dadosEscolhido = $dados->fetch_assoc();
+
+
+    //$dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->error);
+    //$dadosEscolhido = $dados->fetch_assoc();
 
     //$logo = $dadosEscolhido['logo'];
     if(isset($dadosEscolhido['logo'])) {
@@ -109,7 +114,7 @@
         if($logo == ''){
             $logo = 'login/lib/paginas/arquivos_fixos/imagem_credgas.jpg';
         }else{
-            $logo = 'login/lib/paginas/arquivos_fixos/'. $logo;
+            $logo = 'login/lib/paginas/administrativo/arquivos/'. $logo;
         }
     }
     $mysqli->close();

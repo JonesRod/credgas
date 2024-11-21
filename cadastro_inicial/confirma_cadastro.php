@@ -65,7 +65,7 @@
             $id = '1';
             $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->$error);
             $dadosEscolhido = $dados->fetch_assoc();
-            $idade_minima = $dadosEscolhido['idade_minima'];
+            $idade_minima = $dadosEscolhido['idade_min_cadastro'];
 
             $idade_minima = '18';
             $anos_idade = $idade->y;
@@ -141,40 +141,72 @@
                         $deu_certo = $mysqli->query(query: $sql_code) or die($mysqli->error);
 
                         if($deu_certo){
-                            $msg = true;
-                            $msg = "Cadastro realizado com sucesso!";
-                            $msg1 = "";
-                            $msg2 = "";
-                            //echo $msg;
 
-                            enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
-                            <h1>Olá Sr. " . $primeiro_nome . ", seja bem vindo!</h1>
-                            <p><b>Você pode logar com seu CPF ou E-MAIL.</p>
-                            <p><b>Senha: </b>$senha</p>
-                            <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
-                            <p><b>Para entrar </b><a href='../index.php'>clique aqui.</a></p>
-                            <p>Menssagem automatica. Não responda!</p>");
+                            // Obtém o ID do cliente recém-criado
+                            $id_cliente = $mysqli->insert_id;
 
-                            unset($_POST);
-                            $mysqli->close();
-                            header(header: "refresh: 5;../index.php"); //Atualiza a pagina em 5s e redireciona apagina
+                            $sql_code = "INSERT INTO contador_notificacoes_admin (
+                            data, 
+                            id_cliente, 
+                            not_novo_cliente) 
+                            VALUES (
+                            NOW(),
+                            '$id_cliente',
+                            '1')";
+
+                            $deu_certo_novo = $mysqli->query($sql_code) or die($mysqli->error);
+
+                            if ($deu_certo_novo) {
+                                $msg = true;
+                                $msg = "Cadastro realizado com sucesso!";
+                                $msg1 = "";
+                                $msg2 = "";
+                                //echo $msg;
+
+                                enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
+                                <h1>Olá Sr. " . $primeiro_nome . ", seja bem vindo!</h1>
+                                <p><b>Você pode logar com seu CPF ou E-MAIL.</p>
+                                <p><b>Senha: </b>$senha</p>
+                                <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
+                                <p><b>Para entrar </b><a href='../index.php'>clique aqui.</a></p>
+                                <p>Menssagem automatica. Não responda!</p>");
+    
+                                unset($_POST);
+                                $mysqli->close();
+                                header(header: "refresh: 5;../index.php"); //Atualiza a pagina em 5s e redireciona apagina
+                            } else {
+                                echo "Erro ao salvar notificação: " . $mysqli->error;
+                            }
                         }    
                     }else{
                         $msg = "Já existe um cadastrado com esse e-mail!";
                         $msg1 = "";
                         $msg2 = "";
-                        //echo $msg;
+
+                        echo "<script>
+                            alert('$msg');
+                            setTimeout(function() {
+                                window.history.back();
+                            }, 5000); // 5000ms = 5 segundos
+                        </script>";
+                    
                         $mysqli->close();
-                        header(header: "refresh: 10;../index.php");           
+                        //exit();           
                     }                                                 
                                                                                 
                 }else{
                     $msg = "Já existe um cadastrado com esse CPF!";
                     $msg1 = "";
                     $msg2 = "";
-                    //echo $msg;
+                    echo "<script>
+                        alert('$msg');
+                        setTimeout(function() {
+                            window.history.back();
+                        }, 5000); // 5000ms = 5 segundos
+                    </script>";
+                
                     $mysqli->close();
-                    header(header: "refresh: 10;../index.php");
+                    //exit(); 
 
                 }
             }else{
@@ -184,7 +216,7 @@
                 $msg2 = "Complete a idade minima que é ".$idade_minima ." anos e tente novamente.";
                 unset($_POST);
                 $mysqli->close();
-                header(header: "refresh: 10;../index.php");
+                header(header: "refresh: 5;../index.php");
             }
         }else {
             exit;

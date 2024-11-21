@@ -2,7 +2,7 @@
     include('../login/lib/conexao.php');
 
     $id = '1';
-    $dados = $mysqli->query("SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->$error);
+    $dados = $mysqli->query("SELECT * FROM config_admin WHERE termos_cliente_vista != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $dadosEscolhido = $dados->fetch_assoc();
     //echo $dadosEscolhido['validade'];
 
@@ -18,7 +18,7 @@
 <body>
     <div class="container">
         <h1>Termos para realização de cadastro.</h1>
-        <textarea placeholder="Texto..." name="" id="" cols="120" rows="35"><?php echo $dadosEscolhido['termos_1']; ?></textarea>
+        <textarea placeholder="Texto..." name="" id="" cols="120" rows="35"><?php echo $dadosEscolhido['termos_cliente_vista']; ?></textarea>
     </div>
 </body>
 </html>

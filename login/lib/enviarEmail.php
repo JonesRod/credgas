@@ -13,13 +13,8 @@ function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
 
     include('conexao.php');
 
-    // Host = Endereço do servidor SMTP do hotmail: smtp-mail.outlook.com
-    // Username = hotmail SMTP username: Seu endereço completo do hotmail (ex.: nome@hotmail.com)
-    // Password = Senha hotmail SMTP: A senha que você usa para fazer login no hotmail
-    // Port = Porta hotmail SMTP (TLS): 587
-
     $id = '1';
-    $dados = $mysqli->query("SELECT * FROM config_admin WHERE id = '$id'") or die($mysqli->$error);
+    $dados = $mysqli->query("SELECT * FROM config_admin WHERE razao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $dadosEscolhido = $dados->fetch_assoc();
 
     //$destinatario ='batata_jonesrodrigues@hotmail.com';
@@ -28,11 +23,11 @@ function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
 
     $razao = $dadosEscolhido['razao'];
     $email_suporte = $dadosEscolhido['email_suporte'];
-    $senha = $dadosEscolhido['senha'];
+    $senha = 'xqurngdmehhkfhob';//$dadosEscolhido['senha_email'];
 
     //$razao = 'razao';
     //$email_suporte = 'batatajonesrodrigues@gmail.com';
-    //$senha = '#@//Jones?'; xqurngdmehhkfhob
+    //$senha = '#@//Jones?'; xqurngdmehhkfhob 
     //  //batata2023
 
     if (strstr(haystack: $email_suporte, needle: "@gmail.com")) {
