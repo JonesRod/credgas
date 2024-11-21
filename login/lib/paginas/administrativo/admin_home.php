@@ -78,7 +78,7 @@
             $id = $_SESSION['id'];
             
             //echo ('').$id;
-            $sql_query = $mysqli->query("SELECT * FROM config_admin ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+            $sql_query = $mysqli->query("SELECT * FROM config_admin WHERE razao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
         
             $usuario = $sql_query->fetch_assoc();
             

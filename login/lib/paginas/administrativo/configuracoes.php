@@ -56,14 +56,18 @@
     // Atribuir os valores das colunas às variáveis
     $idade_min_cadastro = $dados['idade_min_cadastro'];
     $idade_min_crediario = $dados['idade_min_crediario'];
+    $termos_cliente_vista = $dados['termos_cliente_vista'];
+    $termos_cliente_crediario = $dados['termos_cliente_crediario'];
+    $termos_parceiro = $dados['termos_parceiro'];
+    $termos_privacidade = $dados['termos_privacidade'];
+
+    $taxa_padrao = $dados['taxa_padrao'];
     $formas_recebimento = explode(',', $dados['formas_recebimento'] ?? '');
     $car_debito = isset($dados['cartoes_debito']) ? explode(',', $dados['cartoes_debito']) : [];
     $car_credito = isset($dados['Cartoes_credito']) ? explode(',', $dados['Cartoes_credito']) : [];
+    $pix = $dados['taxa_pix'];
   
     $outras = $dados['outras_formas'];   
-    /*$valor_minimo_pedido = $dados['valor_minimo_pedido'] ?? 0;
-    $valor_min_entrega_gratis = $dados['valor_min_entrega_gratis'] ?? 0;
-    $estimativa_entrega = isset($parceiro['estimativa_entrega']) ? $parceiro['estimativa_entrega'] : '';*/
 
 ?>
 <!DOCTYPE html>
@@ -94,8 +98,12 @@
             margin-top: 10px;
         }
         input[type="time"],
-        input[type="number"] {
+        input[type="number"],
+        input[type="text"]  {
             margin-right: 10px;
+            border-radius: 5px;
+            height: 20px;
+            padding: 3px;
         }
         fieldset {
             border: 1px solid #ddd;
@@ -131,26 +139,11 @@
             margin-left: 20px;
             margin-top: 10px;
         }
-        /* Estilização do popup */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .popup-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
+        textarea{
+            width: 99%;
+            height: 200px;
+            border-radius: 5px;
+            padding: 5px;
         }
 
     </style>
@@ -161,56 +154,30 @@
     <form  action="salvar_configuracoes.php" method="POST">
         <input type="hidden" name="id_admin" value="<?php echo $id_admin; ?>">
 
-        <label for="">Idade minima para se cadastrar:</label>
-        <input type="number">
+        <label for="idmc">Idade minima para se cadastrar:</label>
+        <input type="number" id="idmc" name="idmc" required value="<?php echo $idade_min_cadastro;?>">
 
-        <label for="">Idade minima para solicitar Crediário:</label>
-        <input type="number">
+        <label for="idsc">Idade minima para solicitar Crediário:</label>
+        <input type="number" id="idsc" name="idsc" required value="<?php echo $idade_min_crediario;?>">
 
-        <label for="">Termos para ser cliente:</label>
-        <textarea name="" id=""></textarea>
+        <label for="tc">Termos para ser cliente:</label>
+        <textarea name="tc" id="tc" required><?php echo $termos_cliente_vista;?></textarea>
 
-        <label for="">Termos para o crediário:</label>
-        <textarea name="" id=""></textarea>
+        <label for="tcr">Termos para o crediário:</label>
+        <textarea name="tcr" id="tcr" required><?php echo $termos_cliente_crediario;?></textarea>
 
-        <label for="">Termos para ser parceiro:</label>
-        <textarea name="" id=""></textarea>
+        <label for="tp">Termos para ser parceiro:</label>
+        <textarea name="tp" id="tp" required><?php echo $termos_parceiro;?></textarea>
 
-        <label for="">Termos de privacidade:</label>
-        <textarea name="" id=""></textarea>
+        <label for="tpr">Termos de privacidade:</label>
+        <textarea name="tpr" id="tpr" required><?php echo $termos_privacidade;?></textarea>
 
         <!-- Formas de Recebimento -->
         <fieldset>
             <legend>Formas de Recebimento</legend>
-
-            <!-- Botão para gerenciar cartões -->
-            <button type="button" onclick="window.location.href='lista_cartoes.php?id=<?php echo $id; ?>'">Gerenciar Cartões</button>
-
-            <!-- Popup para gerenciar cartões -->
-            <div id="popupCartoes" class="popup">
-                <div class="popup-content">
-                    <h3>Gerenciar Cartões</h3>
-                    <form id="formCartoes" action="salvar_cartoes.php" method="POST">
-                        <label for="novoCartao">Adicionar Cartão:</label>
-                        <input type="text" id="novoCartao" name="novoCartao" required placeholder="Nome do Cartão">
-                        <button type="submit">Adicionar</button>
-                    </form>
-                    
-                    <!-- Lista de cartões existentes -->
-                    <div id="listaCartoes">
-                        <?php if (!empty($lista_cartoes)) : ?>
-                            <?php foreach ($lista_cartoes as $cartao) : ?>
-                                <div>
-                                    <span><?php echo htmlspecialchars($cartao['nome']); ?></span>
-                                    <button type="button" onclick="excluirCartao('<?php echo $cartao['id']; ?>')">Excluir</button>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <p>Nenhum cartão encontrado.</p>
-                        <?php endif; ?>
-                    </div>
-                    <button type="button" onclick="fecharPopup()">Fechar</button>
-                </div>
+            <div class="buttons">
+                <!-- Botão para gerenciar cartões -->
+                <button type="button" class="addcartao" onclick="window.location.href='lista_cartoes.php?id=<?php echo $id; ?>'">Gerenciar Cartões</button>
             </div>
 
             <label>
@@ -221,14 +188,14 @@
             <div id="opcoes_debito" class="card-options" style="<?php echo in_array('Cartão de Débito', $formas_recebimento) ? 'display: block;' : 'display: none;'; ?>">
                 <?php
                     // Recupera os cartões salvos na coluna 'cartao_debito' do banco
-                    $cartoes_debito_salvos = isset($parceiro['cartao_debito']) ? explode(',', $parceiro['cartao_debito']) : [];
+                    $car_debito = isset($dados['cartoes_debito']) ? explode(',', $dados['cartoes_debito']) : [];
 
                     // Exibe os checkboxes para os cartões disponíveis
                     foreach ($lista_cartoes as $cartao) : 
                 ?>
                 <label>
                     <input type="checkbox" name="cartoes_debito[]" value="<?php echo htmlspecialchars($cartao['nome']); ?>"
-                    <?php echo in_array($cartao['nome'], $cartoes_debito_salvos) ? 'checked' : ''; ?>>
+                    <?php echo in_array($cartao['nome'], $car_debito) ? 'checked' : ''; ?>>
                     <?php echo htmlspecialchars($cartao['nome']); ?>
                 </label>
                 <?php endforeach; ?>
@@ -243,7 +210,7 @@
             <div id="opcoes_credito" class="card-options" style="<?php echo in_array('Cartão de Crédito', $formas_recebimento) ? 'display: block;' : 'display: none;'; ?>">
                 <?php
                     // Recupera os cartões salvos na coluna 'cartao_credito' do banco
-                    $cartoes_credito_salvos = isset($parceiro['cartao_credito']) ? explode(',', $parceiro['cartao_credito']) : [];
+                    $cartoes_credito_salvos = isset($dados['cartoes_credito']) ? explode(',', $dados['cartoes_credito']) : [];
 
                     // Exibe os checkboxes para os cartões disponíveis
                     foreach ($lista_cartoes as $cartao) : 
@@ -270,8 +237,8 @@
             </label>
 
             <label>
-                <input type="checkbox" id="crediario" name="formas_recebimento[]" value="Pix"
-                <?php echo in_array('crediario', $formas_recebimento) ? 'checked' : ''; ?>>
+                <input type="checkbox" id="crediario" name="formas_recebimento[]" value="Crediario"
+                <?php echo in_array('Crediario', $formas_recebimento) ? 'checked' : ''; ?>>
                 Crediário
             </label>
 
@@ -295,86 +262,73 @@
         <!-- Taxa -->
         <fieldset>
             <legend>Configure as taxas</legend>
-            <label for="">Taxa Padrão:</label>
-            <input type="text">
+            <label for="taxa_padrao">Taxa Padrão %:</label>
+            <input type="text" id="taxa_padrao" name="taxa_padrao"  value="<?php echo $taxa_padrao; ?>">
 
-            <label for="">Taxa Cartão de Débito:</label>
+            <!--<label for="">Taxa Cartão de Débito:</label>
             <input type="text">
 
             <label for="">Taxa Cartão de Crédito:</label>
-            <input type="text">
+            <input type="text">-->
 
-            <label for="">Pix:</label>
-            <input type="text">
+            <label for="taxa_pix">Pix %:</label>
+            <input type="text" id="taxa_pix" name="taxa_pix" value="<?php echo $pix;  ?>">
 
-            <label for="">Taxa Crediário:</label>
-            <input type="text">
+            <label for="taxa_crediario">Taxa Crediário %:</label>
+            <input type="text" id="taxa_crediario" name="taxa_crediario" value="<?php echo $dados['taxa_crediario']; ?>">
 
-            <label for="">Taxa Outros:</label>
-            <input type="text">
+            <label for="taxa_outros">Taxa Outros %:</label>
+            <input type="text" id="taxa_outros" name="taxa_outros" value="<?php echo $dados['taxa_outros']; ?>">
         </fieldset>
 
         <!-- Multas e juros para o crediario -->
         <fieldset>
             <legend>Configure as Multas e Juros</legend>
             <label for="">Dias para inclusão ao SPC:</label>
-            <input type="number">
+            <input type="number" id="dias_inclu_spc" name="dias_inclu_spc" value="<?php echo $dados['dias_inclu_spc']; ?>">
 
-            <label for="">Multa SPC R$:</label>
-            <input type="text">
+            <label for="multa_inclu_spc">Multa SPC R$:</label>
+            <input type="text" id="multa_inclu_spc" name="multa_inclu_spc" value="<?php echo $dados['multa_inclu_spc']; ?>">
 
-            <label for="">Juros sobre o Valor incluido no SPC %:</label>
-            <input type="text">
+            <label for="juro_inclu_spc">Juro sobre o Valor incluido no SPC %:</label>
+            <input type="text" id="juro_inclu_spc" name="juro_inclu_spc" value="<?php echo $dados['juro_inclu_spc']; ?>">
         </fieldset>
 
         <!-- Desconto cliente fiel -->
         <fieldset>
             <legend>Configure o desconto para cliente fiel</legend>
 
-            <label for="">Dias da ultima compras para ganhar desconto:</label>
-            <input type="number">
+            <label for="dias_cli_fiel">Dias da ultima compras para ganhar desconto:</label>
+            <input type="number" id="dias_cli_fiel" name="dias_cli_fiel" value="<?php echo $dados['dias_cli_fiel']; ?>">
 
-            <label for="">Valor do Desconto R$:</label>
-            <input type="text">
+            <label for="">Valor do Desconto %:</label>
+            <input type="text" id="valor_dias_cli_fiel" name="valor_dias_cli_fiel" value="<?php echo $dados['valor_dias_cli_fiel']; ?>">
         </fieldset>
 
         <!-- Desconto cliente pontual -->
         <fieldset>
             <legend>Configure os descontos para clientes Pontuais</legend>
-                <fieldset>
-                    <label for="">Dias para ganhar o desconto:</label>
-                    <input type="number">
+                <label for="dias_cli_pontual">Dias para ganhar o desconto:</label>
+                <input type="number" id="dias_cli_pontual" name="dias_cli_pontual" value="<?php echo $dados['dias_cli_pontual']; ?>">
 
-                    <label for="">Valor do Desconto R$:</label>
-                    <input type="text">                
-                </fieldset>
-
-                <fieldset>
-                    <label for="">Dias para ganhar o desconto:</label>
-                    <input type="number">
-
-                    <label for="">Valor do Desconto R$:</label>
-                    <input type="text">                
-                </fieldset>
+                <label for="valor_dias_cli_pontual">Valor do Desconto %:</label>
+                <input type="text" id="valor_dias_cli_pontual" name="valor_dias_cli_pontual" value="<?php echo $dados['valor_dias_cli_pontual']; ?>">                
         </fieldset>
 
         <!-- Bonus de indicação-->
         <fieldset>
             <legend>Configure o Bonus de indicação</legend>
 
-                <label for="">Valor do Bonus R$:</label>
-                <input type="text">                
+                <label for="bonus_indicacao">Valor do Bonus R$:</label>
+                <input type="text" id="bonus_indicacao" name="bonus_indicacao" value="<?php echo $dados['bonus_indicacao']; ?>">                
         </fieldset>
 
         <!-- Bonus para aniversariantes-->
         <fieldset>
             <legend>Configure o Bonus para aniversáriantes</legend>
 
-                <label for="">Dias da ultima compra para canhar o Bonus:</label>
-                <input type="number">
-
-                <label for="">Valor do Bonus R$:</label>
-                <input type="text">                
+                <label for="bonus_aniversariante">Valor do Bonus R$:</label>
+                <input type="text" id="bonus_aniversariante" name="bonus_aniversariante" value="<?php echo $dados['bonus_aniversariante']; ?>">                
         </fieldset>
 
         <!-- Botões -->
@@ -453,37 +407,6 @@
             
             input.value = valor;
         }
-
-
-        function abrirPopup() {
-            document.getElementById('popupCartoes').style.display = 'flex';
-        }
-
-        function fecharPopup() {
-            document.getElementById('popupCartoes').style.display = 'none';
-        }
-
-        function excluirCartao(cartao) {
-            if (confirm('Tem certeza que deseja excluir este cartão?')) {
-                // Envia o cartão a ser excluído via AJAX
-                fetch('excluir_cartao.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cartao: cartao })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        alert('Cartão excluído com sucesso!');
-                        // Atualiza a lista de cartões
-                        location.reload();
-                    } else {
-                        alert('Erro ao excluir o cartão.');
-                    }
-                });
-            }
-        }
-
 
     </script>
 </html>
