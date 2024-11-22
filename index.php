@@ -27,9 +27,13 @@ if (isset($dadosEscolhido['logo'])) {
     }
 }
 
+// Condição que pode ser usada para chamar a função buscarCidadeUF() quando necessário
+$chamar_funcao = true; // Modifique conforme sua lógica
+
 // Carregar produtos (Exemplo)
 $sql_produtos = "SELECT * FROM produtos";  // Query para buscar produtos
 $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+
 ?>
 
 <!DOCTYPE html>
@@ -39,6 +43,7 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Loja</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="cadastro_inicial/localizador.js" defer></script>
     <style>
         header .container {
             display: flex;
@@ -155,6 +160,26 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
     </style>
 </head>
 <body>
+    <label for="cep">CEP:</label>
+    <input required name="cep" id="cep" type="text" maxlength="9" onblur="buscarCidadeUF()">
+    
+    <?php
+        // Condição que pode ser usada para chamar a função buscarCidadeUF() quando necessário
+        $chamar_funcao = true; // Modifique conforme sua lógica
+
+        // Carregar produtos (Exemplo)
+        $sql_produtos = "SELECT * FROM produtos";  // Query para buscar produtos
+        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+    ?>
+    <!-- Seu conteúdo HTML -->
+
+    <?php if ($chamar_funcao): ?>
+        <script>
+            // Chama a função buscarCidadeUF() quando a condição PHP for verdadeira
+            buscarCidadeUF();
+        </script>
+    <?php endif; ?>
+
     <!-- Header -->
     <header>
         <div class="container">
@@ -198,10 +223,17 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
             <?php if ($result_produtos->num_rows > 0): ?>
                 <?php while ($produto = $result_produtos->fetch_assoc()): ?>
                     <div class="product-card">
-                        <img src="https://via.placeholder.com/150" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
-                        <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
-                        <p>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></p>
-                        <a href="detalhes_produto.php?id=<?php echo $produto['id']; ?>" class="btn">Detalhes</a>
+                        <?php
+                            // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                            $imagens = explode(',', $produto['imagens']); // Separa as imagens em um array
+                            $primeira_imagem = $imagens[0]; // Pega a primeira imagem
+                            //echo $primeira_imagem;
+                        ?>
+                        <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                        <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                        <p><?php echo htmlspecialchars($produto['descricao_produto']); ?></p>
+                        <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                        <a href="detalhes_produto.php?id=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
                         <?php if ($usuarioLogado): ?>
