@@ -47,7 +47,7 @@
 </head>
 <body>
     <main>
-        <h2>Olá, <?php echo $usuario['primeiro_nome']; ?></h2>
+        <h2>Olá, <strong><?php echo explode(' ', trim($usuario['nome_completo']))[0]; ?></h2>
         <h3>Escolha o tipo de login:</h3>
         <form id="escolherLoginForm" method="POST" action="paginas/administrativo/admin_home.php" onsubmit="return resposta()">
             <label>

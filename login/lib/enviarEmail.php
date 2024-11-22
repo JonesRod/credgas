@@ -3,7 +3,7 @@
     //require ('../../vendor/autoload.php');
 
     use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\SMTP;
+    //use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
 function enviar_email($destinatario, $assunto, $mensagemHTML): bool{
 

@@ -53,7 +53,7 @@
         <div class="container">
             <div class="logo"></div>
             <div class="user-area">
-                <span>Bem-vindo, <strong><?php echo $usuario['primeiro_nome']; ?></strong></span>
+                <span>Bem-vindo, <strong><?php echo $usuario['nome_completo']; ?></strong></span>
                 <i class="fas fa-bell"></i> <!-- Ícone de Notificação -->
                 <!--<i class="fas fa-cog"></i> <!-- Ícone de Configurações -->
                 <i class="fas fa-shopping-cart"></i> <!-- Ícone de Carrinho -->

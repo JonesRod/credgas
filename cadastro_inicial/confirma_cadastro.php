@@ -35,7 +35,7 @@
             include('../login/lib/enviarEmail.php');
             include('../login/lib/generateRandomString.php');
 
-            $primeiro_nome = $mysqli->escape_string($_POST['primeiro_nome']);
+            $nome_completo = $mysqli->escape_string($_POST['nome_completo']);
             $cpf = $mysqli->escape_string($_POST['cpf']);
             $nascimento = $mysqli->escape_string($_POST['nascimento']);
             $cep = $mysqli->escape_string($_POST['cep']);
@@ -50,6 +50,9 @@
             $hoje = new DateTime(datetime: 'now');
             $dataStr = $nascimento;
             $dataFormatada = DateTime::createFromFormat(format: 'd/m/Y', datetime: $dataStr);
+
+            // Converte a data para o formato Y-m-d
+            $data_formatada = DateTime::createFromFormat('d/m/Y', $nascimento)->format('Y-m-d');
 
             if ($dataFormatada !== false) {
                 // echo $dataFormatada->format('Y-m-d'); // Formato de data: yyyy-mm-dd
@@ -72,12 +75,6 @@
 
             $dataAtual = date(format: 'Y-m-d'); // Obtém a data atual no formato ano-mês-dia
             $validade = date(format: 'Y-m-d', timestamp: strtotime(datetime: $dataAtual . '+'.' days')); // Adiciona 365 dias
-
-            //echo "Diferença de " . $idade->d . " dias";
-            //echo " e " . $idade->m . " meses";
-            //echo " e " . $idade->y . " anos.";
-            
-            //var_dump(value: $_POST);
 
             if(($anos_idade) >= $idade_minima) {
                 //echo "Você tem " . $idade->y . " anos, ". $idade->m ." meses e ". $idade->d ." dias.";
@@ -109,7 +106,7 @@
                         
                         $sql_code = "INSERT INTO meus_clientes (
                         data_cadastro, 
-                        primeiro_nome, 
+                        nome_completo, 
                         cpf, 
                         nascimento, 
                         celular1, 
@@ -124,9 +121,9 @@
                         termos_1) 
                         VALUES (
                         NOW(),
-                        '$primeiro_nome',
+                        '$nome_completo',
                         '$cpf',
-                        '$nascimento',
+                        '$data_formatada',
                         '$celular1',
                         '$celular2',
                         '$email',
@@ -164,7 +161,7 @@
                                 //echo $msg;
 
                                 enviar_email(destinatario: $email, assunto: "Cadastro realizado com sucesso!", mensagemHTML: "
-                                <h1>Olá Sr. " . $primeiro_nome . ", seja bem vindo!</h1>
+                                <h1>Olá Sr. " . $nome_completo . ", seja bem vindo!</h1>
                                 <p><b>Você pode logar com seu CPF ou E-MAIL.</p>
                                 <p><b>Senha: </b>$senha</p>
                                 <p><b>Para redefinir sua senha </b><a href='../../login/lib/redefinir_senha.php'>clique aqui.</a></p>
