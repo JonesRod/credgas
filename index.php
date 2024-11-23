@@ -27,13 +27,6 @@ if (isset($dadosEscolhido['logo'])) {
     }
 }
 
-// Condição que pode ser usada para chamar a função buscarCidadeUF() quando necessário
-$chamar_funcao = true; // Modifique conforme sua lógica
-
-// Carregar produtos (Exemplo)
-$sql_produtos = "SELECT * FROM produtos";  // Query para buscar produtos
-$result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
-
 ?>
 
 <!DOCTYPE html>
@@ -43,142 +36,147 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Loja</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
     <script src="cadastro_inicial/localizador.js" defer></script>
+    <link rel="stylesheet" href="index.css">
+
+
     <style>
-        header .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-            position: relative;
-        }
 
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-img {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .nome-fantasia {
-            font-size: 2.5rem; /* Tamanho maior */
-            font-weight: bold;
-            color: #333; /* Cor mais suave para o texto */
-            text-align: left; /* Alinha à esquerda para ficar mais natural ao lado da logo */
-            margin: 0;
-            line-height: 1.2;
-            display: flex;
-            justify-content: flex-start; /* Garante que o texto fique alinhado à esquerda */
-            align-items: center;
-            flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
-            padding-left: 15px; /* Espaço entre a logo e o nome */
-        }
-
-        .user-area {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-login {
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .btn-login:hover {
-            background-color: #0056b3;
-        }
-
-        .profile-dropdown {
-            position: relative;
-        }
-
-        .profile-dropdown #dropdownMenu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-            list-style: none;
-            padding: 10px;
-        }
-
-        .profile-dropdown:hover #dropdownMenu {
-            display: block;
-        }
-
-        /* Faixa de Navegação */
-.sub-nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f8f8f8; /* Cor de fundo suave */
-    padding: 10px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras sutis para destacar */
+        
+.parceiros-carousel .parceiro-card {
+    text-align: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
+    max-width: 200px; /* Define o comprimento máximo do cartão */
 }
 
-.sub-nav div {
-    font-size: 1.2rem;
+
+.parceiros-carousel .parceiro-card img {
+    max-width: 120px; /* Ajuste o tamanho da logo */
+    height: 120px;   /* Para mantê-la circular */
+    margin: 0 auto 10px; /* Centraliza horizontalmente e adiciona espaço abaixo */
+    border-radius: 50%; /* Torna a imagem redonda */
+    display: block; /* Garante que o elemento seja tratado como bloco */
+    border: 2px solid #ddd; /* Borda ao redor da imagem */
+}
+
+.parceiros-carousel .parceiro-card h3 {
+    font-size: 1.2em;
     font-weight: bold;
+    margin: 5px 0;
     color: #333; /* Cor do texto */
-    margin: 0 20px; /* Espaçamento entre os itens */
-    cursor: pointer;
-    transition: all 0.3s ease; /* Suavização do efeito de hover */
 }
 
-.sub-nav div:hover {
-    color: #007bff; /* Cor de destaque quando o item é hover */
-    text-decoration: underline; /* Adiciona um sublinhado no hover */
+.parceiros-carousel .parceiro-card p {
+    font-size: 0.9em;
+    color: #666; /* Cor da categoria */
+    margin: 5px 0 0;
 }
 
-@media (max-width: 768px) {
-    .sub-nav {
-        flex-direction: column; /* Coloca os itens em coluna em telas menores */
-        align-items: flex-start; /* Alinha os itens à esquerda */
-        padding: 15px; /* Aumenta o padding em telas menores */
-    }
 
-    .sub-nav div {
-        margin: 10px 0; /* Reduz o espaçamento entre os itens em telas menores */
-        text-align: left; /* Alinha os itens à esquerda */
-    }
+/* Contêiner da seção de produtos */
+.products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Espaçamento entre os cartões */
+    justify-content: center; /* Centraliza os produtos */
+    margin: 10px 0;
 }
 
-    </style>
+/* Cartão do produto */
+.product-card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 150px; /* Largura do cartão */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Efeito ao passar o mouse */
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Imagem do produto */
+.product-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+/* Nome do produto */
+.product-card h3 {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* Descrição do produto */
+.product-card p {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Preço do produto */
+.product-card p:last-child {
+    font-size: 1em;
+    color: #27ae60; /* Verde para o preço */
+    font-weight: bold;
+}
+
+/* Botões */
+.product-card .btn {
+    display: inline-block;
+    background: #27ae60; /* Cor do botão */
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    font-size: 0.9em;
+}
+
+/* Efeito ao passar o mouse no botão */
+.product-card .btn:hover {
+    background:darkorange;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 30px 0;
+    background-color: #333;
+    color: white;
+    margin-top: 30px;
+}
+
+footer .contato {
+    margin: 10px 0;
+}
+
+</style>
+
 </head>
 <body>
-    <label for="cep">CEP:</label>
-    <input required name="cep" id="cep" type="text" maxlength="9" onblur="buscarCidadeUF()">
-    
-    <?php
-        // Condição que pode ser usada para chamar a função buscarCidadeUF() quando necessário
-        $chamar_funcao = true; // Modifique conforme sua lógica
-
-        // Carregar produtos (Exemplo)
-        $sql_produtos = "SELECT * FROM produtos";  // Query para buscar produtos
-        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
-    ?>
-    <!-- Seu conteúdo HTML -->
-
-    <?php if ($chamar_funcao): ?>
-        <script>
-            // Chama a função buscarCidadeUF() quando a condição PHP for verdadeira
-            buscarCidadeUF();
-        </script>
-    <?php endif; ?>
 
     <!-- Header -->
     <header>
@@ -201,7 +199,7 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                     <i class="fas fa-bell"></i>
                     <i class="fas fa-shopping-cart"></i>
                 <?php else: ?>
-                    <span>Bem-vindo, Visitante</span>
+                    <span>Seja bem-vindo!</span>
                     <a href="login/lib/login.php" class="btn-login">Entrar</a>
                 <?php endif; ?>
             </div>
@@ -210,24 +208,73 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
 
     <!-- Faixa de navegação -->
     <div class="sub-nav">
-        <div>Início</div>
+        <div>Catálogo</div>
         <div>Promoções</div>
         <div>Novidades</div>
         <div>Frete Grátis</div>
     </div>
 
+    <?php
+
+        // Consulta para buscar parceiros pelo CEP
+        $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado = 'Aberto'";
+        $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+        if ($result_parceiros->num_rows > 0) {
+            while ($parceiro = $result_parceiros->fetch_assoc()) {
+                $id_parceiro = $parceiro['id'];
+                
+                // Consulta para carregar produtos do parceiro
+                $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
+                $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+            }
+        } else {
+            //echo "<p>Nenhum parceiro encontrado.</p>";
+        }
+        
+    ?>
+    <h2>Parceiros</h2>
+    
+    <!-- Carrossel de Parceiros -->
+    <div class="parceiros-carousel owl-carousel">
+        <div class="parc">
+            <?php 
+            // Consulta para buscar parceiros ativos e abertos
+            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+            $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+            if ($result_parceiros->num_rows > 0): 
+                while ($parceiro = $result_parceiros->fetch_assoc()): 
+                    // Exibe cada parceiro no carrossel
+                    $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+            ?>
+                <div class="parceiro-card">
+                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                </div>
+            <?php 
+                endwhile; ?>
+            <?php else: ?>
+                <p>Nenhum parceiro ativo no momento.</p>
+            <?php endif; 
+            ?>
+        </div>
+    </div>
+
+
     <!-- Produtos -->
     <div class="container">
-        <h2>Produtos em Destaque</h2>
+        <h2>Produtos</h2>
         <div class="products">
-            <?php if ($result_produtos->num_rows > 0): ?>
+        <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
                 <?php while ($produto = $result_produtos->fetch_assoc()): ?>
                     <div class="product-card">
                         <?php
                             // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
-                            $imagens = explode(',', $produto['imagens']); // Separa as imagens em um array
-                            $primeira_imagem = $imagens[0]; // Pega a primeira imagem
-                            //echo $primeira_imagem;
+                            $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                            $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
                         ?>
                         <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                         <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
@@ -236,10 +283,10 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                         <a href="detalhes_produto.php?id=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
-                        <?php if ($usuarioLogado): ?>
+                        <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                             <a href="#" class="btn">Comprar</a>
                         <?php else: ?>
-                            <a href="login.php" class="btn">Faça login para comprar</a>
+                            <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                         <?php endif; ?>
                     </div>
                 <?php endwhile; ?>
@@ -248,6 +295,7 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
             <?php endif; ?>
         </div>
     </div>
+
     <script>
         // Script para mostrar/ocultar o menu suspenso ao clicar no ícone de perfil
         document.getElementById("profileIcon").addEventListener("click", function() {
@@ -268,13 +316,42 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
             }
         };
     </script>
+    <script>
+        // Função para simular o clique no botão ao carregar a página
+        window.onload = function() {
+            setTimeout(function() {
+                var cep = document.getElementById('cep').value;
+                if (cep) {
+                    document.getElementById('buscarButton').click();
+                }
+            }, 5000); // 2000 milissegundos = 2 segundos
+        };
+
+        $(document).ready(function() {
+            var totalParceiros = <?php echo $result_parceiros->num_rows; ?>; // Total de parceiros no banco
+
+            $(".parceiros-carousel").owlCarousel({
+                loop: totalParceiros > 1, // Loop apenas se houver mais de 1 parceiro
+                margin: 10,
+                nav: true,
+                autoplay: true,
+                autoplayTimeout: 3000,
+                responsive: {
+                    0: { items: 1 },       // Mostra 1 parceiro por vez em telas pequenas
+                    600: { items: 2 },    // Mostra 2 parceiros em telas médias
+                    1000: { items: 4 }    // Mostra 4 parceiros em telas grandes
+                }
+            });
+        });
+
+    </script>
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 Minha Loja - Todos os direitos reservados</p>
+        <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
         <div class="contato">
             <p><strong>Contato:</strong></p>
-            <p>Email: contato@minhaloja.com.br | Telefone: (11) 1234-5678</p>
+            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | Telefone: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
         </div>
     </footer>
 

@@ -1,3 +1,4 @@
+
 // Chama a geolocalização assim que a página é carregada
 window.onload = function() {
     obterLocalizacao();
@@ -99,4 +100,15 @@ function mostrarErro(error) {
             document.getElementById("status-localizacao").textContent = "Ocorreu um erro desconhecido.";
             break;
     }
+}
+function formatarCEP(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+    if (value.length > 8) {
+        value = value.substr(0, 8);
+    }
+    if (value.length > 5) {
+        value = value.replace(/(\d{5})/, '$1-');
+    }
+    input.value = value;
+    //console.log(11);
 }
