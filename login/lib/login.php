@@ -126,7 +126,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />    <link rel="stylesheet" href="entrar/lib/css/index.css">
-    <link rel="stylesheet" href="../style/login.css">
+    <link rel="stylesheet" href="login.css">
     <style>
         img{
             width: 200px;
@@ -170,6 +170,7 @@
             <a style="margin-right:10px;" href="../../cadastro_inicial/cadastro_inicial.html">Cadastre-se.</a> 
             <a style="margin-right:10px;" href="Recupera_Senha.php">Esqueci minha Senha!</a> 
         </p>
+        <a style="margin-right:10px;" href="../../index.php">Agora não!</a> 
         <button type="submit">Entrar</button>
 
     </form>

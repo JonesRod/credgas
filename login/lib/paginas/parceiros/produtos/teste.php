@@ -27,9 +27,6 @@ if (isset($dadosEscolhido['logo'])) {
     }
 }
 
-// Carregar produtos (Exemplo)
-$sql_produtos = "SELECT * FROM produtos";  // Query para buscar produtos
-$result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
 ?>
 
 <!DOCTYPE html>
@@ -39,197 +36,136 @@ $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Loja</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+    <script src="cadastro_inicial/localizador.js" defer></script>
+    <link rel="stylesheet" href="index.css">
+
+
     <style>
-        /* Estilos gerais */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f8f8;
+
+        
+.parceiros-carousel .parceiro-card {
+    text-align: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
+    max-width: 200px; /* Define o comprimento máximo do cartão */
 }
 
-/* Header e Navegação */
-header {
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
+
+.parceiros-carousel .parceiro-card img {
+    max-width: 120px; /* Ajuste o tamanho da logo */
+    height: 120px;   /* Para mantê-la circular */
+    margin: 0 auto 10px; /* Centraliza horizontalmente e adiciona espaço abaixo */
+    border-radius: 50%; /* Torna a imagem redonda */
+    display: block; /* Garante que o elemento seja tratado como bloco */
+    border: 2px solid #ddd; /* Borda ao redor da imagem */
 }
-.logo {
-    font-size: 24px;
+
+.parceiros-carousel .parceiro-card h3 {
+    font-size: 1.2em;
     font-weight: bold;
+    margin: 5px 0;
+    color: #333; /* Cor do texto */
 }
 
-.logo-img {
-    width: 150px; /* Tamanho da imagem */
-    height: auto;
-    margin-right: 15px; /* Espaço entre a logo e o texto */
-    border-radius: 50%;
+.parceiros-carousel .parceiro-card p {
+    font-size: 0.9em;
+    color: #666; /* Cor da categoria */
+    margin: 5px 0 0;
 }
 
-.container {
-    width: 95%;
-    margin: 0 auto;
-}
 
-/* Estilos da área de usuário */
-.user-area {
+/* Contêiner da seção de produtos */
+.products {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px; /* Espaçamento entre os cartões */
+    justify-content: center; /* Centraliza os produtos */
+    margin: 10px 0;
 }
 
-.user-area i {
-    margin-left: 15px;
-    cursor: pointer;
-}
-
-.profile-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: #fff;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    border-radius: 5px;
-    width: 200px;
-}
-
-.dropdown-menu li {
+/* Cartão do produto */
+.product-card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 150px; /* Largura do cartão */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
     padding: 10px;
 }
 
-.dropdown-menu li a {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: #333;
+/* Efeito ao passar o mouse */
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
-.dropdown-menu li a i {
-    margin-right: 10px;
-}
-
-.dropdown-menu li:hover {
-    background-color: #f1f1f1;
-}
-
-/* Classe para mostrar o menu suspenso */
-.show {
-    display: block;
-}
-
-.user-area {
-    float: right;
-    margin-left: 20px;
-    color: white;
-}
-
-.user-area i {
-    margin-left: 15px;
-    cursor: pointer;
-}
-
-.user-area i {
-    color: white; /* Cor padrão do ícone */
-    transition: color 0.3s ease; /* Transição suave ao mudar a cor */
-}
-
-.user-area i:hover {
-    color: #f8c407; /* Cor verde escuro ao passar o mouse */
-}
-
-.sub-nav {
-    background-color: #444;
-    padding: 10px 0;
-    display: flex;
-    justify-content: center; /* Centraliza */
-    gap: 20px; /* Espaçamento entre os itens, ajusta como quiser */
-}
-
-
-.sub-nav div {
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-}
-
-.sub-nav div:hover {
-    background-color: #fa9508;
-    border-radius: 10px;
-}
-
-.sub-nav div a {
-    color: #006400; /* Verde escuro */
-    text-decoration: none; /* Remove o sublinhado */
-}
-
-.sub-nav div a:hover {
-    color: #004d00; /* Verde escuro mais intenso ao passar o mouse */
-}
-/* Cards de Produtos */
-.products {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    margin: 20px 0;
-}
-
-.product-card {
-    background-color: white;
-    padding: 15px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    text-align: center;
-}
-
+/* Imagem do produto */
 .product-card img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
 }
 
+/* Nome do produto */
 .product-card h3 {
-    margin: 10px 0;
-    font-size: 18px;
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
 }
 
+/* Descrição do produto */
 .product-card p {
-    color: green;
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Preço do produto */
+.product-card p:last-child {
+    font-size: 1em;
+    color: #27ae60; /* Verde para o preço */
     font-weight: bold;
 }
 
-.add-cart {
+/* Botões */
+.product-card .btn {
     display: inline-block;
-    background-color: #333;
-    color: white;
+    background: #27ae60; /* Cor do botão */
+    color: #fff;
+    text-decoration: none;
     padding: 10px 20px;
     border-radius: 5px;
-    text-decoration: none;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    font-size: 0.9em;
 }
 
-.add-cart:hover {
-    background-color: #555;
+/* Efeito ao passar o mouse no botão */
+.product-card .btn:hover {
+    background:darkorange;
 }
-
-/* Parceiros */
-.parceiros {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.parceiros img {
-    width: 150px;
-    height: auto;
-    margin: 0 20px;
+.descricao {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limita a 2 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Oculta o texto excedente */
+    text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
+    max-width: 100%; /* Define uma largura máxima para o texto */
 }
 
 /* Footer */
@@ -245,95 +181,166 @@ footer .contato {
     margin: 10px 0;
 }
 
-        .btn-login {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
+</style>
 
-        .btn-login:hover {
-            background-color: #0056b3;
-        }
-
-    </style>
 </head>
 <body>
 
-<!-- Header -->
-<header>
-    <div class="container">
-        <div class="logo">
-            <img src="<?php if(isset($logo)) echo $logo; ?>" alt="Logo" class="logo-img">
-            <h1 class="nome-fantasia">
-                <?php 
-                if (!empty($nomeFantasia)) {
-                    echo htmlspecialchars($nomeFantasia);
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <img src="<?php if(isset($logo)) echo $logo; ?>" alt="Logo" class="logo-img">
+                <h1 class="nome-fantasia">
+                    <?php 
+                    if (!empty($nomeFantasia)) {
+                        echo htmlspecialchars($nomeFantasia);
+                    } else {
+                        echo "Nome Fantasia Indisponível";
+                    }
+                    ?>
+                </h1>
+            </div>
+            <div class="user-area">
+                <?php if ($usuarioLogado): ?>
+                    <span>Bem-vindo, <strong><?php echo htmlspecialchars($_SESSION['nome_completo']); ?></strong></span>
+                    <i class="fas fa-bell"></i>
+                    <i class="fas fa-shopping-cart"></i>
+                <?php else: ?>
+                    <span>Seja bem-vindo!</span>
+                    <a href="login/lib/login.php" class="btn-login">Entrar</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo principal -->
+    <main id="main-content">
+        <!-- Conteúdo -->
+        <div class="opcoes">
+            <!-- Conteúdo -->
+            <div class="tab active" onclick="mostrarConteudo('catalogo',this)">
+                <span>Catálogo</span>
+            </div>
+
+            <div class="tab" onclick="mostrarConteudo('promocoes',this)">
+                <span>Promoções</span>
+            </div>
+
+            <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
+                <span>Frete Grátis</span>
+            </div>
+
+            <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
+                <span>Novidades</span>
+            </div>
+
+        </div>
+
+            <h2>Nossos Parceiros</h2>
+            <?php
+
+                // Consulta para buscar parceiros pelo CEP
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado = 'Aberto'";
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+                if ($result_parceiros->num_rows > 0) {
+                    while ($parceiro = $result_parceiros->fetch_assoc()) {
+                        $id_parceiro = $parceiro['id'];
+                        
+                        // Consulta para carregar produtos do parceiro
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
+                        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                    }
                 } else {
-                    echo "Nome Fantasia Indisponível";
+                    //echo "<p>Nenhum parceiro encontrado.</p>";
                 }
-                ?>
-            </h1>
-        </div>
-        <div class="user-area">
-            <?php if ($usuarioLogado): ?>
-                <span>Bem-vindo, <strong><?php echo htmlspecialchars($_SESSION['nome_completo']); ?></strong></span>
-                <i class="fas fa-bell"></i>
-                <i class="fas fa-shopping-cart"></i>
+                
+            ?>
+        
+            <!-- Carrossel de Parceiros -->
+            <div class="parceiros-carousel owl-carousel">
+                <div class="parc">
+                    <?php 
+                    // Consulta para buscar parceiros ativos e abertos
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+                    $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
-                <div class="profile-dropdown">
-                    <i class="fas fa-user" id="profileIcon"></i>
-                    <ul class="dropdown-menu" id="dropdownMenu">
-                        <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
-                        <li><a href="editar_perfil.html"><i class="fas fa-user-edit"></i> Editar Perfil</a></li>
-                        <li><a href="cliente_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-                    </ul>
+                    if ($result_parceiros->num_rows > 0): 
+                        while ($parceiro = $result_parceiros->fetch_assoc()): 
+                            // Exibe cada parceiro no carrossel
+                            $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                    ?>
+                        <div class="parceiro-card">
+                            <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                            alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                            <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                        </div>
+                    <?php 
+                        endwhile; ?>
+                    <?php else: ?>
+                        <p>Nenhum parceiro ativo no momento.</p>
+                    <?php endif; 
+                    ?>
                 </div>
-            <?php else: ?>
-                <span>Bem-vindo, Visitante</span>
-                <a href="login.php" class="btn-login">Entrar</a>
-            <?php endif; ?>
+            </div>
+
+
+        <!-- Produtos -->
+        <div class="container">
+            <h2>Produtos</h2>
+            <div class="products">
+                <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                        <div class="product-card">
+                            <?php
+                                // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                            ?>
+
+                            <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
+
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+                            ?>                        
+                            
+                            <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                            <p class="descricao">
+                                <?php
+                                $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
+                                ?>
+                            </p>
+                            <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                            <!-- Verifica se o usuário está logado para permitir a compra -->
+                            <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                <a href="#" class="btn">Comprar</a>
+                            <?php else: ?>
+                                <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>Não há produtos no momento.</p>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-</header>
-
-
-
-    <!-- Faixa de navegação -->
-    <div class="sub-nav">
-        <div>Início</div>
-        <div>Promoções</div>
-        <div>Novidades</div>
-        <div>Frete Grátis</div>
-    </div>
-
-    <!-- Produtos -->
-    <div class="container">
-        <h2>Produtos em Destaque</h2>
-        <div class="products">
-            <?php if ($result_produtos->num_rows > 0): ?>
-                <?php while ($produto = $result_produtos->fetch_assoc()): ?>
-                    <div class="product-card">
-                        <img src="https://via.placeholder.com/150" alt="<?php echo htmlspecialchars($produto['nome']); ?>">
-                        <h3><?php echo htmlspecialchars($produto['nome']); ?></h3>
-                        <p>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></p>
-                        <a href="detalhes_produto.php?id=<?php echo $produto['id']; ?>" class="btn">Detalhes</a>
-
-                        <!-- Verifica se o usuário está logado para permitir a compra -->
-                        <?php if ($usuarioLogado): ?>
-                            <a href="#" class="btn">Comprar</a>
-                        <?php else: ?>
-                            <a href="login.php" class="btn">Faça login para comprar</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <p>Não há produtos em destaque no momento.</p>
-            <?php endif; ?>
-        </div>
-    </div>
+    </main>
 
     <script>
         // Script para mostrar/ocultar o menu suspenso ao clicar no ícone de perfil
@@ -355,15 +362,45 @@ footer .contato {
             }
         };
     </script>
+    <script>
+        // Função para simular o clique no botão ao carregar a página
+        window.onload = function() {
+            setTimeout(function() {
+                var cep = document.getElementById('cep').value;
+                if (cep) {
+                    document.getElementById('buscarButton').click();
+                }
+            }, 5000); // 2000 milissegundos = 2 segundos
+        };
+
+        $(document).ready(function() {
+            var totalParceiros = <?php echo $result_parceiros->num_rows; ?>; // Total de parceiros no banco
+
+            $(".parceiros-carousel").owlCarousel({
+                loop: totalParceiros > 1, // Loop apenas se houver mais de 1 parceiro
+                margin: 10,
+                nav: true,
+                autoplay: true,
+                autoplayTimeout: 3000,
+                responsive: {
+                    0: { items: 1 },       // Mostra 1 parceiro por vez em telas pequenas
+                    600: { items: 2 },    // Mostra 2 parceiros em telas médias
+                    1000: { items: 4 }    // Mostra 4 parceiros em telas grandes
+                }
+            });
+        });
+
+    </script>
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 Minha Loja - Todos os direitos reservados</p>
+        <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
         <div class="contato">
             <p><strong>Contato:</strong></p>
-            <p>Email: contato@minhaloja.com.br | Telefone: (11) 1234-5678</p>
+            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | Telefone: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
         </div>
     </footer>
 
 </body>
 </html>
+

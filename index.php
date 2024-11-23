@@ -159,6 +159,14 @@ if (isset($dadosEscolhido['logo'])) {
 .product-card .btn:hover {
     background:darkorange;
 }
+.descricao {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limita a 2 linhas */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Oculta o texto excedente */
+    text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
+    max-width: 100%; /* Define uma largura máxima para o texto */
+}
 
 /* Footer */
 footer {
@@ -206,95 +214,133 @@ footer .contato {
         </div>
     </header>
 
-    <!-- Faixa de navegação -->
-    <div class="sub-nav">
-        <div>Catálogo</div>
-        <div>Promoções</div>
-        <div>Novidades</div>
-        <div>Frete Grátis</div>
-    </div>
+    <!-- Conteúdo principal -->
+    <main id="main-content">
+        <!-- Conteúdo -->
+        <div class="opcoes">
+            <!-- Conteúdo -->
+            <div class="tab active" onclick="mostrarConteudo('catalogo',this)">
+                <span>Catálogo</span>
+            </div>
 
-    <?php
+            <div class="tab" onclick="mostrarConteudo('promocoes',this)">
+                <span>Promoções</span>
+            </div>
 
-        // Consulta para buscar parceiros pelo CEP
-        $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado = 'Aberto'";
-        $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+            <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
+                <span>Frete Grátis</span>
+            </div>
 
-        if ($result_parceiros->num_rows > 0) {
-            while ($parceiro = $result_parceiros->fetch_assoc()) {
-                $id_parceiro = $parceiro['id'];
+            <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
+                <span>Novidades</span>
+            </div>
+
+        </div>
+
+            <h2>Nossos Parceiros</h2>
+            <?php
+
+                // Consulta para buscar parceiros pelo CEP
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado = 'Aberto'";
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+                if ($result_parceiros->num_rows > 0) {
+                    while ($parceiro = $result_parceiros->fetch_assoc()) {
+                        $id_parceiro = $parceiro['id'];
+                        
+                        // Consulta para carregar produtos do parceiro
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
+                        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                    }
+                } else {
+                    //echo "<p>Nenhum parceiro encontrado.</p>";
+                }
                 
-                // Consulta para carregar produtos do parceiro
-                $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
-                $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
-            }
-        } else {
-            //echo "<p>Nenhum parceiro encontrado.</p>";
-        }
+            ?>
         
-    ?>
-    <h2>Parceiros</h2>
-    
-    <!-- Carrossel de Parceiros -->
-    <div class="parceiros-carousel owl-carousel">
-        <div class="parc">
-            <?php 
-            // Consulta para buscar parceiros ativos e abertos
-            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
-            $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+            <!-- Carrossel de Parceiros -->
+            <div class="parceiros-carousel owl-carousel">
+                <div class="parc">
+                    <?php 
+                    // Consulta para buscar parceiros ativos e abertos
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+                    $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
-            if ($result_parceiros->num_rows > 0): 
-                while ($parceiro = $result_parceiros->fetch_assoc()): 
-                    // Exibe cada parceiro no carrossel
-                    $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
-            ?>
-                <div class="parceiro-card">
-                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
-                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
-                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                    if ($result_parceiros->num_rows > 0): 
+                        while ($parceiro = $result_parceiros->fetch_assoc()): 
+                            // Exibe cada parceiro no carrossel
+                            $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                    ?>
+                        <div class="parceiro-card">
+                            <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                            alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                            <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                        </div>
+                    <?php 
+                        endwhile; ?>
+                    <?php else: ?>
+                        <p>Nenhum parceiro ativo no momento.</p>
+                    <?php endif; 
+                    ?>
                 </div>
-            <?php 
-                endwhile; ?>
-            <?php else: ?>
-                <p>Nenhum parceiro ativo no momento.</p>
-            <?php endif; 
-            ?>
+            </div>
+
+
+        <!-- Produtos -->
+        <div class="container">
+            <h2>Produtos</h2>
+            <div class="products">
+                <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                        <div class="product-card">
+                            <?php
+                                // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                            ?>
+
+                            <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
+
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+                            ?>                        
+                            
+                            <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                            <p class="descricao">
+                                <?php
+                                $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
+                                ?>
+                            </p>
+                            <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                            <!-- Verifica se o usuário está logado para permitir a compra -->
+                            <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                <a href="#" class="btn">Comprar</a>
+                            <?php else: ?>
+                                <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>Não há produtos no momento.</p>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-
-
-    <!-- Produtos -->
-    <div class="container">
-        <h2>Produtos</h2>
-        <div class="products">
-        <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
-                <?php while ($produto = $result_produtos->fetch_assoc()): ?>
-                    <div class="product-card">
-                        <?php
-                            // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
-                            $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-                            $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
-                        ?>
-                        <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
-                        <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                        <p><?php echo htmlspecialchars($produto['descricao_produto']); ?></p>
-                        <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                        <a href="detalhes_produto.php?id=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
-
-                        <!-- Verifica se o usuário está logado para permitir a compra -->
-                        <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                            <a href="#" class="btn">Comprar</a>
-                        <?php else: ?>
-                            <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
-                        <?php endif; ?>
-                    </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <p>Não há produtos em destaque no momento.</p>
-            <?php endif; ?>
-        </div>
-    </div>
+    </main>
 
     <script>
         // Script para mostrar/ocultar o menu suspenso ao clicar no ícone de perfil
