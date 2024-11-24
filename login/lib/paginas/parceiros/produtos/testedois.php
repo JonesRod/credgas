@@ -41,108 +41,11 @@ if (isset($dadosEscolhido['logo'])) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
-    <!--<script src="cadastro_inicial/localizador.js" defer></script>-->
+    <script src="cadastro_inicial/localizador.js" defer></script>
     <link rel="stylesheet" href="index.css">
 
     <style>
-        .section {
-    margin: 40px auto;
-    width: 70%;
-    max-width: 1200px;
-    text-align: center;
-}
-main {
-    display: flex;
-    flex-direction: column;
-    /*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
-    box-sizing: border-box;
-    align-items: center; /* Centraliza horizontalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    text-align: center;
-}
-
-/* Estilos para as abas */
-main .opcoes {
-    background-color: #007BFF;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 0px;
-    padding: auto;
-}
-
-main .tab {
-    padding: 10px;
-    border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
-    background-color: #007BFF;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-main .tab:hover {
-    background-color: #afa791;
-    color: white;
-    transform: scale(1.05);
-}
-
-main .tab.active {
-    background-color: #ffb300; /* Aba ativa com cor diferente */
-    color: white;
-    transform: scale(1.05);
-}
-
-/* Estilos para o conteúdo das abas */
-.conteudo-aba {
-    flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
-    margin-left: 2px;
-    margin-right: 2px;
-    margin-top: 0px;
-    padding: 10px;
-    border: 2px solid #ffb300;
-    border-radius: 8px;
-    display: none; /* Por padrão, todos os conteúdos estão escondidos */
-    padding-top: 5px;
-    box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
-    /*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
-    background-color: #d3d0ce;
-    width: 100%;
-    text-align: center; /* Centraliza o texto */
-    display: flex; /* Define um layout flexível */
-    flex-direction: column; /* Coloca os elementos verticalmente */
-    align-items: center; /* Centraliza horizontalmente os itens */
-    justify-content: center; /* Centraliza verticalmente os itens */
-    height: auto;
-    /*min-height: 200px; /* Define uma altura mínima para centralização adequada */
-    /*padding: 20px; /* Adiciona espaçamento interno */
-/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
-}
-
-.container{
-    display: flex;
-    /*flex-direction: column;*/
-    align-items: center; /* Centraliza horizontalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    /*left: 50vh;
-    height: 40vh; /* Altura total da tela */
-    text-align: center;
-    width: 95%;
-    padding: 10px;
-    /*margin-top: -30px;*/
-} 
-.parceiros-carousel {
-    width: 100%; /* Ocupar toda a largura */
-    margin: 0 auto; /* Centralizar o carrossel */
-    display: flex; /* Flexbox para alinhar elementos */
-    justify-content: center; /* Centraliza o conteúdo dentro */
-}
-/*.parc {
-    width: 100%; /* Ocupar toda a largura */
-    /*text-align: center; /* Centraliza o texto ou os elementos dentro 
-}*/
+   
 .parceiros-carousel .parceiro-card {
     text-align: center;
     padding: 10px;
@@ -185,7 +88,6 @@ main .tab.active {
     gap: 10px; /* Espaçamento entre os cartões */
     justify-content: center; /* Centraliza os produtos */
     margin: 10px 0;
-   
 }
 
 /* Cartão do produto */
@@ -193,13 +95,12 @@ main .tab.active {
     background: #ffffff;
     border: 1px solid #ddd;
     border-radius: 10px;
-    width: 200px; /* Largura do cartão */
-    height: 420px; /* Define a altura fixa */
+    width: 150px; /* Largura do cartão */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: center;
-    padding: 3px;
+    padding: 10px;
 }
 
 /* Efeito ao passar o mouse */
@@ -210,29 +111,25 @@ main .tab.active {
 
 /* Imagem do produto */
 .product-card img {
-    width: 300px;
     max-width: 100%;
-    max-height: 250px;
-    height: 200px;
+    height: auto;
     border-radius: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 /* Nome do produto */
 .product-card h3 {
     font-size: 1.2em;
     color: #333;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    font-weight: 500;
+    margin-bottom: 10px;
+    font-weight: 600;
 }
 
 /* Descrição do produto */
 .product-card p {
     font-size: 0.9em;
     color: #666;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     line-height: 1.4;
 }
 
@@ -268,15 +165,6 @@ main .tab.active {
     text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
     max-width: 100%; /* Define uma largura máxima para o texto */
 }
-.conteudo-aba h2 {
-    text-align: left; /* Alinha o texto à esquerda */
-    margin-left: 0;   /* Garante que não há margem que afaste do lado esquerdo */
-    padding-left: 0;  /* Garante que não há espaçamento interno */
-}
-.user-area{
-    padding-right: 30px;
-}
-
 
 /* Footer */
 footer {
@@ -373,9 +261,8 @@ footer .contato {
         
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
-
+                <div class="parc">
                     <?php 
-                    //echo ('oii');
                     // Consulta para buscar parceiros ativos e abertos
                     $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
@@ -397,13 +284,13 @@ footer .contato {
                         <p>Nenhum parceiro ativo no momento.</p>
                     <?php endif; 
                     ?>
-
+                </div>
             </div>
 
+
             <!-- Produtos -->
-            <h2>Produtos</h2>
             <div class="container">
-                
+                <h2>Produtos</h2>
                 <div class="products">
                     <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
                         <?php while ($produto = $result_produtos->fetch_assoc()): ?>
@@ -454,22 +341,38 @@ footer .contato {
                     <?php endif; ?>
                 </div>
             </div>
-
         </div>
     </main>
 
     <script>
+        // Script para mostrar/ocultar o menu suspenso ao clicar no ícone de perfil
+        document.getElementById("profileIcon").addEventListener("click", function() {
+            var dropdownMenu = document.getElementById("dropdownMenu");
+            dropdownMenu.classList.toggle("show"); // Alterna a classe "show" para exibir ou ocultar o menu
+        });
 
+        // Fechar o menu suspenso ao clicar fora dele
+        window.onclick = function(event) {
+            if (!event.target.matches('#profileIcon')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        };
 
         // Função para simular o clique no botão ao carregar a página
-        /*window.onload = function() {
+        window.onload = function() {
             setTimeout(function() {
                 var cep = document.getElementById('cep').value;
                 if (cep) {
                     document.getElementById('buscarButton').click();
                 }
             }, 5000); // 2000 milissegundos = 2 segundos
-        };*/
+        };
 
         $(document).ready(function() {
             var totalParceiros = <?php echo $result_parceiros->num_rows; ?>; // Total de parceiros no banco
@@ -477,7 +380,6 @@ footer .contato {
             $(".parceiros-carousel").owlCarousel({
                 loop: totalParceiros > 1, // Loop apenas se houver mais de 1 parceiro
                 margin: 10,
-                center: true, // Centraliza os itens no carrossel
                 nav: true,
                 autoplay: true,
                 autoplayTimeout: 3000,
@@ -490,7 +392,7 @@ footer .contato {
         });
 
         ///pesquizador de produto no catalogo
-        /*document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {
+        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {
             const termoPesquisa = this.value.toLowerCase();
             const produtos = document.querySelectorAll('.produto-item');
             let produtoEncontrado = false;
@@ -509,43 +411,13 @@ footer .contato {
             // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
             const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
             mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });*/
-
-
-        function mostrarConteudo(aba, element) {
-
-            // Oculta todos os conteúdos das abas
-            //console.log('eee');
-            var conteudos = document.querySelectorAll('.conteudo-aba');
-            conteudos.forEach(function(conteudo) {
-                conteudo.style.display = 'none';
-            });
-
-            // Remove a classe 'active' de todas as abas
-            var tabs = document.querySelectorAll('.tab');
-            tabs.forEach(function(tab) {
-                tab.classList.remove('active');
-            });
-
-            // Mostra o conteúdo da aba clicada
-            document.getElementById('conteudo-'+ aba).style.display = 'block';
-
-            // Adiciona a classe 'active' à aba clicada
-            element.classList.add('active');
-            //console.log('eee');
-
-            }
-
-            // Define que a aba "catalogo" está ativa ao carregar a página
-            window.onload = function() {
-            mostrarConteudo('catalogo', document.querySelector('.tab.active'));
-        };
+        });
 
     </script>
 
 
 
-    </body>
+</body>
     <!-- Footer -->
     <footer>
         <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
