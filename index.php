@@ -63,7 +63,7 @@ main {
 
 /* Estilos para as abas */
 main .opcoes {
-    background-color: #007BFF;
+    background-color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -75,7 +75,7 @@ main .opcoes {
 main .tab {
     padding: 10px;
     border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
-    background-color: #007BFF;
+    background-color: #27ae60;
     cursor: pointer;
     font-size: 20px;
     font-weight: bold;
@@ -138,6 +138,7 @@ main .tab.active {
     margin: 0 auto; /* Centralizar o carrossel */
     display: flex; /* Flexbox para alinhar elementos */
     justify-content: center; /* Centraliza o conteúdo dentro */
+    margin: ;
 }
 /*.parc {
     width: 100%; /* Ocupar toda a largura */
@@ -341,7 +342,7 @@ footer .contato {
                 <span>Frete Grátis</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
+            <div class="tab" onclick="mostrarConteudo('novidades',this)">
                 <span>Novidades</span>
             </div>
 
@@ -417,7 +418,7 @@ footer .contato {
                                 <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] = 'sim' || ($produto['promocao'] = 'sim' && $produto['frete_gratis_promocao'] = 'sim')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
@@ -455,6 +456,331 @@ footer .contato {
                 </div>
             </div>
 
+        </div>
+
+        <!-- Conteúdos correspondentes às abas -->
+        <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
+
+            <h2>Nossos Parceiros</h2>
+
+            <!-- Carrossel de Parceiros -->
+            <div class="parceiros-carousel owl-carousel">
+
+                <?php 
+                // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
+                $sql_parceiros = "
+                    SELECT DISTINCT mp.* 
+                    FROM meus_parceiros mp
+                    JOIN produtos p ON mp.id = p.id_parceiro
+                    WHERE 
+                        mp.status = 'ATIVO' 
+                        AND mp.aberto_fechado = 'Aberto'
+                        AND p.promocao = 'sim' 
+                        AND p.oculto != 'sim' 
+                        AND p.produto_aprovado = 'sim'
+                ";
+                
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+                if ($result_parceiros->num_rows > 0): 
+                    while ($parceiro = $result_parceiros->fetch_assoc()): 
+                        // Exibe cada parceiro no carrossel
+                        $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                        $id_parceiro = $parceiro['id'];
+                        
+                        // Consulta para carregar produtos do parceiro
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'
+                        AND promocao = 'sim'";
+                        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                ?>
+                    <div class="parceiro-card">
+                        <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                        alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                        <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                        <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                    </div>
+                <?php 
+                    endwhile; 
+                else: 
+                ?>
+                    <p>Nenhum parceiro ativo no momento.</p>
+                <?php endif; ?>
+
+            </div>
+
+
+            <!-- Produtos -->
+            <h2>Produtos</h2>
+            <div class="container">
+                
+                <div class="products">
+                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                            <div class="product-card">
+                                <?php
+                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                                ?>
+
+                                <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] = 'sim' || ($produto['promocao'] = 'sim' && $produto['frete_gratis_promocao'] = 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>                        
+                                
+                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                                <p class="descricao">
+                                    <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
+                                    ?>
+                                </p>
+                                <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                                <!-- Verifica se o usuário está logado para permitir a compra -->
+                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                    <a href="#" class="btn">Comprar</a>
+                                <?php else: ?>
+                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>Não há produtos no momento.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Conteúdos correspondentes às abas -->
+        <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
+
+            <h2>Nossos Parceiros</h2>
+
+            <!-- Carrossel de Parceiros -->
+            <div class="parceiros-carousel owl-carousel">
+
+                <?php 
+                // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
+                $sql_parceiros = "
+                    SELECT DISTINCT mp.* 
+                    FROM meus_parceiros mp
+                    JOIN produtos p ON mp.id = p.id_parceiro
+                    WHERE 
+                        mp.status = 'ATIVO' 
+                        AND mp.aberto_fechado = 'Aberto'
+                        AND p.promocao = 'sim' 
+                        AND p.oculto != 'sim' 
+                        AND p.produto_aprovado = 'sim'
+                ";
+    
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+                if ($result_parceiros->num_rows > 0): 
+                    while ($parceiro = $result_parceiros->fetch_assoc()): 
+                        // Exibe cada parceiro no carrossel
+                        $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                        $id_parceiro = $parceiro['id'];
+                        
+                        // Consulta para carregar produtos do parceiro
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'
+                        AND frete_gratis = 'sim' || frete_gratis_promocao = 'sim'";
+                        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                ?>
+                    <div class="parceiro-card">
+                        <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                        alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                        <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                        <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                    </div>
+                <?php 
+                    endwhile; 
+                else: 
+                ?>
+                    <p>Nenhum parceiro ativo no momento.</p>
+                <?php endif; ?>
+
+            </div>
+
+            <!-- Produtos -->
+            <h2>Produtos</h2>
+            <div class="container">
+                <div class="products">
+                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                            <div class="product-card">
+                                <?php
+                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                                ?>
+
+                                <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] = 'sim' || ($produto['promocao'] = 'sim' && $produto['frete_gratis_promocao'] = 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>                        
+                                
+                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                                <p class="descricao">
+                                    <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
+                                    ?>
+                                </p>
+                                <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                                <!-- Verifica se o usuário está logado para permitir a compra -->
+                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                    <a href="#" class="btn">Comprar</a>
+                                <?php else: ?>
+                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>Não há produtos no momento.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conteúdos correspondentes às abas -->
+        <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
+
+            <h2>Nossos Parceiros</h2>
+
+            <!-- Carrossel de Parceiros -->
+            <div class="parceiros-carousel owl-carousel">
+
+                <?php 
+                // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
+                $sql_parceiros = "
+                    SELECT DISTINCT mp.* 
+                    FROM meus_parceiros mp
+                    JOIN produtos p ON mp.id = p.id_parceiro
+                    WHERE 
+                        mp.status = 'ATIVO' 
+                        AND mp.aberto_fechado = 'Aberto'
+                        AND p.promocao = 'sim' 
+                        AND p.oculto != 'sim' 
+                        AND p.produto_aprovado = 'sim'
+                ";
+
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+                if ($result_parceiros->num_rows > 0): 
+                    while ($parceiro = $result_parceiros->fetch_assoc()): 
+                        // Exibe cada parceiro no carrossel
+                        $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                        $id_parceiro = $parceiro['id'];
+                        
+                        $sql_produtos = "
+                        SELECT * 
+                        FROM produtos 
+                        WHERE id_parceiro = $id_parceiro 
+                        AND oculto != 'sim' 
+                        AND produto_aprovado = 'sim'
+                        AND (frete_gratis = 'sim' OR frete_gratis_promocao = 'sim')
+                        AND DATEDIFF(NOW(), data) <= 30
+                    ";
+                    
+                    $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                ?>
+                <div class="parceiro-card">
+                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
+                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                </div>
+                <?php 
+                    endwhile; 
+                else: 
+                ?>
+                    <p>Nenhum parceiro ativo no momento.</p>
+                <?php endif; ?>
+
+            </div>
+
+            <!-- Produtos -->
+            <h2>Produtos</h2>
+            <div class="container">
+                <div class="products">
+                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                            <div class="product-card">
+                                <?php
+                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                                ?>
+
+                                <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                                <?php 
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] = 'sim' || ($produto['promocao'] = 'sim' && $produto['frete_gratis_promocao'] = 'sim')): 
+                                ?>
+                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                                <?php 
+                                    endif;
+
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
+                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                                <?php 
+                                    endif; 
+                                ?>                        
+                                
+                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                                <p class="descricao">
+                                    <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
+                                    ?>
+                                </p>
+                                <p>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                                <!-- Verifica se o usuário está logado para permitir a compra -->
+                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                    <a href="#" class="btn">Comprar</a>
+                                <?php else: ?>
+                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                                <?php endif; ?>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p>Não há produtos no momento.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -534,12 +860,13 @@ footer .contato {
             element.classList.add('active');
             //console.log('eee');
 
-            }
+        }
 
-            // Define que a aba "catalogo" está ativa ao carregar a página
-            window.onload = function() {
+        // Define que a aba "catalogo" está ativa ao carregar a página
+        window.onload = function() {
             mostrarConteudo('catalogo', document.querySelector('.tab.active'));
         };
+        
 
     </script>
 
