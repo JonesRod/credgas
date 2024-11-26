@@ -34,7 +34,7 @@ if (isset($dadosEscolhido['logo'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Loja</title>
+    <title><?php echo $nomeFantasia;?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
@@ -42,256 +42,404 @@ if (isset($dadosEscolhido['logo'])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     <!--<script src="cadastro_inicial/localizador.js" defer></script>-->
-    <link rel="stylesheet" href="index.css">
+    <!--<link rel="stylesheet" href="index.css">-->
 
     <style>
+        header .container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 20px;
+                position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .nome-fantasia {
+            font-size: 2.5rem; /* Tamanho maior */
+            font-weight: bold;
+            color: #333; /* Cor mais suave para o texto */
+            line-height: 1.2;
+            display: flex;
+            justify-content: flex-start; /* Garante que o texto fique alinhado à esquerda */
+            align-items: center;
+            flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
+            padding-left: 15px; /* Espaço entre a logo e o nome */
+            text-align: center; /* Centralizar o texto horizontalmente */
+            margin: 20px 0; /* Espaçamento acima e abaixo */
+            text-transform: uppercase; /* Transformar o texto para letras maiúsculas */
+            letter-spacing: 1.5px; /* Espaçamento entre as letras */
+
+        }
+        .user-area {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;   
+            padding-right: 30px;
+        }
+
+        .btn-login {
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .btn-login:hover {
+            background-color: #0056b3;
+        }
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-dropdown #dropdownMenu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            list-style: none;
+            padding: 10px;
+        }
+
+        .profile-dropdown:hover #dropdownMenu {
+            display: block;
+        }
+        /* Faixa de Navegação */
+        .sub-nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f8f8f8; /* Cor de fundo suave */
+        padding: 10px 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras sutis para destacar */
+        }
+
+        .sub-nav div {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333; /* Cor do texto */
+        margin: 0 20px; /* Espaçamento entre os itens */
+        cursor: pointer;
+        transition: all 0.3s ease; /* Suavização do efeito de hover */
+        }
+
+        .sub-nav div:hover {
+        color: #007bff; /* Cor de destaque quando o item é hover */
+        text-decoration: underline; /* Adiciona um sublinhado no hover */
+        }
         .section {
-    margin: 40px auto;
-    width: 70%;
-    max-width: 1200px;
-    text-align: center;
-}
-main {
-    display: flex;
-    flex-direction: column;
-    /*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
-    box-sizing: border-box;
-    align-items: center; /* Centraliza horizontalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    text-align: center;
-}
+            margin: 40px auto;
+            width: 70%;
+            max-width: 1200px;
+            text-align: center;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            /*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+            box-sizing: border-box;
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente */
+            text-align: center;
+        }
 
-/* Estilos para as abas */
-main .opcoes {
-    background-color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 0px;
-    padding: auto;
-}
+        /* Estilos para as abas */
+        main .opcoes {
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0px;
+            padding: auto;
+        }
+        main .tab {
+            padding: 10px;
+            border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+            background-color: #27ae60;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
 
-main .tab {
-    padding: 10px;
-    border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
-    background-color: #27ae60;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
+        main .tab:hover {
+            background-color: #afa791;
+            color: white;
+            transform: scale(1.05);
+        }
 
-main .tab:hover {
-    background-color: #afa791;
-    color: white;
-    transform: scale(1.05);
-}
+        main .tab.active {
+            background-color: #ffb300; /* Aba ativa com cor diferente */
+            color: white;
+            transform: scale(1.05);
+        }
+            /* Estilos para o conteúdo das abas */
+        .conteudo-aba {
+            flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+            margin-left: 2px;
+            margin-right: 2px;
+            margin-top: 0px;
+            padding: 10px;
+            border: 2px solid #ffb300;
+            border-radius: 8px;
+            display: none; /* Por padrão, todos os conteúdos estão escondidos */
+            padding-top: 5px;
+            box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+            /*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+            background-color: #d3d0ce;
+            width: 100%;
+            text-align: center; /* Centraliza o texto */
+            display: flex; /* Define um layout flexível */
+            flex-direction: column; /* Coloca os elementos verticalmente */
+            align-items: center; /* Centraliza horizontalmente os itens */
+            justify-content: center; /* Centraliza verticalmente os itens */
+            height: auto;
+            /*min-height: 200px; /* Define uma altura mínima para centralização adequada */
+            /*padding: 20px; /* Adiciona espaçamento interno */
+        /* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+        }
+        .container{
+            display: flex;
+            /*flex-direction: column;*/
+            align-items: center; /* Centraliza horizontalmente */
+            justify-content: center; /* Centraliza verticalmente */
+            /*left: 50vh;
+            height: 40vh; /* Altura total da tela */
+            text-align: center;
+            /*width: 95%;
+            /*padding: 10px;
+            margin-left: 10px;*/
+        } 
+        .parceiros-carousel {
+            width: 100%; /* Ocupar toda a largura */
+            margin: 0 auto; /* Centralizar o carrossel */
+            display: flex; /* Flexbox para alinhar elementos */
+            justify-content: center; /* Centraliza o conteúdo dentro */
+        }
+        .parceiros-carousel .parceiro-card {
+            text-align: center;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 60px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
+            max-width: 200px; /* Define o comprimento máximo do cartão */
+        }
+        .input{
+            width: 250px;
+            padding: 3px;
+            padding-left: 5px;
+            border-radius: 5px;
+            height: 20px;
+            border: 1px solid #ffb300;
+        }
 
-main .tab.active {
-    background-color: #ffb300; /* Aba ativa com cor diferente */
-    color: white;
-    transform: scale(1.05);
-}
+        .parceiros-carousel .parceiro-card img {
+            max-width: 120px; /* Ajuste o tamanho da logo */
+            height: 120px;   /* Para mantê-la circular */
+            margin: auto; /* Centraliza horizontalmente e adiciona espaço abaixo */
+            border-radius: 50%; /* Torna a imagem redonda */
+            display: block; /* Garante que o elemento seja tratado como bloco */
+            border: 2px solid #ddd; /* Borda ao redor da imagem */
+        }
+        .parceiros-carousel .parceiro-card h3 {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 5px 0;
+            color: #333; /* Cor do texto */
+        }
 
-/* Estilos para o conteúdo das abas */
-.conteudo-aba {
-    flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
-    margin-left: 2px;
-    margin-right: 2px;
-    margin-top: 0px;
-    padding: 10px;
-    border: 2px solid #ffb300;
-    border-radius: 8px;
-    display: none; /* Por padrão, todos os conteúdos estão escondidos */
-    padding-top: 5px;
-    box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
-    /*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
-    background-color: #d3d0ce;
-    width: 100%;
-    text-align: center; /* Centraliza o texto */
-    display: flex; /* Define um layout flexível */
-    flex-direction: column; /* Coloca os elementos verticalmente */
-    align-items: center; /* Centraliza horizontalmente os itens */
-    justify-content: center; /* Centraliza verticalmente os itens */
-    height: auto;
-    /*min-height: 200px; /* Define uma altura mínima para centralização adequada */
-    /*padding: 20px; /* Adiciona espaçamento interno */
-/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
-}
+        .parceiros-carousel .parceiro-card p {
+            font-size: 0.9em;
+            color: #666; /* Cor da categoria */
+            margin: 5px 0 0;
+        }
 
-.container{
-    display: flex;
-    /*flex-direction: column;*/
-    align-items: center; /* Centraliza horizontalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    /*left: 50vh;
-    height: 40vh; /* Altura total da tela */
-    text-align: center;
-    /*width: 95%;
-    /*padding: 10px;
-    margin-left: 10px;*/
-} 
-.parceiros-carousel {
-    width: 100%; /* Ocupar toda a largura */
-    margin: 0 auto; /* Centralizar o carrossel */
-    display: flex; /* Flexbox para alinhar elementos */
-    justify-content: center; /* Centraliza o conteúdo dentro */
-}
-/*.parc {
-    width: 100%; /* Ocupar toda a largura */
-    /*text-align: center; /* Centraliza o texto ou os elementos dentro 
-}*/
-.parceiros-carousel .parceiro-card {
-    text-align: center;
-    padding: 10px;
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
-    max-width: 200px; /* Define o comprimento máximo do cartão */
-}
+        /* Contêiner da seção de produtos */
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Espaçamento entre os cartões */
+            justify-content: center; /* Centraliza os produtos */
+            margin: 10px 0;
+        
+        }
+        /* Cartão do produto */
+        .product-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            width: 200px; /* Largura do cartão */
+            height: 420px; /* Define a altura fixa */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            padding: 3px;
+        }
 
+        /* Efeito ao passar o mouse */
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
 
-.parceiros-carousel .parceiro-card img {
-    max-width: 120px; /* Ajuste o tamanho da logo */
-    height: 120px;   /* Para mantê-la circular */
-    margin: auto; /* Centraliza horizontalmente e adiciona espaço abaixo */
-    border-radius: 50%; /* Torna a imagem redonda */
-    display: block; /* Garante que o elemento seja tratado como bloco */
-    border: 2px solid #ddd; /* Borda ao redor da imagem */
-}
+        /* Imagem do produto */
+        .product-card img {
+            width: 300px;
+            max-width: 100%;
+            max-height: 250px;
+            height: 200px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        /* Nome do produto */
+        .product-card h3 {
+            font-size: 1.2em;
+            color: #333;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
 
-.parceiros-carousel .parceiro-card h3 {
-    font-size: 1.2em;
-    font-weight: bold;
-    margin: 5px 0;
-    color: #333; /* Cor do texto */
-}
+        /* Descrição do produto */
+        .product-card p {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
 
-.parceiros-carousel .parceiro-card p {
-    font-size: 0.9em;
-    color: #666; /* Cor da categoria */
-    margin: 5px 0 0;
-}
+        /* Preço do produto */
+        .product-card p:last-child {
+            font-size: 1em;
+            color: #27ae60; /* Verde para o preço */
+            font-weight: bold;
+        }
+        /* Botões */
+        .product-card .btn {
+            display: inline-block;
+            background: #27ae60; /* Cor do botão */
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+            font-size: 0.9em;
+        }
 
+        /* Efeito ao passar o mouse no botão */
+        .product-card .btn:hover {
+            background:darkorange;
+        }
+        .descricao {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limita a 2 linhas */
+            -webkit-box-orient: vertical;
+            overflow: hidden; /* Oculta o texto excedente */
+            text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
+            max-width: 100%; /* Define uma largura máxima para o texto */
+        }
+        .conteudo-aba h2 {
+            border-radius: 3px;
+            background-color: #fff;
+            text-align: left; /* Alinha o texto à esquerda */
+            /*margin-left: 0;   /* Garante que não há margem que afaste do lado esquerdo */
+            padding-left: 5px;  /* Garante que não há espaçamento interno */
+        }
+        /* Efeito hover */
+        .nome-fantasia:hover {
+            color: #007BFF; /* Muda a cor ao passar o mouse */
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no texto */
+        }
+        @media (max-width: 768px) {
+            /*.sub-nav {
+                flex-direction: column; /* Coloca os itens em coluna em telas menores */
+                /*align-items: flex-start; /* Alinha os itens à esquerda */
+                /*padding: 15px; /* Aumenta o padding em telas menores */
+            /*}*/
 
-/* Contêiner da seção de produtos */
-.products {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Espaçamento entre os cartões */
-    justify-content: center; /* Centraliza os produtos */
-    margin: 10px 0;
-   
-}
+            .sub-nav div {
+                margin: 10px 0; /* Reduz o espaçamento entre os itens em telas menores */
+                text-align: left; /* Alinha os itens à esquerda */
+            }
 
-/* Cartão do produto */
-.product-card {
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    width: 200px; /* Largura do cartão */
-    height: 420px; /* Define a altura fixa */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center;
-    padding: 3px;
-}
+            .nome-fantasia {
+                font-size: 1.8rem; /* Tamanho reduzido para o nome fantasia */
+                font-weight: bold;
+                color: #333; /* Cor mais suave para o texto */
+                text-align: left; /* Alinha à esquerda para ficar mais natural ao lado da logo */
+                margin: 0;
+                line-height: 1.2;
+                display: flex;
+                justify-content: flex-start; /* Garante que o texto fique alinhado à esquerda */
+                align-items: center;
+                flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
+                padding-left: 15px; /* Espaço entre a logo e o nome */
+                margin: 15px 0; /* Ajusta o espaçamento para telas pequenas */
+    
+            }
+                    /* Cartão do produto */
+            .product-card {
+                background: #ffffff;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                width: 180px; /* Largura do cartão */
+                height: 400px; /* Define a altura fixa */
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                text-align: center;
+                padding: 3px;
+            }
+        }
+        @media (max-width: 480px) {
+            .nome-fantasia {
+                font-size: 1.2rem; /* Ainda menor para dispositivos móveis */
+                letter-spacing: 1px; /* Reduz o espaçamento entre as letras */
+            }
+            .logo-img {
+                width: 130px;
+                height: 130px;
+                border-radius: 50%;
+                margin-right: 10px;
+            }
+            
+        }
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #333;
+            color: white;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
 
-/* Efeito ao passar o mouse */
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Imagem do produto */
-.product-card img {
-    width: 300px;
-    max-width: 100%;
-    max-height: 250px;
-    height: 200px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-}
-
-/* Nome do produto */
-.product-card h3 {
-    font-size: 1.2em;
-    color: #333;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-/* Descrição do produto */
-.product-card p {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    line-height: 1.4;
-}
-
-/* Preço do produto */
-.product-card p:last-child {
-    font-size: 1em;
-    color: #27ae60; /* Verde para o preço */
-    font-weight: bold;
-}
-
-/* Botões */
-.product-card .btn {
-    display: inline-block;
-    background: #27ae60; /* Cor do botão */
-    color: #fff;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
-    font-size: 0.9em;
-}
-
-/* Efeito ao passar o mouse no botão */
-.product-card .btn:hover {
-    background:darkorange;
-}
-.descricao {
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Limita a 2 linhas */
-    -webkit-box-orient: vertical;
-    overflow: hidden; /* Oculta o texto excedente */
-    text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
-    max-width: 100%; /* Define uma largura máxima para o texto */
-}
-.conteudo-aba h2 {
-    border-radius: 3px;
-    background-color: #fff;
-    text-align: left; /* Alinha o texto à esquerda */
-    /*margin-left: 0;   /* Garante que não há margem que afaste do lado esquerdo */
-    padding-left: 5px;  /* Garante que não há espaçamento interno */
-}
-.user-area{
-    padding-right: 30px;
-}
-
-
-/* Footer */
-footer {
-    text-align: center;
-    padding: 30px 0;
-    background-color: #333;
-    color: white;
-    margin-top: 30px;
-}
-
-footer .contato {
-    margin: 10px 0;
-}
+        footer .contato {
+            margin: 0;
+        }
 
     </style>
 
@@ -1041,7 +1189,7 @@ footer .contato {
         <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
         <div class="contato">
             <p><strong>Contato:</strong></p>
-            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | Telefone: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
+            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | WhatsApp: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
         </div>
     </footer>
 </html>
