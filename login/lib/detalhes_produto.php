@@ -362,7 +362,7 @@
         <?php if (!empty($error_msg)) : ?>
         <p class="error"><?= htmlspecialchars($error_msg); ?></p>
         <?php elseif (!empty($produto)) : ?>
-
+            <h2>Detalhes do produto</h2>
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
                     <div class="main-image">
