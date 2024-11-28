@@ -198,7 +198,7 @@ if (isset($_GET['id'])) {
                 <?php 
                     while ($produto = $produtos_catalogo->fetch_assoc()): 
                 ?>
-                <div class="produto-item">
+                <div class="produto-item catalogo">
                     <?php
                         // Verifica se o campo 'imagens' está definido e não está vazio
                         if (isset($produto['imagens']) && !empty($produto['imagens'])) {
@@ -267,7 +267,7 @@ if (isset($_GET['id'])) {
             </div>
 
             <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Produto não encontrado.</p>
+            <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Nenhum produto encontrado no catálogo.</p>
 
         </div>
 
@@ -293,7 +293,7 @@ if (isset($_GET['id'])) {
             <!-- Lista de promoções aqui -->
             <div class="lista-promocoes">
                 <?php while ($produto = $promocoes->fetch_assoc()): ?>
-                    <div class="produto-item">
+                    <div class="produto-item promocao">
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
                             if (isset($produto['imagens']) && !empty($produto['imagens'])) {
@@ -347,7 +347,7 @@ if (isset($_GET['id'])) {
             </div>
 
             <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            <p id="mensagemNaoEncontradoPromocao" style="display: none;">Nenhum produto encontrado em promoção.</p>
             
             <?php else: ?>
                 <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
@@ -365,7 +365,7 @@ if (isset($_GET['id'])) {
             <!-- Lista de promoções aqui -->
             <div class="lista-promocoes">
                 <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
-                    <div class="produto-item">
+                    <div class="produto-item frete-gratis">
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
                             if (isset($produto['imagens']) && !empty($produto['imagens'])) {
@@ -430,7 +430,7 @@ if (isset($_GET['id'])) {
             </div>
 
             <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            <p id="mensagemNaoEncontradoFreteGratis" style="display: none;">Nenhum produto encontrado com frete grátis.</p>
             
             <?php else: ?>
                 <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
@@ -438,67 +438,91 @@ if (isset($_GET['id'])) {
         </div>
 
         <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
-    <?php 
-    if ($produtos_novidades->num_rows > 0): ?>
-        <div class="container">
-            <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
-        </div> 
+            <?php 
+                if ($produtos_novidades->num_rows > 0): 
+            ?>            
+            <div class="container">
+                <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>        
 
-        <!-- Lista de produtos em novidades -->
-        <div class="lista-novidades">   
-            <?php while ($produto = $produtos_novidades->fetch_assoc()): ?>
-                <?php 
-                // Verifica se o produto foi cadastrado há 30 dias ou menos
-                if ($produto['dias_desde_cadastro'] <= 30): ?>
-                    <div class="produto-item">
-                        <?php 
-                        // Tratamento de imagens
-                        $imagensArray = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-                        $primeiraImagem = !empty($imagensArray) ? $imagensArray[0] : 'default_image.jpg';
+            <!-- Lista de promoções aqui -->
+            <div class="lista-novidades">
+                <?php while ($produto = $produtos_novidades->fetch_assoc()): ?>
+                    <?php
+                    // Verifica se o produto foi cadastrado há 30 dias ou menos
+                    if ($produto['dias_desde_cadastro'] <= 30): ?>
+                    <div class="produto-item novidades">
+                        <?php
+                            // Verifica se o campo 'imagens' está definido e não está vazio
+                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                                $imagensArray = explode(',', $produto['imagens']);
+                                
+                                // Pega a primeira imagem do array
+                                $primeiraImagem = $imagensArray[0];
+                                // Exibe a primeira imagem
+                                ?>
+                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <?php
+                            } else {
+                                // Caso não haja imagens, exibe uma imagem padrão
+                                ?>
+                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                                <?php
+                            }
                         ?>
-                        <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeiraImagem); ?>" 
-                             alt="Imagem do Produto" class="produto-imagem">
-
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
                                 <?php 
-                                // Ícones de frete grátis, promoção e novidades
-                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): ?>
+                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php endif; ?>
+                                <?php 
+                                    endif;
 
-                                <?php if ($produto['promocao'] === 'sim'): ?>
+                                    // Exibe o ícone de promoção, se o produto estiver em promoção
+                                    if ($produto['promocao'] === 'sim'): 
+                                ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php endif; ?>
+                                <?php 
+                                    endif; 
 
-                                <?php if ($produto['dias_desde_cadastro'] <= 30): ?>
-                                    <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php endif; ?>
-
-                                <?php echo htmlspecialchars($produto['nome_produto']); ?>
+                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                    $dataAtual = new DateTime(); // Data atual
+                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                                
+                                    if ($diasDesdeCadastro <= 30):
+                                ?>
+                                        <span class="icone-novidades" title="Novidades">🆕</span>
+                                <?php
+                                    endif;
+                                ?> 
+                                <?php echo $produto['nome_produto']; ?>
                             </h3>
 
-                            <p class="produto-descricao"><?php echo htmlspecialchars($produto['descricao_produto']); ?></p>
+                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
 
-                            <?php 
-                            $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa'])); ?>
+                            <?php
+                                // Formatação do valor promocional
+                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" 
-                               class="button-editar">Editar</a>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
                         </div>
                     </div>
-                <?php endif; ?>
-            <?php endwhile; ?>
+                    <?php endif; ?>
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontradoNovidades" style="display: none;">Nenhum produto encontrado em novidades.</p>
+            
+            <?php else: ?>
+                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+            <?php endif; ?>
         </div>
-    <?php else: ?>
-        <p style="margin-top: 30px;">Nenhum produto encontrado para novidades.</p>
-    <?php endif; ?>
-
-    <!-- Mensagem de produto não encontrado -->
-    <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
-</div>
-
 
     </main>
 
@@ -571,93 +595,63 @@ if (isset($_GET['id'])) {
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 5000);
 
-        ///pesquizador de produto no catalogo
-        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
+        // Referencia todos os campos de pesquisa
+        const camposPesquisa = [
+            document.getElementById('inputPesquisaCatalogo'),
+            document.getElementById('inputPesquisaPromocao'),
+            document.getElementById('inputPesquisaFreteGratis'),
+            document.getElementById('inputPesquisaNovidades')
+        ];
 
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
+        // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
+        function sincronizarPesquisa(origem) {
+            const termoPesquisa = origem.value.toLowerCase();
+
+            // Atualiza todos os campos de pesquisa com o mesmo valor
+            camposPesquisa.forEach(campo => {
+                if (campo !== origem) {
+                    campo.value = origem.value;
                 }
             });
 
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
+            // Executa a lógica de pesquisa em cada categoria separadamente
+            const categorias = [
+                { produtos: document.querySelectorAll('.produto-item.catalogo'), mensagem: 'mensagemNaoEncontradoCatalogo' },
+                { produtos: document.querySelectorAll('.produto-item.promocao'), mensagem: 'mensagemNaoEncontradoPromocao' },
+                { produtos: document.querySelectorAll('.produto-item.frete-gratis'), mensagem: 'mensagemNaoEncontradoFreteGratis' },
+                { produtos: document.querySelectorAll('.produto-item.novidades'), mensagem: 'mensagemNaoEncontradoNovidades' }
+            ];
 
-        ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaPromocao').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
+            categorias.forEach(categoria => {
+                let produtoEncontrado = false;
 
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
+                categoria.produtos.forEach(produto => {
+                    const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+
+                    if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                        produto.style.display = 'block';
+                        produtoEncontrado = true;
+                    } else {
+                        produto.style.display = 'none';
+                    }
+                });
+
+                // Exibe ou oculta a mensagem de "Produto não encontrado" por categoria
+                const mensagemNaoEncontrado = document.getElementById(categoria.mensagem);
+                if (mensagemNaoEncontrado) {
+                    mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
                 }
             });
+        }
 
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-        
-        ///pesquizador de produto com frete gratis
-        document.getElementById('inputPesquisaFreteGratis').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
+        // Adiciona o evento de entrada para todos os campos
+        camposPesquisa.forEach(campo => {
+            campo.addEventListener('input', function () {
+                sincronizarPesquisa(this);
             });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
         });
 
-        ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaNovidades').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
 
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
         
     </script>
 
