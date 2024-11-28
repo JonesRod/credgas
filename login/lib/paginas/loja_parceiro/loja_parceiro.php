@@ -37,7 +37,7 @@ if (isset($_GET['id'])) {
 
 
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$idParceiro'") or die($mysqli->error);
+    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
     // Supondo que já exista uma conexão com o banco de dados ($mysqli)
@@ -65,11 +65,14 @@ if (isset($_GET['id'])) {
 
     // Soma todos os valores de notificações
     $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
-    //echo $total_notificacoes; 
 
-    //Consulta para buscar produtos ocultos do catálogo
-    $produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto = 'sim'") or die($mysqli->error);
-    //echo "<p>Produtos ocultos encontrados: " . $produtos_ocultos->num_rows . "</p>";
+    //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
+    $produtos_novidades = $mysqli->query("SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro 
+    FROM produtos 
+    WHERE id_parceiro = $idParceiro 
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim'") or die($mysqli->error);
+
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
 
@@ -103,8 +106,8 @@ if (isset($_GET['id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $parceiro['nomeFantasia']; ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="parceiro_home.css">
-    <script src="parceiro_home.js"></script> 
+    <link rel="stylesheet" href="loja_parceiro_home.css">
+    <script src="loja_parceiro_home.js"></script> 
 
 </head>
 <body>
@@ -163,15 +166,15 @@ if (isset($_GET['id'])) {
             </div>
 
             <div class="tab" onclick="mostrarConteudo('promocoes',this)">
-                <span>Promoções</span>
+                <span class="icone-promocao" title="Produto em promoção">🔥</span><span>Promoções</span>
             </div>
 
             <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
-                <span>Frete Grátis</span>
+                <span class="icone-frete-gratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
-                <span>Produtos Ocultos</span>
+            <div class="tab" onclick="mostrarConteudo('novidades',this)">
+            <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
             </div>
 
         </div>
@@ -185,7 +188,7 @@ if (isset($_GET['id'])) {
                 <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
 
                 <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
-                    <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                    <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
                     <button class="button">Cadastrar produto</button>    
                 </form>
             </div>
@@ -206,21 +209,7 @@ if (isset($_GET['id'])) {
                             $primeiraImagem = $imagensArray[0];
                             // Exibe a primeira imagem
                             ?>
-                            <?php 
-                                // Exibe o ícone de oculto, se o produto estiver oculto
-                                if ($produto['oculto'] === 'sim'): 
-                            ?>
-                                <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                            <?php endif;
-
-                                // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                if ($produto['produto_aprovado'] !== 'sim'): 
-                            ?>
-                                <i class="fas fa-clock" title="Em análise"></i>
-                            <?php 
-                                endif; 
-                            ?>
-                            <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                            <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
                             <?php
                         } else {
                             // Caso não haja imagens, exibe uma imagem padrão
@@ -246,7 +235,18 @@ if (isset($_GET['id'])) {
                             <span class="icone-promocao" title="Produto em promoção">🔥</span>
                         <?php 
                             endif; 
+
+                            $dataCadastro = new DateTime($produto['data']); // Data do produto
+                            $dataAtual = new DateTime(); // Data atual
+                            $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                            $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                        
+                            if ($diasDesdeCadastro <= 30):
                         ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                        <?php
+                            endif;
+                        ?>   
                         <?php echo $produto['nome_produto']; ?>
                     </h3>
                         
@@ -304,21 +304,7 @@ if (isset($_GET['id'])) {
                                 $primeiraImagem = $imagensArray[0];
                                 // Exibe a primeira imagem
                                 ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
                                 <?php
                             } else {
                                 // Caso não haja imagens, exibe uma imagem padrão
@@ -390,21 +376,7 @@ if (isset($_GET['id'])) {
                                 $primeiraImagem = $imagensArray[0];
                                 // Exibe a primeira imagem
                                 ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
                                 <?php
                             } else {
                                 // Caso não haja imagens, exibe uma imagem padrão
@@ -429,7 +401,18 @@ if (isset($_GET['id'])) {
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
                                     endif; 
+
+                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                    $dataAtual = new DateTime(); // Data atual
+                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                                
+                                    if ($diasDesdeCadastro <= 30):
                                 ?>
+                                        <span class="icone-novidades" title="Novidades">🆕</span>
+                                <?php
+                                    endif;
+                                ?> 
                                 <?php echo $produto['nome_produto']; ?>
                             </h3>
 
@@ -454,92 +437,68 @@ if (isset($_GET['id'])) {
             <?php endif; ?>
         </div>
 
-        <div id="conteudo-produtos_ocultos" class="conteudo-aba" style="display: none;">
-            <?php 
-                // Verifica se há produtos ocultos
-                if ($produtos_ocultos->num_rows > 0): 
-            ?>            
-            <div class="container">
-                <input id="inputPesquisaProdutosOcultos" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div> 
+        <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
+    <?php 
+    if ($produtos_novidades->num_rows > 0): ?>
+        <div class="container">
+            <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
+        </div> 
 
-            <!-- Lista de produtos ocultos aqui -->
-            <div class="lista-produtos_ocultos">   
-                <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
+        <!-- Lista de produtos em novidades -->
+        <div class="lista-novidades">   
+            <?php while ($produto = $produtos_novidades->fetch_assoc()): ?>
+                <?php 
+                // Verifica se o produto foi cadastrado há 30 dias ou menos
+                if ($produto['dias_desde_cadastro'] <= 30): ?>
                     <div class="produto-item">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
+                        <?php 
+                        // Tratamento de imagens
+                        $imagensArray = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                        $primeiraImagem = !empty($imagensArray) ? $imagensArray[0] : 'default_image.jpg';
                         ?>
+                        <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeiraImagem); ?>" 
+                             alt="Imagem do Produto" class="produto-imagem">
+
                         <div class="produto-detalhes">
                             <h3 class="produto-nome">
                                 <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
+                                // Ícones de frete grátis, promoção e novidades
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
+                                <?php endif; ?>
 
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
+                                <?php if ($produto['promocao'] === 'sim'): ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
+                                <?php endif; ?>
+
+                                <?php if ($produto['dias_desde_cadastro'] <= 30): ?>
+                                    <span class="icone-novidades" title="Novidades">🆕</span>
+                                <?php endif; ?>
+
+                                <?php echo htmlspecialchars($produto['nome_produto']); ?>
                             </h3>
 
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <p class="produto-descricao"><?php echo htmlspecialchars($produto['descricao_produto']); ?></p>
 
-                            <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                            ?>
+                            <?php 
+                            $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa'])); ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" 
+                               class="button-editar">Editar</a>
                         </div>
                     </div>
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
-            
-            <?php else: ?>
-                <p style="margin-top: 30px;">Nenhum Produto Oculto.</p>
-            <?php endif; ?>
+                <?php endif; ?>
+            <?php endwhile; ?>
         </div>
+    <?php else: ?>
+        <p style="margin-top: 30px;">Nenhum produto encontrado para novidades.</p>
+    <?php endif; ?>
+
+    <!-- Mensagem de produto não encontrado -->
+    <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+</div>
+
 
     </main>
 
@@ -548,14 +507,14 @@ if (isset($_GET['id'])) {
             <!--<li><a href="parceiro_home.php" title="Página Inicial"><i class="fas fa-home"></i></a></li>-->
             <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
             <li title="Pedidos"><i class="fas fa-box"></i></li> <!-- pedidos -->
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($idParceiro); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
             <li><a href="parceiro_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
     <script src="parceiro_home.js"></script> 
     <script>
         // Obtém o ID da sessão do PHP
-        var sessionId = <?php echo json_encode($id); ?>;
+        var sessionId = <?php echo json_encode($idParceiro); ?>;
         var id_produto = <?php echo json_encode($id_produto); ?>;
 
         function abrirNotificacao(id) {
@@ -679,7 +638,7 @@ if (isset($_GET['id'])) {
         });
 
         ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaProdutosOcultos').addEventListener('input', function() {
+        document.getElementById('inputPesquisaNovidades').addEventListener('input', function() {
             const termoPesquisa = this.value.toLowerCase();
             const produtos = document.querySelectorAll('.produto-item');
             let produtoEncontrado = false;
