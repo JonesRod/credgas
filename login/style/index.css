@@ -190,12 +190,13 @@ justify-content: center; /* Centraliza o conteúdo dentro */
 .parceiros-carousel .parceiro-card {
 text-align: center;
 padding: 10px;
-background: #f9f9f9;
-border: 1px solid #ddd;
+/*background: #f9f9f9;
+border: 1px solid #ddd;*/
 border-radius: 60px;
-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+/*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
 margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
 max-width: 200px; /* Define o comprimento máximo do cartão */
+background-color: transparent;
 }
 .input{
 width: 250px;
@@ -372,20 +373,20 @@ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no text
 }
 }
 @media (max-width: 480px) {
-.nome-fantasia {
-    font-size: 1.2rem; /* Ainda menor para dispositivos móveis */
-    letter-spacing: 1px; /* Reduz o espaçamento entre as letras */
-}
-.logo-img {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.btn-login {
-    padding: 3px 5px;
-    border-radius: 5px;
-}
+    .nome-fantasia {
+        font-size: 1.2rem; /* Ainda menor para dispositivos móveis */
+        letter-spacing: 1px; /* Reduz o espaçamento entre as letras */
+    }
+    .logo-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .btn-login {
+        padding: 3px 5px;
+        border-radius: 5px;
+    }
 
 }
 /* Footer */

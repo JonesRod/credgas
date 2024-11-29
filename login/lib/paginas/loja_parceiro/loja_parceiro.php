@@ -134,7 +134,67 @@ if (isset($_GET['id'])) {
 
             <i class="fas fa-store" onclick="toggleMenu()"></i><!--Configuraçõa da Loja-->
         </div>
+
     </header>
+
+<!-- Carrossel de Parceiros -->
+<div class="parceiros-carousel owl-carousel">
+    <?php 
+        // Consulta para buscar parceiros pelo CEP
+        $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
+        $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+        if ($result_parceiros->num_rows > 0): 
+            while ($parceiro = $result_parceiros->fetch_assoc()): 
+                // Consulta para buscar categorias únicas dos produtos do parceiro
+                $sql_categorias = "SELECT DISTINCT categoria FROM produtos WHERE id_parceiro = ".$parceiro['id'];
+                $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
+    ?>
+    <div class="parceiro-card">
+        <!-- Exibe as categorias de produtos do parceiro -->
+        <div class="categorias-parceiro">
+            <?php if ($result_categorias->num_rows > 0): ?>
+                <?php while ($categoria = $result_categorias->fetch_assoc()): 
+                    $categoriaNome = htmlspecialchars($categoria['categoria']);
+                    
+                    // Define a imagem correspondente à categoria
+                    $imagem = '';
+                    switch ($categoriaNome) {
+                        case 'Alimenticios':
+                            $imagem = 'alimenticio.png'; // Caminho da imagem para Alimentícios
+                            break;
+                        case 'Utilitarios':
+                            $imagem = 'utilitarios.jpg'; // Caminho da imagem para Utilitários
+                            break;
+                        case 'Limpeza':
+                            $imagem = 'limpeza.jpg'; // Caminho da imagem para Limpeza
+                            break;
+                        case 'Bebidas':
+                            $imagem = 'bebidas.png'; // Caminho da imagem para Bebidas
+                            break;
+                        default:
+                            $imagem = 'img/categorias/padrao.png'; // Imagem padrão
+                            break;
+                    }
+
+                ?>
+                <div class="categoria-item">
+                    <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
+                    <p><?php echo $categoriaNome; ?></p>
+                </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p>Sem categorias</p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php endwhile; ?>
+    <?php else: ?>
+        <p>Nenhum parceiro ativo no momento.</p>
+    <?php endif; ?>
+</div>
+
 
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">

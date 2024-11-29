@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_parceiro = $_POST['id_parceiro'];
     $nome_produto = $mysqli->real_escape_string(trim($_POST['nome_produto']));
     $descricao_produto = $mysqli->real_escape_string(trim($_POST['descricao_produto']));
+    $categoria = $mysqli->real_escape_string(trim($_POST['categoria']));
     $valor_produto = str_replace(search: ',', replace: '.', subject: $_POST['valor_produto']);
     $valor_produto_taxa = str_replace(search: ',', replace: '.', subject: $_POST['valor_produto_taxa']);
     $frete_gratis = isset($_POST['frete_gratis']) ? 1 : 0;  // Define 1 para frete grátis, caso esteja marcado
@@ -75,17 +76,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "Nenhuma imagem foi salva.";
     }
 
-    // Monta a query SQL para inserir os dados do produto no banco de dados usando prepared statements
-    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, valor_produto, valor_produto_taxa, frete_gratis, valor_frete, imagens) 
-            VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
+     $imagens_json = implode(',', $imagens);  // Converte o array de imagens para uma string separada por vírgulas
+    
+    // Monta a query SQL com placeholders
+    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, categoria, valor_produto, valor_produto_taxa, frete_gratis, valor_frete, imagens) 
+            VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
     $stmt = $mysqli->prepare($sql);
-    $imagens_json = implode(',', $imagens);  // Converte o array de imagens para uma string separada por vírgulas
-
-    // Liga os parâmetros da query ao prepared statement
+   
+    if (!$stmt) {
+        die("Erro ao preparar a query: " . $mysqli->error);
+    }
+    // Associa os parâmetros à consulta preparada
     $stmt->bind_param(
-        'issddids', 
-        $id_parceiro, $nome_produto, $descricao_produto, $valor_produto, 
-        $valor_produto_taxa, $frete_gratis, $valor_frete, $imagens_json
+        'isssddsss', 
+        $id_parceiro,        // Inteiro (ID do parceiro)
+        $nome_produto,       // String
+        $descricao_produto,  // String
+        $categoria,          // String
+        $valor_produto,      // Double
+        $valor_produto_taxa, // String ou Double (ajustar conforme necessidade)
+        $frete_gratis,       // String (ex.: 'sim' ou 'não')
+        $valor_frete,        // String
+        $imagens_json        // String (imagens separadas por vírgulas)
     );
 
     if ($stmt->execute()) {

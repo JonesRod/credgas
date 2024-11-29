@@ -470,7 +470,7 @@ h2 {
     padding: 3px;
     border-radius: 8px;
     width: 170px;
-    height: 310px; /* Adjusted height */
+    height: 320px; /* Adjusted height */
     text-align: center;
     box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s ease;

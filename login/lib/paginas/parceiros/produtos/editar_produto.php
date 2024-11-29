@@ -106,6 +106,18 @@
             <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?></textarea>
         </div>
 
+        <!-- Categoria -->
+        <div class="form-group">
+            <label for="categoria">Categoria:</label>
+            <select required name="categoria" id="categoria">
+                <option value="">Selecione uma categoria</option>
+                <option value="Alimenticios" <?php echo ($produto['categoria'] === 'Alimenticios') ? 'selected' : ''; ?>>Alimentícios</option>
+                <option value="Utilitarios" <?php echo ($produto['categoria'] === 'Utilitarios') ? 'selected' : ''; ?>>Utilitários</option>
+                <option value="Limpeza" <?php echo ($produto['categoria'] === 'Limpeza') ? 'selected' : ''; ?>>Limpeza</option>
+                <option value="Bebidas" <?php echo ($produto['categoria'] === 'Bebidas') ? 'selected' : ''; ?>>Bebidas</option>
+            </select>
+        </div>
+
         <!-- Valor do Produto -->
         <div class="form-group">
             <!-- Converte o valor do produto para float e formata -->

@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_produto = intval($_POST['id_produto']);
     $nome_produto = mysqli_real_escape_string($mysqli, $_POST['nome_produto']);
     $descricao_produto = mysqli_real_escape_string($mysqli, $_POST['descricao_produto']);
+    $categoria = mysqli_real_escape_string($mysqli, $_POST['categoria']);
     $valor_produto = floatval(str_replace(',', '.', $_POST['valor_produto']));
     $valor_produto_taxa = floatval(str_replace(',', '.', $_POST['valor_produto_taxa']));
     $frete_gratis = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';
@@ -93,7 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Executa o UPDATE diretamente para evitar truncamento
     $sql = "UPDATE produtos SET 
         nome_produto = '$nome_produto', 
-        descricao_produto = '$descricao_produto', 
+        descricao_produto = '$descricao_produto',
+        categoria = '$categoria', 
         valor_produto = $valor_produto, 
         valor_produto_taxa = $valor_produto_taxa, 
         frete_gratis = '$frete_gratis', 

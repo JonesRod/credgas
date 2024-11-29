@@ -589,6 +589,35 @@ h2 {
     margin-bottom: 20px;
 }
 
+
+.categorias-parceiro {
+    display: flex; /* Flexbox para organizar os itens em linha */
+    flex-wrap: wrap; /* Permite quebrar para outra linha se necessário */
+    justify-content: center; /* Centraliza os itens horizontalmente */
+    gap: 15px; /* Espaçamento entre os itens */
+}
+
+.categoria-item {
+    text-align: center;
+    margin: 5px; /* Margem ao redor de cada item */
+}
+
+.categoria-imagem {
+    width: 60px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%;
+}
+
+.categorias-parceiro p {
+    font-size: 14px;
+    color: #333;
+    margin: 0;
+}
+
+
+
 /* Para telas menores que 768px */
 @media (max-width: 768px) {
     header h1 {

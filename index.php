@@ -139,8 +139,13 @@ if (isset($dadosEscolhido['logo'])) {
                 ?>
                 <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
                     <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
-                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                    alt="Loja não encontrada">
+                    <h3>
+                        <?php
+                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </h3>
                     <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
                 </div>
 
@@ -257,10 +262,15 @@ if (isset($dadosEscolhido['logo'])) {
                             AND promocao = 'sim'";
                             $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                 ?>
-                <div class="parceiro-card">
+                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
                     <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
-                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                    alt="Loja não encontrada">
+                    <h3>
+                        <?php
+                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </h3>
                     <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
                 </div>
                 <?php endwhile; ?>
@@ -378,12 +388,17 @@ if (isset($dadosEscolhido['logo'])) {
                         AND frete_gratis = 'sim' || promocao = 'sim' && frete_gratis_promocao ='sim'";
                         $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                 ?>
-                    <div class="parceiro-card">
-                        <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                        alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
-                        <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
-                        <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
-                    </div>
+                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
+                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                    alt="Loja não encontrada">
+                    <h3>
+                        <?php
+                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </h3>
+                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                </div>
                 <?php endwhile; ?>
                 <?php else: ?>
                     <p>Nenhum parceiro ativo no momento.</p>
@@ -503,10 +518,15 @@ if (isset($dadosEscolhido['logo'])) {
                     
                     $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                 ?>
-                <div class="parceiro-card">
+                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
                     <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                    alt="<?php echo htmlspecialchars($parceiro['nomeFantasia']); ?>">
-                    <h3><?php echo htmlspecialchars($parceiro['nomeFantasia']); ?></h3>
+                    alt="Loja não encontrada">
+                    <h3>
+                        <?php
+                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </h3>
                     <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
                 </div>
                 <?php endwhile; ?>
@@ -792,7 +812,6 @@ if (isset($dadosEscolhido['logo'])) {
             const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoNovidades');
             mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
         });
-
 
         document.getElementById('inputPesquisaNovidades').addEventListener('input', function () {
             const termoPesquisa = this.value.toLowerCase();

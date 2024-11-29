@@ -91,6 +91,7 @@
             $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
         }
     }
+
 ?>
 
 <!DOCTYPE html>
@@ -109,7 +110,7 @@
     <!-- Header -->
     <header>
         <div class="logo">
-            <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
+            <img src="<?php echo 'arquivos/'.$logo; ?>" alt="Logo da Loja" class="logo-img">
         </div>
 
         <h1><?php echo $parceiro['nomeFantasia']; ?></h1>
@@ -247,8 +248,12 @@
                         <?php echo $produto['nome_produto']; ?>
                     </h3>
                         
-                    <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
-
+                    <p class="produto-descricao"></p>
+                        <?php
+                            $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                            echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </p>
                     <!-- Converte o valor do produto para float e formata -->
                     <?php
                         $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
@@ -344,8 +349,12 @@
                                 <?php echo $produto['nome_produto']; ?>
                             </h3>
 
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
-
+                            <p class="produto-descricao"></p>
+                                <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                                ?>
+                            </p>
                             <?php
                                 // Formatação do valor promocional
                                 $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
@@ -430,7 +439,12 @@
                                 <?php echo $produto['nome_produto']; ?>
                             </h3>
 
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <p class="produto-descricao"></p>
+                                <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                                ?>
+                            </p>
 
                             <?php
                                 // Formatação do valor promocional
@@ -517,7 +531,12 @@
                                 <?php echo $produto['nome_produto']; ?>
                             </h3>
 
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <p class="produto-descricao"></p>
+                                <?php
+                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
+                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                                ?>
+                            </p>
 
                             <?php
                                 // Formatação do valor promocional
@@ -549,6 +568,7 @@
             <li><a href="parceiro_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
+
     <script src="parceiro_home.js"></script> 
     <script>
         // Obtém o ID da sessão do PHP

@@ -45,6 +45,18 @@
             <textarea id="descricao_produto" name="descricao_produto" rows="4" required></textarea>
         </div>
 
+        <!-- Categoria-->
+        <div class="form-group">
+            <label for="descricao_produto">Categoria:</label>
+            <select required name="categoria" id="categoria">
+                <option value="Escolha"></option>
+                <option value="Alimenticios">Alimenticios</option>
+                <option value="Utilitarios">Utilitarios</option>
+                <option value="Limpeza">Limpeza</option>
+                <option value="Bebidas">Bebidas</option>
+            </select>
+        </div>
+
         <!-- Valor do produto -->
         <div class="form-group">
             <label for="valor_produto">Valor do Produto (R$):</label>
