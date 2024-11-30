@@ -35,15 +35,15 @@ if (isset($_GET['id'])) {
     echo "<p>ID do parceiro não fornecido.</p>";
 }
 
-
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
+    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos 
+    WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
     // Supondo que já exista uma conexão com o banco de dados ($mysqli)
     //$id_parceiro_sessao = $id;
-    $queryPromocoes = "SELECT * FROM produtos WHERE promocao = 'sim' AND id_parceiro = $idParceiro";
-    $promocoes = $mysqli->query($queryPromocoes);
+    $promocoes =  $mysqli->query("SELECT * FROM produtos 
+    WHERE id_parceiro = '$idParceiro' AND promocao = 'sim' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
 
     //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
     $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE 
@@ -97,6 +97,7 @@ if (isset($_GET['id'])) {
             $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
         }
     }
+
 ?>
 
 <!DOCTYPE html>
@@ -108,7 +109,9 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="loja_parceiro_home.css">
     <script src="loja_parceiro_home.js"></script> 
+<style>
 
+</style>
 </head>
 <body>
 
@@ -137,65 +140,6 @@ if (isset($_GET['id'])) {
 
     </header>
 
-<!-- Carrossel de Parceiros -->
-<div class="parceiros-carousel owl-carousel">
-    <?php 
-        // Consulta para buscar parceiros pelo CEP
-        $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
-        $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
-
-        if ($result_parceiros->num_rows > 0): 
-            while ($parceiro = $result_parceiros->fetch_assoc()): 
-                // Consulta para buscar categorias únicas dos produtos do parceiro
-                $sql_categorias = "SELECT DISTINCT categoria FROM produtos WHERE id_parceiro = ".$parceiro['id'];
-                $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
-    ?>
-    <div class="parceiro-card">
-        <!-- Exibe as categorias de produtos do parceiro -->
-        <div class="categorias-parceiro">
-            <?php if ($result_categorias->num_rows > 0): ?>
-                <?php while ($categoria = $result_categorias->fetch_assoc()): 
-                    $categoriaNome = htmlspecialchars($categoria['categoria']);
-                    
-                    // Define a imagem correspondente à categoria
-                    $imagem = '';
-                    switch ($categoriaNome) {
-                        case 'Alimenticios':
-                            $imagem = 'alimenticio.png'; // Caminho da imagem para Alimentícios
-                            break;
-                        case 'Utilitarios':
-                            $imagem = 'utilitarios.jpg'; // Caminho da imagem para Utilitários
-                            break;
-                        case 'Limpeza':
-                            $imagem = 'limpeza.jpg'; // Caminho da imagem para Limpeza
-                            break;
-                        case 'Bebidas':
-                            $imagem = 'bebidas.png'; // Caminho da imagem para Bebidas
-                            break;
-                        default:
-                            $imagem = 'img/categorias/padrao.png'; // Imagem padrão
-                            break;
-                    }
-
-                ?>
-                <div class="categoria-item">
-                    <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
-                    <p><?php echo $categoriaNome; ?></p>
-                </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <p>Sem categorias</p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <?php endwhile; ?>
-    <?php else: ?>
-        <p>Nenhum parceiro ativo no momento.</p>
-    <?php endif; ?>
-</div>
-
-
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">
         <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
@@ -216,6 +160,114 @@ if (isset($_GET['id'])) {
         </ul>
     </aside>
 
+    <div class="categorias">
+        <?php 
+            // Consulta para buscar parceiros pelo CEP
+            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
+            $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+            if ($result_parceiros->num_rows > 0): 
+                while ($parceiro = $result_parceiros->fetch_assoc()): 
+                    // Consulta para buscar categorias únicas dos produtos do parceiro
+                    $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = ".$parceiro['id'];
+                    $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
+
+                    // Array para armazenar todas as categorias
+                    $categoriasArray = [];
+                    
+                    while ($categoria = $result_categorias->fetch_assoc()) {
+                        
+                        $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
+                        
+                    }
+
+                    // Remove as duplicatas do array de categorias
+                    $categoriasUnicas = array_unique($categoriasArray);
+                    //var_dump($categoriasUnicas);
+        ?>
+
+        <div class="parceiro-card">
+            <div class="categorias-parceiro">
+                <?php if (count($categoriasUnicas) > 0): ?>
+                    <?php foreach ($categoriasUnicas as $categoriaNome): 
+                        $categoriaNome = htmlspecialchars($categoriaNome);
+
+                        // Define a imagem correspondente à categoria
+                        $imagem = '';
+                        switch ($categoriaNome) {
+                            case 'Alimenticios':
+                                $imagem = 'alimenticio.png';
+                                break;
+                            case 'Utilitarios':
+                                $imagem = 'utilitarios.jpg';
+                                break;
+                            case 'Limpeza':
+                                $imagem = 'limpeza.jpg';
+                                break;
+                            case 'Bebidas':
+                                $imagem = 'bebidas.png';
+                                break;
+                            default:
+                                $imagem = 'img/categorias/padrao.png';
+                                break;
+                        }
+                    ?>
+                    <div class="categoria-item <?php echo $categoriaNome === 'Alimenticios' ? 'selected' : ''; ?>" data-categoria="<?php echo $categoriaNome; ?>">
+                        <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
+                        <p><?php echo $categoriaNome; ?></p>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>Sem categorias</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php endwhile; ?>
+        <?php else: ?>
+            <p>Nenhum parceiro ativo no momento.</p>
+        <?php endif; ?>
+    </div>
+
+    <form id="formCategoria" method="POST" action="">
+        <input type="text" name="categoria_selecionada">
+        <button type="submit" style="display: none;"></button>
+    </form>
+
+        <?php
+        
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                if (isset($_POST['categoria_selecionada'])) {
+                    $categoriaSelecionada = $_POST['categoria_selecionada'];
+
+                    // Realizar a consulta com a categoria selecionada
+                    $produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
+                    WHERE id_parceiro = '$idParceiro' 
+                    AND categoria = '$categoriaSelecionada' 
+                    AND oculto != 'sim' 
+                    AND produto_aprovado = 'sim'") or die($mysqli->error);
+                    //$produtos_catalogo = $mysqli->query($sql);
+
+                    /*$promocoes = $mysqli->query("SELECT * FROM produtos 
+                    WHERE id_parceiro = '$idParceiro' 
+                    AND categoria = '$categoriaSelecionada' 
+                    AND promocao = 'sim' 
+                    AND oculto != 'sim' 
+                    AND produto_aprovado = 'sim'") or die($mysqli->error);*/
+
+                    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos 
+                    WHERE (id_parceiro = '$idParceiro' 
+                    AND categoria = '$categoriaSelecionada'  
+                    AND promocao = 'sim' 
+                    AND frete_gratis_promocao = 'sim') 
+                    OR (id_parceiro = '$idParceiro' 
+                    AND promocao = 'nao' 
+                    AND frete_gratis = 'sim')") or die($mysqli->error);
+                } else {
+                    echo "Nenhuma categoria foi selecionada.";
+                }
+            }
+        ?>
     <!-- Conteúdo principal -->
     <main id="main-content">
         <!-- Conteúdo -->
@@ -712,7 +764,80 @@ if (isset($_GET['id'])) {
         });
 
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const categorias = document.querySelectorAll('.categoria-item');
+            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+            const formCategoria = document.querySelector('#formCategoria'); // Formulário
+
+            // Atribuir valor inicial ao campo categoria_selecionada
+            const alimenticios = Array.from(categorias).find(categoria => 
+                categoria.querySelector('p').textContent.trim() === 'Alimenticios'
+            );
+
+            if (alimenticios) {
+                categorias.forEach(categoria => categoria.classList.remove('selected'));
+                alimenticios.classList.add('selected');
+                inputCategoria.value = 'Alimenticios';
+            }
+
+            categorias.forEach(categoria => {
+                categoria.addEventListener('click', () => {
+                    categorias.forEach(cat => cat.classList.remove('selected'));
+                    categoria.classList.add('selected');
+                    inputCategoria.value = categoria.querySelector('p').textContent.trim();
+                    enviarFormularioAjax(); // Enviar via AJAX
+                    
+                });
+            });
+        });
+
+        // Função para enviar o formulário via AJAX
+        function enviarFormularioAjax() {
+            const formData = new FormData(formCategoria); // Cria FormData com os dados do formulário
+            console.log('Resposta do servidor:', data); 
+            fetch('', { // A URL vazia significa que o próprio arquivo será o destino
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Resposta do servidor:', data); // Exibe a resposta do servidor no console
+                // Aqui você pode atualizar a página ou outras partes do DOM
+            })
+            .catch(error => console.error('Erro ao enviar formulário via AJAX:', error));
+            console.log('Resposta do servidor:', data); 
+        }
         
+
+
+        // Define que a aba "catalogo" está ativa ao carregar a página
+        window.onload = function() {
+            mostrarConteudo('catalogo', document.querySelector('.tab.active'));
+        };
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const categoriaItems = document.querySelectorAll(".categoria-item");
+
+            categoriaItems.forEach((item) => {
+                item.addEventListener("click", function () {
+                    // Remove a classe 'selected' de todos os itens
+                    categoriaItems.forEach((el) => el.classList.remove("selected"));
+
+                    // Adiciona a classe 'selected' ao item clicado
+                    item.classList.add("selected");
+
+                    // Pegue o nome da categoria
+                    const categoriaSelecionada = item.getAttribute("data-categoria");
+                    console.log("Categoria selecionada:", categoriaSelecionada);
+                    
+                    // Aqui você pode adicionar lógica adicional, como atualizar produtos da categoria na página.
+                });
+            });
+            enviarFormularioAjax(); // Enviar via AJAX
+        });
+
+   
     </script>
 
 </body>

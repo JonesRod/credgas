@@ -81,11 +81,6 @@ function mostrarConteudo(aba, element) {
 
 }
 
-// Define que a aba "catalogo" está ativa ao carregar a página
-window.onload = function() {
-    mostrarConteudo('catalogo', document.querySelector('.tab.active'));
-};
-
 // Exemplo de atualização da contagem de notificações (chame essa função quando houver novas notificações)
 function atualizarContagemNotificacoes(contagem) {
     const countElement = document.getElementById('notificacao-count');
