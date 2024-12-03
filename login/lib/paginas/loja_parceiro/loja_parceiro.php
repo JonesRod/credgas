@@ -1,57 +1,40 @@
 <?php
 
-include('../../conexao.php');
+    include('../../conexao.php');
 
-if(!isset($_SESSION)) {
-    session_start();
-}
+    if(!isset($_SESSION)) {
+        session_start();
+    }
 
-if (isset($_GET['id'])) {
-    $idParceiro = intval($_GET['id']);
+    if (isset($_GET['id'])) {
+        $idParceiro = intval($_GET['id']);
 
-    // Consulta para buscar os dados do parceiro
-    $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado = 'Aberto'";
-    $result = $mysqli->query($sql);
+        // Consulta para buscar os dados do parceiro
+        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+        $result = $mysqli->query($sql);
 
-    if ($result->num_rows > 0) {
-        $parceiro = $result->fetch_assoc();
-        // Exibir os dados da loja do parceiro
-        // Verifica e ajusta a logo
-        if(isset($parceiro['logo'])) {
-            $minhaLogo = $parceiro['logo'];
+        if ($result->num_rows > 0) {
+            $parceiro = $result->fetch_assoc();
+            // Exibir os dados da loja do parceiro
+            // Verifica e ajusta a logo
+            if(isset($parceiro['logo'])) {
+                $minhaLogo = $parceiro['logo'];
 
-            if ($minhaLogo !=''){
-                // Se existe e não está vazio, atribui o valor à variável logo
-                $logo = '../parceiros/arquivos/'.$parceiro['logo'];
-                //echo ('oii');
+                if ($minhaLogo !=''){
+                    // Se existe e não está vazio, atribui o valor à variável logo
+                    $logo = '../parceiros/arquivos/'.$parceiro['logo'];
+                    //echo ('oii');
+                }
+            }else{
+                $logo = '../arquivos_fixos/icone_loja.jpg';
             }
-        }else{
-            $logo = '../arquivos_fixos/icone_loja.jpg';
+        } else {
+            echo "<p>Parceiro não encontrado ou inativo.</p>";
         }
     } else {
-        echo "<p>Parceiro não encontrado ou inativo.</p>";
+        echo "<p>ID do parceiro não fornecido.</p>";
     }
-} else {
-    echo "<p>ID do parceiro não fornecido.</p>";
-}
 
-    // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos 
-    WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-    // Verifica se existem promoções, mais vendidos e frete grátis
-    // Supondo que já exista uma conexão com o banco de dados ($mysqli)
-    //$id_parceiro_sessao = $id;
-    $promocoes =  $mysqli->query("SELECT * FROM produtos 
-    WHERE id_parceiro = '$idParceiro' AND promocao = 'sim' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-    //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
-    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE 
-        (id_parceiro = '$idParceiro' AND promocao = 'sim' AND frete_gratis_promocao = 'sim') 
-        OR 
-        (id_parceiro = '$idParceiro' AND promocao = 'nao' AND frete_gratis = 'sim')
-    ") or die($mysqli->error);
-    //echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
@@ -61,24 +44,13 @@ if (isset($_GET['id'])) {
     $not_novo_produto= $row['not_novo_produto'] ?? 0;
     $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
-
-
     // Soma todos os valores de notificações
     $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
 
-    //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
-    $produtos_novidades = $mysqli->query("SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro 
-    FROM produtos 
-    WHERE id_parceiro = $idParceiro 
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim'") or die($mysqli->error);
-
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
-
-    // Consulta para buscar todos os produtos com promoção
+    // Atualiza os produtos com promoção
     $produtos_promocao = $mysqli->query("SELECT id_produto, promocao, ini_promocao, fim_promocao FROM produtos") or die($mysqli->error);
-
     while ($produtos_encontrados = $produtos_promocao->fetch_assoc()) {
         $id_produto = $produtos_encontrados['id_produto'];
         $promocao = $produtos_encontrados['promocao'];
@@ -97,6 +69,91 @@ if (isset($_GET['id'])) {
             $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
         }
     }
+    
+
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+    
+            $categoriaSelecionada = $_POST['categoria_selecionada'];
+            echo ('oii1');
+        }else{
+            $categoriaSelecionada = 'Alimenticios';
+            echo ('oii2');
+        }
+            // Realizar a consulta com a categoria selecionada
+            /*$produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
+            WHERE id_parceiro = '$idParceiro' 
+            AND categoria = '$categoriaSelecionada' 
+            AND oculto != 'sim' 
+            AND produto_aprovado = 'sim'") or die($mysqli->error);
+            //$produtos_catalogo = $mysqli->query($sql);
+            echo ('oii1');
+
+            $promocoes = $mysqli->query("SELECT * FROM produtos 
+            WHERE id_parceiro = '$idParceiro' 
+            AND categoria = '$categoriaSelecionada' 
+            AND promocao = 'sim' 
+            AND oculto != 'sim' 
+            AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+            $frete_gratis = $mysqli->query( "SELECT * FROM produtos 
+            WHERE (id_parceiro = '$idParceiro' 
+            AND categoria = '$categoriaSelecionada'  
+            AND promocao = 'sim' 
+            AND frete_gratis_promocao = 'sim') 
+            OR (id_parceiro = '$idParceiro' 
+            AND promocao = 'nao' 
+            AND frete_gratis = 'sim'") or die($mysqli->error);
+        } else {
+            echo "Nenhuma categoria foi selecionada.";
+        }*/
+    //}else{
+        //echo ('oii2');
+        //die();
+        // Consulta para buscar produtos do catálogo
+        $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos 
+        WHERE id_parceiro = '$idParceiro'
+        AND categoria = '$categoriaSelecionada'  
+        AND oculto != 'sim' 
+        AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+        // Verifica se existem promoções, mais vendidos e frete grátis
+        $promocoes =  $mysqli->query("SELECT * FROM produtos 
+        WHERE id_parceiro = '$idParceiro' 
+        AND categoria = '$categoriaSelecionada' 
+        AND promocao = 'sim' 
+        AND oculto != 'sim' 
+        AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+        // Consulta SQL corrigida
+        $queryFreteGratis = "
+            SELECT * 
+            FROM produtos 
+            WHERE (
+                    id_parceiro = '$idParceiro' 
+                    AND categoria = '$categoriaSelecionada' 
+                    AND promocao = 'sim' 
+                    AND frete_gratis_promocao = 'sim'
+                ) 
+            OR (
+                    id_parceiro = '$idParceiro' 
+                    AND categoria = '$categoriaSelecionada' 
+                    AND promocao = 'nao' 
+                    AND frete_gratis = 'sim'
+                )
+        ";
+
+        // Executa a consulta e verifica erros
+        $frete_gratis = $mysqli->query($queryFreteGratis) or die("Erro na consulta frete_gratis: " . $mysqli->error);
+  
+        //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
+        $produtos_novidades = $mysqli->query("SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro 
+        FROM produtos 
+        WHERE id_parceiro = $idParceiro 
+        AND categoria = '$categoriaSelecionada' 
+        AND oculto != 'sim' 
+        AND produto_aprovado = 'sim'") or die($mysqli->error);
+    //}
 
 ?>
 
@@ -109,12 +166,16 @@ if (isset($_GET['id'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="loja_parceiro_home.css">
     <script src="loja_parceiro_home.js"></script> 
-<style>
+    <script>
 
-</style>
+
+    </script>
+
 </head>
 <body>
-
+    <form id="formCategoria" method="POST" action="">
+        <input type="text" name="categoria_selecionada" id="categoria_selecionada">
+    </form>
     <!-- Header -->
     <header>
         <div class="logo">
@@ -129,7 +190,7 @@ if (isset($_GET['id'])) {
                 <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
                 <!-- Exibir a contagem de notificações -->
                 <?php if ($total_notificacoes > 0): ?>
-                    <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
+                    <span id="notificacao-count" class="notificacao-count"></span>
                 <?php else: ?>
                     <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                 <?php endif; ?>
@@ -212,7 +273,7 @@ if (isset($_GET['id'])) {
                                 break;
                         }
                     ?>
-                    <div class="categoria-item <?php echo $categoriaNome === 'Alimenticios' ? 'selected' : ''; ?>" data-categoria="<?php echo $categoriaNome; ?>">
+                    <div class="categoria-item <?php echo $categoriaNome; ?>" >
                         <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
                         <p><?php echo $categoriaNome; ?></p>
                     </div>
@@ -229,45 +290,8 @@ if (isset($_GET['id'])) {
         <?php endif; ?>
     </div>
 
-    <form id="formCategoria" method="POST" action="">
-        <input type="text" name="categoria_selecionada">
-        <button type="submit" style="display: none;"></button>
-    </form>
 
-        <?php
-        
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                if (isset($_POST['categoria_selecionada'])) {
-                    $categoriaSelecionada = $_POST['categoria_selecionada'];
 
-                    // Realizar a consulta com a categoria selecionada
-                    $produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
-                    WHERE id_parceiro = '$idParceiro' 
-                    AND categoria = '$categoriaSelecionada' 
-                    AND oculto != 'sim' 
-                    AND produto_aprovado = 'sim'") or die($mysqli->error);
-                    //$produtos_catalogo = $mysqli->query($sql);
-
-                    /*$promocoes = $mysqli->query("SELECT * FROM produtos 
-                    WHERE id_parceiro = '$idParceiro' 
-                    AND categoria = '$categoriaSelecionada' 
-                    AND promocao = 'sim' 
-                    AND oculto != 'sim' 
-                    AND produto_aprovado = 'sim'") or die($mysqli->error);*/
-
-                    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos 
-                    WHERE (id_parceiro = '$idParceiro' 
-                    AND categoria = '$categoriaSelecionada'  
-                    AND promocao = 'sim' 
-                    AND frete_gratis_promocao = 'sim') 
-                    OR (id_parceiro = '$idParceiro' 
-                    AND promocao = 'nao' 
-                    AND frete_gratis = 'sim')") or die($mysqli->error);
-                } else {
-                    echo "Nenhuma categoria foi selecionada.";
-                }
-            }
-        ?>
     <!-- Conteúdo principal -->
     <main id="main-content">
         <!-- Conteúdo -->
@@ -793,49 +817,25 @@ if (isset($_GET['id'])) {
 
         // Função para enviar o formulário via AJAX
         function enviarFormularioAjax() {
+            const formCategoria = document.getElementById("formCategoria");
             const formData = new FormData(formCategoria); // Cria FormData com os dados do formulário
-            console.log('Resposta do servidor:', data); 
-            fetch('', { // A URL vazia significa que o próprio arquivo será o destino
-                method: 'POST',
-                body: formData
+
+            fetch("", { // Defina a URL do arquivo que processará o POST
+                method: "POST",
+                body: formData,
             })
-            .then(response => response.text())
-            .then(data => {
-                console.log('Resposta do servidor:', data); // Exibe a resposta do servidor no console
-                // Aqui você pode atualizar a página ou outras partes do DOM
-            })
-            .catch(error => console.error('Erro ao enviar formulário via AJAX:', error));
-            console.log('Resposta do servidor:', data); 
-        }
-        
-
-
-        // Define que a aba "catalogo" está ativa ao carregar a página
-        window.onload = function() {
-            mostrarConteudo('catalogo', document.querySelector('.tab.active'));
-        };
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const categoriaItems = document.querySelectorAll(".categoria-item");
-
-            categoriaItems.forEach((item) => {
-                item.addEventListener("click", function () {
-                    // Remove a classe 'selected' de todos os itens
-                    categoriaItems.forEach((el) => el.classList.remove("selected"));
-
-                    // Adiciona a classe 'selected' ao item clicado
-                    item.classList.add("selected");
-
-                    // Pegue o nome da categoria
-                    const categoriaSelecionada = item.getAttribute("data-categoria");
-                    console.log("Categoria selecionada:", categoriaSelecionada);
+                .then((response) => response.text())
+                .then((data) => {
+                    formCategoria.submit();
+                    console.log("Resposta do servidor:", data); // Exibe a resposta do servidor no console
+                    // Aqui você pode atualizar a página ou outras partes do DOM com os dados recebidos
                     
-                    // Aqui você pode adicionar lógica adicional, como atualizar produtos da categoria na página.
-                });
-            });
-            enviarFormularioAjax(); // Enviar via AJAX
-        });
+                })
+                .catch((error) => console.error("Erro ao enviar formulário via AJAX:", error));
+                
+        }
+
+
 
    
     </script>

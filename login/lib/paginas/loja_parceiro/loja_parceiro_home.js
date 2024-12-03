@@ -88,3 +88,7 @@ function atualizarContagemNotificacoes(contagem) {
     countElement.style.display = contagem > 0 ? 'block' : 'none';
 }
 
+// Define que a aba "catalogo" está ativa ao carregar a página
+window.onload = function() {
+    mostrarConteudo('catalogo', document.querySelector('.tab.active'));
+};
