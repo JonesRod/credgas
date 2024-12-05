@@ -38,7 +38,7 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
         $categoriaSelecionada = $_POST['categoria_selecionada'];
 
-        var_dump($categoriaSelecionada);
+        //var_dump($categoriaSelecionada);
         // Aqui, adicione a lógica para buscar os dados no banco
         /*$dados = [
             'status' => 'success',
@@ -95,10 +95,10 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
     
         $categoriaSelecionada = $_POST['categoria_selecionada'];
-        echo ('oii1');
+        //echo ('oii1');
     }else{
         $categoriaSelecionada = 'Alimenticios';
-        echo ('oii2');
+        //echo ('oii2');
     }
             // Realizar a consulta com a categoria selecionada
             /*$produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
@@ -215,9 +215,9 @@
 </head>
 <body>
     <form id="formCategoria" method="POST" action="">
-        <input type="text" name="id_parceiro" id="id_parceiro" value="<?php echo $idParceiro; ?>">
-        <input type="text" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
-        <button type="submit" id="carregar_categoria" class="carregar_categoria">enviar</button>
+        <input type="hidden" name="id_parceiro" id="id_parceiro" value="<?php echo $idParceiro; ?>">
+        <input type="hidden" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
+        <button type="submit" id="carregar_categoria" class="carregar_categoria" style="display: none;">enviar</button>
     </form>
     <!-- Header -->
     <header>
