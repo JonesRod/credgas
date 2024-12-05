@@ -40,7 +40,7 @@
 
         var_dump($categoriaSelecionada);
         // Aqui, adicione a lógica para buscar os dados no banco
-        $dados = [
+        /*$dados = [
             'status' => 'success',
             'categoria' => $categoriaSelecionada,
             /*'produtos' => [
@@ -48,13 +48,13 @@
                 ['id' => 1, 'nome' => 'Produto 1', 'preco' => 10.00],
                 ['id' => 2, 'nome' => 'Produto 2', 'preco' => 20.00]
             ]*/
-        ];
+        //];
     
-        echo json_encode($dados);
-    } else {
+        //echo json_encode($dados);
+    } /*else {
         $categoriaSelecionada = 'Alimenticios';
         //echo json_encode(['status' => 'error', 'message' => 'Categoria não selecionada']);
-    }
+    }*/
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
@@ -92,7 +92,7 @@
     
 
 
-    /*if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
     
         $categoriaSelecionada = $_POST['categoria_selecionada'];
         echo ('oii1');
@@ -214,9 +214,10 @@
 
 </head>
 <body>
-    <form id="formCategoria" method="POST" action="processa_categoria.php">
+    <form id="formCategoria" method="POST" action="">
         <input type="text" name="id_parceiro" id="id_parceiro" value="<?php echo $idParceiro; ?>">
         <input type="text" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
+        <button type="submit" id="carregar_categoria" class="carregar_categoria">enviar</button>
     </form>
     <!-- Header -->
     <header>
@@ -314,8 +315,10 @@
                                 $imagem = 'img/categorias/padrao.png';
                                 break;
                         }
+                        $selectedClass = ($categoriaNome === $categoriaSelecionada) ? 'selected' : ''; // Adiciona a classe 'selected' se for a selecionada
+
                     ?>
-                    <div class="categoria-item <?php echo $categoriaNome; ?>" >
+                    <div class="categoria-item <?php echo $selectedClass; ?>" onclick="selecionarCategoria('<?php echo $categoriaNome; ?>')" data-categoria="<?php echo $categoriaNome; ?>">
                         <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
                         <p><?php echo $categoriaNome; ?></p>
                     </div>
@@ -870,75 +873,37 @@
                     categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
                     categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
                     inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
-                    enviarFormularioAjax(); // Enviar via AJAX
+                    enviar(); // Enviar via AJAX
                 });
             });
+
         });
 
-        // Função para enviar o formulário via AJAX
-        function enviarFormularioAjax() {
-            const formData = new FormData(formCategoria); // Cria os dados do formulário
+        /*document.addEventListener('DOMContentLoaded', () => {
+        const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
+        const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
 
-            fetch("processa_categoria.php", {
-                method: "POST",
-                body: formData,
-            })
-                .then((response) => response.text())
-                .then((data) => {
-                    console.log("Resposta do servidor:", data);
-                    // Atualizar a página com os dados recebidos (opcional)
-                })
-                .catch((error) => {
-                    console.error("Erro ao enviar o formulário:", error);
-                });
-        }
-
-        /*function mostrarConteudo(id, elemento) {
-            // Remover a classe 'ativo' de todas as seções
-            document.querySelectorAll('.conteudo-secao').forEach((secao) => {
-                secao.classList.remove('ativo');
-                secao.classList.add('oculto');
+        // Configurar evento de clique para as categorias
+        categorias.forEach(categoria => {
+            categoria.addEventListener('click', () => {
+                categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+                categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+                inputCategoria.value = categoria.getAttribute('data-categoria'); // Atualiza o valor no campo hidden
+                enviar(); // Enviar o formulário
             });
-
-            // Adicionar a classe 'ativo' à seção correspondente
-            const conteudo = document.getElementById(id);
-            if (conteudo) {
-                conteudo.classList.remove('oculto');
-                conteudo.classList.add('ativo');
-            }
-
-            // Alterar a aba ativa
-            document.querySelectorAll('.tab').forEach((tab) => tab.classList.remove('active'));
-            elemento.classList.add('active');
+        });*/
+        function selecionarCategoria(categoriaNome) {
+        const inputCategoria = document.getElementById('categoria_selecionada'); // Campo hidden
+        inputCategoria.value = categoriaNome; // Atribui o nome da categoria ao campo hidden
+        enviar(); // Envia o formulário
+    }
+        function enviar() {
+            // Simula o clique no botão "Enviar"
+            const botaoEnviar = document.getElementById('carregar_categoria');
+            
+            botaoEnviar.click();
         }
-
-        function carregarProdutos(id) {
-            fetch(`processa_categoria.php?tipo=${id}`)
-                .then((response) => response.json())
-                .then((data) => {
-                    const listaProdutos = document.getElementById(`produtos-${id}`);
-                    listaProdutos.innerHTML = "";
-
-                    if (data.length > 0) {
-                        data.forEach((produto) => {
-                            const div = document.createElement("div");
-                            div.classList.add("produto-item");
-                            div.innerHTML = `
-                                <img src="${produto.imagem}" alt="${produto.nome}" />
-                                <h3>${produto.nome}</h3>
-                                <p>${produto.descricao}</p>
-                                <span>R$ ${produto.preco}</span>
-                            `;
-                            listaProdutos.appendChild(div);
-                        });
-                    } else {
-                        listaProdutos.innerHTML = "<p>Sem produtos disponíveis.</p>";
-                    }
-                })
-                .catch((error) => console.error("Erro ao carregar produtos:", error));
-        }*/
-
-   
+    //});
     </script>
 
 </body>
