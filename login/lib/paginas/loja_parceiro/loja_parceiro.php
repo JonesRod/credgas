@@ -35,6 +35,26 @@
         echo "<p>ID do parceiro não fornecido.</p>";
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+        $categoriaSelecionada = $_POST['categoria_selecionada'];
+
+        var_dump($categoriaSelecionada);
+        // Aqui, adicione a lógica para buscar os dados no banco
+        $dados = [
+            'status' => 'success',
+            'categoria' => $categoriaSelecionada,
+            /*'produtos' => [
+                // Exemplo de dados retornados
+                ['id' => 1, 'nome' => 'Produto 1', 'preco' => 10.00],
+                ['id' => 2, 'nome' => 'Produto 2', 'preco' => 20.00]
+            ]*/
+        ];
+    
+        echo json_encode($dados);
+    } else {
+        $categoriaSelecionada = 'Alimenticios';
+        //echo json_encode(['status' => 'error', 'message' => 'Categoria não selecionada']);
+    }
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
@@ -72,14 +92,14 @@
     
 
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+    /*if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
     
-            $categoriaSelecionada = $_POST['categoria_selecionada'];
-            echo ('oii1');
-        }else{
-            $categoriaSelecionada = 'Alimenticios';
-            echo ('oii2');
-        }
+        $categoriaSelecionada = $_POST['categoria_selecionada'];
+        echo ('oii1');
+    }else{
+        $categoriaSelecionada = 'Alimenticios';
+        echo ('oii2');
+    }
             // Realizar a consulta com a categoria selecionada
             /*$produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
             WHERE id_parceiro = '$idParceiro' 
@@ -166,15 +186,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="loja_parceiro_home.css">
     <script src="loja_parceiro_home.js"></script> 
-    <script>
+    <style>
+        .conteudo-secao {
+            display: none;
+        }
 
+        .conteudo-secao.ativo {
+            display: block;
+        }
 
-    </script>
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            display: inline-block;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .tab.active {
+            background-color: #eaeaea;
+            border-bottom: 2px solid #000;
+        }
+
+    </style>
 
 </head>
 <body>
-    <form id="formCategoria" method="POST" action="">
-        <input type="text" name="categoria_selecionada" id="categoria_selecionada">
+    <form id="formCategoria" method="POST" action="processa_categoria.php">
+        <input type="text" name="id_parceiro" id="id_parceiro" value="<?php echo $idParceiro; ?>">
+        <input type="text" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
     </form>
     <!-- Header -->
     <header>
@@ -296,24 +338,44 @@
     <main id="main-content">
         <!-- Conteúdo -->
         <div class="opcoes">
-            <!-- Conteúdo -->
-            <div class="tab active" onclick="mostrarConteudo('catalogo',this)">
+            <!-- Abas -->
+            <div class="tab active" onclick="mostrarConteudo('catalogo', this)">
                 <span>Catálogo</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('promocoes',this)">
+            <div class="tab" onclick="mostrarConteudo('promocoes', this)">
                 <span class="icone-promocao" title="Produto em promoção">🔥</span><span>Promoções</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
+            <div class="tab" onclick="mostrarConteudo('frete_gratis', this)">
                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('novidades',this)">
-            <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
+            <div class="tab" onclick="mostrarConteudo('novidades', this)">
+                <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
             </div>
-
         </div>
+
+        <!-- Conteúdo das seções -->
+        <div id="conteudos">
+            <div id="catalogo" class="conteudo-secao">
+                <h2></h2>
+                <div class="produtos-lista" id="produtos-catalogo">Carregando produtos...</div>
+            </div>
+            <div id="promocoes" class="conteudo-secao oculto">
+                <h2></h2>
+                <div class="produtos-lista" id="produtos-promocoes">Carregando produtos...</div>
+            </div>
+            <div id="frete_gratis" class="conteudo-secao oculto">
+                <h2></h2>
+                <div class="produtos-lista" id="produtos-frete-gratis">Carregando produtos...</div>
+            </div>
+            <div id="novidades" class="conteudo-secao oculto">
+                <h2></h2>
+                <div class="produtos-lista" id="produtos-novidades">Carregando produtos...</div>
+            </div>
+        </div>
+
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
@@ -789,53 +851,92 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            const categorias = document.querySelectorAll('.categoria-item');
+            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
             const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
             const formCategoria = document.querySelector('#formCategoria'); // Formulário
 
-            // Atribuir valor inicial ao campo categoria_selecionada
-            const alimenticios = Array.from(categorias).find(categoria => 
-                categoria.querySelector('p').textContent.trim() === 'Alimenticios'
-            );
+            // Selecionar a primeira categoria da lista
+            if (categorias.length > 0) {
+                const primeiraCategoria = categorias[0]; // A primeira categoria
 
-            if (alimenticios) {
-                categorias.forEach(categoria => categoria.classList.remove('selected'));
-                alimenticios.classList.add('selected');
-                inputCategoria.value = 'Alimenticios';
+                categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
+                primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
+                inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
             }
 
+            // Configurar evento de clique para as categorias
             categorias.forEach(categoria => {
                 categoria.addEventListener('click', () => {
-                    categorias.forEach(cat => cat.classList.remove('selected'));
-                    categoria.classList.add('selected');
-                    inputCategoria.value = categoria.querySelector('p').textContent.trim();
+                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
                     enviarFormularioAjax(); // Enviar via AJAX
-                    
                 });
             });
         });
 
         // Função para enviar o formulário via AJAX
         function enviarFormularioAjax() {
-            const formCategoria = document.getElementById("formCategoria");
-            const formData = new FormData(formCategoria); // Cria FormData com os dados do formulário
+            const formData = new FormData(formCategoria); // Cria os dados do formulário
 
-            fetch("", { // Defina a URL do arquivo que processará o POST
+            fetch("processa_categoria.php", {
                 method: "POST",
                 body: formData,
             })
                 .then((response) => response.text())
                 .then((data) => {
-                    formCategoria.submit();
-                    console.log("Resposta do servidor:", data); // Exibe a resposta do servidor no console
-                    // Aqui você pode atualizar a página ou outras partes do DOM com os dados recebidos
-                    
+                    console.log("Resposta do servidor:", data);
+                    // Atualizar a página com os dados recebidos (opcional)
                 })
-                .catch((error) => console.error("Erro ao enviar formulário via AJAX:", error));
-                
+                .catch((error) => {
+                    console.error("Erro ao enviar o formulário:", error);
+                });
         }
 
+        /*function mostrarConteudo(id, elemento) {
+            // Remover a classe 'ativo' de todas as seções
+            document.querySelectorAll('.conteudo-secao').forEach((secao) => {
+                secao.classList.remove('ativo');
+                secao.classList.add('oculto');
+            });
 
+            // Adicionar a classe 'ativo' à seção correspondente
+            const conteudo = document.getElementById(id);
+            if (conteudo) {
+                conteudo.classList.remove('oculto');
+                conteudo.classList.add('ativo');
+            }
+
+            // Alterar a aba ativa
+            document.querySelectorAll('.tab').forEach((tab) => tab.classList.remove('active'));
+            elemento.classList.add('active');
+        }
+
+        function carregarProdutos(id) {
+            fetch(`processa_categoria.php?tipo=${id}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const listaProdutos = document.getElementById(`produtos-${id}`);
+                    listaProdutos.innerHTML = "";
+
+                    if (data.length > 0) {
+                        data.forEach((produto) => {
+                            const div = document.createElement("div");
+                            div.classList.add("produto-item");
+                            div.innerHTML = `
+                                <img src="${produto.imagem}" alt="${produto.nome}" />
+                                <h3>${produto.nome}</h3>
+                                <p>${produto.descricao}</p>
+                                <span>R$ ${produto.preco}</span>
+                            `;
+                            listaProdutos.appendChild(div);
+                        });
+                    } else {
+                        listaProdutos.innerHTML = "<p>Sem produtos disponíveis.</p>";
+                    }
+                })
+                .catch((error) => console.error("Erro ao carregar produtos:", error));
+        }*/
 
    
     </script>
