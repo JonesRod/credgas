@@ -210,7 +210,7 @@
         <input type="hidden" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
         <button type="submit" id="carregar_categoria" class="carregar_categoria" style="display: none;">enviar</button>
     </form>
-    
+
     <!-- Header -->
     <header>
         <div class="logo">
@@ -365,11 +365,6 @@
             ?>            
             <div class="container">
                 <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
-
-                <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
-                    <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
-                    <button class="button">Cadastrar produto</button>    
-                </form>
             </div>
 
             <!-- Lista de produtos aqui -->
