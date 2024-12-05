@@ -204,12 +204,6 @@ if (isset($dadosEscolhido['logo'])) {
                         ?>                         
                         <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                         <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                        <p class="descricao">
-                            <?php
-                            $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                            echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
-                            ?>
-                        </p>
                         <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
@@ -329,12 +323,6 @@ if (isset($dadosEscolhido['logo'])) {
                                 
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <p class="descricao">
-                                    <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
-                                    ?>
-                                </p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
@@ -447,18 +435,12 @@ if (isset($dadosEscolhido['logo'])) {
                                 
                                     if ($diasDesdeCadastro <= 30):
                                 ?>
-                                        <span class="icone-novidades" title="Novidades">🆕</span>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php
                                     endif;
                                 ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <p class="descricao">
-                                    <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
-                                    ?>
-                                </p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
@@ -583,12 +565,6 @@ if (isset($dadosEscolhido['logo'])) {
                                                      
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <p class="descricao">
-                                    <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 100, '...'); // Limita a 100 caracteres com "..."
-                                    ?>
-                                </p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->

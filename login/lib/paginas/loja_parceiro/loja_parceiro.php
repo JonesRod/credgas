@@ -35,26 +35,10 @@
         echo "<p>ID do parceiro não fornecido.</p>";
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+    /*if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
         $categoriaSelecionada = $_POST['categoria_selecionada'];
 
-        //var_dump($categoriaSelecionada);
-        // Aqui, adicione a lógica para buscar os dados no banco
-        /*$dados = [
-            'status' => 'success',
-            'categoria' => $categoriaSelecionada,
-            /*'produtos' => [
-                // Exemplo de dados retornados
-                ['id' => 1, 'nome' => 'Produto 1', 'preco' => 10.00],
-                ['id' => 2, 'nome' => 'Produto 2', 'preco' => 20.00]
-            ]*/
-        //];
-    
-        //echo json_encode($dados);
-    } /*else {
-        $categoriaSelecionada = 'Alimenticios';
-        //echo json_encode(['status' => 'error', 'message' => 'Categoria não selecionada']);
-    }*/
+    } */
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
@@ -90,46 +74,35 @@
         }
     }
     
-
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
     
         $categoriaSelecionada = $_POST['categoria_selecionada'];
         //echo ('oii1');
     }else{
-        $categoriaSelecionada = 'Alimenticios';
-        //echo ('oii2');
+        // Consulta para buscar categorias únicas dos produtos do parceiro
+        $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = $idParceiro";
+        $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
+
+        // Array para armazenar todas as categorias
+        $categoriasArray = [];
+        
+        while ($categoria = $result_categorias->fetch_assoc()) {
+            
+            $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
+            
+        }
+
+        // Remove as duplicatas do array de categorias
+        $categoriasUnicas = array_unique($categoriasArray);
+        //var_dump($categoriasUnicas);
+
+        // Pega a primeira categoria, se existir
+        $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
+        // Use reset() para obter o primeiro elemento do array
+        
+        $categoriaSelecionada = $primeiraCategoria;
+        //echo ('oii22');
     }
-            // Realizar a consulta com a categoria selecionada
-            /*$produtos_catalogo = $mysqli->query("SELECT * FROM produtos 
-            WHERE id_parceiro = '$idParceiro' 
-            AND categoria = '$categoriaSelecionada' 
-            AND oculto != 'sim' 
-            AND produto_aprovado = 'sim'") or die($mysqli->error);
-            //$produtos_catalogo = $mysqli->query($sql);
-            echo ('oii1');
-
-            $promocoes = $mysqli->query("SELECT * FROM produtos 
-            WHERE id_parceiro = '$idParceiro' 
-            AND categoria = '$categoriaSelecionada' 
-            AND promocao = 'sim' 
-            AND oculto != 'sim' 
-            AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-            $frete_gratis = $mysqli->query( "SELECT * FROM produtos 
-            WHERE (id_parceiro = '$idParceiro' 
-            AND categoria = '$categoriaSelecionada'  
-            AND promocao = 'sim' 
-            AND frete_gratis_promocao = 'sim') 
-            OR (id_parceiro = '$idParceiro' 
-            AND promocao = 'nao' 
-            AND frete_gratis = 'sim'") or die($mysqli->error);
-        } else {
-            echo "Nenhuma categoria foi selecionada.";
-        }*/
-    //}else{
-        //echo ('oii2');
-        //die();
         // Consulta para buscar produtos do catálogo
         $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos 
         WHERE id_parceiro = '$idParceiro'
@@ -194,7 +167,12 @@
         .conteudo-secao.ativo {
             display: block;
         }
-
+        .categorias-parceiro {
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    height: 100%; /* Garante que o elemento ocupe o espaço necessário */
+}
         .tab {
             cursor: pointer;
             padding: 10px;
@@ -209,7 +187,20 @@
             background-color: #eaeaea;
             border-bottom: 2px solid #000;
         }
+        .voltar {
+    margin: 0; /* Remove margens padrão */
+    font-size: 1.5rem; /* Ajuste o tamanho da fonte conforme necessário */
+}
 
+.voltar-link {
+    text-decoration: none; /* Remove sublinhado */
+    color: #333; /* Cor do texto */
+    transition: color 0.3s ease; /* Transição suave ao passar o mouse */
+}
+
+.voltar-link:hover {
+    color: #fff; /* Cor ao passar o mouse */
+}
     </style>
 
 </head>
@@ -219,6 +210,7 @@
         <input type="hidden" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
         <button type="submit" id="carregar_categoria" class="carregar_categoria" style="display: none;">enviar</button>
     </form>
+    
     <!-- Header -->
     <header>
         <div class="logo">
@@ -288,10 +280,17 @@
                     // Remove as duplicatas do array de categorias
                     $categoriasUnicas = array_unique($categoriasArray);
                     //var_dump($categoriasUnicas);
+
+                    // Pega a primeira categoria, se existir
+                    $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
+                    // Use reset() para obter o primeiro elemento do array
         ?>
 
         <div class="parceiro-card">
             <div class="categorias-parceiro">
+                <h2 class="voltar">
+                    <a href="../../../../index.php" class="voltar-link"><< Voltar</a>
+                </h2>
                 <?php if (count($categoriasUnicas) > 0): ?>
                     <?php foreach ($categoriasUnicas as $categoriaNome): 
                         $categoriaNome = htmlspecialchars($categoriaNome);
@@ -358,27 +357,6 @@
                 <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
             </div>
         </div>
-
-        <!-- Conteúdo das seções -->
-        <div id="conteudos">
-            <div id="catalogo" class="conteudo-secao">
-                <h2></h2>
-                <div class="produtos-lista" id="produtos-catalogo">Carregando produtos...</div>
-            </div>
-            <div id="promocoes" class="conteudo-secao oculto">
-                <h2></h2>
-                <div class="produtos-lista" id="produtos-promocoes">Carregando produtos...</div>
-            </div>
-            <div id="frete_gratis" class="conteudo-secao oculto">
-                <h2></h2>
-                <div class="produtos-lista" id="produtos-frete-gratis">Carregando produtos...</div>
-            </div>
-            <div id="novidades" class="conteudo-secao oculto">
-                <h2></h2>
-                <div class="produtos-lista" id="produtos-novidades">Carregando produtos...</div>
-            </div>
-        </div>
-
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
@@ -448,11 +426,9 @@
                         <?php
                             endif;
                         ?>   
-                        <?php echo $produto['nome_produto']; ?>
-                    </h3>
                         
-                    <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
-
+                    </h3>
+                    <?php echo $produto['nome_produto']; ?>
                     <!-- Converte o valor do produto para float e formata -->
                     <?php
                         $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
@@ -461,8 +437,7 @@
 
                     <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
-                    <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                    </div>
+                    <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo urlencode($produto['id_parceiro']); ?>" class="button-editar">Detalhes</a>                    </div>
                 </div>
                 <?php endwhile; ?>
             </div>
@@ -475,7 +450,7 @@
         <?php else: ?>
         <div class="conteudo">
             <form method="POST" action="produtos/adicionar_produto.php">
-                <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
+                <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
                 <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
                 <button class="button">Inclua seu primeiro produto</button>
             </form>
@@ -531,18 +506,15 @@
                                 <?php 
                                     endif; 
                                 ?>
-                                <?php echo $produto['nome_produto']; ?>
                             </h3>
-
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <?php echo $produto['nome_produto']; ?>
 
                             <?php
                                 // Formatação do valor promocional
                                 $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>                        </div>
                     </div>
                 <?php endwhile; ?>
             </div>
@@ -614,17 +586,15 @@
                                 <?php
                                     endif;
                                 ?> 
-                                <?php echo $produto['nome_produto']; ?>
                             </h3>
-
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <?php echo $produto['nome_produto']; ?>
 
                             <?php
                                 // Formatação do valor promocional
                                 $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>
                         </div>
                     </div>
                 <?php endwhile; ?>
@@ -700,18 +670,15 @@
                                 <?php
                                     endif;
                                 ?> 
-                                <?php echo $produto['nome_produto']; ?>
                             </h3>
-
-                            <p class="produto-descricao"><?php echo $produto['descricao_produto']; ?></p>
+                            <?php echo $produto['nome_produto']; ?>
 
                             <?php
                                 // Formatação do valor promocional
                                 $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>                        </div>
                     </div>
                     <?php endif; ?>
                 <?php endwhile; ?>
@@ -796,114 +763,119 @@
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 5000);
 
-        // Referencia todos os campos de pesquisa
-        const camposPesquisa = [
-            document.getElementById('inputPesquisaCatalogo'),
-            document.getElementById('inputPesquisaPromocao'),
-            document.getElementById('inputPesquisaFreteGratis'),
-            document.getElementById('inputPesquisaNovidades')
-        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            // Referencia todos os campos de pesquisa
+            const camposPesquisa = [
+                document.getElementById('inputPesquisaCatalogo'),
+                document.getElementById('inputPesquisaPromocao'),
+                document.getElementById('inputPesquisaFreteGratis'),
+                document.getElementById('inputPesquisaNovidades')
+            ].filter(Boolean); // Remove campos que não existem
 
-        // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
-        function sincronizarPesquisa(origem) {
-            const termoPesquisa = origem.value.toLowerCase();
+            // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
+            function sincronizarPesquisa(origem) {
+                const termoPesquisa = origem.value.toLowerCase();
 
-            // Atualiza todos os campos de pesquisa com o mesmo valor
-            camposPesquisa.forEach(campo => {
-                if (campo !== origem) {
-                    campo.value = origem.value;
-                }
-            });
-
-            // Executa a lógica de pesquisa em cada categoria separadamente
-            const categorias = [
-                { produtos: document.querySelectorAll('.produto-item.catalogo'), mensagem: 'mensagemNaoEncontradoCatalogo' },
-                { produtos: document.querySelectorAll('.produto-item.promocao'), mensagem: 'mensagemNaoEncontradoPromocao' },
-                { produtos: document.querySelectorAll('.produto-item.frete-gratis'), mensagem: 'mensagemNaoEncontradoFreteGratis' },
-                { produtos: document.querySelectorAll('.produto-item.novidades'), mensagem: 'mensagemNaoEncontradoNovidades' }
-            ];
-
-            categorias.forEach(categoria => {
-                let produtoEncontrado = false;
-
-                categoria.produtos.forEach(produto => {
-                    const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-
-                    if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                        produto.style.display = 'block';
-                        produtoEncontrado = true;
-                    } else {
-                        produto.style.display = 'none';
+                // Atualiza todos os campos de pesquisa com o mesmo valor
+                camposPesquisa.forEach(campo => {
+                    if (campo !== origem) {
+                        campo.value = origem.value;
                     }
                 });
 
-                // Exibe ou oculta a mensagem de "Produto não encontrado" por categoria
-                const mensagemNaoEncontrado = document.getElementById(categoria.mensagem);
-                if (mensagemNaoEncontrado) {
-                    mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-                }
-            });
-        }
+                // Configura as categorias para busca
+                const categorias = [
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.catalogo'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoCatalogo') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.promocao'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoPromocao') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.frete-gratis'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoFreteGratis') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.novidades'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoNovidades') 
+                    }
+                ];
 
-        // Adiciona o evento de entrada para todos os campos
-        camposPesquisa.forEach(campo => {
-            campo.addEventListener('input', function () {
-                sincronizarPesquisa(this);
-            });
-        });
+                categorias.forEach(categoria => {
+                    let produtoEncontrado = false;
 
+                    categoria.produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-detalhes')?.textContent.toLowerCase() || '';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
-            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
-            const formCategoria = document.querySelector('#formCategoria'); // Formulário
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
 
-            // Selecionar a primeira categoria da lista
-            if (categorias.length > 0) {
-                const primeiraCategoria = categorias[0]; // A primeira categoria
-
-                categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
-                primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
-                inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
+                    // Exibe ou oculta a mensagem de "Produto não encontrado"
+                    if (categoria.mensagem) {
+                        categoria.mensagem.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
             }
 
-            // Configurar evento de clique para as categorias
-            categorias.forEach(categoria => {
-                categoria.addEventListener('click', () => {
-                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
-                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
-                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
-                    enviar(); // Enviar via AJAX
+            // Adiciona o evento de entrada para todos os campos
+            camposPesquisa.forEach(campo => {
+                campo.addEventListener('input', function () {
+                    sincronizarPesquisa(this);
                 });
             });
-
         });
 
-        /*document.addEventListener('DOMContentLoaded', () => {
-        const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
-        const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+    
+        document.addEventListener('DOMContentLoaded', () => {
+    const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
+    const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+    const formCategoria = document.querySelector('#formCategoria'); // Formulário
 
-        // Configurar evento de clique para as categorias
+    // Recupera a categoria selecionada do input hidden após o recarregamento da página
+    const categoriaSelecionada = inputCategoria.value;
+
+    // Se houver uma categoria previamente selecionada, destaca-a
+    if (categoriaSelecionada) {
         categorias.forEach(categoria => {
-            categoria.addEventListener('click', () => {
-                categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
-                categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
-                inputCategoria.value = categoria.getAttribute('data-categoria'); // Atualiza o valor no campo hidden
-                enviar(); // Enviar o formulário
-            });
-        });*/
-        function selecionarCategoria(categoriaNome) {
-        const inputCategoria = document.getElementById('categoria_selecionada'); // Campo hidden
-        inputCategoria.value = categoriaNome; // Atribui o nome da categoria ao campo hidden
-        enviar(); // Envia o formulário
+            if (categoria.querySelector('p').textContent.trim() === categoriaSelecionada) {
+                categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria correspondente
+            } else {
+                categoria.classList.remove('selected'); // Remove a classe 'selected' de outras categorias
+            }
+        });
+    } else if (categorias.length > 0) {
+        // Caso contrário, seleciona a primeira categoria como padrão
+        const primeiraCategoria = categorias[0];
+        categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
+        primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
+        inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
     }
-        function enviar() {
-            // Simula o clique no botão "Enviar"
-            const botaoEnviar = document.getElementById('carregar_categoria');
-            
-            botaoEnviar.click();
-        }
-    //});
+
+    // Configurar evento de clique para as categorias
+    categorias.forEach(categoria => {
+        categoria.addEventListener('click', () => {
+            categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+            categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+            inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
+            enviar(); // Envia o formulário
+        });
+    });
+});
+
+function enviar() {
+    // Simula o clique no botão "Enviar"
+    const botaoEnviar = document.getElementById('carregar_categoria');
+    botaoEnviar.click();
+}
+
+
     </script>
 
 </body>
