@@ -166,7 +166,7 @@
             <label for="valor_produto_taxa">Valor do Produto + Taxa da Plataforma (R$):</label>
             <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>">           
             <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
-            value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" readonly required>
+            value="<?php echo htmlspecialchars($produto['taxa_padrao']); ?>" readonly required>
         </div>
 
         <!-- Frete Grátis -->

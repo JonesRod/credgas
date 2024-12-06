@@ -190,79 +190,58 @@
 
             <!-- Lista de produtos aqui -->
             <div class="lista-produtos">
-                <?php 
-                    while ($produto = $produtos_catalogo->fetch_assoc()): 
-                ?>
+                <?php while ($produto = $produtos_catalogo->fetch_assoc()): ?>
                 <div class="produto-item">
                     <?php
-                        // Verifica se o campo 'imagens' está definido e não está vazio
-                        if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                            // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                            $imagensArray = explode(',', $produto['imagens']);
-                            
-                            // Pega a primeira imagem do array
-                            $primeiraImagem = $imagensArray[0];
-                            // Exibe a primeira imagem
-                            ?>
-                            <?php 
-                                // Exibe o ícone de oculto, se o produto estiver oculto
-                                if ($produto['oculto'] === 'sim'): 
-                            ?>
-                                <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                            <?php endif;
-
-                                // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                if ($produto['produto_aprovado'] !== 'sim'): 
-                            ?>
-                                <i class="fas fa-clock" title="Em análise"></i>
-                            <?php 
-                                endif; 
-                            ?>
-                            <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                            <?php
-                        } else {
-                            // Caso não haja imagens, exibe uma imagem padrão
-                            ?>
-                            <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                            <?php
-                        }
+                    // Verifica e processa as imagens do produto
+                    $primeiraImagem = '/default_image.jpg'; // Imagem padrão
+                    if (!empty($produto['imagens'])) {
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = 'produtos/img_produtos/' . $imagensArray[0];
+                    }
                     ?>
+                    
+                    <!-- Ícones de status do produto -->
+                    <div class="produto-status">
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                            <i class="fas fa-clock" title="Em análise"></i>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
 
                     <div class="produto-detalhes">
-                    <h3 class="produto-nome">
-                        <?php 
-                            // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                            if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                        ?>
-                            <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                        <?php 
-                            endif;
+                        <p>
+                            <!-- Ícones de promoção e frete grátis -->
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php endif; ?> 
+                        </p>                       
+                        <h3 class="produto-nome">
+                            <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
+                        </h3>
 
-                            // Exibe o ícone de promoção, se o produto estiver em promoção
-                            if ($produto['promocao'] === 'sim'): 
-                        ?>
-                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                        <?php 
-                            endif; 
-                        ?>
-                        <?php echo $produto['nome_produto']; ?>
-                    </h3>
-                        
-                    <p class="produto-descricao"></p>
+                        <!-- Preço do produto -->
                         <?php
-                            $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                            echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                         ?>
-                    </p>
-                    <!-- Converte o valor do produto para float e formata -->
-                    <?php
-                        $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
-                        $valor_produto = floatval($valor_produto);
-                    ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
-                    <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-
-                    <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
+                        <!-- Botão de edição -->
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -295,74 +274,59 @@
             <!-- Lista de promoções aqui -->
             <div class="lista-promocoes">
                 <?php while ($produto = $promocoes->fetch_assoc()): ?>
-                    <div class="produto-item">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
-                            </h3>
-
-                            <p class="produto-descricao"></p>
-                                <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
-                                ?>
-                            </p>
-                            <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
+                <div class="produto-item">
+                    <?php
+                    // Verifica e processa as imagens do produto
+                    $primeiraImagem = '/default_image.jpg'; // Imagem padrão
+                    if (!empty($produto['imagens'])) {
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = 'produtos/img_produtos/' . $imagensArray[0];
+                    }
+                    ?>
+                    
+                    <!-- Ícones de status do produto -->
+                    <div class="produto-status">
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                            <i class="fas fa-clock" title="Em análise"></i>
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                    <div class="produto-detalhes">
+                        <p>
+                            <!-- Ícones de promoção e frete grátis -->
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php endif; ?> 
+                        </p>                       
+                        <h3 class="produto-nome">
+                            <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
+                        </h3>
+
+                        <!-- Preço do produto -->
+                        <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                        <!-- Botão de edição -->
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                    </div>
+                </div>
                 <?php endwhile; ?>
             </div>
 
@@ -380,80 +344,64 @@
             ?>            
             <div class="container">
                 <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
+            </div> 
 
-            <!-- Lista de promoções aqui -->
-            <div class="lista-promocoes">
+            <!-- Lista de frete gratis -->
+            <div class="lista-frete_gratis">
                 <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
-                    <div class="produto-item">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
-                            </h3>
-
-                            <p class="produto-descricao"></p>
-                                <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
-                                ?>
-                            </p>
-
-                            <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
+                <div class="produto-item">
+                    <?php
+                    // Verifica e processa as imagens do produto
+                    $primeiraImagem = '/default_image.jpg'; // Imagem padrão
+                    if (!empty($produto['imagens'])) {
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = 'produtos/img_produtos/' . $imagensArray[0];
+                    }
+                    ?>
+                    
+                    <!-- Ícones de status do produto -->
+                    <div class="produto-status">
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                            <i class="fas fa-clock" title="Em análise"></i>
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                    <div class="produto-detalhes">
+                        <p>
+                            <!-- Ícones de promoção e frete grátis -->
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php endif; ?> 
+                        </p>                       
+                        <h3 class="produto-nome">
+                            <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
+                        </h3>
+
+                        <!-- Preço do produto -->
+                        <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                        <!-- Botão de edição -->
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                    </div>
+                </div>
                 <?php endwhile; ?>
             </div>
 
@@ -475,77 +423,61 @@
             </div> 
 
             <!-- Lista de produtos ocultos aqui -->
-            <div class="lista-produtos_ocultos">   
+            <div class="lista-produtos_ocultos">
                 <?php while ($produto = $produtos_ocultos->fetch_assoc()): ?>
-                    <div class="produto-item">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <?php 
-                                    // Exibe o ícone de oculto, se o produto estiver oculto
-                                    if ($produto['oculto'] === 'sim'): 
-                                ?>
-                                    <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
-                                <?php endif;
-
-                                    // Exibe o ícone de relógio, se o produto não estiver aprovado
-                                    if ($produto['produto_aprovado'] !== 'sim'): 
-                                ?>
-                                    <i class="fas fa-clock" title="Em análise"></i>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <img src="produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                                <?php echo $produto['nome_produto']; ?>
-                            </h3>
-
-                            <p class="produto-descricao"></p>
-                                <?php
-                                    $descricao = htmlspecialchars($produto['descricao_produto'] ?? '');
-                                    echo mb_strimwidth($descricao, 0, 18, '...'); // Limita a 100 caracteres com "..."
-                                ?>
-                            </p>
-
-                            <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="produtos/editar_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Editar</a>
-                        </div>
+                <div class="produto-item">
+                    <?php
+                    // Verifica e processa as imagens do produto
+                    $primeiraImagem = '/default_image.jpg'; // Imagem padrão
+                    if (!empty($produto['imagens'])) {
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = 'produtos/img_produtos/' . $imagensArray[0];
+                    }
+                    ?>
+                    
+                    <!-- Ícones de status do produto -->
+                    <div class="produto-status">
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                            <i class="fas fa-clock" title="Em análise"></i>
+                        <?php endif; ?>
                     </div>
+                    
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                    <div class="produto-detalhes">
+                        <p>
+                            <!-- Ícones de promoção e frete grátis -->
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php endif; ?> 
+                        </p>                       
+                        <h3 class="produto-nome">
+                            <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
+                        </h3>
+
+                        <!-- Preço do produto -->
+                        <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                        <!-- Botão de edição -->
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                    </div>
+                </div>
                 <?php endwhile; ?>
             </div>
 

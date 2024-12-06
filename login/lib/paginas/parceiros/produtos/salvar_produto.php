@@ -16,14 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $descricao_produto = $mysqli->real_escape_string(trim($_POST['descricao_produto']));
     $categoria = $mysqli->real_escape_string(trim($_POST['categoria']));
     $valor_produto = str_replace(search: ',', replace: '.', subject: $_POST['valor_produto']);
-    $valor_produto_taxa = str_replace(search: ',', replace: '.', subject: $_POST['valor_produto_taxa']);
+    $taxa = str_replace(search: ',', replace: '.', subject: $_POST['taxa']);
     $frete_gratis = isset($_POST['frete_gratis']) ? 1 : 0;  // Define 1 para frete grátis, caso esteja marcado
     $valor_frete = str_replace(search: ',', replace: '.', subject: $_POST['valor_frete']);
 
     //die();
 
     $valor_produto = floatval($valor_produto);
-    $valor_produto_taxa = floatval($valor_produto_taxa);
+    $taxa = floatval($taxa);
     $frete_gratis = floatval($frete_gratis);
 
     $imagens = [];  // Inicializa um array para armazenar os nomes das imagens salvas
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
      $imagens_json = implode(',', $imagens);  // Converte o array de imagens para uma string separada por vírgulas
     
     // Monta a query SQL com placeholders
-    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, categoria, valor_produto, valor_produto_taxa, frete_gratis, valor_frete, imagens) 
+    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, categoria, valor_produto, taxa_padrao, frete_gratis, valor_frete, imagens) 
             VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
     $stmt = $mysqli->prepare($sql);
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $descricao_produto,  // String
         $categoria,          // String
         $valor_produto,      // Double
-        $valor_produto_taxa, // String ou Double (ajustar conforme necessidade)
+        $taxa, // String ou Double (ajustar conforme necessidade)
         $frete_gratis,       // String (ex.: 'sim' ou 'não')
         $valor_frete,        // String
         $imagens_json        // String (imagens separadas por vírgulas)

@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $descricao_produto = mysqli_real_escape_string($mysqli, $_POST['descricao_produto']);
     $categoria = mysqli_real_escape_string($mysqli, $_POST['categoria']);
     $valor_produto = floatval(str_replace(',', '.', $_POST['valor_produto']));
-    $valor_produto_taxa = floatval(str_replace(',', '.', $_POST['valor_produto_taxa']));
+    $taxa = floatval(str_replace(',', '.', $_POST['taxa']));
     $frete_gratis = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';
     $valor_frete = $frete_gratis === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete']));
 
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         descricao_produto = '$descricao_produto',
         categoria = '$categoria', 
         valor_produto = $valor_produto, 
-        valor_produto_taxa = $valor_produto_taxa, 
+        taxa_padrao = $taxa, 
         frete_gratis = '$frete_gratis', 
         valor_frete = $valor_frete, 
         imagens = '$imagens_string',

@@ -55,7 +55,7 @@ function calcularTaxa() {
 
     if (!isNaN(valorProduto)) {
         // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorProduto + (valorProduto * taxa);
+        let valorProdutoTaxa = valorProduto + ((valorProduto * taxa)/100);
 
         // Formata o número no formato "0,00" com separadores de milhares
         let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
@@ -109,7 +109,7 @@ function calcularTaxaPromocao() {
 
     if (!isNaN(valorPromocao)) {
         // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorPromocao + (valorPromocao * taxa);
+        let valorProdutoTaxa = valorPromocao + ((valorPromocao * taxa)/100);
 
         // Formata o número no formato "0,00" com separadores de milhares
         let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
