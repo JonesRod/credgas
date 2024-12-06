@@ -78,13 +78,13 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
                 $imagens = explode(',', $dados_produto['imagens'] ?? '');
                 $imagem_principal = htmlspecialchars($imagens[0] ?? 'default.jpg');
                 $nomeProduto = htmlspecialchars($dados_produto['nome_produto'] ?? 'Produto não disponível');
-                echo $logo;
+                //echo $logo;
                 ?>
 
                 <tr>
                     <td class="hide-id-column"><?php echo htmlspecialchars($id); ?></td>
                     <td data-label="Data"><?php echo htmlspecialchars($data); ?></td>
-                    <td data-label="Logo"><img src="../parceiros/<?php echo $logo; ?>" alt="Logo" style="width: 100px; height: auto;"></td>
+                    <td data-label="Logo"><img src="../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo" style="width: 100px; height: auto;"></td>
                     <td data-label="Nome Fantasia"><?php echo $nomeFantasia; ?></td>
                     <td data-label="Imagem"><img src="../parceiros/produtos/img_produtos/<?php echo $imagem_principal; ?>" alt="Imagem do Produto" style="width: 100px; height: auto;"></td>
                     <td data-label="Produto"><?php echo $nomeProduto; ?></td>

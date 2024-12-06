@@ -76,6 +76,9 @@
     $valor_dias_cli_pontual = str_replace('.', ',', $dados['valor_dias_cli_pontual']);
     $bonus_indicacao = str_replace('.', ',', $dados['bonus_indicacao']);
     $bonus_aniversariante = str_replace('.', ',', $dados['bonus_aniversariante']);
+
+    // Consulta para carregar as categorias do banco
+    $sql = $mysqli->query("SELECT * FROM categorias ORDER BY categorias ASC") or die($mysqli->error);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -178,6 +181,29 @@
 
         <label for="tpr">Termos de privacidade:</label>
         <textarea name="tpr" id="tpr" required><?php echo $termos_privacidade;?></textarea>
+
+        <!-- Categorias de Produtos -->
+        <fieldset>
+            <legend>Categorias de Produtos</legend>
+            <div class="buttons">
+                <!-- Botão para gerenciar cartões -->
+                <button type="button" class="addcartao" onclick="window.location.href='adicionar_categorias.php?id=<?php echo $id; ?>'">Adicionar Nova Categoria</button>
+            </div>
+
+            <!-- Lista de categorias -->
+            <ul id="listaCategorias">
+                <?php
+                if ($sql->num_rows > 0) {
+                    while ($categoria = $sql->fetch_assoc()) {
+                        echo '<li>' . htmlspecialchars($categoria['categorias']) . '</li>';
+                    }
+                } else {
+                    echo '<li>Nenhuma categoria encontrada.</li>';
+                }
+                ?>
+            </ul>        
+
+        </fieldset>
 
         <!-- Formas de Recebimento -->
         <fieldset>

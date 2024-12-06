@@ -3,45 +3,21 @@
 
     // Inicia a sessão
     if (!isset($_SESSION)) {
-        session_start(); 
+        session_start();
     }
 
     // Verifica se o ID do parceiro foi enviado via POST
     if (isset($_POST['id_parceiro'])) {
-        $id_parceiro = $_POST['id_parceiro'];
+        $id_parceiro = mysqli_real_escape_string($mysqli, $_POST['id_parceiro']);
     } else {
         session_unset();
-        session_destroy(); 
+        session_destroy();
         header("Location: ../../../../../index.php");
         exit();
     }
 
-
-    // Consulta para buscar as categorias
-    $sql = $mysqli->query("SELECT * FROM categorias where id > '0'") or die($mysqli->error);
-    $categorias = $sql->fetch_assoc();
- 
-
-    if ($result->num_rows > 0) {
-        echo '<div class="form-group">';
-        echo '<label for="descricao_produto">Categoria:</label>';
-        echo '<select required name="categoria" id="categoria">';
-        echo '<option value="">Escolha</option>';
-        
-        // Gerando as opções dinamicamente
-        while ($row = $result->fetch_assoc()) {
-            echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['categorias']) . '</option>';
-        }
-
-        echo '</select>';
-        echo '</div>';
-    } else {
-        echo '<p>Nenhuma categoria encontrada.</p>';
-    }
-
-    $conn->close();
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt">
@@ -71,8 +47,34 @@
             <textarea id="descricao_produto" name="descricao_produto" rows="4" required></textarea>
         </div>
 
+        <?php
+                // Consulta para buscar as categorias
+            $sql = $mysqli->query("SELECT * FROM categorias WHERE id > '0'") or die($mysqli->error);
+
+            // Verifica se a consulta retornou resultados
+            if ($sql->num_rows > 0) {
+                echo '<div class="form-group">';
+                echo '<label for="descricao_produto">Categoria:</label>';
+                echo '<select required name="categoria" id="categoria">';
+                echo '<option value="">Escolha</option>';
+
+                // Gerando as opções dinamicamente
+                while ($row = $sql->fetch_assoc()) {
+                    echo '<option value="' . htmlspecialchars($row['categorias']) . '">' . htmlspecialchars($row['categorias']) . '</option>';
+                }
+
+                echo '</select>';
+                echo '</div>';
+            } else {
+                echo '<p>Nenhuma categoria encontrada.</p>';
+            }
+
+            // Fecha a conexão com o banco
+            $mysqli->close();
+        ?>
+
         <!-- Categoria-->
-        <div class="form-group">
+        <!--<div class="form-group">
             <label for="descricao_produto">Categoria:</label>
             <select required name="categoria" id="categoria">
                 <option value="Escolha"></option>
@@ -81,7 +83,7 @@
                 <option value="Limpeza">Limpeza</option>
                 <option value="Bebidas">Bebidas</option>
             </select>
-        </div>
+        </div>-->
 
         <!-- Valor do produto -->
         <div class="form-group">

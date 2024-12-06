@@ -8,7 +8,7 @@ include('../../../conexao.php');  // Inclui o arquivo de conexão com o banco de
 
 // Verifica se o formulário foi enviado via método POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    //var_dump($_POST);
+    var_dump($_POST);
     //die();
     // Coleta e sanitiza os dados do formulário
     $id_parceiro = $_POST['id_parceiro'];
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $frete_gratis = isset($_POST['frete_gratis']) ? 1 : 0;  // Define 1 para frete grátis, caso esteja marcado
     $valor_frete = str_replace(search: ',', replace: '.', subject: $_POST['valor_frete']);
 
-//die();
+    //die();
 
     $valor_produto = floatval($valor_produto);
     $valor_produto_taxa = floatval($valor_produto_taxa);

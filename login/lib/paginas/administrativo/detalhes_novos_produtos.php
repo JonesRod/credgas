@@ -89,7 +89,7 @@
             
                 if ($mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
-                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
+                    header("Location: not_detalhes_novos_produtos.php?id_produto=$id_produto");
                     exit();
                 } else {
                     $error_msg = "Erro ao processar notificações: " . $mysqli->error;
@@ -145,7 +145,7 @@
         
                 if ($mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
-                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
+                    header("Location: not_detalhes_novos_produtos.php?id_produto=$id_produto");
                     exit();
                 } else {
                     $error_msg = "Erro ao processar notificações: " . $mysqli->error;
@@ -198,19 +198,23 @@
             font-weight: bold;
         }
 
-        /* Estilo para o contêiner da descrição */
-        .descricao-box {   
-            max-height: 150px;
-            overflow-y: auto;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            font-size: 1em;
-            color: #444;
-            margin: 10px 0;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
+/* Estilo para o contêiner da descrição */
+.descricao-box {
+    max-height: none;  /* Remove o limite de altura */
+    height: auto;      /* Permite que o contêiner ajuste a altura conforme o conteúdo */
+    overflow-y: auto;  /* Permite rolagem, se necessário */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-size: 1em;
+    color: #444;
+    margin: 10px 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    white-space: normal;  /* Garante que o texto quebre automaticamente */
+    word-wrap: break-word;  /* Quebra as palavras longas, se necessário */
+}
+
 
         .image-slider {
             display: flex;
