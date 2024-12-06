@@ -15,6 +15,32 @@
         header("Location: ../../../../../index.php");
         exit();
     }
+
+
+    // Consulta para buscar as categorias
+    $sql = $mysqli->query("SELECT * FROM categorias where id > '0'") or die($mysqli->error);
+    $categorias = $sql->fetch_assoc();
+ 
+
+    if ($result->num_rows > 0) {
+        echo '<div class="form-group">';
+        echo '<label for="descricao_produto">Categoria:</label>';
+        echo '<select required name="categoria" id="categoria">';
+        echo '<option value="">Escolha</option>';
+        
+        // Gerando as opções dinamicamente
+        while ($row = $result->fetch_assoc()) {
+            echo '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['categorias']) . '</option>';
+        }
+
+        echo '</select>';
+        echo '</div>';
+    } else {
+        echo '<p>Nenhuma categoria encontrada.</p>';
+    }
+
+    $conn->close();
+
 ?>
 
 <!DOCTYPE html>
