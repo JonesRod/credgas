@@ -26,10 +26,11 @@ function formatarValor(input) {
 // Função para calcular o valor com taxa
 function calcularTaxa() {
     let valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(/\./g, '').replace(',', '.'));
+    let taxa = document.getElementById('taxa').value;
 
     if (!isNaN(valorProduto)) {
         // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorProduto + (valorProduto * 0.10);
+        let valorProdutoTaxa = valorProduto + (valorProduto * taxa);
 
         // Formata o número no formato "0,00" com separadores de milhares
         let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {

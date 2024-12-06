@@ -62,7 +62,7 @@
             }
 
             // Libera o resultado e fecha a declaração
-            $stmt->close();
+            //$stmt->close();
         } else {
             echo "Erro na preparação da consulta: " . $mysqli->error;
             exit;
@@ -106,17 +106,37 @@
             <textarea id="descricao_produto" name="descricao_produto" rows="4" required><?php echo htmlspecialchars($produto['descricao_produto']); ?></textarea>
         </div>
 
-        <!-- Categoria -->
-        <div class="form-group">
-            <label for="categoria">Categoria:</label>
-            <select required name="categoria" id="categoria">
-                <option value="">Selecione uma categoria</option>
-                <option value="Alimenticios" <?php echo ($produto['categoria'] === 'Alimenticios') ? 'selected' : ''; ?>>Alimentícios</option>
-                <option value="Utilitarios" <?php echo ($produto['categoria'] === 'Utilitarios') ? 'selected' : ''; ?>>Utilitários</option>
-                <option value="Limpeza" <?php echo ($produto['categoria'] === 'Limpeza') ? 'selected' : ''; ?>>Limpeza</option>
-                <option value="Bebidas" <?php echo ($produto['categoria'] === 'Bebidas') ? 'selected' : ''; ?>>Bebidas</option>
-            </select>
-        </div>
+        <?php
+            // Consulta para buscar as categorias
+            $sql = $mysqli->query("SELECT * FROM categorias WHERE id > '0'") or die($mysqli->error);
+
+            // Verifica se a consulta retornou resultados
+            if ($sql->num_rows > 0) {
+                echo '<div class="form-group">';
+                echo '<label for="descricao_produto">Categoria:</label>';
+                echo '<select required name="categoria" id="categoria">';
+
+                // A primeira opção será a "Escolha", com valor vazio
+                echo '<option value="">Escolha</option>';
+
+                // Gerando as opções dinamicamente
+                while ($row = $sql->fetch_assoc()) {
+                    // Verifica se a categoria é a que foi salva anteriormente
+                    $selected = ($row['categorias'] == $produto['categoria']) ? 'selected' : '';
+
+                    // Exibe a opção com a verificação de seleção
+                    echo '<option value="' . htmlspecialchars($row['categorias']) . '" ' . $selected . '>' . htmlspecialchars($row['categorias']) . '</option>';
+                }
+
+                echo '</select>';
+                echo '</div>';
+            } else {
+                echo '<p>Nenhuma categoria encontrada.</p>';
+            }
+
+            // Fecha a conexão com o banco
+            //$mysqli->close();
+        ?>
 
         <!-- Valor do Produto -->
         <div class="form-group">
@@ -131,9 +151,20 @@
             required oninput="formatarValor(this)">
         </div>
 
-        <!-- Valor do Produto + Taxa -->
+        <!-- Valor do produto com taxa da plataforma -->
+        <?php
+            // Consulta para buscar as categorias
+            $taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
+            WHERE taxa_padrao != '' ORDER BY data_alteracao DESC 
+            LIMIT 1") or die($mysqli->error);
+
+            $taxa = $taxa_padrao->fetch_assoc();
+            $taxa_padrao->close();
+        ?>
+
         <div class="form-group">
-            <label for="valor_produto_taxa">Valor do Produto + Taxa (10%) da Plataforma (R$):</label>
+            <label for="valor_produto_taxa">Valor do Produto + Taxa da Plataforma (R$):</label>
+            <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>">           
             <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
             value="<?php echo htmlspecialchars($produto['valor_produto_taxa']); ?>" readonly required>
         </div>
@@ -219,7 +250,7 @@
 
         <!-- Valor com Taxa na Promoção -->
         <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
-            <label for="valor_promocao_taxa">Valor com Taxa (10%) (R$):</label>
+            <label for="valor_promocao_taxa">Valor com Taxa (R$):</label>
             <input type="text" id="valor_promocao_taxa" name="valor_promocao_taxa" 
             value="<?php echo number_format($produto['valor_produto_taxa'], 2, ',', '.'); ?>" readonly>
         </div>

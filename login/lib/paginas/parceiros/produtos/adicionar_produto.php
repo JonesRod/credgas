@@ -48,7 +48,7 @@
         </div>
 
         <?php
-                // Consulta para buscar as categorias
+            // Consulta para buscar as categorias
             $sql = $mysqli->query("SELECT * FROM categorias WHERE id > '0'") or die($mysqli->error);
 
             // Verifica se a consulta retornou resultados
@@ -70,7 +70,7 @@
             }
 
             // Fecha a conexão com o banco
-            $mysqli->close();
+            //$mysqli->close();
         ?>
 
         <!-- Categoria-->
@@ -92,8 +92,17 @@
         </div>
 
         <!-- Valor do produto com taxa da plataforma -->
+        <?php
+            // Consulta para buscar as categorias
+            $taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
+            WHERE taxa_padrao != '' ORDER BY data_alteracao DESC 
+            LIMIT 1") or die($mysqli->error);
+
+            $taxa = $taxa_padrao->fetch_assoc();
+        ?>
         <div class="form-group">
-            <label for="valor_produto_taxa">Valor do Produto + taxa (10%) da plataforma (R$):</label>
+            <label for="valor_produto_taxa">Valor do Produto + taxa da plataforma (R$):</label>
+            <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>">
             <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" readonly>
         </div>
 

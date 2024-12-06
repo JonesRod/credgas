@@ -1,31 +1,32 @@
 <?php
-include('login/lib/conexao.php');
+    include('login/lib/conexao.php');
 
-if(!isset($_SESSION)) {
-    session_start();
-}
-
-// Verifica se o usuário está logado
-$usuarioLogado = isset($_SESSION['id']);
-//$id_conf = '1';
-
-
-$dados = $mysqli->query("SELECT * FROM config_admin WHERE logo != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
-
-$dadosEscolhido = $dados->fetch_assoc();
-
-
-$nomeFantasia = $dadosEscolhido['nomeFantasia'];
-
-// Carrega a logo
-if (isset($dadosEscolhido['logo'])) {
-    $logo = $dadosEscolhido['logo'];
-    if ($logo == '') {
-        $logo = 'login/lib/paginas/arquivos_fixos/imagem_credgas.jpg';
-    } else {
-        $logo = 'login/lib/paginas/administrativo/arquivos/' . $logo;
+    if(!isset($_SESSION)) {
+        session_start();
     }
-}
+
+    // Verifica se o usuário está logado
+    $usuarioLogado = isset($_SESSION['id']);
+    //$id_conf = '1';
+
+
+    $dados = $mysqli->query("SELECT * FROM config_admin WHERE logo != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+    $dadosEscolhido = $dados->fetch_assoc();
+    $nomeFantasia = $dadosEscolhido['nomeFantasia'];
+
+    // Carrega a logo
+    if (isset($dadosEscolhido['logo'])) {
+        $logo = $dadosEscolhido['logo'];
+        if ($logo == '') {
+            $logo = 'login/lib/paginas/arquivos_fixos/imagem_credgas.jpg';
+        } else {
+            $logo = 'login/lib/paginas/administrativo/arquivos/' . $logo;
+        }
+    }
+
+    $taxa_padrao = $mysqli->query("SELECT * FROM config_admin WHERE taxa_padrao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
+    $taxa = $taxa_padrao->fetch_assoc();
+
 
 ?>
 

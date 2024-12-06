@@ -51,10 +51,11 @@ function formatarValor() {
 // Função para calcular o valor com taxa
 function calcularTaxa() {
     let valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(/\./g, '').replace(',', '.'));
+    let taxa = document.getElementById('taxa').value;
 
     if (!isNaN(valorProduto)) {
         // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorProduto + (valorProduto * 0.10);
+        let valorProdutoTaxa = valorProduto + (valorProduto * taxa);
 
         // Formata o número no formato "0,00" com separadores de milhares
         let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
@@ -88,6 +89,7 @@ function formatarValorFrete() {
 // Função para formatar o valor digitado no campo "valor_promocao"
 function formatarValorPromocao() {
     let valor_promocao = document.getElementById('valor_promocao').value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
+    
     valor_promocao = (valor_promocao / 100).toFixed(2);           // Divide por 100 para ajustar para formato de decimal (0.00)
 
     valor_promocao = valor_promocao.replace('.', ',');            // Substitui o ponto pela vírgula
@@ -103,10 +105,11 @@ function formatarValorPromocao() {
 // Função para calcular o valor com taxa
 function calcularTaxaPromocao() {
     let valorPromocao = parseFloat(document.getElementById('valor_promocao').value.replace(/\./g, '').replace(',', '.'));
+    let taxa = document.getElementById('taxa').value;
 
     if (!isNaN(valorPromocao)) {
         // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorPromocao + (valorPromocao * 0.10);
+        let valorProdutoTaxa = valorPromocao + (valorPromocao * taxa);
 
         // Formata o número no formato "0,00" com separadores de milhares
         let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
