@@ -5,7 +5,7 @@
     if(!isset($_SESSION)) {
         session_start();
     }
-
+   
     if (isset($_GET['id'])) {
         $idParceiro = intval($_GET['id']);
 
@@ -119,21 +119,16 @@
         AND produto_aprovado = 'sim'") or die($mysqli->error);
 
         // Consulta SQL corrigida
-        $queryFreteGratis = "
-            SELECT * 
-            FROM produtos 
-            WHERE (
-                    id_parceiro = '$idParceiro' 
-                    AND categoria = '$categoriaSelecionada' 
-                    AND promocao = 'sim' 
-                    AND frete_gratis_promocao = 'sim'
-                ) 
-            OR (
-                    id_parceiro = '$idParceiro' 
-                    AND categoria = '$categoriaSelecionada' 
-                    AND promocao = 'nao' 
-                    AND frete_gratis = 'sim'
-                )
+        $queryFreteGratis = "SELECT * FROM produtos 
+        WHERE id_parceiro = $idParceiro 
+        AND categoria = '$categoriaSelecionada' 
+        AND oculto != 'sim' 
+        AND produto_aprovado = 'sim' 
+        AND (
+            frete_gratis = 'sim' 
+            OR (promocao = 'sim' 
+            AND frete_gratis_promocao = 'sim')
+        )
         ";
 
         // Executa a consulta e verifica erros
@@ -334,8 +329,6 @@
         <?php endif; ?>
     </div>
 
-
-
     <!-- Conteúdo principal -->
     <main id="main-content">
         <!-- Conteúdo -->
@@ -424,16 +417,17 @@
                         
                     </h3>
                     <?php echo $produto['nome_produto']; ?>
-                    <!-- Converte o valor do produto para float e formata -->
-                    <?php
-                        $valor_produto = str_replace(',', '.', $produto['valor_produto_taxa']);
-                        $valor_produto = floatval($valor_produto);
-                    ?>
-
-                    <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-
-                    <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo urlencode($produto['id_parceiro']); ?>" class="button-editar">Detalhes</a>                    </div>
-                </div>
+                            <!-- Preço do produto -->
+                            <?php
+                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                                ? floatval($produto['valor_promocao'] ?? 0) 
+                                : floatval($produto['valor_produto'] ?? 0);  
+                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                            ?>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
+                        </div>
                 <?php endwhile; ?>
             </div>
 
@@ -504,13 +498,16 @@
                             </h3>
                             <?php echo $produto['nome_produto']; ?>
 
+                            <!-- Preço do produto -->
                             <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                                ? floatval($produto['valor_promocao'] ?? 0) 
+                                : floatval($produto['valor_produto'] ?? 0);  
+                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>                        </div>
-                    </div>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
                 <?php endwhile; ?>
             </div>
 
@@ -531,7 +528,7 @@
             </div>        
 
             <!-- Lista de promoções aqui -->
-            <div class="lista-promocoes">
+            <div class="lista-frete-gratis">
                 <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
                     <div class="produto-item frete-gratis">
                         <?php
@@ -584,12 +581,16 @@
                             </h3>
                             <?php echo $produto['nome_produto']; ?>
 
+                            <!-- Preço do produto -->
                             <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                                ? floatval($produto['valor_promocao'] ?? 0) 
+                                : floatval($produto['valor_produto'] ?? 0);  
+                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>
                         </div>
                     </div>
                 <?php endwhile; ?>
@@ -668,13 +669,16 @@
                             </h3>
                             <?php echo $produto['nome_produto']; ?>
 
+                            <!-- Preço do produto -->
                             <?php
-                                // Formatação do valor promocional
-                                $valor_produto_promocao = floatval(str_replace(',', '.', $produto['valor_produto_taxa']));
+                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                                ? floatval($produto['valor_promocao'] ?? 0) 
+                                : floatval($produto['valor_produto'] ?? 0);  
+                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto_promocao, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>" class="button-editar">Detalhes</a>                        </div>
-                    </div>
+                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                    </div>
                     <?php endif; ?>
                 <?php endwhile; ?>
             </div>
