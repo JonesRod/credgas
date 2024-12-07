@@ -386,8 +386,12 @@
             <p><strong>Descrição:</strong></p>
             <div class="descricao-box"><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></div>
             <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
-            <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
-            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
+            
+            <?php if ($produto['frete_gratis'] === 'sim'): ?>
+            <p><strong style="color: green;">Frete Grátis</strong></p>
+            <?php else: ?>
+                <p><strong style="color: red;">Frete: R$ </strong><span style="color: red;"><?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></span></p>
+            <?php endif; ?>
 
             <div class="buttons-container">
                 <button type="button" class="btn btn-success" onclick="window.location.href='loja_parceiro.php?id=<?php echo $id_parceiro; ?>'">Voltar</button>

@@ -447,7 +447,7 @@ h2 {
     justify-content: center;
     padding-bottom: 50px;
 }
-.lista-frete_gratis {
+.lista-freteGratis {
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
@@ -821,7 +821,7 @@ h2 {
         justify-content: center;
         padding-bottom: 50px;
     }
-    .lista-frete_gratis{
+    .lista-freteGgratis{
         display: flex;
         flex-wrap: wrap;
         gap: 5px;

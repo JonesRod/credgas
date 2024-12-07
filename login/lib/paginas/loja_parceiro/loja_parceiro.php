@@ -103,45 +103,51 @@
         $categoriaSelecionada = $primeiraCategoria;
         //echo ('oii22');
     }
-        // Consulta para buscar produtos do catálogo
-        $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos 
-        WHERE id_parceiro = '$idParceiro'
-        AND categoria = '$categoriaSelecionada'  
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'") or die($mysqli->error);
 
-        // Verifica se existem promoções, mais vendidos e frete grátis
-        $promocoes =  $mysqli->query("SELECT * FROM produtos 
+    // Consulta para buscar produtos do catálogo
+    $catalogo = $mysqli->query(query: "SELECT * FROM produtos 
+    WHERE id_parceiro = '$idParceiro'
+    AND categoria = '$categoriaSelecionada'  
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+    // Verifica se existem promoções, mais vendidos e frete grátis
+    $promocoes =  $mysqli->query("SELECT * FROM produtos 
+    WHERE id_parceiro = '$idParceiro' 
+    AND categoria = '$categoriaSelecionada' 
+    AND promocao = 'sim' 
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+    // Consulta SQL corrigida
+    $queryFreteGratis = "SELECT * FROM produtos 
+    WHERE id_parceiro = '$idParceiro'
+    AND categoria = '$categoriaSelecionada'
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim' 
+    AND frete_gratis = 'sim' 
+    OR (promocao = 'sim' 
+    AND frete_gratis_promocao = 'sim')";
+
+    // Executa a consulta e verifica erros
+    $freteGratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
+    /*if ($freteGratis->num_rows > 0){
+        echo ('oi1');
+    }else{
+        echo ('oi2');
+    }*/
+    //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
+
+    // Consulta SQL
+    $novidades = $mysqli->query("
+        SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro
+        FROM produtos 
         WHERE id_parceiro = '$idParceiro' 
         AND categoria = '$categoriaSelecionada' 
-        AND promocao = 'sim' 
         AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-        // Consulta SQL corrigida
-        $queryFreteGratis = "SELECT * FROM produtos 
-        WHERE id_parceiro = $idParceiro 
-        AND categoria = '$categoriaSelecionada' 
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim' 
-        AND (
-            frete_gratis = 'sim' 
-            OR (promocao = 'sim' 
-            AND frete_gratis_promocao = 'sim')
-        )
-        ";
-
-        // Executa a consulta e verifica erros
-        $frete_gratis = $mysqli->query($queryFreteGratis) or die("Erro na consulta frete_gratis: " . $mysqli->error);
-  
-        //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
-        $produtos_novidades = $mysqli->query("SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro 
-        FROM produtos 
-        WHERE id_parceiro = $idParceiro 
-        AND categoria = '$categoriaSelecionada' 
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'") or die($mysqli->error);
-    //}
+        AND produto_aprovado = 'sim'
+        AND DATEDIFF(NOW(), data) <= 30
+    ") or die("Erro na consulta: " . $mysqli->error);
 
 ?>
 
@@ -342,8 +348,8 @@
                 <span class="icone-promocao" title="Produto em promoção">🔥</span><span>Promoções</span>
             </div>
 
-            <div class="tab" onclick="mostrarConteudo('frete_gratis', this)">
-                <span class="icone-frete-gratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
+            <div class="tab" onclick="mostrarConteudo('freteGratis', this)">
+                <span class="icone-freteGratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
             </div>
 
             <div class="tab" onclick="mostrarConteudo('novidades', this)">
@@ -354,7 +360,7 @@
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
             <?php 
-                if ($produtos_catalogo->num_rows > 0): 
+                if ($catalogo->num_rows > 0): 
             ?>            
             <div class="container">
                 <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
@@ -363,7 +369,7 @@
             <!-- Lista de produtos aqui -->
             <div class="lista-produtos">
                 <?php 
-                    while ($produto = $produtos_catalogo->fetch_assoc()): 
+                    while ($produto = $catalogo->fetch_assoc()): 
                 ?>
                 <div class="produto-item catalogo">
                     <?php
@@ -387,150 +393,159 @@
                     ?>
 
                     <div class="produto-detalhes">
-                    <h3 class="produto-nome">
-                        <?php 
-                            // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                            if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                        ?>
-                            <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                        <?php 
-                            endif;
+                        <h3 class="produto-nome">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
 
-                            // Exibe o ícone de promoção, se o produto estiver em promoção
-                            if ($produto['promocao'] === 'sim'): 
-                        ?>
-                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                        <?php 
-                            endif; 
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
 
-                            $dataCadastro = new DateTime($produto['data']); // Data do produto
-                            $dataAtual = new DateTime(); // Data atual
-                            $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                            $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                        
-                            if ($diasDesdeCadastro <= 30):
-                        ?>
-                                <span class="icone-novidades" title="Novidades">🆕</span>
-                        <?php
-                            endif;
-                        ?>   
-                        
-                    </h3>
-                    <?php echo $produto['nome_produto']; ?>
-                            <!-- Preço do produto -->
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                    <span class="icone-novidades" title="Novidades">🆕</span>
                             <?php
+                                endif;
+                            ?>   
+                        </h3>
+                        <?php echo $produto['nome_produto']; ?>
+                        <!-- Preço do produto -->
+                        <?php
                             $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
                             $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
-                        </div>
-                <?php endwhile; ?>
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+                <!-- Mensagem de produto não encontrado -->
+                <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Nenhum produto encontrado no catálogo.</p>
             </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Nenhum produto encontrado no catálogo.</p>
-
-        </div>
-
-        <?php else: ?>
-        <div class="conteudo">
-            <form method="POST" action="produtos/adicionar_produto.php">
-                <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
-                <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
-                <button class="button">Inclua seu primeiro produto</button>
-            </form>
-        </div>    
-        <?php endif; ?>                        
+            <?php else: ?>
+            <div class="conteudo">
+                <form method="POST" action="produtos/adicionar_produto.php">
+                    <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
+                    <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
+                    <button class="button">Inclua seu primeiro produto</button>
+                </form>
+            </div>    
+            <?php endif; ?>                        
         </div>
 
         <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
             <?php 
                 if ($promocoes->num_rows > 0): 
-            ?>
+            ?>            
             <div class="container">
-                <input id="inputPesquisaPromocao" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
+                <input id="inputPesquisaPromocoes" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>
 
-            <!-- Lista de promoções aqui -->
-            <div class="lista-promocoes">
-                <?php while ($produto = $promocoes->fetch_assoc()): ?>
-                    <div class="produto-item promocao">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                            </h3>
-                            <?php echo $produto['nome_produto']; ?>
-
-                            <!-- Preço do produto -->
-                            <?php
-                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
-                                ? floatval($produto['valor_promocao'] ?? 0) 
-                                : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+            <!-- Lista de produtos aqui -->
+            <div class="lista-produtos">
+                <?php 
+                    while ($produto = $promocoes->fetch_assoc()): 
+                ?>
+                <div class="produto-item promocoes">
+                    <?php
+                        // Verifica se o campo 'imagens' está definido e não está vazio
+                        if (isset($produto['imagens']) && !empty($produto['imagens'])) {
+                            // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
+                            $imagensArray = explode(',', $produto['imagens']);
+                            
+                            // Pega a primeira imagem do array
+                            $primeiraImagem = $imagensArray[0];
+                            // Exibe a primeira imagem
                             ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
-                <?php endwhile; ?>
+                            <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
+                            <?php
+                        } else {
+                            // Caso não haja imagens, exibe uma imagem padrão
+                            ?>
+                            <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
+                            <?php
+                        }
+                    ?>
+
+                    <div class="produto-detalhes">
+                        <h3 class="produto-nome">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
+
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                    <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?>   
+                            
+                        </h3>
+                        <?php echo $produto['nome_produto']; ?>
+                        <!-- Preço do produto -->
+                        <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
+                    </div>
+                    <?php endwhile; ?>
             </div>
 
             <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoPromocao" style="display: none;">Nenhum produto encontrado em promoção.</p>
+            <p id="mensagemNaoEncontradoPromocao" style="display: none;">Nenhum produto encontrado.</p>
             
             <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+                <p style="margin-top: 30px;">Nenhuma produto disponível.</p>
             <?php endif; ?>
         </div>
 
-        <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
-            <?php 
-                if ($frete_gratis->num_rows > 0): 
-            ?>            
+        <div id="conteudo-freteGratis" class="conteudo-aba" style="display: none;">
+            <?php if ($freteGratis->num_rows > 0): ?>            
             <div class="container">
                 <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
             </div>        
 
             <!-- Lista de promoções aqui -->
-            <div class="lista-frete-gratis">
-                <?php while ($produto = $frete_gratis->fetch_assoc()): ?>
-                    <div class="produto-item frete-gratis">
+            <div class="lista-produtos">
+                <?php while ($produto = $freteGratis->fetch_assoc()): ?>
+                    <div class="produto-item freteGratis">
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
                             if (isset($produto['imagens']) && !empty($produto['imagens'])) {
@@ -600,24 +615,21 @@
             <p id="mensagemNaoEncontradoFreteGratis" style="display: none;">Nenhum produto encontrado com frete grátis.</p>
             
             <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+                <p style="margin-top: 30px;">Nenhuma produto com frete grátis disponível.</p>
             <?php endif; ?>
         </div>
 
         <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
             <?php 
-                if ($produtos_novidades->num_rows > 0): 
-            ?>            
+                if ($novidades->num_rows > 0): ?>    
+
             <div class="container">
                 <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
             </div>        
 
             <!-- Lista de promoções aqui -->
-            <div class="lista-novidades">
-                <?php while ($produto = $produtos_novidades->fetch_assoc()): ?>
-                    <?php
-                    // Verifica se o produto foi cadastrado há 30 dias ou menos
-                    if ($produto['dias_desde_cadastro'] <= 30): ?>
+            <div class="lista-produtos">
+                <?php while ($produto = $novidades->fetch_assoc()): ?>
                     <div class="produto-item novidades">
                         <?php
                             // Verifica se o campo 'imagens' está definido e não está vazio
@@ -678,16 +690,17 @@
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                    </div>
-                    <?php endif; ?>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>
+                        </div>
+                    </div>
                 <?php endwhile; ?>
             </div>
 
             <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoNovidades" style="display: none;">Nenhum produto encontrado em novidades.</p>
+            <p id="mensagemNaoEncontradoNovidades" style="display: none;">Nenhum produto encontrado.</p>
             
             <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+                <p style="margin-top: 30px;">Nenhuma produto disponível.</p>
             <?php endif; ?>
         </div>
 
@@ -793,7 +806,7 @@
                         mensagem: document.getElementById('mensagemNaoEncontradoPromocao') 
                     },
                     { 
-                        produtos: document.querySelectorAll('.produto-item.frete-gratis'), 
+                        produtos: document.querySelectorAll('.produto-item.freteGratis'), 
                         mensagem: document.getElementById('mensagemNaoEncontradoFreteGratis') 
                     },
                     { 
@@ -833,46 +846,46 @@
 
     
         document.addEventListener('DOMContentLoaded', () => {
-    const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
-    const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
-    const formCategoria = document.querySelector('#formCategoria'); // Formulário
+            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
+            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+            const formCategoria = document.querySelector('#formCategoria'); // Formulário
 
-    // Recupera a categoria selecionada do input hidden após o recarregamento da página
-    const categoriaSelecionada = inputCategoria.value;
+            // Recupera a categoria selecionada do input hidden após o recarregamento da página
+            const categoriaSelecionada = inputCategoria.value;
 
-    // Se houver uma categoria previamente selecionada, destaca-a
-    if (categoriaSelecionada) {
-        categorias.forEach(categoria => {
-            if (categoria.querySelector('p').textContent.trim() === categoriaSelecionada) {
-                categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria correspondente
-            } else {
-                categoria.classList.remove('selected'); // Remove a classe 'selected' de outras categorias
+            // Se houver uma categoria previamente selecionada, destaca-a
+            if (categoriaSelecionada) {
+                categorias.forEach(categoria => {
+                    if (categoria.querySelector('p').textContent.trim() === categoriaSelecionada) {
+                        categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria correspondente
+                    } else {
+                        categoria.classList.remove('selected'); // Remove a classe 'selected' de outras categorias
+                    }
+                });
+            } else if (categorias.length > 0) {
+                // Caso contrário, seleciona a primeira categoria como padrão
+                const primeiraCategoria = categorias[0];
+                categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
+                primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
+                inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
             }
-        });
-    } else if (categorias.length > 0) {
-        // Caso contrário, seleciona a primeira categoria como padrão
-        const primeiraCategoria = categorias[0];
-        categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
-        primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
-        inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
-    }
 
-    // Configurar evento de clique para as categorias
-    categorias.forEach(categoria => {
-        categoria.addEventListener('click', () => {
-            categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
-            categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
-            inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
-            enviar(); // Envia o formulário
+            // Configurar evento de clique para as categorias
+            categorias.forEach(categoria => {
+                categoria.addEventListener('click', () => {
+                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
+                    enviar(); // Envia o formulário
+                });
+            });
         });
-    });
-});
 
-function enviar() {
-    // Simula o clique no botão "Enviar"
-    const botaoEnviar = document.getElementById('carregar_categoria');
-    botaoEnviar.click();
-}
+        function enviar() {
+            // Simula o clique no botão "Enviar"
+            const botaoEnviar = document.getElementById('carregar_categoria');
+            botaoEnviar.click();
+        }
 
 
     </script>
