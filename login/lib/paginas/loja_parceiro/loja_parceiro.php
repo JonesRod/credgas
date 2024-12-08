@@ -220,42 +220,42 @@
 
         <h1><?php echo $parceiro['nomeFantasia']; ?></h1>
 
-        <div class="menu-superior-direito">
+        <!--<div class="menu-superior-direito">
             <!-- Ícone de notificações com contagem -->
-            <div class="notificacoes">
+            <!--<div class="notificacoes">
                 <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
                 <!-- Exibir a contagem de notificações -->
-                <?php if ($total_notificacoes > 0): ?>
-                    <span id="notificacao-count" class="notificacao-count"></span>
-                <?php else: ?>
+                <?php //if ($total_notificacoes > 0): ?>
+                    <!--<span id="notificacao-count" class="notificacao-count"></span>
+                <?php //else: ?>
                     <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
-                <?php endif; ?>
+                <?php //endif; ?>
             </div>
 
             <i class="fas fa-store" onclick="toggleMenu()"></i><!--Configuraçõa da Loja-->
-        </div>
+        <!--</div>-->
 
     </header>
 
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
-    <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
+    <!--<aside id="painel-notificacoes">
+        <h2>Notificações: <?php //echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $not_novo_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $pedidos; ?></li>
+            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php //echo $not_novo_produto; ?></li>
+            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php //echo $not_adicao_produto; ?></li>
+            <li onclick="abrirNotificacao(3)">Pedidos: <?php //echo $pedidos; ?></li>
 
         </ul>
-    </aside>
+    </aside>-->
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
-    <aside id="menu-lateral" >
+    <!--<aside id="menu-lateral" >
         <ul>
             <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
             <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
             <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
         </ul>
-    </aside>
+    </aside>-->
 
     <div class="categorias">
         <?php 
@@ -440,11 +440,12 @@
             </div>
             <?php else: ?>
             <div class="conteudo">
-                <form method="POST" action="produtos/adicionar_produto.php">
-                    <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
+                <!--<form method="POST" action="produtos/adicionar_produto.php">
+                    <input type="hidden" name="id_parceiro" value="<?php //echo $idParceiro; ?>">
                     <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
                     <button class="button">Inclua seu primeiro produto</button>
-                </form>
+                </form>-->
+                <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
             </div>    
             <?php endif; ?>                        
         </div>
@@ -721,7 +722,7 @@
         var sessionId = <?php echo json_encode($idParceiro); ?>;
         var id_produto = <?php echo json_encode($id_produto); ?>;
 
-        function abrirNotificacao(id) {
+        /*function abrirNotificacao(id) {
             let url = ""; // Inicializa a URL como uma string vazia
 
             // Define a URL com base no ID da notificação
@@ -773,7 +774,7 @@
         fetchNotifications();
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        setInterval(fetchNotifications, 5000);
+        setInterval(fetchNotifications, 5000);*/
 
         document.addEventListener('DOMContentLoaded', () => {
             // Referencia todos os campos de pesquisa

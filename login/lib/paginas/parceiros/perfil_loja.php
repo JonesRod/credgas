@@ -135,10 +135,10 @@
             <input type="hidden" id="id_sessao" name="img_anterior" value="<?php echo $id; ?>">
             
             <!-- Armazena o caminho da imagem anterior -->
-            <input type="hidden" id="img_anterior" name="img_anterior" value="<?php echo $logo; ?>">
+            <input type="hidden" id="img_anterior" name="img_anterior" value="arquivos/<?php echo $logo; ?>">
             
             <!-- Exibe a logo atual com um ID para ser acessado pelo JavaScript -->
-            <img id="logoPreview" class="file-preview" src="<?php echo $logo; ?>" alt="Pré-visualização da Logo" style="max-width: 200px;" required><br>
+            <img id="logoPreview" class="file-preview" src="arquivos/<?php echo $logo; ?>" alt="Pré-visualização da Logo" style="max-width: 200px;" required><br>
             
             <!-- Input de arquivo com restrição para tipos de arquivo permitidos -->
             <input type="file" id="logoInput" name="logoInput"  accept=".jpg, .jpeg, .png, .gif">

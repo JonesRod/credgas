@@ -73,6 +73,16 @@
     // Consulta para buscar todos os produtos com promoção
     $produtos_promocao = $mysqli->query("SELECT id_produto, promocao, ini_promocao, fim_promocao FROM produtos") or die($mysqli->error);
 
+    // Consulta SQL
+    $novidades = $mysqli->query("
+        SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro
+        FROM produtos 
+        WHERE id_parceiro = '$id'  
+        AND oculto != 'sim' 
+        AND produto_aprovado = 'sim'
+        AND DATEDIFF(NOW(), data) <= 30
+    ") or die("Erro na consulta: " . $mysqli->error);
+
     while ($produtos_encontrados = $produtos_promocao->fetch_assoc()) {
         $id_produto = $produtos_encontrados['id_produto'];
         $promocao = $produtos_encontrados['promocao'];
@@ -168,6 +178,10 @@
                 <span>Frete Grátis</span>
             </div>
 
+            <div class="tab" onclick="mostrarConteudo('novidades',this)">
+                <span>Novidades</span>
+            </div>
+
             <div class="tab" onclick="mostrarConteudo('produtos_ocultos',this)">
                 <span>Produtos Ocultos</span>
             </div>
@@ -224,7 +238,20 @@
                             
                             <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?> 
+                                <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?> 
                         </p>                       
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
@@ -307,7 +334,20 @@
                             
                             <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?> 
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?> 
                         </p>                       
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
@@ -382,7 +422,108 @@
                             
                             <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?> 
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?> 
+                        </p>                       
+                        <h3 class="produto-nome">
+                            <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
+                        </h3>
+
+                        <!-- Preço do produto -->
+                        <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        ?>
+                        <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
+
+                        <!-- Botão de edição -->
+                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                    </div>
+                </div>
+                <?php endwhile; ?>
+            </div>
+
+            <!-- Mensagem de produto não encontrado -->
+            <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
+            
+            <?php else: ?>
+                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+            <?php endif; ?>
+        </div>
+
+        <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
+            <?php 
+                if ($novidades->num_rows > 0): 
+            ?>
+            <div class="container">
+                <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>        
+
+            <!-- Lista de promoções aqui -->
+            <div class="lista-novidades">
+                <?php while ($produto = $novidades->fetch_assoc()): ?>
+                <div class="produto-item">
+                    <?php
+                    // Verifica e processa as imagens do produto
+                    $primeiraImagem = '/default_image.jpg'; // Imagem padrão
+                    if (!empty($produto['imagens'])) {
+                        $imagensArray = explode(',', $produto['imagens']);
+                        $primeiraImagem = 'produtos/img_produtos/' . $imagensArray[0];
+                    }
+                    ?>
+                    
+                    <!-- Ícones de status do produto -->
+                    <div class="produto-status">
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                            <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
+                        <?php endif; ?>
+                        
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                            <i class="fas fa-clock" title="Em análise"></i>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
+                    <div class="produto-detalhes">
+                        <p>
+                            <!-- Ícones de promoção e frete grátis -->
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?> 
                         </p>                       
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
@@ -458,7 +599,20 @@
                             
                             <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?> 
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?> 
                         </p>                       
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
@@ -607,6 +761,28 @@
         
         ///pesquizador de produto com frete gratis
         document.getElementById('inputPesquisaFreteGratis').addEventListener('input', function() {
+            const termoPesquisa = this.value.toLowerCase();
+            const produtos = document.querySelectorAll('.produto-item');
+            let produtoEncontrado = false;
+
+            produtos.forEach(produto => {
+                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                
+                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                    produto.style.display = 'block';
+                    produtoEncontrado = true;
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+
+            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
+            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+        });
+
+        ///pesquizador de produto na promoção
+        document.getElementById('inputPesquisaProdutosNovidades').addEventListener('input', function() {
             const termoPesquisa = this.value.toLowerCase();
             const produtos = document.querySelectorAll('.produto-item');
             let produtoEncontrado = false;

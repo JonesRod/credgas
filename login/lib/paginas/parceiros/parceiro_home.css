@@ -454,6 +454,13 @@ h2 {
     justify-content: center;
     padding-bottom: 50px;
 }
+.lista-novidades {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
 .lista-produtos_ocultos {
     display: flex;
     flex-wrap: wrap;
@@ -755,6 +762,13 @@ h2 {
         justify-content: center;
         padding-bottom: 50px;
     }  
+    .lista-novidades {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }
     .lista-produtos_ocultos { 
         display: flex;
         flex-wrap: wrap;

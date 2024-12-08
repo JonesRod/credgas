@@ -1,6 +1,6 @@
 
 // Função para fechar o menu lateral ao clicar fora dele
-window.addEventListener('click', function(event) {
+/*window.addEventListener('click', function(event) {
     const menu = document.getElementById('menu-lateral');
     const menuIcon = document.querySelector('.fas.fa-store'); // Ícone de loja
     if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== menuIcon) {
@@ -54,7 +54,7 @@ function hideMenuOnClick() {
 // Adiciona o evento de clique a cada item do menu lateral
 document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
     item.addEventListener('click', hideMenuOnClick);
-});
+});*/
 
 // ------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
@@ -82,11 +82,11 @@ function mostrarConteudo(aba, element) {
 }
 
 // Exemplo de atualização da contagem de notificações (chame essa função quando houver novas notificações)
-function atualizarContagemNotificacoes(contagem) {
+/*function atualizarContagemNotificacoes(contagem) {
     const countElement = document.getElementById('notificacao-count');
     countElement.textContent = contagem;
     countElement.style.display = contagem > 0 ? 'block' : 'none';
-}
+}*/
 
 // Define que a aba "catalogo" está ativa ao carregar a página
 window.onload = function() {
