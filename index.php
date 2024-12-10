@@ -97,7 +97,7 @@
             </div>
 
         </div>
- echo ('oii')
+
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
        
@@ -105,11 +105,11 @@
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
-                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado_manual = 'Aberto'";
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                 if ($result_parceiros->num_rows > 0) {
-                    echo ('oii').$result_parceiros->num_rows;
+                    
                     while ($parceiro = $result_parceiros->fetch_assoc()) {
                         $id_parceiro = $parceiro['id'];
                         
@@ -128,13 +128,13 @@
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
                 <?php 
-                    echo ('oii');
+                    
                     // Consulta para buscar parceiros ativos e abertos
-                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado_manual = 'Aberto'";
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                     if ($result_parceiros->num_rows > 0): 
-                        echo ('oi');
+                        
                         while ($parceiro = $result_parceiros->fetch_assoc()): 
                             // Exibe cada parceiro no carrossel
                             $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
@@ -394,7 +394,7 @@
                     JOIN produtos p ON mp.id = p.id_parceiro
                     WHERE 
                         mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado = 'Aberto'
+                        AND mp.aberto_fechado_manual = 'Aberto'
                 ";
     
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
