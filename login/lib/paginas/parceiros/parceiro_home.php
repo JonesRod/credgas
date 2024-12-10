@@ -33,22 +33,63 @@
         exit();
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
+    
+        $categoriaSelecionada = $_POST['categoria_selecionada'];
+        //echo ('oii1');
+    }else{
+        // Consulta para buscar categorias únicas dos produtos do parceiro
+        $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = $id";
+        $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
+
+        // Array para armazenar todas as categorias
+        $categoriasArray = [];
+        
+        while ($categoria = $result_categorias->fetch_assoc()) {
+            
+            $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
+            
+        }
+
+        // Remove as duplicatas do array de categorias
+        $categoriasUnicas = array_unique($categoriasArray);
+        //var_dump($categoriasUnicas);
+
+        // Pega a primeira categoria, se existir
+        $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
+        // Use reset() para obter o primeiro elemento do array
+        
+        $categoriaSelecionada = $primeiraCategoria;
+        //echo ('oii22');
+    }
+
     // Consulta para buscar produtos do catálogo
-    $produtos_catalogo = $mysqli->query(query: "SELECT * FROM produtos WHERE id_parceiro = '$id'") or die($mysqli->error);
+    $catalogo = $mysqli->query(query: "SELECT * FROM produtos 
+    WHERE id_parceiro = '$id'
+    AND categoria = '$categoriaSelecionada'  
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
-    // Supondo que já exista uma conexão com o banco de dados ($mysqli)
-    //$id_parceiro_sessao = $id;
-    $queryPromocoes = "SELECT * FROM produtos WHERE promocao = 'sim' AND id_parceiro = $id";
-    $promocoes = $mysqli->query($queryPromocoes);
+    $promocoes =  $mysqli->query("SELECT * FROM produtos 
+    WHERE id_parceiro = '$id' 
+    AND categoria = '$categoriaSelecionada' 
+    AND promocao = 'sim' 
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim'") or die($mysqli->error);
 
-    //$mais_vendidos = $mysqli->query(query: "SELECT * FROM produtos WHERE mais_vendidos = 1 AND id_parceiro = '$id'");
-    $frete_gratis = $mysqli->query(query: "SELECT * FROM produtos WHERE 
-        (id_parceiro = '$id' AND promocao = 'sim' AND frete_gratis_promocao = 'sim') 
-        OR 
-        (id_parceiro = '$id' AND promocao = 'nao' AND frete_gratis = 'sim')
-    ") or die($mysqli->error);
-    //echo "<p>Produtos ocultos encontrados: " . $frete_gratis->num_rows . "</p>";
+    // Consulta SQL corrigida
+    $queryFreteGratis = "SELECT * FROM produtos 
+    WHERE id_parceiro = '$id'
+    AND categoria = '$categoriaSelecionada'
+    AND oculto != 'sim' 
+    AND produto_aprovado = 'sim' 
+    AND frete_gratis = 'sim' 
+    OR (promocao = 'sim' 
+    AND frete_gratis_promocao = 'sim')";
+
+    // Executa a consulta e verifica erros
+    $frete_gratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
     $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $id";
@@ -65,7 +106,10 @@
     //echo $total_notificacoes; 
 
     //Consulta para buscar produtos ocultos do catálogo
-    $produtos_ocultos = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$id' AND oculto = 'sim'") or die($mysqli->error);
+    $produtos_ocultos = $mysqli->query("SELECT * FROM produtos 
+    WHERE id_parceiro = '$id' 
+    AND categoria = '$categoriaSelecionada' 
+    AND oculto = 'sim'") or die($mysqli->error);
     //echo "<p>Produtos ocultos encontrados: " . $produtos_ocultos->num_rows . "</p>";
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
@@ -77,7 +121,8 @@
     $novidades = $mysqli->query("
         SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro
         FROM produtos 
-        WHERE id_parceiro = '$id'  
+        WHERE id_parceiro = '$id' 
+        AND categoria = '$categoriaSelecionada'  
         AND oculto != 'sim' 
         AND produto_aprovado = 'sim'
         AND DATEDIFF(NOW(), data) <= 30
@@ -113,9 +158,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
+    <style>
+        .conteudo-secao {
+            display: none;
+        }
 
+        .conteudo-secao.ativo {
+            display: block;
+        }
+        .categorias-parceiro {
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            height: 100%; /* Garante que o elemento ocupe o espaço necessário */
+        }
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            display: inline-block;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .tab.active {
+            background-color: #eaeaea;
+            border-bottom: 2px solid #000;
+        }
+
+    </style>
 </head>
 <body>
+    <form id="formCategoria" method="POST" action="">
+        <input type="hidden" name="id_parceiro" id="id_parceiro" value="<?php echo $id; ?>">
+        <input type="hidden" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
+        <button type="submit" id="carregar_categoria" class="carregar_categoria" style="display: none;">enviar</button>
+    </form>
 
     <!-- Header -->
     <header>
@@ -161,6 +240,81 @@
         </ul>
     </aside>
 
+    <div class="categorias">
+        <?php 
+            // Consulta para buscar parceiros pelo CEP
+            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $id AND status = 'ATIVO'";
+            $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
+
+            if ($result_parceiros->num_rows > 0): 
+                while ($parceiro = $result_parceiros->fetch_assoc()): 
+                    // Consulta para buscar categorias únicas dos produtos do parceiro
+                    $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = ".$parceiro['id'];
+                    $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
+
+                    // Array para armazenar todas as categorias
+                    $categoriasArray = [];
+                    
+                    while ($categoria = $result_categorias->fetch_assoc()) {
+                        
+                        $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
+                        
+                    }
+
+                    // Remove as duplicatas do array de categorias
+                    $categoriasUnicas = array_unique($categoriasArray);
+                    //var_dump($categoriasUnicas);
+
+                    // Pega a primeira categoria, se existir
+                    $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
+                    // Use reset() para obter o primeiro elemento do array
+        ?>
+
+        <div class="parceiro-card">
+            <div class="categorias-parceiro">
+                <?php if (count($categoriasUnicas) > 0): ?>
+                    <?php foreach ($categoriasUnicas as $categoriaNome): 
+                        $categoriaNome = htmlspecialchars($categoriaNome);
+
+                        // Define a imagem correspondente à categoria
+                        $imagem = '';
+                        switch ($categoriaNome) {
+                            case 'Alimenticios':
+                                $imagem = 'alimenticio.png';
+                                break;
+                            case 'Utilitarios':
+                                $imagem = 'utilitarios.jpg';
+                                break;
+                            case 'Limpeza':
+                                $imagem = 'limpeza.jpg';
+                                break;
+                            case 'Bebidas':
+                                $imagem = 'bebidas.png';
+                                break;
+                            default:
+                                $imagem = 'img/categorias/padrao.png';
+                                break;
+                        }
+                        $selectedClass = ($categoriaNome === $categoriaSelecionada) ? 'selected' : ''; // Adiciona a classe 'selected' se for a selecionada
+
+                    ?>
+                    <div class="categoria-item <?php echo $selectedClass; ?>" onclick="selecionarCategoria('<?php echo $categoriaNome; ?>')" data-categoria="<?php echo $categoriaNome; ?>">
+                        <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
+                        <p><?php echo $categoriaNome; ?></p>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p>Sem categorias</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php endwhile; ?>
+        <?php else: ?>
+            <p>Nenhum parceiro ativo no momento.</p>
+        <?php endif; ?>
+    </div>
+
     <!-- Conteúdo principal -->
     <main id="main-content">
         <!-- Conteúdo -->
@@ -191,7 +345,7 @@
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
             <?php 
-                if ($produtos_catalogo->num_rows > 0): 
+                if ($catalogo->num_rows > 0): 
             ?>            
             <div class="container">
                 <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
@@ -204,7 +358,7 @@
 
             <!-- Lista de produtos aqui -->
             <div class="lista-produtos">
-                <?php while ($produto = $produtos_catalogo->fetch_assoc()): ?>
+                <?php while ($produto = $catalogo->fetch_assoc()): ?>
                 <div class="produto-item">
                     <?php
                     // Verifica e processa as imagens do produto
@@ -462,7 +616,7 @@
             <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
             
             <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+                <p style="margin-top: 30px;">Nenhuma produto disponível.</p>
             <?php endif; ?>
         </div>
 
@@ -661,6 +815,49 @@
         var sessionId = <?php echo json_encode($id); ?>;
         var id_produto = <?php echo json_encode($id_produto); ?>;
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
+            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+            const formCategoria = document.querySelector('#formCategoria'); // Formulário
+
+            // Recupera a categoria selecionada do input hidden após o recarregamento da página
+            const categoriaSelecionada = inputCategoria.value;
+
+            // Se houver uma categoria previamente selecionada, destaca-a
+            if (categoriaSelecionada) {
+                categorias.forEach(categoria => {
+                    if (categoria.querySelector('p').textContent.trim() === categoriaSelecionada) {
+                        categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria correspondente
+                    } else {
+                        categoria.classList.remove('selected'); // Remove a classe 'selected' de outras categorias
+                    }
+                });
+            } else if (categorias.length > 0) {
+                // Caso contrário, seleciona a primeira categoria como padrão
+                const primeiraCategoria = categorias[0];
+                categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
+                primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
+                inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
+            }
+
+            // Configurar evento de clique para as categorias
+            categorias.forEach(categoria => {
+                categoria.addEventListener('click', () => {
+                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
+                    enviar(); // Envia o formulário
+                });
+            });
+        });
+
+        function enviar() {
+            // Simula o clique no botão "Enviar"
+            const botaoEnviar = document.getElementById('carregar_categoria');
+            botaoEnviar.click();
+        }
+    
+
         function abrirNotificacao(id) {
             let url = ""; // Inicializa a URL como uma string vazia
 
@@ -825,6 +1022,75 @@
             mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
         });
         
+        document.addEventListener('DOMContentLoaded', () => {
+            // Referencia todos os campos de pesquisa
+            const camposPesquisa = [
+                document.getElementById('inputPesquisaCatalogo'),
+                document.getElementById('inputPesquisaPromocao'),
+                document.getElementById('inputPesquisaFreteGratis'),
+                document.getElementById('inputPesquisaNovidades')
+            ].filter(Boolean); // Remove campos que não existem
+
+            // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
+            function sincronizarPesquisa(origem) {
+                const termoPesquisa = origem.value.toLowerCase();
+
+                // Atualiza todos os campos de pesquisa com o mesmo valor
+                camposPesquisa.forEach(campo => {
+                    if (campo !== origem) {
+                        campo.value = origem.value;
+                    }
+                });
+
+                // Configura as categorias para busca
+                const categorias = [
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.catalogo'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoCatalogo') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.promocao'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoPromocao') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.freteGratis'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoFreteGratis') 
+                    },
+                    { 
+                        produtos: document.querySelectorAll('.produto-item.novidades'), 
+                        mensagem: document.getElementById('mensagemNaoEncontradoNovidades') 
+                    }
+                ];
+
+                categorias.forEach(categoria => {
+                    let produtoEncontrado = false;
+
+                    categoria.produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-detalhes')?.textContent.toLowerCase() || '';
+
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    // Exibe ou oculta a mensagem de "Produto não encontrado"
+                    if (categoria.mensagem) {
+                        categoria.mensagem.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
+
+            // Adiciona o evento de entrada para todos os campos
+            camposPesquisa.forEach(campo => {
+                campo.addEventListener('input', function () {
+                    sincronizarPesquisa(this);
+                });
+            });
+        });
+
     </script>
 
 </body>

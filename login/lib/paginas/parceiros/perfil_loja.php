@@ -161,8 +161,6 @@
             <input type="hidden" id="statusLojaTexto" name="statusLojaTexto" value="<?php echo $statusLoja; ?>">
         </div>
 
-
-
         <label for="razao">Razão Social:</label>
         <input type="text" id="razao" name="razao" required value="<?php echo $dados['razao']?>">
 
@@ -255,7 +253,7 @@
 
         <div class="action-buttons">
             <a href="parceiro_home.php" class="link-voltar"><b>Voltar</b></a>
-            <button type="submit" id="cadastrar" <?php echo ($dados['analize_inscricao'] === 'aprovado') ? '' : 'disabled'; ?>>Cadastrar</button>
+            <button type="submit" id="cadastrar" <?php echo ($dados['analize_inscricao'] === 'aprovado') ? '' : 'disabled'; ?>>Salvar</button>
         </div>
 
     </form>

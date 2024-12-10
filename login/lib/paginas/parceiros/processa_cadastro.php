@@ -67,10 +67,19 @@ if (isset($_FILES['logoInput']) && $_FILES['logoInput']['error'] === 0) {
     }
 } else {
     // Caso nenhum novo arquivo seja enviado, mantém a logo antiga ou define como nulo
-    $logo = !empty($_POST['img_anterior']) ? $_POST['img_anterior'] : '';
-}
+    $logo = !empty($_POST['img_anterior']) ? basename($_POST['img_anterior']) : '';
 
-// Atualiza os dados no banco de dados
+    // Exibe apenas o nome do arquivo
+    //echo $logo; // Saída: 6732a4ad3b2e6.jpg
+
+
+        
+    }
+    //var_dump($_POST);
+    //echo $logo;
+    //echo $novoNome;
+    //die();
+    // Atualiza os dados no banco de dados
 $sql_update = "
     UPDATE meus_parceiros SET 
         razao = '$razao',

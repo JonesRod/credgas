@@ -169,11 +169,11 @@
             display: block;
         }
         .categorias-parceiro {
-    display: flex;
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    height: 100%; /* Garante que o elemento ocupe o espaço necessário */
-}
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center; /* Centraliza verticalmente */
+            height: 100%; /* Garante que o elemento ocupe o espaço necessário */
+        }
         .tab {
             cursor: pointer;
             padding: 10px;
@@ -189,19 +189,19 @@
             border-bottom: 2px solid #000;
         }
         .voltar {
-    margin: 0; /* Remove margens padrão */
-    font-size: 1.5rem; /* Ajuste o tamanho da fonte conforme necessário */
-}
+            margin: 0; /* Remove margens padrão */
+            font-size: 1.5rem; /* Ajuste o tamanho da fonte conforme necessário */
+        }
 
-.voltar-link {
-    text-decoration: none; /* Remove sublinhado */
-    color: #333; /* Cor do texto */
-    transition: color 0.3s ease; /* Transição suave ao passar o mouse */
-}
+        .voltar-link {
+            text-decoration: none; /* Remove sublinhado */
+            color: #333; /* Cor do texto */
+            transition: color 0.3s ease; /* Transição suave ao passar o mouse */
+        }
 
-.voltar-link:hover {
-    color: #fff; /* Cor ao passar o mouse */
-}
+        .voltar-link:hover {
+            color: #fff; /* Cor ao passar o mouse */
+        }
     </style>
 
 </head>
@@ -252,7 +252,7 @@
     <!--<aside id="menu-lateral" >
         <ul>
             <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
+            <li><a href="configuracoes.php?id_parceiro=<?php //echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
             <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
         </ul>
     </aside>-->

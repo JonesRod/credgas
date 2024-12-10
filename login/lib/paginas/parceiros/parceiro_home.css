@@ -595,6 +595,75 @@ h2 {
     justify-content: space-between;
     margin-bottom: 20px;
 }
+.categorias{
+    padding-bottom: 50px;
+}
+
+.categorias-parceiro {
+    display: flex; /* Flexbox para organizar os itens em linha */
+    flex-wrap: wrap; /* Permite quebrar para outra linha se necessário */
+    justify-content: center; /* Centraliza os itens horizontalmente */
+    gap: 15px; /* Espaçamento entre os itens */
+}
+
+.categoria-item {
+    text-align: center;
+    margin: 5px; /* Margem ao redor de cada item */
+}
+
+.categoria-imagem {
+    width: 60px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%;
+    transition: all 0.3s ease; /* Suaviza o efeito de transição */
+}
+
+.categorias-parceiro p {
+    font-size: 14px;
+    color: black;
+    margin: 0;
+    transition: all 0.3s ease; /* Suaviza o efeito de transição */
+}
+
+.categoria-item:hover .categoria-imagem {
+    width: 70px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: -5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%; /* Torna a imagem circular */
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+}
+
+.categoria-item:hover p {
+    font-size: 16px;
+    color: rgb(201, 231, 9);
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+    margin: 0;
+}
+.categoria-item.selected .categoria-imagem {
+    width: 70px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: -5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%; /* Torna a imagem circular */
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+}
+
+.categoria-item.selected p {
+    font-size: 16px;
+    color: rgb(220, 200, 10);
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+    margin: 0;
+    text-decoration: underline; /* Adiciona sublinhado ao texto */
+}
+
+
+.categoria-item {
+    cursor: pointer;
+    transition: transform 0.3s, color 0.3s;
+}
 
 /* Para telas menores que 768px */
 @media (max-width: 768px) {
