@@ -27,7 +27,6 @@
     $taxa_padrao = $mysqli->query("SELECT * FROM config_admin WHERE taxa_padrao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $taxa = $taxa_padrao->fetch_assoc();
 
-
 ?>
 
 <!DOCTYPE html>
@@ -98,23 +97,24 @@
             </div>
 
         </div>
-
+ echo ('oii')
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
-
+       
             <h2>Nossos Parceiros</h2>
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
-                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado = 'Aberto'";
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado_manual = 'Aberto'";
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                 if ($result_parceiros->num_rows > 0) {
+                    echo ('oii').$result_parceiros->num_rows;
                     while ($parceiro = $result_parceiros->fetch_assoc()) {
                         $id_parceiro = $parceiro['id'];
                         
                         // Consulta para carregar produtos do parceiro
-                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim' AND produto_aprovado = 'sim'";
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
                         $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                     }
                 } else {
@@ -128,12 +128,13 @@
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
                 <?php 
-                    //echo ('oii');
+                    echo ('oii');
                     // Consulta para buscar parceiros ativos e abertos
-                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' && aberto_fechado_manual = 'Aberto'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                     if ($result_parceiros->num_rows > 0): 
+                        echo ('oi');
                         while ($parceiro = $result_parceiros->fetch_assoc()): 
                             // Exibe cada parceiro no carrossel
                             $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
@@ -251,7 +252,7 @@
                         JOIN produtos p ON mp.id = p.id_parceiro
                         WHERE 
                             mp.status = 'ATIVO' 
-                            AND mp.aberto_fechado = 'Aberto'
+                            AND mp.aberto_fechado_manual = 'Aberto'
                     ";
 
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
@@ -519,7 +520,7 @@
                     JOIN produtos p ON mp.id = p.id_parceiro
                     WHERE 
                         mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado = 'Aberto'
+                        AND mp.aberto_fechado_manual = 'Aberto'
                 ";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
