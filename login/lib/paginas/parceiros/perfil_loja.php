@@ -45,10 +45,14 @@
     }
 
     // Verifica se o valor 'aberto_fechado' está presente nos dados e atribui 'Aberto' ou 'Fechado'
-    $statusLoja =  $dados['aberto_fechado'];
+    $statusLoja =  $dados['aberto_fechado_manual'];
     $statusChecked = $statusLoja === 'Aberto' ? 'checked' : ''; // Define 'checked' se a loja estiver aberta
 
-    //echo ('').$statusLoja;
+    // Verifica se o valor 'aberto_fechado' está presente nos dados e atribui 'Aberto' ou 'Fechado'
+    $statusLojaaut =  $dados['aberto_fechado_aut'];
+    $statusCheckedaut = $statusLojaaut === 'Ativado' ? 'checked' : ''; // Define 'checked' se a loja estiver aberta
+
+    //echo ('').$statusCheckedaut;
     // Exibe o valor de $dados['aberto_fechado'] para depuração
     //var_dump($dados['aberto_fechado']); // ou echo $dados['aberto_fechado'];
 
@@ -146,20 +150,30 @@
 
         <span id="msgAlerta"></span><br>
 
-        <div style="margin-bottom: 20px; text-align: center; display: flex; align-items: center; justify-content: center;">
-            <label for="statusLoja" style="margin-right: 10px;">Status da Loja:</label>
-            <label class="switch" style="margin-right: 10px;">
-                <!-- O checkbox reflete o valor de $statusChecked -->
-                <input type="checkbox" id="aberto_fechado" name="aberto_fechado" <?php echo $statusChecked; ?> onchange="atualizarStatus();">
-                <span class="slider"></span>
-            </label>
-            
-            <!-- Exibe o status do estado da loja -->
-            <span id="statusLojaTextoDisplay"><?php echo ($statusLoja == 'Aberto' ? 'Aberto' : 'Fechado'); ?></span>
-            
-            <!-- Input oculto para envio via POST -->
-            <input type="hidden" id="statusLojaTexto" name="statusLojaTexto" value="<?php echo $statusLoja; ?>">
+        <div style="margin-bottom: 20px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <!-- Controle Manual -->
+            <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                <label for="statusLojaManual" style="margin-right: 10px;">Status da Loja (Manual):</label>
+                <label class="switch" style="margin-right: 10px;">
+                    <input type="checkbox" id="aberto_fechado_manual" name="aberto_fechado_manual" <?php echo $statusChecked; ?> onchange="atualizarStatusManual();">
+                    <span class="slider"></span>
+                </label>
+                <span id="statusLojaTextoDisplayManual">Fechado</span>
+                <input type="hidden" id="statusLojaTextoManual" name="statusLojaTextoManual" value="Fechado">
+            </div>
+
+            <!-- Controle Automático -->
+            <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                <label for="statusLojaAuto" style="margin-right: 10px;">Ativar Modo Automático:</label>
+                <label class="switch" style="margin-right: 10px;">
+                    <input type="checkbox" id="modoAutomatico" name="modoAutomatico" <?php echo $statusCheckedaut; ?> onchange="ativarModoAutomatico();">
+                    <span class="slider"></span>
+                </label>
+                <span id="statusLojaAutoTextoDisplay">Desativado</span>
+                <input type="hidden" id="statusLojaAutoTexto" name="statusLojaAutoTexto" value="Desativado">
+            </div>
         </div>
+
 
         <label for="razao">Razão Social:</label>
         <input type="text" id="razao" name="razao" required value="<?php echo $dados['razao']?>">
@@ -260,36 +274,11 @@
 
     <script src="perfil_loja.js"></script>
     <script>
-        function atualizarStatus() {
-        var checkbox = document.getElementById('aberto_fechado');
-        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
-        var hiddenInput = document.getElementById('statusLojaTexto');
-        
-        if (checkbox.checked) {
-            statusDisplay.textContent = 'Aberto';
-            hiddenInput.value = 'Aberto';
-        } else {
-            statusDisplay.textContent = 'Fechado';
-            hiddenInput.value = 'Fechado';
-        }
-    }
+        function atualizarStatusManual() {
+            var checkbox = document.getElementById('aberto_fechado_manual');
+            var statusDisplay = document.getElementById('statusLojaTextoDisplayManual');
+            var hiddenInput = document.getElementById('statusLojaTextoManual');
 
-    function atualizarStatus1() {
-        var checkbox = document.getElementById('aberto_fechado');
-        var statusDisplay = document.getElementById('statusLojaTextoDisplay');
-        var hiddenInput = document.getElementById('statusLojaTexto');
-        
-        // Verifica o valor de hiddenInput e ajusta o checkbox e o display de status
-        if (hiddenInput.value === 'Aberto') {
-            checkbox.checked = true; // Marca o checkbox
-            statusDisplay.textContent = 'Aberto';
-        } else {
-            checkbox.checked = false; // Desmarca o checkbox
-            statusDisplay.textContent = 'Fechado';
-        }
-        
-        // Atualiza o valor do campo oculto ao alterar o checkbox
-        checkbox.addEventListener('change', function() {
             if (checkbox.checked) {
                 statusDisplay.textContent = 'Aberto';
                 hiddenInput.value = 'Aberto';
@@ -297,13 +286,33 @@
                 statusDisplay.textContent = 'Fechado';
                 hiddenInput.value = 'Fechado';
             }
-        });
-    }
+        }
 
-    // Chama a função ao carregar a página para ajustar o estado inicial
-    document.addEventListener('DOMContentLoaded', function() {
-        atualizarStatus1();
-    });
+        function ativarModoAutomatico() {
+            var checkbox = document.getElementById('modoAutomatico');
+            var statusDisplay = document.getElementById('statusLojaAutoTextoDisplay');
+            var hiddenInput = document.getElementById('statusLojaAutoTexto');
+
+            if (checkbox.checked) {
+                statusDisplay.textContent = 'Ativado';
+                hiddenInput.value = 'Ativado';
+                
+                // Desativar o modo manual quando o automático for ativado
+                document.getElementById('aberto_fechado_manual').disabled = true;
+            } else {
+                statusDisplay.textContent = 'Desativado';
+                hiddenInput.value = 'Desativado';
+
+                // Reativar o modo manual quando o automático for desativado
+                document.getElementById('aberto_fechado_manual').disabled = false;
+            }
+        }
+
+        // Ajusta os estados iniciais ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            atualizarStatusManual();
+            ativarModoAutomatico();
+        });
 
 </script>
 

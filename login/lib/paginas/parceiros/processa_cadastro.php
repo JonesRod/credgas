@@ -15,7 +15,8 @@ if (!isset($_SESSION['id'])) {
 $id = $_SESSION['id'];
 
 // Valida e sanitiza os dados recebidos
-$aberto_fechado = $mysqli->real_escape_string($_POST['statusLojaTexto']);
+$aberto_fechado_manual = $mysqli->real_escape_string($_POST['statusLojaTextoManual']);
+$aberto_fechado_aut = $mysqli->real_escape_string($_POST['statusLojaAutoTexto']);
 $razao = $mysqli->real_escape_string($_POST['razao']);
 $nomeFantasia = $mysqli->real_escape_string($_POST['nomeFantasia']);
 $cnpj = $mysqli->real_escape_string($_POST['cnpj']);
@@ -31,8 +32,8 @@ $rua = $mysqli->real_escape_string($_POST['rua']);
 $numero = $mysqli->real_escape_string($_POST['numero']);
 $bairro = $mysqli->real_escape_string($_POST['bairro']);
 
-
-
+//var_dump($_POST);
+//die();
 //echo ('oi'). $aberto_fechado;
 //die();
 // Configuração do upload da nova logo (se houver)
@@ -97,7 +98,8 @@ $sql_update = "
         endereco = '$rua',
         numero = '$numero',
         bairro = '$bairro',
-        aberto_fechado ='$aberto_fechado'
+        aberto_fechado_manual ='$aberto_fechado_manual',
+        aberto_fechado_aut ='$aberto_fechado_aut'
     WHERE id = '$id'";
 
 // Executa a consulta
