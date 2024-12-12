@@ -1,903 +1,891 @@
-<?php
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    include('../../conexao.php');
-
-    if(!isset($_SESSION)) {
-        session_start();
-    }
-   
-    if (isset($_GET['id'])) {
-        $idParceiro = intval($_GET['id']);
-
-        // Consulta para buscar os dados do parceiro
-        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado = 'Aberto'";
-        $result = $mysqli->query($sql);
-
-        if ($result->num_rows > 0) {
-            $parceiro = $result->fetch_assoc();
-            // Exibir os dados da loja do parceiro
-            // Verifica e ajusta a logo
-            if(isset($parceiro['logo'])) {
-                $minhaLogo = $parceiro['logo'];
-
-                if ($minhaLogo !=''){
-                    // Se existe e não está vazio, atribui o valor à variável logo
-                    $logo = '../parceiros/arquivos/'.$parceiro['logo'];
-                    //echo ('oii');
-                }
-            }else{
-                $logo = '../arquivos_fixos/icone_loja.jpg';
-            }
-        } else {
-            echo "<p>Parceiro não encontrado ou inativo.</p>";
-        }
-    } else {
-        echo "<p>ID do parceiro não fornecido.</p>";
-    }
-
-    /*if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
-        $categoriaSelecionada = $_POST['categoria_selecionada'];
-
-    } */
-
-    // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
-    $result = $mysqli->query(query: $sql_query_not_par);
-    $row = $result->fetch_assoc();
-    $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
-    $not_novo_produto= $row['not_novo_produto'] ?? 0;
-    $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
-    $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
-    // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
-
-    // Obtenha a data atual
-    $data_atual = date('Y-m-d');
-    // Atualiza os produtos com promoção
-    $produtos_promocao = $mysqli->query("SELECT id_produto, promocao, ini_promocao, fim_promocao FROM produtos") or die($mysqli->error);
-    while ($produtos_encontrados = $produtos_promocao->fetch_assoc()) {
-        $id_produto = $produtos_encontrados['id_produto'];
-        $promocao = $produtos_encontrados['promocao'];
-        $data_inicio = $produtos_encontrados['ini_promocao'];
-        $data_fim = $produtos_encontrados['fim_promocao'];
-
-        // Verifica se a promoção deve estar ativa ou inativa
-        if ($promocao === 'sim' && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
-            // A promoção deve continuar como "sim"
-            continue;
-        } elseif ($data_fim < $data_atual) {
-            // A promoção terminou; atualize para "não"
-            $mysqli->query("UPDATE produtos SET promocao = 'não' WHERE id_produto = '$id_produto'");
-        } elseif ($data_inicio > $data_atual) {
-            // A promoção ainda não começou; continue com "sim" se for o caso
-            $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
-        }
-    }
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['categoria_selecionada'])) {
-    
-        $categoriaSelecionada = $_POST['categoria_selecionada'];
-        //echo ('oii1');
-    }else{
-        // Consulta para buscar categorias únicas dos produtos do parceiro
-        $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = $idParceiro";
-        $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
-
-        // Array para armazenar todas as categorias
-        $categoriasArray = [];
-        
-        while ($categoria = $result_categorias->fetch_assoc()) {
-            
-            $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
-            
-        }
-
-        // Remove as duplicatas do array de categorias
-        $categoriasUnicas = array_unique($categoriasArray);
-        //var_dump($categoriasUnicas);
-
-        // Pega a primeira categoria, se existir
-        $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
-        // Use reset() para obter o primeiro elemento do array
-        
-        $categoriaSelecionada = $primeiraCategoria;
-        //echo ('oii22');
-    }
-        // Consulta para buscar produtos do catálogo
-        $catalogo = $mysqli->query(query: "SELECT * FROM produtos 
-        WHERE id_parceiro = '$idParceiro'
-        AND categoria = '$categoriaSelecionada'  
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-        // Verifica se existem promoções, mais vendidos e frete grátis
-        $promocoes =  $mysqli->query("SELECT * FROM produtos 
-        WHERE id_parceiro = '$idParceiro' 
-        AND categoria = '$categoriaSelecionada' 
-        AND promocao = 'sim' 
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-        // Consulta SQL corrigida
-        $queryFreteGratis = "SELECT * FROM produtos 
-        WHERE id_parceiro = '$idParceiro'
-        AND categoria = '$categoriaSelecionada'
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim' 
-        AND frete_gratis = 'sim' 
-        OR (promocao = 'sim' 
-        AND frete_gratis_promocao = 'sim')";
-
-        // Executa a consulta e verifica erros
-        $freteGratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
-        if ($freteGratis->num_rows > 0){
-            echo ('oi1');
-        }else{
-            echo ('oi2');
-        }
-        //$produtos_novidades = $mysqli->query("SELECT * FROM produtos WHERE id_parceiro = '$idParceiro' AND oculto != 'sim' AND produto_aprovado = 'sim'") or die($mysqli->error);
-
-        // Consulta SQL
-        $novidades = $mysqli->query("SELECT *, DATEDIFF(NOW(), data) AS dias_desde_cadastro 
-            FROM produtos 
-            WHERE id_parceiro = '$idParceiro' 
-            AND categoria = '$categoriaSelecionada' 
-            AND oculto != 'sim' 
-            AND produto_aprovado = 'sim'
-        ") or die("Erro na consulta: " . $mysqli->error);
-        
-        // Loop para exibir os resultados
-        if ($novidades->num_rows > 0) {
-            while ($produto = $novidades->fetch_assoc()) {
-                echo "<p>Produto: " . $produto['nome_produto'] . "</p>";
-                echo "<p>Data do Cadastro: " . $produto['data'] . "</p>";
-                echo "<p>Dias Desde o Cadastro: " . $produto['dias_desde_cadastro'] . "</p>";
-                echo "<hr>";
-            }
-        } else {
-            echo "<p>Nenhum produto encontrado.</p>";
-        }
-
-        
-    //}
-
-?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $parceiro['nomeFantasia']; ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="loja_parceiro_home.css">
-    <script src="loja_parceiro_home.js"></script> 
-    <style>
-        .conteudo-secao {
-            display: none;
-        }
-
-        .conteudo-secao.ativo {
-            display: block;
-        }
-        .categorias-parceiro {
+body {
+    font-family: Arial, sans-serif;
+    background-color: #007BFF;
     display: flex;
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: center; /* Centraliza verticalmente */
-    height: 100%; /* Garante que o elemento ocupe o espaço necessário */
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
 }
-        .tab {
-            cursor: pointer;
-            padding: 10px;
-            display: inline-block;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
 
-        .tab.active {
-            background-color: #eaeaea;
-            border-bottom: 2px solid #000;
-        }
-        .voltar {
+header {
+    background-color: #007BFF;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Alinha itens ao topo */
+    padding: 20px;
+}
+
+header h1 {
+    flex-grow: 1; /* Faz o título ocupar o espaço disponível */
+    text-align: center; /* Centraliza o título horizontalmente */
+    font-size: 30px; /* Tamanho padrão do título */
+    line-height: 100px; /* Alinha verticalmente o título com a altura do cabeçalho */
     margin: 0; /* Remove margens padrão */
-    font-size: 1.5rem; /* Ajuste o tamanho da fonte conforme necessário */
 }
 
-.voltar-link {
-    text-decoration: none; /* Remove sublinhado */
-    color: #333; /* Cor do texto */
-    transition: color 0.3s ease; /* Transição suave ao passar o mouse */
+header .logo img {
+    height: 150px; /* Aumenta o tamanho do logo */
+    width: 150px; /* Ajuste proporcional ao tamanho */
+    border-radius: 50%; /* Mantém o logo redondo */
 }
 
-.voltar-link:hover {
-    color: #fff; /* Cor ao passar o mouse */
+.menu-superior-direito {
+    font-size: 20px;
+    display: flex;
+    align-items: flex-start; /* Alinha o conteúdo no topo */
+    margin-top: -10px; /* Ajuste para alinhar ao topo */
 }
-    </style>
-
-</head>
-<body>
-    <form id="formCategoria" method="POST" action="">
-        <input type="text" name="id_parceiro" id="id_parceiro" value="<?php echo $idParceiro; ?>">
-        <input type="text" name="categoria_selecionada" id="categoria_selecionada" value="<?php echo $categoriaSelecionada; ?>">
-        <button type="submit" id="carregar_categoria" class="carregar_categoria" style="display: none;">enviar</button>
-    </form>
-
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
-        </div>
-
-        <h1><?php echo $parceiro['nomeFantasia']; ?></h1>
-
-        <div class="menu-superior-direito">
-            <!-- Ícone de notificações com contagem -->
-            <div class="notificacoes">
-                <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
-                <!-- Exibir a contagem de notificações -->
-                <?php if ($total_notificacoes > 0): ?>
-                    <span id="notificacao-count" class="notificacao-count"></span>
-                <?php else: ?>
-                    <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
-                <?php endif; ?>
-            </div>
-
-            <i class="fas fa-store" onclick="toggleMenu()"></i><!--Configuraçõa da Loja-->
-        </div>
-
-    </header>
-
-    <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
-    <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
-        <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $not_novo_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $pedidos; ?></li>
-
-        </ul>
-    </aside>
-
-    <!-- Menu lateral que aparece abaixo do ícone de menu -->
-    <aside id="menu-lateral" >
-        <ul>
-            <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
-            <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-        </ul>
-    </aside>
-
-    <div class="categorias">
-        <?php 
-            // Consulta para buscar parceiros pelo CEP
-            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
-            $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
-
-            if ($result_parceiros->num_rows > 0): 
-                while ($parceiro = $result_parceiros->fetch_assoc()): 
-                    // Consulta para buscar categorias únicas dos produtos do parceiro
-                    $sql_categorias = "SELECT categoria FROM produtos WHERE id_parceiro = ".$parceiro['id'];
-                    $result_categorias = $mysqli->query($sql_categorias) or die($mysqli->error);
-
-                    // Array para armazenar todas as categorias
-                    $categoriasArray = [];
-                    
-                    while ($categoria = $result_categorias->fetch_assoc()) {
-                        
-                        $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
-                        
-                    }
-
-                    // Remove as duplicatas do array de categorias
-                    $categoriasUnicas = array_unique($categoriasArray);
-                    //var_dump($categoriasUnicas);
-
-                    // Pega a primeira categoria, se existir
-                    $primeiraCategoria = !empty($categoriasUnicas) ? reset($categoriasUnicas) : null; 
-                    // Use reset() para obter o primeiro elemento do array
-        ?>
-
-        <div class="parceiro-card">
-            <div class="categorias-parceiro">
-                <h2 class="voltar">
-                    <a href="../../../../index.php" class="voltar-link"><< Voltar</a>
-                </h2>
-                <?php if (count($categoriasUnicas) > 0): ?>
-                    <?php foreach ($categoriasUnicas as $categoriaNome): 
-                        $categoriaNome = htmlspecialchars($categoriaNome);
-
-                        // Define a imagem correspondente à categoria
-                        $imagem = '';
-                        switch ($categoriaNome) {
-                            case 'Alimenticios':
-                                $imagem = 'alimenticio.png';
-                                break;
-                            case 'Utilitarios':
-                                $imagem = 'utilitarios.jpg';
-                                break;
-                            case 'Limpeza':
-                                $imagem = 'limpeza.jpg';
-                                break;
-                            case 'Bebidas':
-                                $imagem = 'bebidas.png';
-                                break;
-                            default:
-                                $imagem = 'img/categorias/padrao.png';
-                                break;
-                        }
-                        $selectedClass = ($categoriaNome === $categoriaSelecionada) ? 'selected' : ''; // Adiciona a classe 'selected' se for a selecionada
-
-                    ?>
-                    <div class="categoria-item <?php echo $selectedClass; ?>" onclick="selecionarCategoria('<?php echo $categoriaNome; ?>')" data-categoria="<?php echo $categoriaNome; ?>">
-                        <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
-                        <p><?php echo $categoriaNome; ?></p>
-                    </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p>Sem categorias</p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <?php endwhile; ?>
-        <?php else: ?>
-            <p>Nenhum parceiro ativo no momento.</p>
-        <?php endif; ?>
-    </div>
-
-    <!-- Conteúdo principal -->
-    <main id="main-content">
-        <!-- Conteúdo -->
-        <div class="opcoes">
-            <!-- Abas -->
-            <div class="tab active" onclick="mostrarConteudo('catalogo', this)">
-                <span>Catálogo</span>
-            </div>
-
-            <div class="tab" onclick="mostrarConteudo('promocoes', this)">
-                <span class="icone-promocao" title="Produto em promoção">🔥</span><span>Promoções</span>
-            </div>
-
-            <div class="tab" onclick="mostrarConteudo('freteGratis', this)">
-                <span class="icone-freteGratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
-            </div>
-
-            <div class="tab" onclick="mostrarConteudo('novidades', this)">
-                <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
-            </div>
-        </div>
-
-        <!-- Conteúdos correspondentes às abas -->
-        <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
-            <?php 
-                if ($catalogo->num_rows > 0): 
-            ?>            
-            <div class="container">
-                <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>
-
-            <!-- Lista de produtos aqui -->
-            <div class="lista-produtos">
-                <?php 
-                    while ($produto = $catalogo->fetch_assoc()): 
-                ?>
-                <div class="produto-item catalogo">
-                    <?php
-                        // Verifica se o campo 'imagens' está definido e não está vazio
-                        if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                            // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                            $imagensArray = explode(',', $produto['imagens']);
-                            
-                            // Pega a primeira imagem do array
-                            $primeiraImagem = $imagensArray[0];
-                            // Exibe a primeira imagem
-                            ?>
-                            <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                            <?php
-                        } else {
-                            // Caso não haja imagens, exibe uma imagem padrão
-                            ?>
-                            <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                            <?php
-                        }
-                    ?>
-
-                    <div class="produto-detalhes">
-                    <h3 class="produto-nome">
-                        <?php 
-                            // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                            if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                        ?>
-                            <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                        <?php 
-                            endif;
-
-                            // Exibe o ícone de promoção, se o produto estiver em promoção
-                            if ($produto['promocao'] === 'sim'): 
-                        ?>
-                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                        <?php 
-                            endif; 
-
-                            $dataCadastro = new DateTime($produto['data']); // Data do produto
-                            $dataAtual = new DateTime(); // Data atual
-                            $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                            $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                        
-                            if ($diasDesdeCadastro <= 30):
-                        ?>
-                                <span class="icone-novidades" title="Novidades">🆕</span>
-                        <?php
-                            endif;
-                        ?>   
-                        
-                    </h3>
-                    <?php echo $produto['nome_produto']; ?>
-                            <!-- Preço do produto -->
-                            <?php
-                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
-                                ? floatval($produto['valor_promocao'] ?? 0) 
-                                : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
-                        </div>
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoCatalogo" style="display: none;">Nenhum produto encontrado no catálogo.</p>
-
-        </div>
-
-        <?php else: ?>
-        <div class="conteudo">
-            <form method="POST" action="produtos/adicionar_produto.php">
-                <input type="hidden" name="id_parceiro" value="<?php echo $idParceiro; ?>">
-                <p style="margin-top: 30px;">Nenhuma produto cadastrado ainda!.</p>
-                <button class="button">Inclua seu primeiro produto</button>
-            </form>
-        </div>    
-        <?php endif; ?>                        
-        </div>
-
-        <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
-            <?php 
-                if ($promocoes->num_rows > 0): 
-            ?>
-            <div class="container">
-                <input id="inputPesquisaPromocao" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
-
-            <!-- Lista de promoções aqui -->
-            <div class="lista-promocoes">
-                <?php while ($produto = $promocoes->fetch_assoc()): ?>
-                    <div class="produto-item promocao">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                ?>
-                            </h3>
-                            <?php echo $produto['nome_produto']; ?>
-
-                            <!-- Preço do produto -->
-                            <?php
-                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
-                                ? floatval($produto['valor_promocao'] ?? 0) 
-                                : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoPromocao" style="display: none;">Nenhum produto encontrado em promoção.</p>
-            
-            <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
-            <?php endif; ?>
-        </div>
-
-        <div id="conteudo-freteGratis" class="conteudo-aba" style="display: none;">
-            <?php 
-                if ($freteGratis->num_rows > 0): 
-                    echo ('oi');
-            ?>            
-            <div class="container">
-                <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
-
-            <!-- Lista de promoções aqui -->
-            <div class="lista-freteGratis">
-                <?php while ($produto = $freteGratis->fetch_assoc()): ?>
-                    <div class="produto-item freteGratis">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-
-                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
-                                    $dataAtual = new DateTime(); // Data atual
-                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                                
-                                    if ($diasDesdeCadastro <= 30):
-                                ?>
-                                        <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php
-                                    endif;
-                                ?> 
-                            </h3>
-                            <?php echo $produto['nome_produto']; ?>
-
-                            <!-- Preço do produto -->
-                            <?php
-                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
-                                ? floatval($produto['valor_promocao'] ?? 0) 
-                                : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-
-            <!-- Mensagem de produto não encontrado -->
-            <p id="mensagemNaoEncontradoFreteGratis" style="display: none;">Nenhum produto encontrado com frete grátis.</p>
-            
-            <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma produto com frete grátis disponível.</p>
-            <?php endif; ?>
-        </div>
-
-        <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
-            <?php 
-                if ($novidades->num_rows > 0):
-                    echo ('oi');
-            ?>            
-            <div class="container">
-                <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto.">
-            </div>        
-
-            <!-- Lista de promoções aqui -->
-            <div class="lista-novidades">
-                <?php while ($produto = $novidades->fetch_assoc()): ?>
-                    <?php
-                        $dataCadastro = new DateTime($produto['data']); // Data do produto
-                        $dataAtual = new DateTime(); // Data atual
-                        $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                        $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                    // Verifica se o produto foi cadastrado há 30 dias ou menos
-                    if ($diasDesdeCadastro < 31): ?>
-                    <div class="produto-item novidades">
-                        <?php
-                            // Verifica se o campo 'imagens' está definido e não está vazio
-                            if (isset($produto['imagens']) && !empty($produto['imagens'])) {
-                                // Divide a string de imagens em um array, assumindo que as imagens estão separadas por virgula
-                                $imagensArray = explode(',', $produto['imagens']);
-                                
-                                // Pega a primeira imagem do array
-                                $primeiraImagem = $imagensArray[0];
-                                // Exibe a primeira imagem
-                                ?>
-                                <img src="../parceiros/produtos/img_produtos/<?php echo $primeiraImagem; ?>" alt="Imagem do Produto" class="produto-imagem">
-                                <?php
-                            } else {
-                                // Caso não haja imagens, exibe uma imagem padrão
-                                ?>
-                                <img src="/default_image.jpg" alt="Imagem Padrão" class="produto-imagem">
-                                <?php
-                            }
-                        ?>
-                        <div class="produto-detalhes">
-                            <h3 class="produto-nome">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-                                
-                                    if ($diasDesdeCadastro < 31):
-                                ?>
-                                        <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php
-                                    endif;
-                                ?> 
-                            </h3>
-                            <?php echo $produto['nome_produto']; ?>
-
-                            <!-- Preço do produto -->
-                            <?php
-                            $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
-                                ? floatval($produto['valor_promocao'] ?? 0) 
-                                : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
-                            ?>
-                            <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                    </div>
-                    <?php endif; ?>
-                    
-                <?php endwhile; ?>
-
-                <!-- Mensagem de produto não encontrado -->
-                <p id="mensagemNaoEncontradoNovidades" style="display: none;">Nenhum produto encontrado em novidades.</p>
-                
-                <?php else: ?>
-                    <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
-                <?php endif; ?>                
-            </div>
-
-        </div>
-
-    </main>
-
-    <footer class="menu-mobile">
-        <ul>
-            <!--<li><a href="parceiro_home.php" title="Página Inicial"><i class="fas fa-home"></i></a></li>-->
-            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
-            <li title="Pedidos"><i class="fas fa-box"></i></li> <!-- pedidos -->
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($idParceiro); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
-            <li><a href="parceiro_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
-        </ul>
-    </footer>
-    <script src="parceiro_home.js"></script> 
-    <script>
-        // Obtém o ID da sessão do PHP
-        var sessionId = <?php echo json_encode($idParceiro); ?>;
-        var id_produto = <?php echo json_encode($id_produto); ?>;
-
-        function abrirNotificacao(id) {
-            let url = ""; // Inicializa a URL como uma string vazia
-
-            // Define a URL com base no ID da notificação
-            switch (id) {
-                case 1:
-                    url = `detalhes_notificacao_novo_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
-                    break;
-                case 2:
-                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
-                    break;
-                case 3:
-                    url = `not_detalhes_crediario.php?session_id=${sessionId}`;
-                    break;
-                default:
-                    console.error("ID de notificação inválido:", id);
-                    return; // Sai da função se o ID não for válido
-            }
-
-            // Redireciona para a URL correspondente
-            window.location.href = url;
-        }
-
-        function solicitacoes() {
-            // Redireciona para a página de detalhes com o ID da notificação e o ID da sessão
-            var url = `detalhes_notificacao.php?id=&session_id=${sessionId}`;
-            //console.log("Redirecionando para:", url);
-            // Verifica se a URL está correta antes de redirecionar
-            window.location.href = url;
-        }
-
-
-        function fetchNotifications(id) {
-            fetch(`get_notifications.php?id=${sessionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const notificationCount = document.getElementById('notificacao-count');
-                    notificationCount.innerText = data.total_notificacoes;
-
-                    // Ocultar o contador se for zero
-                    if (data.total_notificacoes > 0) {
-                        notificationCount.style.display = 'inline';
-                    } else {
-                        notificationCount.style.display = 'none';
-                    }
-                }).catch(error => console.error('Error fetching notifications:', error));
-        }
-
-        // Chama a função pela primeira vez
-        fetchNotifications();
-
-        // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        setInterval(fetchNotifications, 5000);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Referencia todos os campos de pesquisa
-            const camposPesquisa = [
-                document.getElementById('inputPesquisaCatalogo'),
-                document.getElementById('inputPesquisaPromocao'),
-                document.getElementById('inputPesquisaFreteGratis'),
-                document.getElementById('inputPesquisaNovidades')
-            ].filter(Boolean); // Remove campos que não existem
-
-            // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
-            function sincronizarPesquisa(origem) {
-                const termoPesquisa = origem.value.toLowerCase();
-
-                // Atualiza todos os campos de pesquisa com o mesmo valor
-                camposPesquisa.forEach(campo => {
-                    if (campo !== origem) {
-                        campo.value = origem.value;
-                    }
-                });
-
-                // Configura as categorias para busca
-                const categorias = [
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.catalogo'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoCatalogo') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.promocao'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoPromocao') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.freteGratis'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoFreteGratis') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.novidades'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoNovidades') 
-                    }
-                ];
-
-                categorias.forEach(categoria => {
-                    let produtoEncontrado = false;
-
-                    categoria.produtos.forEach(produto => {
-                        const nomeProduto = produto.querySelector('.produto-detalhes')?.textContent.toLowerCase() || '';
-
-                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                            produto.style.display = 'block';
-                            produtoEncontrado = true;
-                        } else {
-                            produto.style.display = 'none';
-                        }
-                    });
-
-                    // Exibe ou oculta a mensagem de "Produto não encontrado"
-                    if (categoria.mensagem) {
-                        categoria.mensagem.style.display = produtoEncontrado ? 'none' : 'block';
-                    }
-                });
-            }
-
-            // Adiciona o evento de entrada para todos os campos
-            camposPesquisa.forEach(campo => {
-                campo.addEventListener('input', function () {
-                    sincronizarPesquisa(this);
-                });
-            });
-        });
-
-    
-        document.addEventListener('DOMContentLoaded', () => {
-            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
-            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
-            const formCategoria = document.querySelector('#formCategoria'); // Formulário
-
-            // Recupera a categoria selecionada do input hidden após o recarregamento da página
-            const categoriaSelecionada = inputCategoria.value;
-
-            // Se houver uma categoria previamente selecionada, destaca-a
-            if (categoriaSelecionada) {
-                categorias.forEach(categoria => {
-                    if (categoria.querySelector('p').textContent.trim() === categoriaSelecionada) {
-                        categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria correspondente
-                    } else {
-                        categoria.classList.remove('selected'); // Remove a classe 'selected' de outras categorias
-                    }
-                });
-            } else if (categorias.length > 0) {
-                // Caso contrário, seleciona a primeira categoria como padrão
-                const primeiraCategoria = categorias[0];
-                categorias.forEach(categoria => categoria.classList.remove('selected')); // Remove a classe 'selected' de todas
-                primeiraCategoria.classList.add('selected'); // Adiciona a classe 'selected' à primeira categoria
-                inputCategoria.value = primeiraCategoria.querySelector('p').textContent.trim(); // Define o valor no campo hidden
-            }
-
-            // Configurar evento de clique para as categorias
-            categorias.forEach(categoria => {
-                categoria.addEventListener('click', () => {
-                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
-                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
-                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
-                    enviar(); // Envia o formulário
-                });
-            });
-        });
-
-        function enviar() {
-            // Simula o clique no botão "Enviar"
-            const botaoEnviar = document.getElementById('carregar_categoria');
-            botaoEnviar.click();
-        }
-
-
-    </script>
-
-</body>
-</html>
 
+.menu-superior-direito span {
+    margin-right: 15px; /* Espaçamento entre o nome do usuário e os ícones */
+    transition: color 0.3s ease; /* Transição suave para a cor */
+}
+
+.menu-superior-direito i {
+    font-size: 24px; /* Aumenta o tamanho dos ícones */
+    margin-left: 15px;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para o movimento e cor */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+}
+/* Efeito ao passar o mouse */
+.menu-superior-direito span:hover {
+    color: #f0a309; /* Muda a cor do texto ao passar o mouse */
+}
+
+.menu-superior-direito i:hover {
+    transform: translateY(-5px); /* Move o ícone para cima ao passar o mouse */
+    color: #ff9d00; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeito ao clicar */
+.menu-superior-direito i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ff9d09; /* Muda a cor do ícone ao passar o mouse */
+}
+aside#menu-lateral {
+    font-weight: bold; /* Aplica negrito ao texto */
+    background-color: #d3d0ce;
+    color: rgb(24, 8, 235);
+    width: 210px; /* Largura fixa da barra lateral */
+    padding: 10px;
+    position: absolute; /* Mantém a barra lateral fixa */
+    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    display: none; /* Inicialmente escondido */
+    transition: all 0.3s ease; /* Transição suave */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
+}
+
+aside#menu-lateral ul {
+    list-style: none;
+    padding: 0;
+}
+
+aside#menu-lateral ul li {
+    margin: 15px 0; /* Margem entre os itens */
+    font-size: 16px; /* Tamanho da fonte */
+    display: flex; /* Flexbox para alinhar ícone e texto */
+    align-items: center; /* Alinha verticalmente */
+    transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
+    border-radius: 5px; /* Bordas arredondadas */
+    padding: 10px; /* Espaçamento interno */
+    font-weight: bold; /* Aplica negrito ao texto */
+}
+/* Remove o sublinhado do link "Sair" */
+#menu-lateral a {
+    text-decoration: none; /* Remove o sublinhado */
+    color: inherit; /* Mantém a cor do texto herdada */
+    transition: color 0.3s ease; /* Suave transição de cor */
+}
+
+/* Efeito ao passar o mouse sobre o link */
+#menu-lateral a:hover {
+    cursor: pointer;
+    color: #007BFF; /* Muda a cor ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+aside#menu-lateral ul li:hover {
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.1); /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilo para ícones */
+aside#menu-lateral ul li i {
+    margin-right: 10px; /* Espaçamento entre ícone e texto */
+    font-size: 20px; /* Tamanho dos ícones */
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o ícone */
+aside#menu-lateral ul li:hover i {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Efeito ao clicar em um ícone */
+aside#menu-lateral ul li i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeitos para os spans */
+aside#menu-lateral ul li span {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o span */
+aside#menu-lateral ul li:hover span {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
+    /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
+}
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+    box-sizing: border-box;
+}
+/* Estilos para as abas */
+main .opcoes {
+    background-color: #007BFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0px;
+    padding: auto;
+}
+
+main .tab {
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+    background-color: #007BFF;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+main .tab:hover {
+    background-color: #afa791;
+    color: white;
+    transform: scale(1.05);
+}
+
+main .tab.active {
+    background-color: #ffb300; /* Aba ativa com cor diferente */
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Estilos para o conteúdo das abas */
+.conteudo-aba {
+    flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 0px;
+    padding: 10px;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    display: none; /* Por padrão, todos os conteúdos estão escondidos */
+    padding-top: 5px;
+    box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+    overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+    background-color: #d3d0ce;
+
+}
+.menu-mobile {
+    background-color: #343a40;
+    color: white;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: none;
+    justify-content: space-around;
+}
+#menu-mobile i {
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: inherit; /* Herda a cor do item pai */
+}
+#menu-mobile i:hover {
+    background-color: #f0f0f0; /* Efeito de hover */
+    color: #007BFF; /* Cor ao passar o mouse */
+}
+.menu-mobile ul {
+    list-style: none;  
+    display: flex;
+    justify-content: space-around;
+    width: 100%; /* Garantir que o menu ocupe toda a largura */
+}
+
+/* Efeitos para os itens do menu mobile */
+.menu-mobile ul li {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+.menu-mobile ul li:hover {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o item para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+.menu-mobile ul li i {
+    font-size: 24px; /* Aumente o tamanho dos ícones aqui */
+    margin: 0; /* Remova a margem, se necessário */
+    display: block; /* Garante que o ícone seja exibido como um bloco */
+    text-align: center; /* Centraliza o ícone dentro do item do menu */
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    /*color: #afa791; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o ícone */
+.menu-mobile ul li:hover i {
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Estilo para o ícone de notificações com o número de notificações */
+.notificacoes {
+    position: relative;
+    display: inline-block;
+}
+/* Efeito de movimento no ícone de notificação e no número de notificações ao passar o mouse */
+.notificacoes:hover i, 
+.notificacoes:hover .notificacao-count {
+    animation: moverNotificacao 0.5s ease-in-out forwards;
+}
+
+/* Definição da animação de movimento */
+@keyframes moverNotificacao {
+    0% {
+        transform: translateY(0); /* Posição inicial */
+    }
+    50% {
+        transform: translateY(-10px); /* Movimento para cima */
+    }
+    100% {
+        transform: translateY(0); /* Volta à posição original */
+    }
+}
+
+.notificacao-count {
+    position: absolute;
+    top: -8px;
+    right: -1px;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+/* Painel de notificações estilo semelhante ao menu lateral */
+#painel-notificacoes {
+    display: none;
+    position: fixed;
+    top: 60px; /* Ajuste conforme a altura do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    width: 320px;
+    height: 400px;
+    background-color: white;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 10px;
+}
+
+#painel-notificacoes h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#painel-notificacoes ul {
+    list-style: none;
+    padding: 0;
+}
+
+#painel-notificacoes li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+#painel-notificacoes li:hover {
+    background-color: #f0f0f0;
+}
+/* Responsividade para telas pequenas */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 15px; /* Diminui o tamanho do título em telas pequenas */
+        /*margin: 20px 0; /* Adiciona margem para descer o título em telas pequenas */
+    }
+
+    header .logo img {
+        height: 85px; /* Diminui o tamanho do logo em telas pequenas */
+        width: 85px; /* Ajuste proporcional ao tamanho */
+    }
+
+    aside#menu-lateral {
+        display: none; /* Oculta a barra lateral em telas pequenas */
+    }
+
+    /* Adicionando esta linha para esconder o ícone do menu */
+    .menu-superior-direito .fa-bars {
+        display: none; /* Oculta o ícone do menu em telas pequenas */
+    }
+
+    .menu-mobile {
+        display: flex; /* Exibe o menu mobile em telas pequenas */
+    }
+    main .opcoes {
+        /*flex-direction: column;*/
+        gap: 10px;
+
+    }
+    /* Diminui o tamanho das letras em telas menores */
+    main .tab span {
+        font-size: 15px; /* Ajuste conforme o necessário */
+    }
+
+    main .tab {
+        width: 30%;
+        max-width: 200px;
+    }
+}
+
+
+
+header .logo img {
+    height: 150px; /* Aumenta o tamanho do logo */
+    width: 150px; /* Ajuste proporcional ao tamanho */
+    border-radius: 50%; /* Mantém o logo redondo */
+}
+
+.menu-superior-direito {
+    font-size: 20px;
+    display: flex;
+    align-items: flex-start; /* Alinha o conteúdo no topo */
+    margin-top: -10px; /* Ajuste para alinhar ao topo */
+}
+
+.menu-superior-direito span {
+    margin-right: 15px; /* Espaçamento entre o nome do usuário e os ícones */
+    transition: color 0.3s ease; /* Transição suave para a cor */
+}
+
+.menu-superior-direito i {
+    font-size: 24px; /* Aumenta o tamanho dos ícones */
+    margin-left: 15px;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para o movimento e cor */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+}
+/* Efeito ao passar o mouse */
+.menu-superior-direito span:hover {
+    color: #f0a309; /* Muda a cor do texto ao passar o mouse */
+}
+
+.menu-superior-direito i:hover {
+    transform: translateY(-5px); /* Move o ícone para cima ao passar o mouse */
+    color: #ff9d00; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeito ao clicar */
+.menu-superior-direito i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ff9d09; /* Muda a cor do ícone ao passar o mouse */
+}
+aside#menu-lateral {
+    font-weight: bold; /* Aplica negrito ao texto */
+    background-color: #d3d0ce;
+    color: rgb(24, 8, 235);
+    width: 210px; /* Largura fixa da barra lateral */
+    padding: 10px;
+    position: absolute; /* Mantém a barra lateral fixa */
+    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    display: none; /* Inicialmente escondido */
+    transition: all 0.3s ease; /* Transição suave */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
+}
+
+aside#menu-lateral ul {
+    list-style: none;
+    padding: 0;
+}
+
+aside#menu-lateral ul li {
+    margin: 15px 0; /* Margem entre os itens */
+    font-size: 16px; /* Tamanho da fonte */
+    display: flex; /* Flexbox para alinhar ícone e texto */
+    align-items: center; /* Alinha verticalmente */
+    transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
+    border-radius: 5px; /* Bordas arredondadas */
+    padding: 10px; /* Espaçamento interno */
+    font-weight: bold; /* Aplica negrito ao texto */
+}
+/* Remove o sublinhado do link "Sair" */
+#menu-lateral a {
+    text-decoration: none; /* Remove o sublinhado */
+    color: inherit; /* Mantém a cor do texto herdada */
+    transition: color 0.3s ease; /* Suave transição de cor */
+}
+
+/* Efeito ao passar o mouse sobre o link */
+#menu-lateral a:hover {
+    cursor: pointer;
+    color: #007BFF; /* Muda a cor ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+aside#menu-lateral ul li:hover {
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.1); /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilo para ícones */
+aside#menu-lateral ul li i {
+    margin-right: 10px; /* Espaçamento entre ícone e texto */
+    font-size: 20px; /* Tamanho dos ícones */
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o ícone */
+aside#menu-lateral ul li:hover i {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Efeito ao clicar em um ícone */
+aside#menu-lateral ul li i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeitos para os spans */
+aside#menu-lateral ul li span {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o span */
+aside#menu-lateral ul li:hover span {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
+    /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
+}
+header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    position: relative;
+}
+
+.logo {
+display: flex;
+align-items: center;
+}
+
+.logo-img {
+width: 180px;
+height: 180px;
+border-radius: 50%;
+margin-right: 10px;
+}
+.nome-fantasia {
+font-size: 2.5rem; /* Tamanho maior */
+font-weight: bold;
+color: #333; /* Cor mais suave para o texto */
+line-height: 1.2;
+display: flex;
+justify-content: flex-start; /* Garante que o texto fique alinhado à esquerda */
+align-items: center;
+flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
+padding-left: 15px; /* Espaço entre a logo e o nome */
+text-align: center; /* Centralizar o texto horizontalmente */
+margin: 20px 0; /* Espaçamento acima e abaixo */
+text-transform: uppercase; /* Transformar o texto para letras maiúsculas */
+letter-spacing: 1.5px; /* Espaçamento entre as letras */
+
+}
+.user-area {
+position: absolute;
+top: 10px;
+right: 10px;
+display: flex;
+align-items: center;
+gap: 10px;   
+padding-right: 30px;
+}
+
+.btn-login {
+background-color: #007bff;
+color: white;
+text-decoration: none;
+padding: 3px 10px;
+border-radius: 5px;
+}
+
+.btn-login:hover {
+background-color: #0056b3;
+}
+.profile-dropdown {
+position: relative;
+}
+
+.profile-dropdown #dropdownMenu {
+display: none;
+position: absolute;
+top: 100%;
+right: 0;
+background: #fff;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+border-radius: 4px;
+list-style: none;
+padding: 10px;
+}
+
+.profile-dropdown:hover #dropdownMenu {
+display: block;
+}
+/* Faixa de Navegação */
+.sub-nav {
+display: flex;
+justify-content: center;
+align-items: center;
+background-color: #f8f8f8; /* Cor de fundo suave */
+padding: 10px 0;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombras sutis para destacar */
+}
+
+.sub-nav div {
+font-size: 1.2rem;
+font-weight: bold;
+color: #333; /* Cor do texto */
+margin: 0 20px; /* Espaçamento entre os itens */
+cursor: pointer;
+transition: all 0.3s ease; /* Suavização do efeito de hover */
+}
+
+.sub-nav div:hover {
+color: #007bff; /* Cor de destaque quando o item é hover */
+text-decoration: underline; /* Adiciona um sublinhado no hover */
+}
+.section {
+margin: 40px auto;
+width: 70%;
+max-width: 1200px;
+text-align: center;
+}
+main {
+display: flex;
+flex-direction: column;
+/*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+box-sizing: border-box;
+align-items: center; /* Centraliza horizontalmente */
+justify-content: center; /* Centraliza verticalmente */
+text-align: center;
+}
+
+/* Estilos para as abas */
+main .opcoes {
+background-color: #fff;
+display: flex;
+justify-content: center;
+align-items: center;
+gap: 10px;
+margin-top: 0px;
+padding: auto;
+}
+main .tab {
+padding: 10px;
+border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+background-color: #27ae60;
+cursor: pointer;
+font-size: 20px;
+font-weight: bold;
+text-align: center;
+transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+main .tab:hover {
+background-color: #afa791;
+color: white;
+transform: scale(1.05);
+}
+
+main .tab.active {
+background-color: #ffb300; /* Aba ativa com cor diferente */
+color: white;
+transform: scale(1.05);
+}
+/* Estilos para o conteúdo das abas */
+.conteudo-aba {
+flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+margin-left: 2px;
+margin-right: 2px;
+margin-top: 0px;
+padding: 10px;
+border: 2px solid #ffb300;
+border-radius: 8px;
+display: none; /* Por padrão, todos os conteúdos estão escondidos */
+padding-top: 5px;
+box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+/*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+background-color: #d3d0ce;
+width: 100%;
+text-align: center; /* Centraliza o texto */
+display: flex; /* Define um layout flexível */
+flex-direction: column; /* Coloca os elementos verticalmente */
+align-items: center; /* Centraliza horizontalmente os itens */
+justify-content: center; /* Centraliza verticalmente os itens */
+height: auto;
+/*min-height: 200px; /* Define uma altura mínima para centralização adequada */
+/*padding: 20px; /* Adiciona espaçamento interno */
+/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+}
+.container{
+display: flex;
+/*flex-direction: column;*/
+align-items: center; /* Centraliza horizontalmente */
+justify-content: center; /* Centraliza verticalmente */
+/*left: 50vh;
+height: 40vh; /* Altura total da tela */
+text-align: center;
+/*width: 95%;
+/*padding: 10px;
+margin-left: 10px;*/
+} 
+.parceiros-carousel {
+width: 100%; /* Ocupar toda a largura */
+margin: 0 auto; /* Centralizar o carrossel */
+display: flex; /* Flexbox para alinhar elementos */
+justify-content: center; /* Centraliza o conteúdo dentro */
+}
+.parceiros-carousel .parceiro-card {
+text-align: center;
+padding: 10px;
+/*background: #f9f9f9;
+border: 1px solid #ddd;*/
+border-radius: 60px;
+/*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
+max-width: 200px; /* Define o comprimento máximo do cartão */
+background-color: transparent;
+}
+.input{
+width: 250px;
+padding: 3px;
+padding-left: 5px;
+border-radius: 5px;
+height: 20px;
+border: 1px solid #ffb300;
+}
+
+.parceiros-carousel .parceiro-card img {
+max-width: 120px; /* Ajuste o tamanho da logo */
+height: 120px;   /* Para mantê-la circular */
+margin: auto; /* Centraliza horizontalmente e adiciona espaço abaixo */
+border-radius: 50%; /* Torna a imagem redonda */
+display: block; /* Garante que o elemento seja tratado como bloco */
+border: 2px solid #ddd; /* Borda ao redor da imagem */
+}
+.parceiros-carousel .parceiro-card h3 {
+font-size: 1.2em;
+font-weight: bold;
+margin: 5px 0;
+color: #333; /* Cor do texto */
+}
+
+.parceiros-carousel .parceiro-card p {
+font-size: 0.9em;
+color: #666; /* Cor da categoria */
+margin: 5px 0 0;
+}
+
+/* Contêiner da seção de produtos */
+.products {
+display: flex;
+flex-wrap: wrap;
+gap: 10px; /* Espaçamento entre os cartões */
+justify-content: center; /* Centraliza os produtos */
+margin: 10px 0;
+
+}
+/* Cartão do produto */
+.product-card {
+background: #ffffff;
+border: 1px solid #ddd;
+border-radius: 10px;
+width: 200px; /* Largura do cartão */
+height: 420px; /* Define a altura fixa */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+text-align: center;
+padding: 3px;
+}
+
+/* Efeito ao passar o mouse */
+.product-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Imagem do produto */
+.product-card img {
+width: 300px;
+max-width: 100%;
+max-height: 250px;
+height: 200px;
+border-radius: 5px;
+margin-bottom: 5px;
+}
+/* Nome do produto */
+.product-card h3 {
+font-size: 1.2em;
+color: #333;
+margin-top: 5px;
+margin-bottom: 5px;
+font-weight: 500;
+}
+
+/* Descrição do produto */
+.product-card p {
+font-size: 0.9em;
+color: #333;
+margin-top: 5px;
+margin-bottom: 5px;
+line-height: 1.4;
+}
+.moeda{
+font-size: 1.2em;
+color:#007BFF;
+}
+
+/* Preço do produto */
+.product-card p:last-child {
+font-size: 1em;
+color: #27ae60; /* Verde para o preço */
+font-weight: bold;
+}
+/* Botões */
+.product-card .btn {
+display: inline-block;
+background: #27ae60; /* Cor do botão */
+color: #fff;
+text-decoration: none;
+padding: 10px 20px;
+border-radius: 5px;
+margin-top: 10px;
+transition: background-color 0.3s ease;
+font-size: 0.9em;
+}
+
+/* Efeito ao passar o mouse no botão */
+.product-card .btn:hover {
+background:darkorange;
+}
+.descricao {
+display: -webkit-box;
+-webkit-line-clamp: 2; /* Limita a 2 linhas */
+-webkit-box-orient: vertical;
+overflow: hidden; /* Oculta o texto excedente */
+text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
+max-width: 100%; /* Define uma largura máxima para o texto */
+}
+.conteudo-aba h2 {
+border-radius: 3px;
+background-color: #fff;
+text-align: left; /* Alinha o texto à esquerda */
+/*margin-left: 0;   /* Garante que não há margem que afaste do lado esquerdo */
+padding-left: 5px;  /* Garante que não há espaçamento interno */
+}
+/* Efeito hover */
+.nome-fantasia:hover {
+color: #007BFF; /* Muda a cor ao passar o mouse */
+text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no texto */
+}
+@media (max-width: 768px) {
+/*.sub-nav {
+    flex-direction: column; /* Coloca os itens em coluna em telas menores */
+    /*align-items: flex-start; /* Alinha os itens à esquerda */
+    /*padding: 15px; /* Aumenta o padding em telas menores */
+/*}*/
+
+.sub-nav div {
+    margin: 10px 0; /* Reduz o espaçamento entre os itens em telas menores */
+    text-align: left; /* Alinha os itens à esquerda */
+}
+
+.nome-fantasia {
+    font-size: 1.8rem; /* Tamanho reduzido para o nome fantasia */
+    font-weight: bold;
+    color: #333; /* Cor mais suave para o texto */
+    text-align: left; /* Alinha à esquerda para ficar mais natural ao lado da logo */
+    margin: 0;
+    line-height: 1.2;
+    display: flex;
+    justify-content: flex-start; /* Garante que o texto fique alinhado à esquerda */
+    align-items: center;
+    flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
+    padding-left: 15px; /* Espaço entre a logo e o nome */
+    margin: 15px 0; /* Ajusta o espaçamento para telas pequenas */
+
+}
+        /* Cartão do produto */
+.product-card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 180px; /* Largura do cartão */
+    height: 450px; /* Define a altura fixa */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    padding: 3px;
+}
+}
+@media (max-width: 480px) {
+    .nome-fantasia {
+        font-size: 1.2rem; /* Ainda menor para dispositivos móveis */
+        letter-spacing: 1px; /* Reduz o espaçamento entre as letras */
+    }
+    .logo-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    .btn-login {
+        padding: 3px 5px;
+        border-radius: 5px;
+    }
+
+}
+/* Footer */
+footer {
+text-align: center;
+padding: 20px 0;
+background-color: #333;
+color: white;
+margin-top: 20px;
+border-radius: 10px;
+}
+
+footer .contato {
+margin: 0;
+}

@@ -10,7 +10,7 @@
         $idParceiro = intval($_GET['id']);
 
         // Consulta para buscar os dados do parceiro
-        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado = 'Aberto'";
+        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
         $result = $mysqli->query($sql);
 
         if ($result->num_rows > 0) {
