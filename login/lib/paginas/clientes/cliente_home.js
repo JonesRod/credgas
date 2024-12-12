@@ -33,9 +33,9 @@ function toggleMenu() {
     if (menuLateral.style.display === "block") {
         menuLateral.style.display = "none";
     } else {
-        menuLateral.style.display = "block";
+        menuLateral.style.display = "block";console.log('oi');
     }
-    console.log('oi');
+    
 }
 
 function toggleNotificacoes() {
