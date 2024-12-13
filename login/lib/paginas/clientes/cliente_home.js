@@ -6,23 +6,6 @@ function abrirNaDiv(link) {
     div.innerHTML = '<object type="text/html" data="' + link + '" style="width:100%; height:100%;">';
 }*/
 
-// Função para fechar o menu lateral ao clicar fora dele
-window.addEventListener('click', function(event) {
-    const menu = document.getElementById('menu-lateral');
-    const menuIcon = document.querySelector('.fas.fa-store'); // Ícone de loja
-    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== menuIcon) {
-        menu.style.display = 'none'; // Fecha a barra lateral
-    }
-});
-
-window.addEventListener('click', function(event) {
-    const notif = document.getElementById('painel-notificacoes');
-    const notifIcon = document.querySelector('.fas.fa-bell');
-    if (notif.style.display === 'block' && !notif.contains(event.target) && event.target !== notifIcon) {
-        notif.style.display = 'none';
-    }
-});
-
 function toggleMenu() {
     var menuLateral = document.getElementById("menu-lateral");
     var notificacoesPopup = document.getElementById("painel-notificacoes");
@@ -33,9 +16,8 @@ function toggleMenu() {
     if (menuLateral.style.display === "block") {
         menuLateral.style.display = "none";
     } else {
-        menuLateral.style.display = "block";console.log('oi');
-    }
-    
+        menuLateral.style.display = "block";
+    } 
 }
 
 function toggleNotificacoes() {
@@ -63,6 +45,32 @@ function hideMenuOnClick() {
 document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item => {
     item.addEventListener('click', hideMenuOnClick);
 });
+
+
+// Função para fechar o menu lateral ao clicar fora dele
+window.addEventListener('click', function(event) {
+    const menu = document.getElementById('menu-lateral');
+    const menuIcon = document.querySelector('.fas.fa-store'); // Ícone de loja
+    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== menuIcon) {
+        menu.style.display = 'none'; // Fecha a barra lateral
+    }
+});
+
+window.addEventListener('click', function(event) {
+    const notif = document.getElementById('painel-notificacoes');
+    const notifIcon = document.querySelector('.fas.fa-bell');
+    if (notif.style.display === 'block' && !notif.contains(event.target) && event.target !== notifIcon) {
+        notif.style.display = 'none';
+    }
+});
+
+
+
+
+
+
+
+
 
 // ------Função para mostrar o conteúdo da aba selecionada
 /*function mostrarConteudo(aba, element) {
@@ -92,12 +100,18 @@ document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item =
 // Define que a aba "catalogo" está ativa ao carregar a página
 window.onload = function() {
     mostrarConteudo('catalogo', document.querySelector('.tab.active'));
-};
+};*/
+
+// Função para abrir o conteúdo da notificação clicada
+function abrirNotificacao(id) {
+    alert('Abrindo conteúdo da notificação ' + id);
+    // Aqui você pode adicionar a lógica para exibir o conteúdo da notificação
+}
 
 // Exemplo de atualização da contagem de notificações (chame essa função quando houver novas notificações)
 function atualizarContagemNotificacoes(contagem) {
     const countElement = document.getElementById('notificacao-count');
     countElement.textContent = contagem;
     countElement.style.display = contagem > 0 ? 'block' : 'none';
-}*/
+}
 

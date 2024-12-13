@@ -745,7 +745,7 @@
             <li><a href="admin_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
-    <script src="admin_home.js"></script> 
+    <script src="cliente_home.js"></script> 
     <script>
         // Obtém o ID da sessão do PHP
         var sessionId = <?php echo json_encode($id); ?>;
