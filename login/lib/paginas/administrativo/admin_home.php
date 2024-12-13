@@ -168,7 +168,7 @@
         <h1><?php echo $usuario['nomeFantasia']; ?></h1>
         
         <div class="menu-superior-direito">
-        <span>Olá, <strong><?php echo explode(' ', trim($usuario['nome']))[0]; ?></strong></span>
+            <span>Olá, <strong><?php echo explode(' ', trim($usuario['nome']))[0]; ?></strong></span>
             <!-- Ícone de notificações com contagem -->
             <div class="notificacoes">
                 <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
