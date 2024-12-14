@@ -18,6 +18,7 @@ function toggleMenu() {
     } else {
         menuLateral.style.display = "block";
     } 
+    //console.log('oi');
 }
 
 function toggleNotificacoes() {
@@ -32,6 +33,7 @@ function toggleNotificacoes() {
     } else {
         notificacoesPopup.style.display = "block";
     }
+    //console.log('oi');
 
 }
 
@@ -50,7 +52,7 @@ document.querySelectorAll('#menu-lateral ul li, #menu-lateral a').forEach(item =
 // Função para fechar o menu lateral ao clicar fora dele
 window.addEventListener('click', function(event) {
     const menu = document.getElementById('menu-lateral');
-    const menuIcon = document.querySelector('.fas.fa-store'); // Ícone de loja
+    const menuIcon = document.querySelector('.fas.fa-bars'); // Ícone de loja
     if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== menuIcon) {
         menu.style.display = 'none'; // Fecha a barra lateral
     }

@@ -48,7 +48,7 @@ header .logo img {
 }
 
 .menu-superior-direito i {
-    font-size: 24px; /* Aumenta o tamanho dos ícones */
+    font-size: 20px; /* Aumenta o tamanho dos ícones */
     margin-left: 15px;
     transition: transform 0.3s ease, color 0.3s ease; /* Transição para o movimento e cor */
     cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
@@ -69,18 +69,22 @@ header .logo img {
 }
 
 aside#menu-lateral {
-    font-weight: bold; /* Aplica negrito ao texto */
-    background-color: #d3d0ce;
+    display: none;
+    position: fixed;
+    top: 40px; /* Ajuste conforme a altura do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    width: 200px;
+    height: 110px;
+    background-color: white;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(20, 5, 232, 0.31);
+    z-index: 1000;
+    padding: 10px;
     color: rgb(24, 8, 235);
     width: 210px; /* Largura fixa da barra lateral */
-    padding: 10px;
     position: absolute; /* Mantém a barra lateral fixa */
-    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
-    right: 20px; /* Posiciona o menu à direita */
-    display: none; /* Inicialmente escondido */
     transition: all 0.3s ease; /* Transição suave */
-    border-radius: 8px; /* Bordas arredondadas */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
 }
 
 aside#menu-lateral ul {
@@ -89,13 +93,13 @@ aside#menu-lateral ul {
 }
 
 aside#menu-lateral ul li {
-    margin: 15px 0; /* Margem entre os itens */
+    margin: 0; /* Margem entre os itens */
     font-size: 16px; /* Tamanho da fonte */
     display: flex; /* Flexbox para alinhar ícone e texto */
     align-items: center; /* Alinha verticalmente */
     transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
     border-radius: 5px; /* Bordas arredondadas */
-    padding: 10px; /* Espaçamento interno */
+    padding: 5px; /* Espaçamento interno */
     font-weight: bold; /* Aplica negrito ao texto */
 }
 /* Remove o sublinhado do link "Sair" */
@@ -118,7 +122,7 @@ aside#menu-lateral ul li:hover {
 
 /* Estilo para ícones */
 aside#menu-lateral ul li i {
-    margin-right: 10px; /* Espaçamento entre ícone e texto */
+    margin-right: 5px; /* Espaçamento entre ícone e texto */
     font-size: 20px; /* Tamanho dos ícones */
     transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
 }
@@ -187,7 +191,7 @@ aside#menu-lateral ul li:hover span {
 #painel-notificacoes {
     display: none;
     position: fixed;
-    top: 60px; /* Ajuste conforme a altura do cabeçalho */
+    top: 40px; /* Ajuste conforme a altura do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
     width: 320px;
     height: 400px;
@@ -269,19 +273,19 @@ width: 70%;
 max-width: 1200px;
 text-align: center;
 }
-main {
-display: flex;
-flex-direction: column;
-/*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
-box-sizing: border-box;
-align-items: center; /* Centraliza horizontalmente */
-justify-content: center; /* Centraliza verticalmente */
-text-align: center;
-}
+    main {
+        display: flex;
+        flex-direction: column;
+        /*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+        box-sizing: border-box;
+        align-items: center; /* Centraliza horizontalmente */
+        justify-content: center; /* Centraliza verticalmente */
+        text-align: center;
+    }
 
 /* Estilos para as abas */
 main .opcoes {
-background-color: #fff;
+background-color: #007bff;
 display: flex;
 justify-content: center;
 align-items: center;
@@ -311,31 +315,31 @@ background-color: #ffb300; /* Aba ativa com cor diferente */
 color: white;
 transform: scale(1.05);
 }
-/* Estilos para o conteúdo das abas */
-.conteudo-aba {
-flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
-margin-left: 2px;
-margin-right: 2px;
-margin-top: 0px;
-padding: 10px;
-border: 2px solid #ffb300;
-border-radius: 8px;
-display: none; /* Por padrão, todos os conteúdos estão escondidos */
-padding-top: 5px;
-box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
-/*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
-background-color: #d3d0ce;
-width: 100%;
-text-align: center; /* Centraliza o texto */
-display: flex; /* Define um layout flexível */
-flex-direction: column; /* Coloca os elementos verticalmente */
-align-items: center; /* Centraliza horizontalmente os itens */
-justify-content: center; /* Centraliza verticalmente os itens */
-height: auto;
-/*min-height: 200px; /* Define uma altura mínima para centralização adequada */
-/*padding: 20px; /* Adiciona espaçamento interno */
-/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
-}
+    /* Estilos para o conteúdo das abas */
+    .conteudo-aba {
+        flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+        margin-left: 2px;
+        margin-right: 2px;
+        margin-top: 0px;
+        padding: 10px;
+        border: 2px solid #ffb300;
+        border-radius: 8px;
+        display: none; /* Por padrão, todos os conteúdos estão escondidos */
+        padding-top: 5px;
+        box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+        /*overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+        background-color: #d3d0ce;
+        width: 100%;
+        text-align: center; /* Centraliza o texto */
+        display: flex; /* Define um layout flexível */
+        flex-direction: column; /* Coloca os elementos verticalmente */
+        align-items: center; /* Centraliza horizontalmente os itens */
+        justify-content: center; /* Centraliza verticalmente os itens */
+        height: auto;
+        /*min-height: 200px; /* Define uma altura mínima para centralização adequada */
+        /*padding: 20px; /* Adiciona espaçamento interno */
+        /* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+    }
 .container{
 display: flex;
 /*flex-direction: column;*/
@@ -365,14 +369,16 @@ margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
 max-width: 200px; /* Define o comprimento máximo do cartão */
 background-color: transparent;
 }
-.input{
-width: 250px;
-padding: 3px;
-padding-left: 5px;
-border-radius: 5px;
-height: 20px;
-border: 1px solid #ffb300;
-}
+    .input{
+        font-size: 15px; /* Tamanho padrão do título */
+        margin-top: 5px;
+        width: 40%;
+        padding: 3px;
+        padding-left: 5px;
+        border-radius: 5px;
+        height: 30px;
+        border: 1px solid #ffb300;
+    }
 
 .parceiros-carousel .parceiro-card img {
 max-width: 120px; /* Ajuste o tamanho da logo */
@@ -495,7 +501,7 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
 }
 /* Efeito hover */
 .nome-fantasia:hover {
-color: #007BFF; /* Muda a cor ao passar o mouse */
+color: #aaff00; /* Muda a cor ao passar o mouse */
 text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no texto */
 }
 @media (max-width: 768px) {

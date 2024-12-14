@@ -128,7 +128,7 @@
                 <span>Bem-vindo, <strong><?php echo htmlspecialchars($usuario['nome_completo']); ?></strong></span>
                 <!-- Ícone de notificações com contagem -->
                 <div class="notificacoes">
-                    <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
+                    <i class="fas fa-bell" title="Notificações" onclick="toggleNotificacoes()"></i>
                     <!-- Exibir a contagem de notificações -->
                     <?php if ($total_notificacoes > 0): ?>
                         <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
@@ -136,8 +136,8 @@
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
                 </div>
-                <i class="fas fa-shopping-cart"onclick=""></i>
-                <i class="fas fa-bars" onclick="toggleMenu()"></i>
+                <i class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i>
+                <i class="fas fa-bars" title="Menu" onclick="toggleMenu()"></i>
             <?php else: ?>
                 <span>Seja bem-vindo!</span>
                 <a href="login/lib/login.php" class="btn-login">Entrar</a>
@@ -738,14 +738,17 @@
             </div>
         </div>
     </main>
+
     <footer class="menu-mobile">
         <ul>
-            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
-            <li><a href="admin_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
+            <li><a href="perfil.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
+            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i class="fas fa-shopping-cart"></i></a></li>
+            <li><a href="cliente_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
+
     <script src="cliente_home.js"></script> 
+    
     <script>
         // Obtém o ID da sessão do PHP
         var sessionId = <?php echo json_encode($id); ?>;
@@ -1040,16 +1043,14 @@
         });
     </script>
 
-
-
     </body>
-    <!-- Footer -->
+    <!-- Footer 
     <footer>
-        <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
+        <p>&copy; 2024 <?php //echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
         <div class="contato">
             <p><strong>Contato:</strong></p>
-            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | WhatsApp: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
+            <p>Email: <?php //echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | WhatsApp: <?php //echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
         </div>
-    </footer>
+    </footer>-->
 </html>
 
