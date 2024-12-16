@@ -315,6 +315,7 @@ background-color: #ffb300; /* Aba ativa com cor diferente */
 color: white;
 transform: scale(1.05);
 }
+
     /* Estilos para o conteúdo das abas */
     .conteudo-aba {
         flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
@@ -340,6 +341,7 @@ transform: scale(1.05);
         /*padding: 20px; /* Adiciona espaçamento interno */
         /* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
     }
+
 .container{
 display: flex;
 /*flex-direction: column;*/
@@ -501,16 +503,94 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
 }
 /* Efeito hover */
 .nome-fantasia:hover {
-color: #aaff00; /* Muda a cor ao passar o mouse */
-text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no texto */
+    color: #aaff00; /* Muda a cor ao passar o mouse */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no texto */
 }
+
+    /* Footer */
+    footer {
+        text-align: center;
+        padding: 20px 0;
+        background-color: #333;
+        color: white;
+        margin-top: 20px;
+        /*border-radius: 5px;*/
+        display: none;
+    }
+
+    .menu-mobile {
+        background-color: #343a40;
+        color: white;
+        padding: 10px;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        display: none;
+        justify-content: space-around;
+    }
+
+    #menu-mobile i {
+        text-decoration: none; /* Remove o sublinhado dos links */
+        color: inherit; /* Herda a cor do item pai */
+    }
+
+    #menu-mobile i:hover {
+        background-color: #f0f0f0; /* Efeito de hover */
+        color: #007BFF; /* Cor ao passar o mouse */
+    }
+    
+    .menu-mobile ul {
+        list-style: none;  
+        display: flex;
+        justify-content: space-around;
+        width: 100%; /* Garantir que o menu ocupe toda a largura */
+    }
+    
+    /* Efeitos para os itens do menu mobile */
+    .menu-mobile ul li {
+        transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+    }
+
+    /* Efeito ao passar o mouse sobre o item do menu */
+    .menu-mobile ul li:hover {
+        cursor: pointer;
+        transform: translateY(-3px); /* Move o item para cima ao passar o mouse */
+        color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+    }
+
+    .menu-mobile ul li i {
+        font-size: 24px; /* Aumente o tamanho dos ícones aqui */
+        margin: 0; /* Remova a margem, se necessário */
+        display: block; /* Garante que o ícone seja exibido como um bloco */
+        text-align: center; /* Centraliza o ícone dentro do item do menu */
+        transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+        /*color: #afa791; /* Muda a cor do ícone ao passar o mouse */
+    }
+
+    /* Efeito ao passar o mouse sobre o ícone */
+    .menu-mobile ul li:hover i {
+        cursor: pointer;
+        transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+        color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+    }
+
 @media (max-width: 768px) {
 /*.sub-nav {
     flex-direction: column; /* Coloca os itens em coluna em telas menores */
     /*align-items: flex-start; /* Alinha os itens à esquerda */
     /*padding: 15px; /* Aumenta o padding em telas menores */
 /*}*/
-
+    .menu-superior-direito .fa-shopping-cart{
+        display: none;
+    }
+    /* Adicionando esta linha para esconder o ícone do menu */
+    .menu-superior-direito .fa-bars {
+        display: none; /* Oculta o ícone do menu em telas pequenas */
+    }
+    .menu-superior-direito span{
+        /*position: absolute; /* Mantém a barra lateral fixa */
+        font-size: 0.7rem; /* Tamanho reduzido para o nome fantasia */
+    }
 .sub-nav div {
     margin: 10px 0; /* Reduz o espaçamento entre os itens em telas menores */
     text-align: left; /* Alinha os itens à esquerda */
@@ -519,7 +599,7 @@ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no text
 .nome-fantasia {
     font-size: 1.8rem; /* Tamanho reduzido para o nome fantasia */
     font-weight: bold;
-    color: #333; /* Cor mais suave para o texto */
+    color: #ffffff; /* Cor mais suave para o texto */
     text-align: left; /* Alinha à esquerda para ficar mais natural ao lado da logo */
     margin: 0;
     line-height: 1.2;
@@ -531,7 +611,8 @@ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no text
     margin: 15px 0; /* Ajusta o espaçamento para telas pequenas */
 
 }
-        /* Cartão do produto */
+
+/* Cartão do produto */
 .product-card {
     background: #ffffff;
     border: 1px solid #ddd;
@@ -543,6 +624,14 @@ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no text
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: center;
     padding: 3px;
+}
+.menu-mobile {
+    display: flex; /* Exibe o menu mobile em telas pequenas */
+}
+.notificacao-count {
+    font-size: 5px;
+
+
 }
 }
 @media (max-width: 480px) {
@@ -560,18 +649,15 @@ text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adiciona uma leve sombra no text
         padding: 3px 5px;
         border-radius: 5px;
     }
+    .menu-mobile {
+        display: flex; /* Exibe o menu mobile em telas pequenas */
+    }
+    /* Adicionando esta linha para esconder o ícone do menu */
+    .menu-superior-direito .fa-bars {
+        display: none; /* Oculta o ícone do menu em telas pequenas */
+    }
+    .menu-superior-direito .fa-shopping-cart{
+        display: none;
+    }
 
-}
-/* Footer */
-footer {
-text-align: center;
-padding: 20px 0;
-background-color: #333;
-color: white;
-margin-top: 20px;
-border-radius: 10px;
-}
-
-footer .contato {
-margin: 0;
 }

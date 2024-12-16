@@ -46,14 +46,11 @@
     // Consulta para somar todas as notificações de todas as linhas
     $sql_query = "
     SELECT 
-        SUM(not_novo_cliente) AS total_not_novo_cliente,
-        SUM(not_inscr_parceiro) AS total_not_inscr_parceiro,
-        SUM(not_crediario) AS total_not_crediario,
-        SUM(not_novos_produtos) AS total_not_novos_produtos,
-        SUM(not_atualizar_produto) AS total_not_edicao_produtos,
-        SUM(not_msg) AS total_not_msg
-    FROM contador_notificacoes_admin
-    WHERE id > '0'";
+        id,
+        id_cliente,
+        cont_msg
+    FROM contador_notificacoes_cliente
+    WHERE id > $id";
     
     // Executar a consulta
     $result = $mysqli->query($sql_query);
@@ -62,27 +59,17 @@
     if ($result) {
     $row = $result->fetch_assoc();
     $total_notificacoes = 
-        ($row['total_not_novo_cliente'] ?? 0) + 
-        ($row['total_not_inscr_parceiro'] ?? 0) + 
-        ($row['total_not_crediario'] ?? 0) + 
-        ($row['total_not_novos_produtos'] ?? 0) + 
-        ($row['total_not_edicao_produtos'] ?? 0) + 
-        ($row['total_not_msg'] ?? 0);
-
+        //($row['cont_msg'] ?? 0);
+        $total_not = $row['cont_msg'] ?? 0;
     //echo "Total de notificações: $total_notificacoes";
     } else {
     //echo "Erro ao executar a consulta: " . $mysqli->error;
     }
 
-    $not_novo_cliente = $row['total_not_novo_cliente'] ?? 0;
-    $not_inscr_parceiro = $row['total_not_inscr_parceiro'] ?? 0; // Define 0 se não houver resultado
-    $not_crediario = $row['total_not_crediario'] ?? 0; // Define 0 se não houver resultado
-    $not_novos_produtos = $row['total_not_novos_produtos'] ?? 0; // Define 0 se não houver resultado
-    $not_edicao_produtos = $row['total_not_edicao_produtos'] ?? 0; // Define 0 se não houver resultado
-    $not_msg = $row['total_not_msg'] ?? 0; // Define 0 se não houver resultado
+    
 
     // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_cliente + $not_inscr_parceiro + $not_crediario + $not_novos_produtos + $not_edicao_produtos + $not_msg;
+    //$total_notificacoes = $not_novo_cliente + $not_inscr_parceiro + $not_crediario + $not_novos_produtos + $not_edicao_produtos + $not_msg;
     //echo $total_notificacoes; 
 
 ?> 
@@ -131,7 +118,7 @@
                     <i class="fas fa-bell" title="Notificações" onclick="toggleNotificacoes()"></i>
                     <!-- Exibir a contagem de notificações -->
                     <?php if ($total_notificacoes > 0): ?>
-                        <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
+                        <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_not); ?></span>
                     <?php else: ?>
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
@@ -147,14 +134,9 @@
 
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
+        <h2>Notificações: <?php echo htmlspecialchars(string: $total_not); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Pedidos: <?php echo $not_novo_cliente; ?></li>  
-            <li onclick="abrirNotificacao(2)">Bonus: <?php echo $not_inscr_parceiro; ?></li>
-            <li onclick="abrirNotificacao(3)">Solicitação de crediario: <?php echo $not_crediario; ?></li>
-            <li onclick="abrirNotificacao(4)">Novo Produto: <?php echo $not_novos_produtos; ?></li>    
-            <li onclick="abrirNotificacao(5)">Edição de Produto: <?php echo $not_edicao_produtos; ?></li>         
-            <li onclick="abrirNotificacao(6)">Nova mensagem recebida: <?php echo $not_msg; ?></li>
+
         </ul>
     </aside>
 
@@ -748,7 +730,7 @@
     </footer>
 
     <script src="cliente_home.js"></script> 
-    
+
     <script>
         // Obtém o ID da sessão do PHP
         var sessionId = <?php echo json_encode($id); ?>;
@@ -759,21 +741,6 @@
             // Define a URL com base no ID da notificação
             switch (id) {
                 case 1:
-                    url = `not_novo_cliente.php?session_id=${sessionId}`;
-                    break;
-                case 2:
-                    url = `not_detalhes_parceiro.php?session_id=${sessionId}`;
-                    break;
-                case 3:
-                    url = `not_detalhes_crediario.php?session_id=${sessionId}`;
-                    break;
-                case 4:
-                    url = `not_detalhes_novos_produtos.php?session_id=${sessionId}`;
-                    break;
-                case 5:
-                    url = `not_detalhes_edicao_produtos.php?session_id=${sessionId}`;
-                    break;
-                case 6:
                     url = `not_detalhes_mensagens.php?session_id=${sessionId}`;
                     break;
                 default:
@@ -816,7 +783,7 @@
         fetchNotifications();
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        setInterval(fetchNotifications, 2000);
+        //setInterval(fetchNotifications, 2000);
 
 
         $(document).ready(function() {
