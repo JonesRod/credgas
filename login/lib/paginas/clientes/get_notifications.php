@@ -1,5 +1,7 @@
 <?php
-include('../../conexao.php');
+    include('../../conexao.php');
+
+    $id = $_GET['id'] ?? null;
 
     // Consulta para somar todas as notificações de todas as linhas
     $sql_query = "

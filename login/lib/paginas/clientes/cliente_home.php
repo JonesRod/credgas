@@ -145,7 +145,7 @@
         <ul>
             <!-- Item Perfil da Loja -->
             <li>
-                <a href="perfil_loja.php?id_admin=<?php echo urlencode($id); ?>" title="Meu Perfil">
+                <a href="perfil_cliente.php?id=<?php echo urlencode($id); ?>" title="Meu Perfil">
                     <i class="fas fa-user"></i>
                     <span >Perfil</span>
                 </a>
@@ -761,9 +761,8 @@
             window.location.href = url;
         }
 
-
         function fetchNotifications() {
-            fetch('get_notifications.php')
+            fetch(`get_notifications.php?id=${sessionId}`)
                 .then(response => response.json())
                 .then(data => {
                     const notificationCount = document.getElementById('notificacao-count');
