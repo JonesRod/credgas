@@ -210,7 +210,7 @@
         ?>">
 
         <fieldset class="contatos">
-            <legend>Região</legend>
+            <legend>Contatos</legend>
             <label for="telefone1">Telefone (WhatsApp):</label>
             <input type="text" id="telefone1" name="telefone1" readonly value="<?php echo $dados['celular1']?>">
 
@@ -311,6 +311,24 @@
                 console.error('Erro:', error);
             }
         }
+        document.getElementById('logoInput').addEventListener('change', function (event) {
+    const file = event.target.files[0]; // Obtém o arquivo selecionado
+    const preview = document.getElementById('logoPreview'); // Obtém o elemento da imagem
+
+    if (file) {
+        const reader = new FileReader();
+
+        // Quando o arquivo é carregado, atualiza o src da imagem
+        reader.onload = function (e) {
+            preview.src = e.target.result; // Define o conteúdo da imagem
+        };
+
+        reader.readAsDataURL(file); // Lê o arquivo como Data URL
+    } else {
+        preview.src = ''; // Limpa a imagem caso nenhum arquivo seja selecionado
+    }
+});
+
 
     </script>
 </body>
