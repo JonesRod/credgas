@@ -211,14 +211,15 @@
 
         <fieldset class="contatos">
             <legend>Contatos</legend>
-            <label for="telefone1">Telefone (WhatsApp):</label>
-            <input type="text" id="telefone1" name="telefone1" readonly value="<?php echo $dados['celular1']?>">
+                <label for="telefone1">Telefone (WhatsApp):</label>
+                <input type="text" id="telefone1" name="telefone1" readonly value="<?php echo $dados['celular1']?>">
 
-            <label for="telefone2">Telefone Adicional (Opcional):</label>
-            <input type="text" id="telefone2" name="telefone2" readonly value="<?php echo $dados['celular2']?>">
+                <label for="telefone2">Telefone Adicional (Opcional):</label>
+                <input type="text" id="telefone2" name="telefone2" readonly value="<?php echo $dados['celular2']?>">
 
-            <label for="email">E-mail:</label>
-            <input type="email" id="email" name="email" readonly value="<?php echo $dados['email']?>">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" readonly value="<?php echo $dados['email']?>">
+                <button>Alterar</button>
         </fieldset>
 
         <label for="cep">CEP:</label>
@@ -267,6 +268,65 @@
         </div>
 
     </form>
+    
+    <!-- Modal para solicitar a senha -->
+    <div id="senhaModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px; text-align: center;">
+            <h3>Confirme sua senha</h3>
+            <form id="verificarSenhaForm">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha" style="width: 100%; margin-bottom: 10px;">
+                <div>
+                    <button type="submit">Confirmar</button>
+                    <button type="button" id="cancelarModal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Referências aos elementos
+        const alterarBtn = document.querySelector("fieldset.contatos button");
+        const senhaModal = document.getElementById("senhaModal");
+        const cancelarModal = document.getElementById("cancelarModal");
+        const verificarSenhaForm = document.getElementById("verificarSenhaForm");
+
+        // Abrir o modal ao clicar no botão Alterar
+        alterarBtn.addEventListener("click", function (event) {
+            event.preventDefault(); // Impede o envio do formulário
+            senhaModal.style.display = "flex"; // Mostra o modal
+        });
+
+        // Fechar o modal ao clicar em Cancelar
+        cancelarModal.addEventListener("click", function () {
+            senhaModal.style.display = "none";
+        });
+
+        // Verificar a senha ao enviar o formulário
+        verificarSenhaForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Impede o envio normal do formulário
+
+            const senha = document.getElementById("senha").value;
+
+            // Faz uma requisição para verificar a senha no servidor
+            fetch('verificar_senha.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `senha=${encodeURIComponent(senha)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Redireciona para a página de alteração
+                    window.location.href = 'alterar_contatos.php';
+                } else {
+                    alert('Senha incorreta!');
+                }
+            })
+            .catch(error => console.error('Erro ao verificar senha:', error));
+        });
+    </script>
+
     <script>
         function formatarCEP(input) {
             let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
@@ -312,22 +372,22 @@
             }
         }
         document.getElementById('logoInput').addEventListener('change', function (event) {
-    const file = event.target.files[0]; // Obtém o arquivo selecionado
-    const preview = document.getElementById('logoPreview'); // Obtém o elemento da imagem
+            const file = event.target.files[0]; // Obtém o arquivo selecionado
+            const preview = document.getElementById('logoPreview'); // Obtém o elemento da imagem
 
-    if (file) {
-        const reader = new FileReader();
+            if (file) {
+                const reader = new FileReader();
 
-        // Quando o arquivo é carregado, atualiza o src da imagem
-        reader.onload = function (e) {
-            preview.src = e.target.result; // Define o conteúdo da imagem
-        };
+                // Quando o arquivo é carregado, atualiza o src da imagem
+                reader.onload = function (e) {
+                    preview.src = e.target.result; // Define o conteúdo da imagem
+                };
 
-        reader.readAsDataURL(file); // Lê o arquivo como Data URL
-    } else {
-        preview.src = ''; // Limpa a imagem caso nenhum arquivo seja selecionado
-    }
-});
+                reader.readAsDataURL(file); // Lê o arquivo como Data URL
+            } else {
+                preview.src = ''; // Limpa a imagem caso nenhum arquivo seja selecionado
+            }
+        });
 
 
     </script>
