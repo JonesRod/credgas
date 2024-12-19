@@ -74,7 +74,7 @@ aside#menu-lateral {
     top: 40px; /* Ajuste conforme a altura do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
     width: 200px;
-    height: 110px;
+    height: auto;
     background-color: white;
     border: 2px solid #ffb300;
     border-radius: 8px;

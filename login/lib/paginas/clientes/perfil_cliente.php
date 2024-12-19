@@ -138,7 +138,25 @@
         .link-voltar:hover {
             background-color: #0056b3;
         }
+        .contatos{
+            border-radius: 5px;
+        }
+        .contatos button{
+            width: 99%;
+            color: #fff;
+            background-color: #007bff;
+        }
 
+        .contatos button:hover{
+            background-color: #0056b3;
+        }
+        .alterar button{
+            color: #fff;
+            background-color: #007bff;
+        }
+        .alterar button:hover{
+            background-color: #0056b3;
+        }
         @media (max-width: 768px) {
             form {
                 padding: 15px;
@@ -185,7 +203,7 @@
 </head>
 <body>
 
-    <form id="meusDados" action="processa_cadastro.php" method="POST" enctype="multipart/form-data">
+    <form id="meusDados" action="processa_alteracao.php" method="POST" enctype="multipart/form-data">
 
         <h2>Meus Dados</h2>
 
@@ -268,15 +286,15 @@
         </div>
 
     </form>
-    
+
     <!-- Modal para solicitar a senha -->
     <div id="senhaModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: white; padding: 20px; border-radius: 8px; width: 300px; text-align: center;">
             <h3>Confirme sua senha</h3>
             <form id="verificarSenhaForm">
                 <label for="senha">Senha:</label>
-                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha" style="width: 100%; margin-bottom: 10px;">
-                <div>
+                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha" style="width: 90%; margin-bottom: 10px;">
+                <div class="alterar">
                     <button type="submit">Confirmar</button>
                     <button type="button" id="cancelarModal">Cancelar</button>
                 </div>

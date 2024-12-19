@@ -150,7 +150,15 @@
                     <span >Perfil</span>
                 </a>
             </li>
-            
+
+            <!-- Item crediario-->
+            <li>
+                <a href="crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                    <i class="fas fa-handshake"></i>
+                    <span >Crediario</span>
+                </a>
+            </li>
+
             <!-- Item Configurações -->
             <li>
                 <a href="configuracoes.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">
@@ -723,7 +731,8 @@
 
     <footer class="menu-mobile">
         <ul>
-            <li><a href="perfil.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
+            <li><a href="perfil_cliente.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
+            <li><a href="crediario.php" title="Crediário"><i class="fas fa-handshake"></i></a></li>
             <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i class="fas fa-shopping-cart"></i></a></li>
             <li><a href="cliente_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
