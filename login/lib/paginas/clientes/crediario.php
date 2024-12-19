@@ -27,160 +27,237 @@ $crediario = $result->fetch_assoc();
     <title>Crediário</title>
     <link rel="stylesheet" href="../../styles.css">
     <style>
-        .video-container, .canvas-container {
-            display: block;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1, h2 {
             text-align: center;
-            margin-top: 20px;
+            color: #333;
         }
-        .canvas-container {
-            display: none;
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        video, canvas {
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="file"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .btn.cancel {
+            background-color: #dc3545;
+        }
+
+        .btn.cancel:hover {
+            background-color: #c82333;
+        }
+
+        .video-container, .canvas-container, .preview-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        video, canvas, img {
             width: 100%;
             max-width: 300px;
             border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
-        button {
-            margin-top: 10px;
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .form-actions {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Crediário</h1>
+    <div class="container">
+        <h1>Crediário</h1>
 
-    <?php if ($crediario && $crediario['status_crediario']!='INATIVO'): ?>
-        <div class="crediario-detalhes">
+        <?php if ($crediario && $crediario['status_crediario'] != 'INATIVO'): ?>
             <h2>Detalhes do Crediário</h2>
             <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
             <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
             <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
             <p><strong>Celular:</strong> <?php echo htmlspecialchars($crediario['celular1']); ?></p>
-            <p><strong>E-mail:</strong> <?php echo htmlspecialchars($crediario['email']); ?></p>
-            <p><strong>CEP:</strong> <?php echo htmlspecialchars($crediario['cep']); ?></p>
-            <p><strong>Estado:</strong> <?php echo htmlspecialchars($crediario['uf']); ?></p>
-            <p><strong>Cidade:</strong> <?php echo htmlspecialchars($crediario['cidade']); ?></p>
-            <p><strong>Rua/AV:</strong> <?php echo htmlspecialchars($crediario['endereco']); ?></p>
-            <p><strong>Nº:</strong> <?php echo htmlspecialchars($crediario['numero']); ?></p>
-            <p><strong>Bairro:</strong> <?php echo htmlspecialchars($crediario['bairro']); ?></p>
             <a href="editar_crediario.php" class="btn">Editar Dados</a>
-        </div>
-    <?php else: ?>
-        <div class="solicitar-crediario">
-            <h2>Solicitar Crediário</h2>
+        <?php else: ?>
             <form action="processa_crediario.php" method="POST" enctype="multipart/form-data">
-                <label for="cep">CEP:</label>
-                <input type="text" id="cep" name="cep" required 
-                value="<?php echo htmlspecialchars($crediario['cep']); ?>">
+                <input type="hidden" name="id" required value="<?php echo $id; ?>">
+                <div class="form-group">
+                    <label for="cep">CEP:</label>
+                    <input type="text" id="cep" name="cep" required value="<?php echo htmlspecialchars($crediario['cep']); ?>">
+                </div>
 
-                <label for="uf">Estado:</label>
-                <input type="text" id="uf" name="uf" required
-                value="<?php echo htmlspecialchars($crediario['uf']); ?>">
+                <div class="form-group">
+                    <label for="uf">Estado:</label>
+                    <input type="text" id="uf" name="uf" required value="<?php echo htmlspecialchars($crediario['uf']); ?>">
+                </div>
 
-                <label for="cidade">Cidade:</label>
-                <input type="text" id="cidade" name="cidade" required
-                value="<?php echo htmlspecialchars($crediario['cidade']); ?>">
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" id="cidade" name="cidade" required value="<?php echo htmlspecialchars($crediario['cidade']); ?>">
+                </div>
 
-                <label for="endereco">Endereço Completo:</label>
-                <input id="endereco" name="endereco" required
-                value="<?php echo htmlspecialchars($crediario['endereco']); ?>">
+                <div class="form-group">
+                    <label for="endereco">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco" required value="<?php echo htmlspecialchars($crediario['endereco']); ?>">
+                </div>
 
-                <label for="numero">Nº:</label>
-                <input type="text" id="numero" name="numero" required
-                value="<?php echo htmlspecialchars($crediario['numero']); ?>">
+                <div class="form-group">
+                    <label for="numero">Número:</label>
+                    <input type="text" id="numero" name="numero" required value="<?php echo htmlspecialchars($crediario['numero']); ?>">
+                </div>
 
-                <label for="Bairro">Bairro:</label>
-                <input id="bairro" name="bairro" required
-                value="<?php echo htmlspecialchars($crediario['bairro']); ?>">
+                <div class="form-group">
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" id="bairro" name="bairro" required value="<?php echo htmlspecialchars($crediario['bairro']); ?>">
+                </div>
 
-                <label for="documento_foto_frente">Documento com Foto-frente:</label>
-                <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf" required>
+                <div class="form-group">
+                    <label for="documento_foto_frente">Documento com Foto (Frente):</label>
+                    <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf" required>
+                    <img id="preview_frente" alt="Pré-visualização Frente" style="display: none;">
+                </div>
 
-                <label for="documento_foto_verso">Documento com Foto-verso:</label>
-                <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
+                <div class="form-group">
+                    <label for="documento_foto_verso">Documento com Foto (Verso):</label>
+                    <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
+                    <img id="preview_verso" alt="Pré-visualização Verso" style="display: none;">
+                </div>
 
-                <h1>Selfie de Perfil</h1>
+                <h2>Selfie de Perfil</h2>
                 <div class="video-container">
                     <video id="camera" autoplay></video>
-                    <button id="start-camera">Iniciar Câmera</button>
-                    <button id="capture" style="display: none;">Capturar</button>
+                    <button type="button" id="start-camera">Iniciar Câmera</button>
+                    <button type="button" id="capture" style="display: none;">Capturar</button>
                 </div>
 
-                <div class="canvas-container">
+                <div class="canvas-container" style="display: none;">
                     <canvas id="snapshot"></canvas>
-                    <button id="save" style="display: none;">Salvar</button>
-                    <button id="retake" style="display: none;">Tirar Outra</button>
+                    <button type="button" id="retake">Tirar Outra</button>
                 </div>
+
+                <input type="hidden" name="selfie_data" id="selfie_data">
 
                 <div class="form-actions">
                     <button type="submit" class="btn">Enviar Solicitação</button>
                     <a href="perfil_cliente.php" class="btn cancel">Cancelar</a>
                 </div>
             </form>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
+
+    <script>
+        const video = document.getElementById('camera');
+        const startCameraButton = document.getElementById('start-camera');
+        const captureButton = document.getElementById('capture');
+        const retakeButton = document.getElementById('retake');
+        const canvas = document.getElementById('snapshot');
+        const selfieDataInput = document.getElementById('selfie_data');
+        const previewFrente = document.getElementById('preview_frente');
+        const previewVerso = document.getElementById('preview_verso');
+        const documentoFrente = document.getElementById('documento_foto_frente');
+        const documentoVerso = document.getElementById('documento_foto_verso');
+
+        let stream = null;
+
+        // Iniciar câmera
+        startCameraButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((mediaStream) => {
+                    stream = mediaStream;
+                    video.srcObject = stream;
+                    startCameraButton.style.display = "none";
+                    captureButton.style.display = "inline-block";
+                })
+                .catch(() => alert("Não foi possível acessar a câmera."));
+        });
+
+        // Capturar selfie
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            document.querySelector('.video-container').style.display = "none";
+            document.querySelector('.canvas-container').style.display = "block";
+
+            const dataURL = canvas.toDataURL("image/png");
+            selfieDataInput.value = dataURL;
+
+            if (stream) stream.getTracks().forEach(track => track.stop());
+        });
+
+        // Recomeçar selfie
+        retakeButton.addEventListener('click', () => {
+            document.querySelector('.canvas-container').style.display = "none";
+            document.querySelector('.video-container').style.display = "block";
+            startCameraButton.style.display = "inline-block";
+        });
+
+        // Pré-visualização do arquivo selecionado
+        documentoFrente.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                previewFrente.src = URL.createObjectURL(file);
+                previewFrente.style.display = "block";
+            }
+        });
+
+        documentoVerso.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                previewVerso.src = URL.createObjectURL(file);
+                previewVerso.style.display = "block";
+            }
+        });
+    </script>
 </body>
-
-<script>
-    const video = document.getElementById('camera');
-    const startCameraButton = document.getElementById('start-camera');
-    const captureButton = document.getElementById('capture');
-    const saveButton = document.getElementById('save');
-    const retakeButton = document.getElementById('retake');
-    const videoContainer = document.querySelector('.video-container');
-    const canvas = document.getElementById('snapshot');
-    const canvasContainer = document.querySelector('.canvas-container');
-    let stream = null;
-
-    // Ligar a câmera somente quando clicar no botão "Iniciar Câmera"
-    startCameraButton.addEventListener('click', () => {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-            .then((mediaStream) => {
-                stream = mediaStream;
-                video.srcObject = stream;
-                startCameraButton.style.display = "none";
-                captureButton.style.display = "inline-block";
-            })
-            .catch((error) => {
-                alert("Não foi possível acessar a câmera. Verifique as permissões ou tente outro dispositivo.");
-                console.error("Erro ao acessar câmera:", error);
-            });
-    });
-
-    // Captura a imagem do vídeo
-    captureButton.addEventListener('click', () => {
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        videoContainer.style.display = "none";
-        canvasContainer.style.display = "block";
-        saveButton.style.display = "inline-block";
-        retakeButton.style.display = "inline-block";
-
-        // Parar a câmera após capturar a imagem
-        if (stream) {
-            stream.getTracks().forEach((track) => track.stop());
-            stream = null;
-        }
-    });
-
-    // Tirar outra selfie
-    retakeButton.addEventListener('click', () => {
-        canvasContainer.style.display = "none";
-        videoContainer.style.display = "block";
-        startCameraButton.style.display = "inline-block";
-        captureButton.style.display = "none";
-        saveButton.style.display = "none";
-        retakeButton.style.display = "none";
-    });
-
-    // Salvar a imagem capturada
-    saveButton.addEventListener('click', () => {
-        const dataURL = canvas.toDataURL("image/png");
-        const link = document.createElement('a');
-        link.href = dataURL;
-        link.download = 'selfie.png';
-        link.click();
-    });
-</script>
 </html>
