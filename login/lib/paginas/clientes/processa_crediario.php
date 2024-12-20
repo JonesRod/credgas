@@ -37,42 +37,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($selfieData)) {
         $selfieData = str_replace('data:image/png;base64,', '', $selfieData);
         $selfieData = base64_decode($selfieData);
-        $selfieNome = "arquivos/" . uniqid() . "_selfie.png";
-        file_put_contents($selfieNome, $selfieData);
+        $selfieNome = uniqid() . "_selfie.png";
+        file_put_contents("arquivos/".$selfieNome, $selfieData);
     }
 
-    // Atualizar os dados no banco de dados
-    try {
-        $sql = "UPDATE meus_clientes 
-                SET 
-                    cep = :cep, 
-                    uf = :uf, 
-                    cidade = :cidade, 
-                    endereco = :endereco, 
-                    numero = :numero, 
-                    bairro = :bairro, 
-                    documento_frente = :documento_frente, 
-                    documento_verso = :documento_verso, 
-                    selfie = :selfie 
-                WHERE id = :id";
+        // Atualiza os dados no banco de dados
+    $sql_update = "UPDATE meus_clientes SET 
+        cep = '$cep',
+        uf = '$uf',
+        cidade = '$cidade',
+        endereco = '$endereco',
+        numero = '$numero',
+        bairro = '$bairro',
+        img_frente = '$frenteNome',
+        img_verso = '$versoNome',
+        img_self = '$selfieNome'
+    WHERE id = '$id'";
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':cep', $cep);
-        $stmt->bindParam(':uf', $uf);
-        $stmt->bindParam(':cidade', $cidade);
-        $stmt->bindParam(':endereco', $endereco);
-        $stmt->bindParam(':numero', $numero);
-        $stmt->bindParam(':bairro', $bairro);
-        $stmt->bindParam(':documento_frente', $frenteNome);
-        $stmt->bindParam(':documento_verso', $versoNome);
-        $stmt->bindParam(':selfie', $selfieNome);
-
-        $stmt->execute();
-
-        echo "Dados atualizados com sucesso.";
-    } catch (PDOException $e) {
-        echo "Erro ao atualizar os dados no banco de dados: " . $e->getMessage();
+    // Executa a consulta
+    if ($mysqli->query($sql_update)) {
+    echo "<div class='msg-container'>Dados salvos com sucesso!</div>";
+    } else {
+    echo "Erro ao atualizar dados: " . $mysqli->error;
     }
+
+    $mysqli->close();
+
 }
 ?>
