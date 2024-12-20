@@ -12,11 +12,46 @@ if (!isset($_SESSION['id'])) {
 $id = $_SESSION['id'];
 
 // Consulta para verificar se o cliente já possui crediário e buscar seus detalhes
-$sql_query = $mysqli->prepare("SELECT nome_completo, cpf, nascimento, celular1, email, cep, uf, cidade, endereco, numero, bairro, status_crediario FROM meus_clientes WHERE id = ?");
+$sql_query = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
 $sql_query->bind_param('i', $id);
 $sql_query->execute();
 $result = $sql_query->get_result();
 $crediario = $result->fetch_assoc();
+
+$frente = htmlspecialchars($crediario['img_frente']); 
+$verso = htmlspecialchars($crediario['img_verso']);
+$self = htmlspecialchars($crediario['img_self']);
+
+if ($frente !=''){
+    // Se existe e não está vazio, atribui o valor à variável logo
+    $frente = "arquivos/".htmlspecialchars($crediario['img_frente']);
+    //echo ('oii1').$frente;
+} else {
+    // Se não existe ou está vazio, define um valor padrão
+    $frente = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    //echo ('oii2').$frente;
+}
+
+if ($verso !=''){
+    // Se existe e não está vazio, atribui o valor à variável logo
+    $verso = "arquivos/".htmlspecialchars($crediario['img_verso']);
+    //echo ('oii1').$frente;
+} else {
+    // Se não existe ou está vazio, define um valor padrão
+    $verso = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    //echo ('oii2').$frente;
+}
+if ($self !=''){
+    // Se existe e não está vazio, atribui o valor à variável logo
+    $self = "arquivos/".htmlspecialchars($crediario['img_self']);
+    //echo ('oii1').$frente;
+} else {
+    // Se não existe ou está vazio, define um valor padrão
+    $self = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    //echo ('oii2').$frente;
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -119,13 +154,13 @@ $crediario = $result->fetch_assoc();
     <div class="container">
         <h1>Crediário</h1>
 
-        <?php if ($crediario && $crediario['status_crediario'] != 'INATIVO'): ?>
+        <?php if ($crediario && $crediario['status_crediario'] != ''): ?>
             <h2>Detalhes do Crediário</h2>
             <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
             <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
             <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
             <p><strong>Celular:</strong> <?php echo htmlspecialchars($crediario['celular1']); ?></p>
-            <a href="editar_crediario.php" class="btn">Editar Dados</a>
+            <a href="perfil_cliente.php" class="btn">Editar Dados</a>
         <?php else: ?>
             <form action="processa_crediario.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" required value="<?php echo $id; ?>">
@@ -161,21 +196,25 @@ $crediario = $result->fetch_assoc();
 
                 <div class="form-group">
                     <label for="documento_foto_frente">Documento com Foto (Frente):</label>
-                    <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf" required>
-                    <img id="preview_frente" alt="Pré-visualização Frente" style="display: none;">
+                    <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf">
+                    <img id="preview_frente" alt="Pré-visualização Frente" src="<?php echo $frente;?>">
                 </div>
 
                 <div class="form-group">
                     <label for="documento_foto_verso">Documento com Foto (Verso):</label>
                     <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
-                    <img id="preview_verso" alt="Pré-visualização Verso" style="display: none;">
+                    <img id="preview_verso" alt="Pré-visualização Verso" src="<?php echo $verso;?>">
                 </div>
 
                 <h2>Selfie de Perfil</h2>
                 <div class="video-container">
-                    <video id="camera" autoplay></video>
-                    <button type="button" id="start-camera">Iniciar Câmera</button>
-                    <button type="button" id="capture" style="display: none;">Capturar</button>
+                    <?php if ($self!=''):?>
+                        <img id="preview_self" alt="Pré-visualização self" src="<?php echo $self;?>">
+                    <?php else:?>
+                        <video id="camera" autoplay></video>
+                        <button type="button" id="start-camera">Iniciar Câmera</button>
+                        <button type="button" id="capture" style="display: none;">Capturar</button>
+                    <?php endif; ?>
                 </div>
 
                 <div class="canvas-container" style="display: none;">
@@ -243,7 +282,7 @@ $crediario = $result->fetch_assoc();
         });
 
         // Pré-visualização do arquivo selecionado
-        documentoFrente.addEventListener('change', (event) => {
+       /* documentoFrente.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 previewFrente.src = URL.createObjectURL(file);
@@ -257,7 +296,9 @@ $crediario = $result->fetch_assoc();
                 previewVerso.src = URL.createObjectURL(file);
                 previewVerso.style.display = "block";
             }
-        });
+        });*/
+
+
     </script>
 </body>
 </html>
