@@ -28,7 +28,7 @@ if ($frente !=''){
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
-    $frente = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    $frente = '';
     //echo ('oii2').$frente;
 }
 
@@ -38,7 +38,7 @@ if ($verso !=''){
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
-    $verso = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    $verso = '';
     //echo ('oii2').$frente;
 }
 if ($self !=''){
@@ -47,7 +47,7 @@ if ($self !=''){
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
-    $self = 'arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg';
+    $self = '';
     //echo ('oii2').$frente;
 }
 
@@ -196,14 +196,22 @@ if ($self !=''){
 
                 <div class="form-group">
                     <label for="documento_foto_frente">Documento com Foto (Frente):</label>
-                    <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf">
-                    <img id="preview_frente" alt="Pré-visualização Frente" src="<?php echo $frente;?>">
+                    <?php if ($frente!=''):?>
+                        <img id="preview_frente" alt="Pré-visualização Frente" src="<?php echo $frente;?>">
+                    <?php else:?>
+                        <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf">
+                        <img id="preview_frente" alt="Pré-visualização Frente" src="arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
+                    <?php endif; ?>
                 </div>
 
                 <div class="form-group">
                     <label for="documento_foto_verso">Documento com Foto (Verso):</label>
-                    <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
-                    <img id="preview_verso" alt="Pré-visualização Verso" src="<?php echo $verso;?>">
+                    <?php if ($verso!=''):?>
+                        <img id="preview_verso" alt="Pré-visualização Verso" src="<?php echo $verso;?>">
+                    <?php else:?>
+                        <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
+                        <img id="preview_verso" alt="Pré-visualização Verso" src="arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
+                    <?php endif; ?>
                 </div>
 
                 <h2>Selfie de Perfil</h2>
@@ -214,13 +222,13 @@ if ($self !=''){
                         <video id="camera" autoplay></video>
                         <button type="button" id="start-camera">Iniciar Câmera</button>
                         <button type="button" id="capture" style="display: none;">Capturar</button>
-                    <?php endif; ?>
                 </div>
 
                 <div class="canvas-container" style="display: none;">
                     <canvas id="snapshot"></canvas>
                     <button type="button" id="retake">Tirar Outra</button>
                 </div>
+                    
 
                 <input type="hidden" name="selfie_data" id="selfie_data">
 
@@ -228,6 +236,7 @@ if ($self !=''){
                     <button type="submit" class="btn">Enviar Solicitação</button>
                     <a href="perfil_cliente.php" class="btn cancel">Cancelar</a>
                 </div>
+                    <?php endif; ?>
             </form>
 
     </div>
@@ -282,7 +291,7 @@ if ($self !=''){
         });
 
         // Pré-visualização do arquivo selecionado
-       /* documentoFrente.addEventListener('change', (event) => {
+        documentoFrente.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 previewFrente.src = URL.createObjectURL(file);
@@ -296,7 +305,7 @@ if ($self !=''){
                 previewVerso.src = URL.createObjectURL(file);
                 previewVerso.style.display = "block";
             }
-        });*/
+        });
 
 
     </script>
