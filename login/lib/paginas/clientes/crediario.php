@@ -154,14 +154,14 @@ if ($self !=''){
     <div class="container">
         <h1>Crediário</h1>
 
-        <?php if ($crediario && $crediario['status_crediario'] != ''): ?>
+
             <h2>Detalhes do Crediário</h2>
             <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
             <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
             <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
             <p><strong>Celular:</strong> <?php echo htmlspecialchars($crediario['celular1']); ?></p>
             <a href="perfil_cliente.php" class="btn">Editar Dados</a>
-        <?php else: ?>
+      
             <form action="processa_crediario.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" required value="<?php echo $id; ?>">
                 <div class="form-group">
@@ -229,7 +229,7 @@ if ($self !=''){
                     <a href="perfil_cliente.php" class="btn cancel">Cancelar</a>
                 </div>
             </form>
-        <?php endif; ?>
+
     </div>
 
     <script>
