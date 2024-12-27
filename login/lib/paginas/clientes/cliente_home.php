@@ -153,11 +153,21 @@
 
             <!-- Item crediario-->
             <li>
-                <a href="crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
-                    <i class="fas fa-handshake"></i>
-                    <span >Crediario</span>
+                <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                    <i class="fas fa-user"></i>
+                    <span >Perfil Crediario</span>
                 </a>
             </li>
+
+            <!-- Item crediario-->
+            <li>
+                <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                    <i class="fas fa-handshake"></i>
+                    <span >Meu Crediario</span>
+                </a>
+            </li>
+
+
 
             <!-- Item Configurações -->
             <li>

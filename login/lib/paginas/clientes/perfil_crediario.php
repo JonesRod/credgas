@@ -179,6 +179,15 @@ if ($self !=''){
             margin-top: -5px;
             margin-right: 10px; /* Espaço entre checkbox e texto */
         }
+        .form-group-img {
+    text-align: center; /* Alinha todo o conteúdo no centro */
+}
+
+.form-group-img img {
+    display: block; /* Garante que a imagem seja tratada como bloco */
+    margin: 0 auto; /* Centraliza horizontalmente */
+}
+
 
         @media (max-width: 480px) {
             .form-actions {
@@ -200,7 +209,8 @@ if ($self !=''){
         <h1>Preencha todo o formulario.</h1>
 
 
-            <h2>Informações neecessárias para solicitar Crediário</h2>
+            <h2>Informações necessárias para solicitar Crediário</h2>
+            <hr>
             <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
             <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
             <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
@@ -264,7 +274,7 @@ if ($self !=''){
                     <?php if ($self!=''):?>
                         <img id="preview_self" alt="Pré-visualização self" src="<?php echo $self;?>"><br>
                         <label for="aceito"><a href="termos_crediario.php" target="_blank">\\ Termos.</a></label><br>
-                        <a href="perfil_cliente.php" class="">Voltar</a>
+                        <a href="cliente_home.php" class="">Voltar</a>
                     <?php else:?>
                         <video id="camera" autoplay></video>
                         <button type="button" id="start-camera">Iniciar Câmera</button>
@@ -276,15 +286,15 @@ if ($self !=''){
                     <button type="button" id="retake">Tirar Outra</button>
                 </div>
                     
-                <input type="hidden" name="selfie_data" id="selfie_data">
+                <input type="hidden" name="selfie_data" id="selfie_data" required>
 
                 <div class="termos">
                     <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>
-                    <label for="aceito">Asceitar os <a href="termos_crediario.php" target="_blank">Termos.</a></label>
+                    <label for="aceito">Aceitar os <a href="termos_crediario.php" target="_blank">Termos.</a></label>
                 </div>
 
                 <div class="form-actions">
-                    <a href="perfil_cliente.php" class="">Cancelar</a>
+                    <a href="cliente_home.php" class="">Cancelar</a>
                     <button type="submit" id="solicitar" disabled class="btn">Enviar Solicitação</button>
                 </div>
                     <?php endif; ?>
@@ -298,7 +308,6 @@ if ($self !=''){
         const captureButton = document.getElementById('capture');
         const retakeButton = document.getElementById('retake');
         const canvas = document.getElementById('snapshot');
-        const selfieDataInput = document.getElementById('selfie_data');
         const previewFrente = document.getElementById('preview_frente');
         const previewVerso = document.getElementById('preview_verso');
         const documentoFrente = document.getElementById('documento_foto_frente');
@@ -369,6 +378,32 @@ if ($self !=''){
             }
             //console.log('oii');
         }
+
+        const formulario = document.querySelector('form');
+        const checkboxTermos = document.getElementById('aceito');
+        const botaoEnviar = document.getElementById('solicitar');
+        const selfieDataInput = document.getElementById('selfie_data'); // Campo hidden para selfie
+
+        formulario.addEventListener('submit', (event) => {
+            let erros = [];
+
+            // Verifica se os termos foram aceitos
+            if (!checkboxTermos.checked) {
+                erros.push('Você precisa aceitar os termos antes de enviar a solicitação.');
+            }
+
+            // Verifica se a selfie foi capturada
+            if (!selfieDataInput.value.trim()) {
+                erros.push('Você precisa capturar uma selfie antes de enviar a solicitação.');
+            }
+
+            // Se houver erros, bloqueia o envio e exibe as mensagens
+            if (erros.length > 0) {
+                event.preventDefault(); // Bloqueia o envio do formulário
+                alert(erros.join('\n')); // Mostra as mensagens de erro
+            }
+        });
+
 
     </script>
 </body>
