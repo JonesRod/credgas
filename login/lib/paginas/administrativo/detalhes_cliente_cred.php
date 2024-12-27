@@ -10,13 +10,20 @@ if (!isset($_SESSION['id'])) {
 
 // Obtém o ID do usuário autenticado
 $id = $_SESSION['id'];
+$id_cliente = $_GET['id'];
+
 
 // Consulta para verificar se o cliente já possui crediário e buscar seus detalhes
 $sql_query = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
-$sql_query->bind_param('i', $id);
+$sql_query->bind_param('i', $id_cliente);
 $sql_query->execute();
 $result = $sql_query->get_result();
 $crediario = $result->fetch_assoc();
+
+// Calcula a idade
+$hoje = new DateTime(); // Data atual
+$dataNascimento = new DateTime($crediario['nascimento']); // Converte a data de nascimento
+$idade = $hoje->diff($dataNascimento)->y; // Calcula a diferença em anos
 
 $frente = htmlspecialchars($crediario['img_frente']); 
 $verso = htmlspecialchars($crediario['img_verso']);
@@ -24,7 +31,7 @@ $self = htmlspecialchars($crediario['img_self']);
 
 if ($frente !=''){
     // Se existe e não está vazio, atribui o valor à variável logo
-    $frente = "arquivos/".htmlspecialchars($crediario['img_frente']);
+    $frente = "../clientes/arquivos/".htmlspecialchars($crediario['img_frente']);
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
@@ -34,7 +41,7 @@ if ($frente !=''){
 
 if ($verso !=''){
     // Se existe e não está vazio, atribui o valor à variável logo
-    $verso = "arquivos/".htmlspecialchars($crediario['img_verso']);
+    $verso = "../clientes/arquivos/".htmlspecialchars($crediario['img_verso']);
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
@@ -43,7 +50,7 @@ if ($verso !=''){
 }
 if ($self !=''){
     // Se existe e não está vazio, atribui o valor à variável logo
-    $self = "arquivos/".htmlspecialchars($crediario['img_self']);
+    $self = "../clientes/arquivos/".htmlspecialchars($crediario['img_self']);
     //echo ('oii1').$frente;
 } else {
     // Se não existe ou está vazio, define um valor padrão
@@ -59,7 +66,7 @@ if ($self !=''){
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitar Crediário</title>
+    <title>Solicitação de Crediário</title>
 
     <style>
         body {
@@ -206,101 +213,83 @@ if ($self !=''){
 </head>
 <body>
     <div class="container">
-        <h1>Preencha todo o formulario.</h1>
 
+        <h2>Dados do solicitante</h2>
+        <hr>
+        <p style="color:#007BFF;"><strong>Status:</strong> <?php echo htmlspecialchars($crediario['status_crediario']); ?> .</p>
+        <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
+        <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
+        <p><strong>Idade:</strong> <?php echo $idade; ?> anos</p>
+        <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
+        <p><strong>Celular:</strong> <?php echo htmlspecialchars($crediario['celular1']); ?></p>
+        <p><strong>CEP:</strong> <?php echo htmlspecialchars($crediario['cep']); ?></p>
+        <p><strong>Estado:</strong> <?php echo htmlspecialchars($crediario['uf']); ?></p>
+        <p><strong>Cidade:</strong> <?php echo htmlspecialchars($crediario['cidade']); ?></p>
+        <p><strong>Endereco:</strong> <?php echo htmlspecialchars($crediario['endereco']); ?></p>
+        <p><strong>Numero:</strong> <?php echo htmlspecialchars($crediario['numero']); ?></p>
+        <p><strong>Bairro:</strong> <?php echo htmlspecialchars($crediario['bairro']); ?></p>
+    
+        
+        <input type="hidden" name="id" required value="<?php echo $id; ?>">
 
-            <h2>Informações necessárias para solicitar Crediário</h2>
-            <hr>
-            <p style="color:#007BFF;"><strong>Status:</strong> <?php echo htmlspecialchars($crediario['status_crediario']); ?> .</p>
-            <p><strong>Nome:</strong> <?php echo htmlspecialchars($crediario['nome_completo']); ?></p>
-            <p><strong>Data de Nascimento:</strong> <?php echo date('d/m/Y', strtotime($crediario['nascimento'])); ?></p>
-            <p><strong>CPF:</strong> <?php echo htmlspecialchars($crediario['cpf']); ?></p>
-            <p><strong>Celular:</strong> <?php echo htmlspecialchars($crediario['celular1']); ?></p>
+        <div class="form-group-img">
+            <label for="documento_foto_frente">Documento com Foto (Frente):</label>
+            <?php if ($frente!=''):?>
+                <img id="preview_frente" alt="Pré-visualização Frente" src="<?php echo $frente;?>">
+            <?php else:?>
+                <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf">
+                <img id="preview_frente" alt="Pré-visualização Frente" src="../clientes/arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
+            <?php endif; ?>
+        </div>
 
-      
-            <form action="processa_crediario.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="id" required value="<?php echo $id; ?>">
-                <div class="form-group">
-                    <label for="cep">CEP:</label>
-                    <input type="text" id="cep" name="cep" required value="<?php echo htmlspecialchars($crediario['cep']); ?>">
-                </div>
+        <div class="form-group-img">
+            <label for="documento_foto_verso">Documento com Foto (Verso):</label>
+            <?php if ($verso!=''):?>
+                <img id="preview_verso" alt="Pré-visualização Verso" src="<?php echo $verso;?>">
+            <?php else:?>
+                <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
+                <img id="preview_verso" alt="Pré-visualização Verso" src="../clientes/arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
+            <?php endif; ?>
+        </div>
 
-                <div class="form-group">
-                    <label for="uf">Estado:</label>
-                    <input type="text" id="uf" name="uf" required value="<?php echo htmlspecialchars($crediario['uf']); ?>">
-                </div>
+        <h2>Selfie de Perfil</h2>
+        <div class="video-container">
+            <?php if ($self!=''):?>
+                <img id="preview_self" alt="Pré-visualização self" src="<?php echo $self;?>"><br>
+                <label for="aceito"><a href="termos_crediario.php" target="_blank">\\ Termos.</a></label><br>
+                <a href="not_detalhes_crediario.php?id=<?php echo urlencode($id); ?>" class="">Voltar</a>
+                <button type="button" id="consultar">Consultar SPC</button>
 
-                <div class="form-group">
-                    <label for="cidade">Cidade:</label>
-                    <input type="text" id="cidade" name="cidade" required value="<?php echo htmlspecialchars($crediario['cidade']); ?>">
-                </div>
+                <!-- Formulário com botões de Aprovar e Reprovar -->
+                <form method="POST" class="botao" onsubmit="showLoading(event)">
+                    <button type="submit" name="acao" value="aprovar">Aprovar</button>
+                    <button type="submit" name="acao" value="reprovar">Reprovar</button>
+                </form>
 
-                <div class="form-group">
-                    <label for="endereco">Endereço:</label>
-                    <input type="text" id="endereco" name="endereco" required value="<?php echo htmlspecialchars($crediario['endereco']); ?>">
-                </div>
+            <?php else:?>
+                <video id="camera" autoplay></video>
+                <button type="button" id="start-camera">Iniciar Câmera</button>
+                <button type="button" id="capture" style="display: none;">Capturar</button>
+        </div>
 
-                <div class="form-group">
-                    <label for="numero">Número:</label>
-                    <input type="text" id="numero" name="numero" required value="<?php echo htmlspecialchars($crediario['numero']); ?>">
-                </div>
+        <div class="canvas-container" style="display: none;">
+            <canvas id="snapshot"></canvas>
+            <button type="button" id="retake">Tirar Outra</button>
+        </div>
+            
+        <input type="hidden" name="selfie_data" id="selfie_data" required>
 
-                <div class="form-group">
-                    <label for="bairro">Bairro:</label>
-                    <input type="text" id="bairro" name="bairro" required value="<?php echo htmlspecialchars($crediario['bairro']); ?>">
-                </div>
+        <div class="termos">
+            <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>
+            <label for="aceito">Aceitar os <a href="termos_crediario.php" target="_blank">Termos.</a></label>
+        </div>
 
-                <div class="form-group-img">
-                    <label for="documento_foto_frente">Documento com Foto (Frente):</label>
-                    <?php if ($frente!=''):?>
-                        <img id="preview_frente" alt="Pré-visualização Frente" src="<?php echo $frente;?>">
-                    <?php else:?>
-                        <input type="file" id="documento_foto_frente" name="documento_foto_frente" accept="image/*,application/pdf">
-                        <img id="preview_frente" alt="Pré-visualização Frente" src="arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
-                    <?php endif; ?>
-                </div>
-
-                <div class="form-group-img">
-                    <label for="documento_foto_verso">Documento com Foto (Verso):</label>
-                    <?php if ($verso!=''):?>
-                        <img id="preview_verso" alt="Pré-visualização Verso" src="<?php echo $verso;?>">
-                    <?php else:?>
-                        <input type="file" id="documento_foto_verso" name="documento_foto_verso" accept="image/*,application/pdf" required>
-                        <img id="preview_verso" alt="Pré-visualização Verso" src="arquivos/9734564-default-avatar-profile-icon-of-social-media-user-vetor.jpg">
-                    <?php endif; ?>
-                </div>
-
-                <h2>Selfie de Perfil</h2>
-                <div class="video-container">
-                    <?php if ($self!=''):?>
-                        <img id="preview_self" alt="Pré-visualização self" src="<?php echo $self;?>"><br>
-                        <label for="aceito"><a href="termos_crediario.php" target="_blank">\\ Termos.</a></label><br>
-                        <a href="cliente_home.php" class="">Voltar</a>
-                    <?php else:?>
-                        <video id="camera" autoplay></video>
-                        <button type="button" id="start-camera">Iniciar Câmera</button>
-                        <button type="button" id="capture" style="display: none;">Capturar</button>
-                </div>
-
-                <div class="canvas-container" style="display: none;">
-                    <canvas id="snapshot"></canvas>
-                    <button type="button" id="retake">Tirar Outra</button>
-                </div>
-                    
-                <input type="hidden" name="selfie_data" id="selfie_data" required>
-
-                <div class="termos">
-                    <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>
-                    <label for="aceito">Aceitar os <a href="termos_crediario.php" target="_blank">Termos.</a></label>
-                </div>
-
-                <div class="form-actions">
-                    <a href="cliente_home.php" class="">Cancelar</a>
-                    <button type="submit" id="solicitar" disabled class="btn">Enviar Solicitação</button>
-                </div>
-                    <?php endif; ?>
-            </form>
-
+        <div class="form-actions">
+            <a href="not_detalhes_crediario.php" class="">Cancelar</a>
+            <button type="submit" id="solicitar" disabled class="btn">Enviar Solicitação</button>
+        </div>
+            <?php endif; ?>
+            
     </div>
 
     <script>

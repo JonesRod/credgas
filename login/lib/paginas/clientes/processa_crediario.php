@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         endereco = '$endereco',
         numero = '$numero',
         bairro = '$bairro',
+        status_crediario = 'AGUARDANDO',
         img_frente = '$frenteNome',
         img_verso = '$versoNome',
         img_self = '$selfieNome',
@@ -75,6 +76,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Executa a consulta
     if ($mysqli->query($sql_update)) {
+        $notif='1';
+        // Monta a query SQL para inserir os dados do produto no banco de dados usando prepared statements
+        $sql_not = "INSERT INTO contador_notificacoes_admin (data, id_cliente, not_crediario) 
+        VALUES (NOW(), ?, ?)";
+
+        $stmt_not = $mysqli->prepare($sql_not);
+
+        // Verifica se a query foi preparada com sucesso
+        if ($stmt_not === false) {
+            die('Erro na preparação da query: ' . $mysqli->error);
+        }
+    
+        // Liga os parâmetros da query ao prepared statement
+        $stmt_not->bind_param('ii', $id, $notif);
+    
+        // Executa a query para inserir a notificação
+        if ($stmt_not->execute() === false) {
+            die('Erro ao inserir notificação: ' . $stmt_not->error);
+        } else {
+            //$msg = 'dados com sucesso.';
+        }
+
         echo "
         <div style='
             background-color: #d4edda; 
@@ -87,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
             font-family: Arial, sans-serif;
         '>
-            Dados salvos com sucesso! Você será redirecionado em 5 segundos...
+            Solicitação enviada com sucesso! Você será redirecionado em 5 segundos...
         </div>
         <meta http-equiv='refresh' content='5;url=perfil_crediario.php'>";
     } else {

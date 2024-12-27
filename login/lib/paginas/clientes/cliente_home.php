@@ -167,8 +167,6 @@
                 </a>
             </li>
 
-
-
             <!-- Item Configurações -->
             <li>
                 <a href="configuracoes.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">
