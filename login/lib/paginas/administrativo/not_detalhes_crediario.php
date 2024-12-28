@@ -21,7 +21,7 @@ if (isset($_SESSION['id'])) {
 
 // Pega o ID da notificação apenas se ele existir, senão define como null
 $id = isset($_GET['id']) ? $_GET['id'] : null;
-$session_id = $_GET['id'];
+//$session_id = $_GET['id'];
 
 // Construa a consulta SQL para buscar os parceiros com analize_inscricao = 0
 $sql_query = "SELECT * FROM contador_notificacoes_admin WHERE not_crediario > 0" or die($mysqli->$error);
@@ -50,6 +50,7 @@ $result = $mysqli->query($sql_query);
         // Exibir os dados dos parceiros em uma tabela
         echo "<table>";
         echo "<tr>
+                <th style='display: none;'>ID</th>
                 <th>Data</th>
                 <th>Nome</th>
                 <th>CPF</th>
@@ -59,8 +60,9 @@ $result = $mysqli->query($sql_query);
             </tr>";
 
         while ($not = $result->fetch_assoc()) {
-            // Formatar a data de cadastro
-            $data = date("d/m/Y", strtotime($not['data']));
+        // Formatar a data e hora de cadastro
+        $dataHora = date("d/m/Y H:i:s", strtotime($not['data']));
+
             
             $data_nasc = date("d/m/Y", strtotime($cliente['nascimento']));
 
@@ -70,14 +72,15 @@ $result = $mysqli->query($sql_query);
             $idade = $hoje->diff($dataNascimento)->y; // Calcula a diferença em anos
 
             echo "<tr>";
-            echo "<td data-label='Data de Cadastro'>" . htmlspecialchars($data) . "</td>";
-            echo "<td data-label='Nome Fantasia'>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
-            echo "<td data-label='CNPJ'>" . htmlspecialchars($cliente['cpf']) . "</td>";
-            echo "<td data-label='Categoria'>" . htmlspecialchars($data_nasc) . "</td>";
-            echo "<td data-label='Categoria'>" . htmlspecialchars($idade) . "</td>";
+            echo "<td style='display: none;'>" . htmlspecialchars($not['id']) . "</td>";
+            echo "<td>" . htmlspecialchars($dataHora) . "</td>";
+            echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
+            echo "<td>" . htmlspecialchars($cliente['cpf']) . "</td>";
+            echo "<td>" . htmlspecialchars($data_nasc) . "</td>";
+            echo "<td>" . htmlspecialchars($idade) . "</td>";
 
             // Adicionar link para página de detalhes, passando o ID do parceiro via URL
-            echo "<td data-label='Detalhes'><a href='detalhes_cliente_cred.php?id=" . htmlspecialchars($cliente['id']) . "'>Ver Detalhes</a></td>";
+            echo "<td data-label='Detalhes'><a href='detalhes_cliente_cred.php?id_not=" . htmlspecialchars($not['id']) . "&id_cliente=" . htmlspecialchars($cliente['id']) . "'>Ver Detalhes</a></td>";
             echo "</tr>";
         }
 

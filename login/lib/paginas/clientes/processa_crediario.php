@@ -77,9 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Executa a consulta
     if ($mysqli->query($sql_update)) {
         $notif='1';
+
+        // Capturar data e hora atuais no PHP
+        $dataHoraAtual = date('Y-m-d H:i:s');
+
         // Monta a query SQL para inserir os dados do produto no banco de dados usando prepared statements
         $sql_not = "INSERT INTO contador_notificacoes_admin (data, id_cliente, not_crediario) 
-        VALUES (NOW(), ?, ?)";
+        VALUES (?, ?, ?)";
 
         $stmt_not = $mysqli->prepare($sql_not);
 
@@ -89,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     
         // Liga os parâmetros da query ao prepared statement
-        $stmt_not->bind_param('ii', $id, $notif);
+        $stmt_not->bind_param("sii", $dataHoraAtual, $id, $notif);
     
         // Executa a query para inserir a notificação
         if ($stmt_not->execute() === false) {

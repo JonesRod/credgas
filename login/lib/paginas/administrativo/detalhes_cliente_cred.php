@@ -1,5 +1,7 @@
 <?php
 include('../../conexao.php');
+include('../../enviarEmail.php');
+
 session_start();
 
 // Verifica se o usuário está autenticado
@@ -10,7 +12,8 @@ if (!isset($_SESSION['id'])) {
 
 // Obtém o ID do usuário autenticado
 $id = $_SESSION['id'];
-$id_cliente = $_GET['id'];
+$id_cliente = $_GET['id_cliente'];
+$id_not = $_GET['id_not'];
 
 
 // Consulta para verificar se o cliente já possui crediário e buscar seus detalhes
@@ -58,6 +61,149 @@ if ($self !=''){
     //echo ('oii2').$frente;
 }
 
+// Atualizando apenas o parceiro com um id específico
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $acao = $_POST['acao'];
+
+    if ($acao == 'aprovar') {
+
+        // Atualizando o parceiro com um id específico para analize_inscricao = 0
+        $sql_update_analize = "UPDATE meus_clientes SET status_crediario = ? WHERE id = ?";
+        $analize = $mysqli->prepare($sql_update_analize);
+        $status_crediario = 'Aprovado'; 
+        $analize->bind_param("si", $status_crediario, $id_cliente); // 'ii' indica que são dois inteiros
+        $analize->execute();
+
+        // ID da notificação que você deseja atualizar
+        //$id_notificacao = 1;
+
+        // Primeiro, obtenha o valor atual da notificação (se necessário)
+        $sql_get_value = "SELECT not_crediario FROM contador_notificacoes_admin WHERE id = ?";
+        $stmt_get_value = $mysqli->prepare($sql_get_value);
+        $stmt_get_value->bind_param("i", $id_not);
+        $stmt_get_value->execute();
+        $stmt_get_value->bind_result($not_crediario);
+        $stmt_get_value->fetch();
+        $stmt_get_value->close();
+
+        // Agora, exclua o registro correspondente ao id_not
+        $sql_delete = "DELETE FROM contador_notificacoes_admin WHERE id = ?";
+        $stmt_delete = $mysqli->prepare($sql_delete);
+        $stmt_delete->bind_param("i", $id_not);
+
+        if ($stmt_delete->execute()) {
+            //echo "Registro excluído com sucesso!";
+        } else {
+            //echo "Erro ao excluir o registro: " . $mysqli->error;
+        }
+
+        $stmt_delete->close();
+
+        // Capturar data e hora atuais no PHP
+        $dataHoraAtual = date('Y-m-d H:i:s');
+
+        // Enviar notificação para o cliente
+        $sql_notificacao = "INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, lida) VALUES (?, ?, ?, 1)";
+        $stmt_notificacao = $mysqli->prepare($sql_notificacao);
+        $mensagem = "Seu crediário foi aprovado! Parabéns!"; // Mensagem de notificação
+        $stmt_notificacao->bind_param("sis", $dataHoraAtual, $id_cliente, $mensagem);
+
+        if ($stmt_notificacao->execute()) {
+            //echo "Notificação enviada ao cliente com sucesso!";
+        } else {
+            //echo "Erro ao enviar a notificação: " . $mysqli->error;
+        }
+
+        $stmt_notificacao->close();
+
+        // Preparar os dados para o e-mail
+        $email = htmlspecialchars($crediario['email']); // Certifique-se de que o e-mail do parceiro está correto
+        $nome = htmlspecialchars($crediario['nome_completo']); // Nome fantasia do parceiro
+
+        // Enviar o e-mail de comunicação
+        enviar_email(
+            destinatario: $email,
+            assunto: "Crediario Aprovado - $nome",
+            mensagemHTML: "
+            <h1>É um prazer ter você, $nome, como cliente!</h1>
+            <p>Boas compras!</p>
+            <p>Mensagem automática. Não responda!</p>"
+        );
+
+    } elseif ($acao == 'reprovar') {
+
+        // Atualizando o parceiro com um id específico para analize_inscricao = 0
+        $sql_update_analize = "UPDATE meus_clientes SET status_crediario = ? WHERE id = ?";
+        $analize = $mysqli->prepare($sql_update_analize);
+        $status_crediario = 'Reprovado'; 
+        $analize->bind_param("si", $status_crediario, $id_cliente); // 'ii' indica que são dois inteiros
+        $analize->execute();
+
+        // ID da notificação que você deseja atualizar
+        //$id_notificacao = 1;
+
+        // Primeiro, obtenha o valor atual da notificação (se necessário)
+        $sql_get_value = "SELECT not_crediario FROM contador_notificacoes_admin WHERE id = ?";
+        $stmt_get_value = $mysqli->prepare($sql_get_value);
+        $stmt_get_value->bind_param("i", $id_not);
+        $stmt_get_value->execute();
+        $stmt_get_value->bind_result($not_crediario);
+        $stmt_get_value->fetch();
+        $stmt_get_value->close();
+
+        // Agora, exclua o registro correspondente ao id_not
+        $sql_delete = "DELETE FROM contador_notificacoes_admin WHERE id = ?";
+        $stmt_delete = $mysqli->prepare($sql_delete);
+        $stmt_delete->bind_param("i", $id_not);
+
+        if ($stmt_delete->execute()) {
+            //echo "Registro excluído com sucesso!";
+        } else {
+            //echo "Erro ao excluir o registro: " . $mysqli->error;
+        }
+
+        $stmt_delete->close();
+
+        // Capturar data e hora atuais no PHP
+        $dataHoraAtual = date('Y-m-d H:i:s');
+
+        // Enviar notificação para o cliente
+        $sql_notificacao = "INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, lida) VALUES (?, ?, ?, 1)";
+        $stmt_notificacao = $mysqli->prepare($sql_notificacao);
+        $mensagem = "Sua solicitação de crediário foi Reprovado!"; // Mensagem de notificação
+        $stmt_notificacao->bind_param("sis", $dataHoraAtual,$id_cliente, $mensagem);
+
+        if ($stmt_notificacao->execute()) {
+            //echo "Notificação enviada ao cliente com sucesso!";
+        } else {
+            //echo "Erro ao enviar a notificação: " . $mysqli->error;
+        }
+
+        $stmt_notificacao->close();
+
+        // Preparar os dados para o e-mail
+        $email = htmlspecialchars($crediario['email']); // Certifique-se de que o e-mail do parceiro está correto
+        $nome = htmlspecialchars($crediario['nome_completo']); // Nome fantasia do parceiro
+
+
+        // Enviar o e-mail de comunicação
+        enviar_email(
+            destinatario: $email,
+            assunto: "Sua solicitação de crediario foi Reprovado - $nome",
+            mensagemHTML: "
+            <p>Confira no Perfil da Loja todos os dados, veja se o aquivo de imagem esta bem legivel e solicite novamente!</p>
+            <p>Mensagem automática. Não responda!</p>"
+        );
+    }
+
+    //$stmt = $mysqli->prepare($sql_update);
+    //$stmt->bind_param("i", $id_cliente);
+    //$stmt->execute();
+
+    // Redireciona após a aprovação/reprovação
+    header("Location: admin_home.php?id=$id");
+    exit();
+}
 
 ?>
 
@@ -306,7 +452,7 @@ if ($self !=''){
         let stream = null;
 
         // Iniciar câmera
-        startCameraButton.addEventListener('click', () => {
+        /*startCameraButton.addEventListener('click', () => {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then((mediaStream) => {
                     stream = mediaStream;
@@ -315,10 +461,10 @@ if ($self !=''){
                     captureButton.style.display = "inline-block";
                 })
                 .catch(() => alert("Não foi possível acessar a câmera."));
-        });
+        });*/
 
         // Capturar selfie
-        captureButton.addEventListener('click', () => {
+        /*captureButton.addEventListener('click', () => {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
@@ -392,8 +538,11 @@ if ($self !=''){
                 event.preventDefault(); // Bloqueia o envio do formulário
                 alert(erros.join('\n')); // Mostra as mensagens de erro
             }
-        });
-
+        });*/
+        function showLoading(event) {
+            // Exibe o elemento de carregamento quando o formulário for submetido
+            document.getElementById('loading').style.display = 'flex';
+        }
 
     </script>
 </body>

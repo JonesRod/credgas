@@ -43,34 +43,18 @@
     $taxa_padrao = $mysqli->query("SELECT * FROM config_admin WHERE taxa_padrao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $taxa = $taxa_padrao->fetch_assoc();
 
-    // Consulta para somar todas as notificações de todas as linhas
-    $sql_query = "
-    SELECT 
-        id,
-        id_cliente,
-        cont_msg
-    FROM contador_notificacoes_cliente
-    WHERE id > $id";
-    
-    // Executar a consulta
-    $result = $mysqli->query($sql_query);
+    // Consulta para somar todas as notificações de um cliente específico
+    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ?";
+    $stmt = $mysqli->prepare($sql_query);
+    $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
+    $stmt->execute();
+    $stmt->bind_result($total_notificacoes);
+    $stmt->fetch();
+    $stmt->close();
 
-    // Verificar se há resultados
-    if ($result) {
-    $row = $result->fetch_assoc();
-    $total_notificacoes = 
-        //($row['cont_msg'] ?? 0);
-        $total_not = $row['cont_msg'] ?? 0;
+    // Exibir o total de notificações
     //echo "Total de notificações: $total_notificacoes";
-    } else {
-    //echo "Erro ao executar a consulta: " . $mysqli->error;
-    }
 
-    
-
-    // Soma todos os valores de notificações
-    //$total_notificacoes = $not_novo_cliente + $not_inscr_parceiro + $not_crediario + $not_novos_produtos + $not_edicao_produtos + $not_msg;
-    //echo $total_notificacoes; 
 
 ?> 
 
@@ -118,7 +102,7 @@
                     <i class="fas fa-bell" title="Notificações" onclick="toggleNotificacoes()"></i>
                     <!-- Exibir a contagem de notificações -->
                     <?php if ($total_notificacoes > 0): ?>
-                        <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_not); ?></span>
+                        <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
                     <?php else: ?>
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
@@ -134,9 +118,36 @@
 
     <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_not); ?></h2>
+        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
+            <?php
+                // Consulta para obter notificações do cliente
+                $sql_query_notificacoes = "SELECT * FROM contador_notificacoes_cliente WHERE id_cliente = ? ORDER BY data DESC";
+                $stmt = $mysqli->prepare($sql_query_notificacoes);
+                $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
+                $stmt->execute();
+                $result = $stmt->get_result();
 
+                // Verificar se há notificações
+                if ($result->num_rows > 0) {
+                    // Iterar pelas notificações e renderizar no painel
+                    while ($notificacao = $result->fetch_assoc()) {
+                        echo "<li>";
+                        echo "<strong>";
+                            $dataOriginal = $notificacao['data']; // Substituir pela sua coluna de data
+                            $dataFormatada = (new DateTime($dataOriginal))->format('d/m/Y H:i');
+                        echo htmlspecialchars($dataFormatada);
+                        echo "</strong><br>";
+
+                        echo htmlspecialchars($notificacao['msg']);
+                        echo "</li>";
+                    }
+                } else {
+                    echo "<li>Sem notificações no momento.</li>";
+                }
+
+                $stmt->close();
+            ?>
         </ul>
     </aside>
 
