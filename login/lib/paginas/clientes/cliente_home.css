@@ -19,7 +19,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start; /* Alinha itens ao topo */
-    padding: 20px;
+    padding: 3px;
 }
 
 header h1 {

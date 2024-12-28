@@ -4,7 +4,7 @@
     $id = $_GET['id'] ?? null;
 
     // Consulta para somar todas as notificações de um cliente específico
-    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ?";
+    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ? AND lida = 1";
     $stmt = $mysqli->prepare($sql_query);
     $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
     $stmt->execute();

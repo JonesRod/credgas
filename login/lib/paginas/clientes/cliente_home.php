@@ -1,30 +1,44 @@
 <?php
-    include('../../conexao.php');
 
-    if(!isset($_SESSION)){
-        session_start(); 
-    }
+include('../../conexao.php');
 
-    if(isset($_SESSION['id'])){
-        $id = $_SESSION['id'];
-        //$id = $_SESSION['usuario'];
-        $sql_query = $mysqli->query(query: "SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->$error);
-        $usuario = $sql_query->fetch_assoc(); 
+// Inicia a sessão
+session_start();
 
-    } else {
-        // Se não houver uma sessão de usuário, redirecione para a página de login
-        session_unset();
-        session_destroy(); 
-        header(header: "Location: ../../../../index.php");  
-        exit(); // Importante adicionar exit() após o redirecionamento
-    }
-    /*$id_conf = '1';
-    $dados = $mysqli->query(query: "SELECT * FROM config_admin WHERE id = '$id_conf'") or die($mysqli->error);
-    $dadosEscolhido = $dados->fetch_assoc();
-    // Verifica se o usuário está logado*/
-    $usuarioLogado = isset($_SESSION['id']);
-    //$id_conf = '1';*/
+if (isset($_SESSION['id'])) {
+    // Se a sessão do usuário estiver ativa
+    $id = $_SESSION['id'];
 
+    // Consulta para buscar os dados do cliente
+    $sql_query = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
+    $sql_query->bind_param("i", $id); // Bind para evitar injeção de SQL
+    $sql_query->execute();
+    $usuario = $sql_query->get_result()->fetch_assoc();
+    echo 'oii1'; // Para verificar que está no bloco de sessão
+
+}/* elseif (isset($_GET['id'])) {
+    // Se o ID for passado pela URL
+    $id = intval($_GET['id']); // Usa o ID da URL, e sempre converta para inteiro
+
+    // Consulta para buscar os dados do cliente
+    $sql_query = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
+    $sql_query->bind_param("i", $id); // Bind para evitar injeção de SQL
+    $sql_query->execute();
+    $usuario = $sql_query->get_result()->fetch_assoc();
+    echo 'oii2'; // Para verificar que está no bloco do GET
+
+}*/ else {
+    // Se não houver ID na sessão ou na URL
+    echo 'oii3';
+    // Redirecionamento opcional para a página de login
+    session_unset();
+    session_destroy();
+    header("Location: ../../../../index.php");
+    exit(); // Importante parar a execução do código aqui
+}
+
+
+    $usuarioLogado = $id;
 
     $dados = $mysqli->query("SELECT * FROM config_admin WHERE logo != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $dadosEscolhido = $dados->fetch_assoc();
@@ -44,7 +58,7 @@
     $taxa = $taxa_padrao->fetch_assoc();
 
     // Consulta para somar todas as notificações de um cliente específico
-    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ?";
+    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ? AND lida = 1";
     $stmt = $mysqli->prepare($sql_query);
     $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
     $stmt->execute();
@@ -72,9 +86,20 @@
     <script src="cliente_home.js?v=<?php echo time(); ?>"></script><!--força a tualização-->
     <!--<script src="cadastro_inicial/localizador.js" defer></script>-->
     <link rel="stylesheet" href="cliente_home.css">
-<style>
+    <style>
+        #lista-notificacoes a {
+            text-decoration: none; /* Remove o sublinhado */
+            color: inherit; /* Mantém a cor do texto herdada */
+            display: block; /* Faz o link ocupar toda a área do <li> */
+            padding: 5px; /* Adiciona espaçamento interno para melhor interação */
+        }
 
-</style>
+        #lista-notificacoes a:hover {
+            background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
+            border-radius: 4px; /* Bordas arredondadas */
+        }
+
+    </style>
 </head>
 <body>
 
@@ -96,7 +121,7 @@
 
         <div class="menu-superior-direito">
             <?php if ($usuarioLogado): ?>
-                <span>Bem-vindo, <strong><?php echo htmlspecialchars($usuario['nome_completo']); ?></strong></span>
+                <span>Bem-vindo, <strong><?php echo htmlspecialchars(explode(' ', $usuario['nome_completo'])[0]); ?></strong></span>
                 <!-- Ícone de notificações com contagem -->
                 <div class="notificacoes">
                     <i class="fas fa-bell" title="Notificações" onclick="toggleNotificacoes()"></i>
@@ -121,34 +146,37 @@
         <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
             <?php
-                // Consulta para obter notificações do cliente
-                $sql_query_notificacoes = "SELECT * FROM contador_notificacoes_cliente WHERE id_cliente = ? ORDER BY data DESC";
-                $stmt = $mysqli->prepare($sql_query_notificacoes);
-                $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
-                $stmt->execute();
-                $result = $stmt->get_result();
+            // Consulta para obter notificações do cliente onde lida = 1
+            $sql_query_notificacoes = "SELECT * FROM contador_notificacoes_cliente WHERE id_cliente = ? AND lida = 1 ORDER BY data DESC";
+            $stmt = $mysqli->prepare($sql_query_notificacoes);
+            $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-                // Verificar se há notificações
-                if ($result->num_rows > 0) {
-                    // Iterar pelas notificações e renderizar no painel
-                    while ($notificacao = $result->fetch_assoc()) {
-                        echo "<li>";
-                        echo "<strong>";
-                            $dataOriginal = $notificacao['data']; // Substituir pela sua coluna de data
-                            $dataFormatada = (new DateTime($dataOriginal))->format('d/m/Y H:i');
-                        echo htmlspecialchars($dataFormatada);
-                        echo "</strong><br>";
+            // Verificar se há notificações
+            if ($result->num_rows > 0) {
+                // Iterar pelas notificações e renderizar no painel
+                while ($notificacao = $result->fetch_assoc()) {
+                    $idNotificacao = htmlspecialchars($notificacao['id']);
+                    $dataOriginal = $notificacao['data']; // Substituir pela sua coluna de data
+                    $dataFormatada = (new DateTime($dataOriginal))->format('d/m/Y H:i:s');
+                    $mensagem = htmlspecialchars($notificacao['msg']);
 
-                        echo htmlspecialchars($notificacao['msg']);
-                        echo "</li>";
-                    }
-                } else {
-                    echo "<li>Sem notificações no momento.</li>";
+                    echo "<li>";
+                    echo "<a href='mensagem.php?id_cliente=" . htmlspecialchars($id) . "&id_not=" . $idNotificacao . "'>";
+                    echo "<strong>$dataFormatada</strong><br>";
+                    echo $mensagem;
+                    echo "</a>";
+                    echo "</li>";
                 }
+            } else {
+                echo "<li>Sem notificações no momento.</li>";
+            }
 
-                $stmt->close();
+            $stmt->close();
             ?>
         </ul>
+
     </aside>
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
@@ -175,6 +203,14 @@
                 <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
                     <i class="fas fa-handshake"></i>
                     <span >Meu Crediario</span>
+                </a>
+            </li>
+
+            <!-- Item de Mensagens -->
+            <li>
+                <a href="caixa_msg.php?id_cliente=<?php echo urlencode($id); ?>" title="Mensagens">
+                    <i class="fas fa-envelope"></i>
+                    <span>Mensagens</span>
                 </a>
             </li>
 
@@ -260,7 +296,7 @@
                             // Exibe cada parceiro no carrossel
                             $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
                 ?>
-                <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
+                <div class="parceiro-card" onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>&id_cliente=<?php echo $usuario['id']; ?>'">
                     <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
                     alt="Loja não encontrada">
                     <h3>
@@ -402,7 +438,7 @@
                                 $parceiro_exibido = true; // Marca que pelo menos um parceiro foi exibido
                                 $logoParceiro = !empty($parceiro['logo']) ? htmlspecialchars($parceiro['logo']) : 'placeholder.jpg';
                                 ?>
-                                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $id_parceiro; ?>'">
+                                <div class="parceiro-card" onclick="window.location.href='loja_parceiro.php?id=<?php echo $id_parceiro; ?>&id_cliente=<?php echo $id; ?>'">
                                     <img src="../parceiros/arquivos/<?php echo $logoParceiro; ?>" 
                                         alt="Loja não encontrada">
                                     <h3>
@@ -810,7 +846,7 @@
         fetchNotifications();
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        //setInterval(fetchNotifications, 2000);
+        setInterval(fetchNotifications, 2000);
 
 
         $(document).ready(function() {

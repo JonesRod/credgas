@@ -95,7 +95,7 @@
 
         <span id="msgAlerta"></span><br>
 
-        <input type="hidden" id="primeiro_nome" name="primeiro_nome" required value="<?php echo $dados['primeiro_nome']?>">
+        <input type="hidden" id="primeiro_nome" name="primeiro_nome" required value="<?php echo $dados['nome']?>">
         
         <label for="razao">Razão Social:</label>
         <input type="text" id="razao" name="razao" required value="<?php echo $dados['razao']?>">

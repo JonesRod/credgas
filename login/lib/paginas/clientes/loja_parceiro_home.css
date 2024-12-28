@@ -1,4 +1,3 @@
-
 /* Estilos gerais */
 * {
     margin: 0;
@@ -72,6 +71,9 @@ header .logo img {
     transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
     color: #ff9d09; /* Muda a cor do ícone ao passar o mouse */
 }
+
+
+
 .conteudo-secao {
     display: none;
 }
@@ -114,85 +116,7 @@ transition: color 0.3s ease; /* Transição suave ao passar o mouse */
 color: #fff; /* Cor ao passar o mouse */
 }
 
-aside#menu-lateral {
-    font-weight: bold; /* Aplica negrito ao texto */
-    background-color: #d3d0ce;
-    color: rgb(24, 8, 235);
-    width: 250px; /* Largura fixa da barra lateral */
-    padding: 20px;
-    position: absolute; /* Mantém a barra lateral fixa */
-    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
-    right: 20px; /* Posiciona o menu à direita */
-    display: none; /* Inicialmente escondido */
-    transition: all 0.3s ease; /* Transição suave */
-    border-radius: 8px; /* Bordas arredondadas */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
-}
 
-aside#menu-lateral ul {
-    list-style: none;
-    padding: 0;
-}
-
-aside#menu-lateral ul li {
-    margin: 15px 0; /* Margem entre os itens */
-    font-size: 16px; /* Tamanho da fonte */
-    display: flex; /* Flexbox para alinhar ícone e texto */
-    align-items: center; /* Alinha verticalmente */
-    transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
-    border-radius: 5px; /* Bordas arredondadas */
-    padding: 10px; /* Espaçamento interno */
-    font-weight: bold; /* Aplica negrito ao texto */
-}
-/* Remove o sublinhado do link "Sair" */
-#menu-lateral a {
-    text-decoration: none; /* Remove o sublinhado */
-    color: inherit; /* Mantém a cor do texto herdada */
-    transition: color 0.3s ease; /* Suave transição de cor */
-}
-
-/* Efeito ao passar o mouse sobre o link */
-#menu-lateral a:hover {
-    cursor: pointer;
-    color: #007BFF; /* Muda a cor ao passar o mouse */
-}
-/* Efeito ao passar o mouse sobre o item do menu */
-aside#menu-lateral ul li:hover {
-    cursor: pointer;
-    background-color: rgba(0, 123, 255, 0.1); /* Cor de fundo ao passar o mouse */
-}
-
-/* Estilo para ícones */
-aside#menu-lateral ul li i {
-    margin-right: 10px; /* Espaçamento entre ícone e texto */
-    font-size: 20px; /* Tamanho dos ícones */
-    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
-}
-
-/* Efeito ao passar o mouse sobre o ícone */
-aside#menu-lateral ul li:hover i {
-    cursor: pointer;
-    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
-    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
-}
-
-/* Efeito ao clicar em um ícone */
-aside#menu-lateral ul li i:active {
-    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
-    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
-}
-/* Efeitos para os spans */
-aside#menu-lateral ul li span {
-    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
-}
-
-/* Efeito ao passar o mouse sobre o span */
-aside#menu-lateral ul li:hover span {
-    cursor: pointer;
-    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
-    color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
-    /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
-}
 /* Seção de Produtos, Promoções, Mais Vendidos e Frete Grátis */
 .section {
     margin: 40px auto;
