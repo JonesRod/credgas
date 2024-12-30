@@ -434,7 +434,7 @@ h2 {
     border: 1px solid #ddd;
     border-radius: 10px;
     width: 200px; /* Largura do cartão */
-    height: 380px; /* Define a altura fixa */
+    height: 400px; /* Define a altura fixa */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -451,19 +451,19 @@ h2 {
     .produto-item img {
     width: 300px;
     max-width: 100%;
-    max-height: 250px;
+    max-height: 200px;
     height: 200px;
     border-radius: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     }
 
-.produto-imagem {
+/*.produto-imagem {
     width: 100%;
     height: auto;
     max-height: 160px;
     margin-bottom: 5px;
     border-radius: 5px;
-}
+}*/
 
 .produto-detalhes {
     display: flex;
