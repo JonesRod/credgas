@@ -427,24 +427,35 @@ h2 {
     justify-content: center;
     padding-bottom: 50px;
 }
-.produto-item {
-    background-color: aliceblue;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 1px solid #ccc;
-    padding: 3px;
-    border-radius: 8px;
-    width: 170px;
-    height: 310px; /* Adjusted height */
-    text-align: center;
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
-}
 
-.produto-item:hover {
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.2);
-}
+/* Cartão do produto */
+.produto-item {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 200px; /* Largura do cartão */
+    height: 380px; /* Define a altura fixa */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    padding: 3px;
+    }
+    
+    /* Efeito ao passar o mouse */
+    .produto-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+    /* Imagem do produto */
+    .produto-item img {
+    width: 300px;
+    max-width: 100%;
+    max-height: 250px;
+    height: 200px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    }
 
 .produto-imagem {
     width: 100%;
@@ -494,16 +505,7 @@ h2 {
     font-weight: bold;
 }
 
-.button-editar {
-    display: inline-block;
-    padding: 5px 10px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 10px;
-    width: 100%;
-}
+
 .produto-item {
     position: relative; /* Define o contêiner da imagem como relativo */
     display: inline-block;
@@ -529,9 +531,7 @@ h2 {
     border-radius: 50%;
     padding: 2px;
 }
-.button-editar:hover {
-    background-color:darkorange;
-}
+
 .button {
     margin: 5px;
     background-color: #4CAF50;
@@ -544,9 +544,6 @@ h2 {
     transition: background-color 0.3s ease;
 }
 
-.button:hover {
-    background-color: darkorange;
-}
 
 .catalogo-header {
     display: flex;
@@ -724,9 +721,7 @@ h2 {
         font-size: 1.1em;
     }
 
-    .button-editar {
-        padding: 6px 12px;
-    }
+
 
 }
         
@@ -817,11 +812,6 @@ h2 {
 
     .produto-nome {
         font-size: 1.1em;
-    }
-
-    .button-editar {
-        width: 100%;
-        padding: 10px;
     }
 
     .produto-descricao {

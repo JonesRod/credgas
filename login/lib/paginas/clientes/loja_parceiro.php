@@ -259,6 +259,25 @@ aside#menu-lateral ul li:hover span {
     color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
     /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
 }
+
+/* Botões */
+.btn {
+display: inline-block;
+background: #27ae60; /* Cor do botão */
+color: #fff;
+text-decoration: none;
+padding: 10px 20px;
+border-radius: 5px;
+margin-top: 5px;
+transition: background-color 0.3s ease;
+font-size: 0.9em;
+width: 100%;
+}
+
+/* Efeito ao passar o mouse no botão */
+.btn:hover {
+background:darkorange;
+}
     </style>
 
 </head>
@@ -564,7 +583,8 @@ aside#menu-lateral ul li:hover span {
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
+                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="btn">Detalhes</a>                        </div>
+                        <a href="#" class="btn">Comprar</a>
                     </div>
                     <?php endwhile; ?>
                 </div>
@@ -657,7 +677,8 @@ aside#menu-lateral ul li:hover span {
                         $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>                        </div>
+                        <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="btn">Detalhes</a>                        </div>
+                        <a href="#" class="btn">Comprar</a>
                     </div>
                     <?php endwhile; ?>
             </div>
@@ -739,7 +760,8 @@ aside#menu-lateral ul li:hover span {
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="btn">Detalhes</a>
+                            <a href="#" class="btn">Comprar</a>
                         </div>
                     </div>
                 <?php endwhile; ?>
@@ -824,7 +846,8 @@ aside#menu-lateral ul li:hover span {
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
                             ?>
                             <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="button-editar">Detalhes</a>
+                            <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>" class="btn">Detalhes</a>
+                            <a href="#" class="btn">Comprar</a>
                         </div>
                     </div>
                 <?php endwhile; ?>

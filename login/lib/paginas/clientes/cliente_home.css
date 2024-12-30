@@ -418,7 +418,7 @@ background: #ffffff;
 border: 1px solid #ddd;
 border-radius: 10px;
 width: 200px; /* Largura do cartão */
-height: 420px; /* Define a altura fixa */
+height: 380px; /* Define a altura fixa */
 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 overflow: hidden;
 transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -477,9 +477,10 @@ color: #fff;
 text-decoration: none;
 padding: 10px 20px;
 border-radius: 5px;
-margin-top: 10px;
+margin-top: 5px;
 transition: background-color 0.3s ease;
 font-size: 0.9em;
+width: 100%;
 }
 
 /* Efeito ao passar o mouse no botão */
