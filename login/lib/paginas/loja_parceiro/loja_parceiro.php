@@ -708,13 +708,7 @@
     </main>
 
     <footer class="menu-mobile">
-        <ul>
-            <!--<li><a href="parceiro_home.php" title="Página Inicial"><i class="fas fa-home"></i></a></li>-->
-            <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
-            <li title="Pedidos"><i class="fas fa-box"></i></li> <!-- pedidos -->
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($idParceiro); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
-            <li><a href="parceiro_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
-        </ul>
+
     </footer>
     <script src="parceiro_home.js"></script> 
     <script>

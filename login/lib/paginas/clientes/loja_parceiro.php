@@ -2,11 +2,11 @@
 
     include('../../conexao.php');
 
-    if(!isset($_SESSION)) {
+    //if(!isset($_SESSION)) {
         session_start();
-    }
+    //}
    
-    if (isset($_GET['id'])|| isset($_GET['id_cliente'])) {
+    if (isset($_SESSION['id']) && isset($_GET['id']) && isset($_GET['id_cliente'])) {
         $idParceiro = intval($_GET['id']);
         $id_cliente = intval($_GET['id_cliente']);
 
@@ -50,16 +50,14 @@
 
     } */
 
-    // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
-    $result = $mysqli->query(query: $sql_query_not_par);
-    $row = $result->fetch_assoc();
-    $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
-    $not_novo_produto= $row['not_novo_produto'] ?? 0;
-    $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
-    $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
-    // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
+    // Consulta para somar todas as notificações de um cliente específico
+    $sql_query = "SELECT COUNT(*) AS total_notificacoes FROM contador_notificacoes_cliente WHERE id_cliente = ? AND lida = 1";
+    $stmt = $mysqli->prepare($sql_query);
+    $stmt->bind_param("i", $id); // Substituir $id pelo ID do cliente
+    $stmt->execute();
+    $stmt->bind_result($total_notificacoes);
+    $stmt->fetch();
+    $stmt->close();
 
     // Obtenha a data atual
     $data_atual = date('Y-m-d');

@@ -193,8 +193,8 @@ aside#menu-lateral ul li:hover span {
     position: fixed;
     top: 40px; /* Ajuste conforme a altura do cabeçalho */
     right: 20px; /* Posiciona o menu à direita */
-    width: 320px;
-    height: 400px;
+    width: 250px;
+    height: auto;
     background-color: white;
     border: 2px solid #ffb300;
     border-radius: 8px;
