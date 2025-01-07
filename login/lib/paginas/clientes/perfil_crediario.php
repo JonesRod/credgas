@@ -291,7 +291,7 @@ if ($self !=''){
 
                 <div class="termos">
                     <input type="checkbox" id="aceito" onchange="verificarAceite()" name="aceito" value="sim" required>
-                    <label for="aceito">Aceitar os <a href="termos_crediario.php" target="_blank">Termos.</a></label>
+                    <label for="aceito">Aceitar os <a href="termos_cliente_crediario.php" target="_blank">Termos.</a></label>
                 </div>
 
                 <div class="form-actions">

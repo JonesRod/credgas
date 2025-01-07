@@ -252,7 +252,7 @@
         <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
             <label for="valor_promocao_taxa">Valor com Taxa (R$):</label>
             <input type="text" id="valor_promocao_taxa" name="valor_promocao_taxa" 
-            value="<?php echo number_format($produto['valor_produto_taxa'], 2, ',', '.'); ?>" readonly>
+            value="<?php echo number_format($produto['taxa_padrao'], 2, ',', '.'); ?>" readonly>
         </div>
 
         <!-- Frete Grátis na Promoção -->

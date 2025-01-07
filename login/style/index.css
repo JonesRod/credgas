@@ -197,6 +197,11 @@ border-radius: 60px;
 margin: 10px auto; /* Centraliza e ajusta margens vertical e horizontal */
 max-width: 200px; /* Define o comprimento máximo do cartão */
 background-color: transparent;
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.parceiros-carousel .parceiro-card:hover {
+    transform: translateY(-10px); /* Move o cartão para cima */
+    /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra */
 }
 .input{
 width: 250px;

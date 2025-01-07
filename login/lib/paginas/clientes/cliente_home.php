@@ -14,7 +14,7 @@ if (isset($_SESSION['id'])) {
     $sql_query->bind_param("i", $id); // Bind para evitar injeção de SQL
     $sql_query->execute();
     $usuario = $sql_query->get_result()->fetch_assoc();
-    echo 'oii1'; // Para verificar que está no bloco de sessão
+    //echo 'oii1'; // Para verificar que está no bloco de sessão
 
 }/* elseif (isset($_GET['id'])) {
     // Se o ID for passado pela URL
@@ -29,7 +29,7 @@ if (isset($_SESSION['id'])) {
 
 }*/ else {
     // Se não houver ID na sessão ou na URL
-    echo 'oii3';
+    //echo 'oii3';
     // Redirecionamento opcional para a página de login
     session_unset();
     session_destroy();
@@ -200,7 +200,7 @@ if (isset($_SESSION['id'])) {
 
             <!-- Item crediario-->
             <li>
-                <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                <a href="meu_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
                     <i class="fas fa-handshake"></i>
                     <span >Meu Crediario</span>
                 </a>

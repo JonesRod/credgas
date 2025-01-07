@@ -207,7 +207,23 @@
                     <span >Perfil</span>
                 </a>
             </li>
+
+            <!-- Ver produtos -->
+            <li>
+                <a href="produtos.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">
+                    <i class="fas fa-box"></i>
+                    <span>Produtos</span>
+                </a>
+            </li>
             
+            <!-- Ver parceiros -->
+            <li>
+                <a href="parceiros.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">
+                    <i class="fas fa-handshake"></i>
+                    <span>Parceiros</span>
+                </a>
+            </li>
+
             <!-- Item Configurações -->
             <li>
                 <a href="configuracoes.php?id_admin=<?php echo urlencode($id); ?>" title="Configurações">

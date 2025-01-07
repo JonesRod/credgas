@@ -127,6 +127,7 @@
     AND produto_aprovado = 'sim' 
     AND frete_gratis = 'sim' 
     OR (promocao = 'sim' 
+    AND categoria = '$categoriaSelecionada'
     AND frete_gratis_promocao = 'sim')";
 
     // Executa a consulta e verifica erros
