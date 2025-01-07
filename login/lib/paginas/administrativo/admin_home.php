@@ -246,22 +246,22 @@
     <!-- Conteúdo principal -->
     <main id="main-content">
         <div class="opcoes">
-            <div class="tab active" onclick="mostrarConteudo('dashboard',this)">
-                <span>Dashboard</span>
+            <div class="tab active" onclick="mostrarConteudo('parceiros',this)">
+                <span>Nossos Parceiros</span>
             </div>
-            <div class="tab" onclick="mostrarConteudo('gerenciamento',this)">
-                <span>Gerenciamento</span>
+            <div class="tab" onclick="mostrarConteudo('produtos',this)">
+                <span>Produtos</span>
             </div>
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
-        <div id="conteudo-dashboard" class="conteudo-aba" style="display: block;">
-            <h2>Dashboard</h2>
+        <div id="conteudo-parceiros" class="conteudo-aba" style="display: block;">
+            <h2>Nossos Parceiros</h2>
             <p>Conteúdo do Dashboard aparece aqui.</p>
         </div>
 
-        <div id="conteudo-gerenciamento" class="conteudo-aba" style="display:none;">
-            <h2>Gerenciamento</h2>
+        <div id="conteudo-produtos" class="conteudo-aba" style="display:none;">
+            <h2>Produtos</h2>
             <p>Conteúdo do Gerenciamento aparece aqui.</p>
         </div>
     </main>

@@ -79,7 +79,7 @@ function mostrarConteudo(aba, element) {
 
 // Define que a aba "Dashboard" está ativa ao carregar a página
 window.onload = function() {
-    mostrarConteudo('dashboard', document.querySelector('.tab.active'));
+    mostrarConteudo('parceiros', document.querySelector('.tab.active'));
 };
 
 // Função para abrir o conteúdo da notificação clicada
