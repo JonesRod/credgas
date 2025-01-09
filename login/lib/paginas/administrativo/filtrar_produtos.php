@@ -14,9 +14,9 @@ if (!empty($categoria)) {
 }
 
 // Filtro por status
-if (!empty($status)) {
-    $statusConditions = [];
+$statusConditions = [];
 
+if (!empty($status)) {
     // Filtra por status "ativo" ou "inativo"
     if (in_array("ativo", $status)) {
         $statusConditions[] = "produto_aprovado = 'sim'";
@@ -40,31 +40,30 @@ if (!empty($status)) {
         $statusConditions[] = "frete_gratis = 'sim' OR (promocao = 'sim' AND frete_gratis_promocao = 'sim')";
     }
 
-    // Adiciona as condições de status ao SQL
-    if (!empty($statusConditions)) {
-        $sql .= " AND (" . implode(' OR ', $statusConditions) . ")";
+    // Filtra por mais vendidos
+    if (in_array("mais-vendidos", $status)) {
+        $statusConditions[] = "qt_vendido > 0";
     }
 }
 
-// Filtro para "mais vendidos"
-if (in_array("mais-vendidos", $status)) {
-    // Filtra produtos com quantidade vendida maior que 0 e ordena pelos mais vendidos
-    $sql .= " AND qt_vendido > 0 ORDER BY qt_vendido DESC LIMIT 10";
-} else {
-    // Caso contrário, ordena por data para outros filtros
-    $sql .= " ORDER BY data DESC";
+// Adiciona as condições de status ao SQL
+if (!empty($statusConditions)) {
+    $sql .= " AND (" . implode(' OR ', $statusConditions) . ")";
 }
 
-
-// DEBUGGING: Exibe a consulta SQL gerada
-//echo "<p><strong>Consulta SQL gerada:</strong> $sql</p>";
+// Ordena por mais vendidos, se selecionado
+if (in_array("mais-vendidos", $status)) {
+    $sql .= " ORDER BY qt_vendido DESC";
+} else {
+    // Caso contrário, ordena por data
+    $sql .= " ORDER BY data DESC";
+}
 
 // Executa a consulta
 $result = $mysqli->query($sql);
 
 // Verifica se a consulta foi executada com sucesso
 if (!$result) {
-    // Se falhar, exibe um erro
     echo "Erro na consulta: " . $mysqli->error;
     exit;
 }
@@ -73,8 +72,7 @@ if (!$result) {
 $totalProdutos = $result->num_rows;
 
 // Exibe a tabela apenas se houver produtos
-if ($result->num_rows > 0) {
-
+if ($totalProdutos > 0) {
     // Exibe os produtos
     while ($produto = $result->fetch_assoc()) {
         // Obtém a primeira imagem
@@ -96,6 +94,4 @@ if ($result->num_rows > 0) {
     echo "<p>Nenhum produto encontrado.</p>";
 }
 
-// Exibe a quantidade de produtos no final da tabela
-echo "<p><strong>Total de produtos: $totalProdutos</strong></p>";
 ?>

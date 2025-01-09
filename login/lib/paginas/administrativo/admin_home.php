@@ -258,8 +258,8 @@
     color: #fff; /* Cor do texto */
     border: none; /* Sem borda */
     border-radius: 8px; /* Bordas arredondadas */
-    padding: 10px 20px; /* Espaçamento interno */
-    font-size: 16px; /* Tamanho da fonte */
+    padding: 5px 20px; /* Espaçamento interno */
+    font-size: 15px; /* Tamanho da fonte */
     cursor: pointer; /* Cursor de ponteiro */
     transition: background-color 0.3s ease; /* Transição suave para o hover */
 }
@@ -444,8 +444,8 @@
 
                             if ($resultCategorias->num_rows > 0) {
                                 while ($categoria = $resultCategorias->fetch_assoc()) {
-                                    echo "<option value='" . htmlspecialchars($categoria['id']) . "'>" . htmlspecialchars($categoria['categorias']) . "</option>";
-                                }
+                                    echo "<option value='" . htmlspecialchars($categoria['categorias']) . "'>" . htmlspecialchars($categoria['categorias']) . "</option>";
+                                }                                
                             } else {
                                 echo "<option value=''>Nenhuma categoria encontrada</option>";
                             }
@@ -476,6 +476,19 @@
                     <button type="button" onclick="filtrarProdutos()">
                         🔍 Filtrar
                     </button>
+                    <?php
+                        include('../../conexao.php');
+
+                        // Consulta SQL para carregar os produtos
+                        $sql = "SELECT id_produto, data, imagens, nome_produto, categoria FROM produtos ORDER BY data DESC";
+                        $result = $mysqli->query($sql);
+
+                        // Conta o número total de produtos carregados
+                        $totalProdutos = $result->num_rows;
+
+                    ?>
+                    <span id="total-produtos" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de produtos: <?php echo $totalProdutos; ?></span>
+
 
                 </div>
 
@@ -492,11 +505,11 @@
 
                     <tbody id="produtos-tabela">
                         <?php
-                        include('../../conexao.php');
+                        /*include('../../conexao.php');
 
                         // Consulta SQL para carregar os produtos
                         $sql = "SELECT id_produto, data, imagens, nome_produto, categoria FROM produtos ORDER BY data DESC";
-                        $result = $mysqli->query($sql);
+                        $result = $mysqli->query($sql);*/
 
                         if ($result->num_rows > 0) {
                             while ($produto = $result->fetch_assoc()) {
@@ -601,27 +614,32 @@
         setInterval(fetchNotifications, 2000);
 
         function filtrarProdutos() {
-            // Obtém os valores dos filtros
-            const categoria = document.getElementById('categoria').value;
-            const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
-                .map(checkbox => checkbox.value);
+    // Obtém os valores dos filtros
+    const categoria = document.getElementById('categoria').value;
+    const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
+        .map(checkbox => checkbox.value);
 
-            // Cria uma requisição AJAX
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'filtrar_produtos.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // Cria uma requisição AJAX
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'filtrar_produtos.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-            // Quando a requisição for concluída, atualiza a tabela
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    document.getElementById('produtos-tabela').innerHTML = xhr.responseText;
-                }
-            };
+    // Quando a requisição for concluída, atualiza a tabela
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            document.getElementById('produtos-tabela').innerHTML = xhr.responseText;
 
-            // Envia os dados dos filtros para o servidor
-            xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
-            console.log(status);
+            // Conta o número de produtos carregados
+            const totalProdutos = document.querySelectorAll('#produtos-tabela tr').length;
+            document.getElementById('total-produtos').textContent = `Total de produtos: ${totalProdutos}`;
         }
+    };
+
+    // Envia os dados dos filtros para o servidor
+    xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
+}
+
+
 
     </script>
 
