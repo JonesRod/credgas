@@ -155,7 +155,132 @@
     <link rel="stylesheet" href="admin_home.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="admin_home.js?v=<?php echo time(); ?>"></script><!--força a tualização-->
+        <style>
+            .opcoes-gerenciamento{
+                background-color: #d3d0ce;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                margin-top: 0px;
+                padding: auto;
+            }
+            #conteudo-parceiros, #conteudo-produtos{
+                background-color: #fff;
+            }
 
+            /* Estilização da tabela de parceiros e produtos */
+            .tabela-parceiros, .tabela-produtos {
+                width: 100%;
+                border-collapse: collapse;
+                border-radius: 8px;
+                background-color: #fff;
+                margin: 0; /* Remove as margens */
+                padding: 0; /* Remove qualquer padding interno */
+            }
+            /* Ajuste para as células da tabela */
+            .tabela-parceiros th, .tabela-produtos th,
+            .tabela-parceiros td, .tabela-produtos td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            
+
+            .tabela-parceiros th, .tabela-produtos th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+                border-radius: 8px;
+            }
+
+            .tabela-parceiros img.logo-parceiro {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .tabela-parceiros .detalhes-link, .tabela-produtos .detalhes-link {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            .tabela-parceiros .detalhes-link:hover, .tabela-produtos .detalhes-link:hover {
+                text-decoration: underline;
+            }
+            .logo-produto {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 10px;
+                border: 1px solid #ddd;
+            }
+            /* Estilo dos filtros de produtos */
+/* Estilo dos filtros de produtos */
+.filtros-produtos {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filtros-produtos label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filtros-produtos select {
+    margin-left: 8px;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.filtros-produtos input[type="checkbox"] {
+    margin-right: 5px;
+}
+/* Caixa de seleção estilizada */
+.filtros-produtos select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    width: 200px;
+}
+
+.filtros-produtos button {
+    background-color: #007bff; /* Cor de fundo azul */
+    color: #fff; /* Cor do texto */
+    border: none; /* Sem borda */
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 10px 20px; /* Espaçamento interno */
+    font-size: 16px; /* Tamanho da fonte */
+    cursor: pointer; /* Cursor de ponteiro */
+    transition: background-color 0.3s ease; /* Transição suave para o hover */
+}
+
+.filtros-produtos button:hover {
+    background-color: #0056b3; /* Cor de fundo mais escura no hover */
+}
+
+.filtros-produtos button:active {
+    background-color: #003f7f; /* Cor mais escura quando pressionado */
+}
+
+@media (max-width: 768px) {
+    .filtros-produtos button {
+        width: 100%;
+        font-size: 14px;
+        padding: 12px;
+    }
+}
+
+        </style>
 </head>
 <body>
 
@@ -246,23 +371,155 @@
     <!-- Conteúdo principal -->
     <main id="main-content">
         <div class="opcoes">
-            <div class="tab active" onclick="mostrarConteudo('parceiros',this)">
-                <span>Nossos Parceiros</span>
+            <div class="tab active" onclick="mostrarConteudo('dashboard',this)">
+                <span>Dashboard</span>
             </div>
-            <div class="tab" onclick="mostrarConteudo('produtos',this)">
-                <span>Produtos</span>
+            <div class="tab" onclick="mostrarConteudo('gerenciamento',this)">
+                <span>Gerenciamento</span>
             </div>
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
-        <div id="conteudo-parceiros" class="conteudo-aba" style="display: block;">
-            <h2>Nossos Parceiros</h2>
+        <div id="conteudo-dashboard" class="conteudo-aba" style="display: block;">
+            <h2>Dashboard</h2>
             <p>Conteúdo do Dashboard aparece aqui.</p>
         </div>
 
-        <div id="conteudo-produtos" class="conteudo-aba" style="display:none;">
-            <h2>Produtos</h2>
-            <p>Conteúdo do Gerenciamento aparece aqui.</p>
+        <div id="conteudo-gerenciamento" class="conteudo-aba" style="display:none;">
+            <div class="opcoes-gerenciamento">
+                <div class="tab active" onclick="mostrarConteudoGerenciamento('parceiros',this)">
+                    <span>Parceiros</span>
+                </div>
+                <div class="tab" onclick="mostrarConteudoGerenciamento('produtos',this)">
+                    <span>Produtos</span>
+                </div>
+            </div>
+
+            <!-- Conteúdos correspondentes às abas -->
+            <div id="conteudo-parceiros" class="conteudo-aba" style="display: block;">
+                <table class="tabela-parceiros">
+                    <thead>
+                        <tr>
+                            <th>Data de Cadastro</th>
+                            <th>Logo</th>
+                            <th>Nome Fantasia</th>
+                            <th>Categoria</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        include('../../conexao.php');
+                        $sql = "SELECT id, data_cadastro, logo, nomeFantasia, categoria FROM meus_parceiros ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            while ($parceiro = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . date('d/m/Y', strtotime($parceiro['data_cadastro'])) . "</td>";
+                                echo "<td><img src='../parceiros/arquivos/" . $parceiro['logo'] . "' alt='Logo' class='logo-parceiro'></td>";
+                                echo "<td>" . htmlspecialchars($parceiro['nomeFantasia']) . "</td>";
+                                echo "<td>" . htmlspecialchars($parceiro['categoria']) . "</td>";
+                                echo "<td><a href='detalhes_parceiro.php?id=" . $parceiro['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>Nenhum parceiro encontrado.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+
+            
+            <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
+                <div class="filtros-produtos">
+                    <label for="categoria">
+                        Categoria:
+                        <select name="categoria" id="categoria">
+                            <option value="">Todas as Categorias</option>
+                            <?php
+                            $queryCategorias = "SELECT id, categorias FROM categorias ORDER BY categorias ASC";
+                            $resultCategorias = $mysqli->query($queryCategorias);
+
+                            if ($resultCategorias->num_rows > 0) {
+                                while ($categoria = $resultCategorias->fetch_assoc()) {
+                                    echo "<option value='" . htmlspecialchars($categoria['id']) . "'>" . htmlspecialchars($categoria['categorias']) . "</option>";
+                                }
+                            } else {
+                                echo "<option value=''>Nenhuma categoria encontrada</option>";
+                            }
+                            ?>
+                        </select>
+                    </label>
+
+                    <!-- Filtros com checkboxes -->
+                    <label for="ativo">
+                        <input type="checkbox" name="status[]" value="ativo" id="ativo"> Ativo
+                    </label>
+                    <label for="inativo">
+                        <input type="checkbox" name="status[]" value="inativo" id="inativo"> Inativo
+                    </label>
+                    <label for="mais-vendidos">
+                        <input type="checkbox" name="status[]" value="mais-vendidos" id="mais-vendidos"> Mais Vendidos
+                    </label>
+                    <label for="novidades">
+                        <input type="checkbox" name="status[]" value="novidades" id="novidades"> Novidades
+                    </label>
+                    <label for="promocao">
+                        <input type="checkbox" name="status[]" value="promocao" id="promocao"> Promoção
+                    </label>
+                    <label for="frete-gratis">
+                        <input type="checkbox" name="status[]" value="frete-gratis" id="frete-gratis"> Frete Grátis
+                    </label>
+
+                    <button type="button" onclick="filtrarProdutos()">
+                        🔍 Filtrar
+                    </button>
+
+                </div>
+
+                <table class="tabela-produtos">
+                    <thead>
+                        <tr>
+                            <th>Data de Cadastro</th>
+                            <th>Imagem</th>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="produtos-tabela">
+                        <?php
+                        include('../../conexao.php');
+
+                        // Consulta SQL para carregar os produtos
+                        $sql = "SELECT id_produto, data, imagens, nome_produto, categoria FROM produtos ORDER BY data DESC";
+                        $result = $mysqli->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            while ($produto = $result->fetch_assoc()) {
+                                // Obtém a primeira imagem
+                                $imagens = explode(',', $produto['imagens']);
+                                $primeiraImagem = $imagens[0];
+
+                                echo "<tr>";
+                                echo "<td>" . date('d/m/Y', strtotime($produto['data'])) . "</td>";
+                                echo "<td><img src='../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='logo-produto'></td>";
+                                echo "<td>" . htmlspecialchars($produto['nome_produto']) . "</td>";
+                                echo "<td>" . htmlspecialchars($produto['categoria']) . "</td>";
+                                echo "<td><a href='detalhes_produto.php?id=" . $produto['id_produto'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>Nenhum produto encontrado.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+
+            </div> 
         </div>
     </main>
 
@@ -342,6 +599,29 @@
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 2000);
+
+        function filtrarProdutos() {
+            // Obtém os valores dos filtros
+            const categoria = document.getElementById('categoria').value;
+            const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_produtos.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('produtos-tabela').innerHTML = xhr.responseText;
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
+            console.log(status);
+        }
 
     </script>
 

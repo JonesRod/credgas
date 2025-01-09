@@ -150,8 +150,10 @@ aside#menu-lateral ul li:hover span {
 main {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+    /*height: 100vh; /* O contêiner principal ocupa a altura total da tela */
     box-sizing: border-box;
+    height: auto; /* Ajuste automático da altura */
+    margin-bottom: 50px;
 }
 /* Estilos para as abas */
 main .opcoes {
@@ -163,6 +165,7 @@ main .opcoes {
     margin-top: 0px;
     padding: auto;
 }
+
 
 main .tab {
     padding: 10px 20px;
@@ -190,17 +193,20 @@ main .tab.active {
 /* Estilos para o conteúdo das abas */
 .conteudo-aba {
     flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
-    margin-left: 2px;
-    margin-right: 2px;
+    margin-left: 0px;
+    margin-right: 0px;
     margin-top: 0px;
     padding: 10px;
-    border: 2px solid #ffb300;
-    border-radius: 8px;
+    border: 1px solid #ffb300;
+    /*border-radius: 8px;*/
     display: none; /* Por padrão, todos os conteúdos estão escondidos */
     padding-top: 5px;
     box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
-    overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+    overflow-x: auto; /* Ativa rolagem horizontal */
+    overflow-y: hidden; /* Remove rolagem vertical */
     background-color: #d3d0ce;
+    width: 100%;
+    height: auto; /* Ajuste automático da altura */
 
 }
 .menu-mobile {

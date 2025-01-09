@@ -55,33 +55,6 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// -----------------Função para mostrar o conteúdo da aba selecionada
-function mostrarConteudo(aba, element) {
-    // Oculta todos os conteúdos das abas
-    var conteudos = document.querySelectorAll('.conteudo-aba');
-    conteudos.forEach(function(conteudo) {
-        conteudo.style.display = 'none';
-    });
-
-    // Remove a classe 'active' de todas as abas
-    var tabs = document.querySelectorAll('.tab');
-    tabs.forEach(function(tab) {
-        tab.classList.remove('active');
-    });
-
-    // Mostra o conteúdo da aba clicada
-    document.getElementById('conteudo-' + aba).style.display = 'block';
-
-    // Adiciona a classe 'active' à aba clicada
-    element.classList.add('active');
-
-}
-
-// Define que a aba "Dashboard" está ativa ao carregar a página
-window.onload = function() {
-    mostrarConteudo('parceiros', document.querySelector('.tab.active'));
-};
-
 // Função para abrir o conteúdo da notificação clicada
 function abrirNotificacao(id) {
     alert('Abrindo conteúdo da notificação ' + id);
@@ -93,4 +66,43 @@ function atualizarContagemNotificacoes(contagem) {
     const countElement = document.getElementById('notificacao-count');
     countElement.textContent = contagem;
     countElement.style.display = contagem > 0 ? 'block' : 'none';
+}
+
+// Define que a aba "Dashboard" está ativa ao carregar a página
+window.onload = function() {
+    mostrarConteudo('dashboard', document.querySelector('.tab.active'));
+};
+// Função para alternar entre abas principais
+function mostrarConteudo(conteudoId, elemento) {
+    // Esconde todos os conteúdos
+    const conteudos = document.querySelectorAll('.conteudo-aba');
+    conteudos.forEach(conteudo => conteudo.style.display = 'none');
+
+    // Remove a classe 'active' de todas as abas principais
+    const abas = document.querySelectorAll('.opcoes .tab');
+    abas.forEach(aba => aba.classList.remove('active'));
+
+    // Exibe o conteúdo correspondente e adiciona a classe 'active' à aba selecionada
+    document.getElementById('conteudo-' + conteudoId).style.display = 'block';
+    elemento.classList.add('active');
+
+    // Se "Gerenciamento" for clicado, exibir "Parceiros" por padrão
+    if (conteudoId === 'gerenciamento') {
+        mostrarConteudoGerenciamento('parceiros', document.querySelector('.opcoes-gerenciamento .tab'));
+    }
+}
+
+// Função para alternar entre sub-abas dentro de Gerenciamento
+function mostrarConteudoGerenciamento(conteudoId, elemento) {
+    // Esconde todos os conteúdos de gerenciamento
+    const conteudos = document.querySelectorAll('#conteudo-gerenciamento .conteudo-aba');
+    conteudos.forEach(conteudo => conteudo.style.display = 'none');
+
+    // Remove a classe 'active' de todas as sub-abas
+    const abas = document.querySelectorAll('.opcoes-gerenciamento .tab');
+    abas.forEach(aba => aba.classList.remove('active'));
+
+    // Exibe o conteúdo correspondente e adiciona a classe 'active' à sub-aba selecionada
+    document.getElementById('conteudo-' + conteudoId).style.display = 'block';
+    elemento.classList.add('active');
 }
