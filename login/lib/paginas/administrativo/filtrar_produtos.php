@@ -73,6 +73,10 @@ $totalProdutos = $result->num_rows;
 
 // Exibe a tabela apenas se houver produtos
 if ($totalProdutos > 0) {
+    echo "<table>";
+    /*echo "<thead><tr><th>Nome Fantasia</th><th>Cidade/Estado</th><th>Categoria</th><th>Status</th><th>Ações</th></tr></thead>";*/
+    echo "<tbody>";
+
     // Exibe os produtos
     while ($produto = $result->fetch_assoc()) {
         // Obtém a primeira imagem
@@ -81,7 +85,7 @@ if ($totalProdutos > 0) {
 
         echo "<tr>";
         echo "<td>" . date('d/m/Y', strtotime($produto['data'])) . "</td>";
-        echo "<td><img src='../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='logo-produto'></td>";
+        echo "<td><img src='../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='imagem'></td>";
         echo "<td>" . htmlspecialchars($produto['nome_produto']) . "</td>";
         echo "<td>" . htmlspecialchars($produto['categoria']) . "</td>";
         echo "<td><a href='detalhes_produto.php?id=" . $produto['id_produto'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
@@ -89,9 +93,22 @@ if ($totalProdutos > 0) {
     }
 
     echo '</tbody>';
-    echo '</table>';
+    echo "</table>";
+
 } else {
-    echo "<p>Nenhum produto encontrado.</p>";
+    echo "<tr><td colspan='100%'><div class='msg'>Nenhum produto encontrado.</div></td></tr>";
 }
 
 ?>
+<style>
+.msg {
+    text-align: center;
+    font-weight: bold;
+    width: 100%;
+    padding: 15px 0;
+    background-color: #f8f8f8;
+    border: 0px solid #ddd;
+    color: dimgray;
+}
+
+</style>

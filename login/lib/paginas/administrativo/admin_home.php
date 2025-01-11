@@ -165,12 +165,12 @@
                 margin-top: 0px;
                 padding: auto;
             }
-            #conteudo-parceiros, #conteudo-produtos{
+            #conteudo-parceiros, #conteudo-clientes,#conteudo-produtos{
                 background-color: #fff;
             }
 
             /* Estilização da tabela de parceiros e produtos */
-            .tabela-parceiros, .tabela-produtos {
+            .tabela-parceiros, .tabela-clientes, .tabela-produtos {
                 width: 100%;
                 border-collapse: collapse;
                 border-radius: 8px;
@@ -179,37 +179,45 @@
                 padding: 0; /* Remove qualquer padding interno */
             }
             /* Ajuste para as células da tabela */
-            .tabela-parceiros th, .tabela-produtos th,
-            .tabela-parceiros td, .tabela-produtos td {
-                padding: 12px;
+            .tabela-parceiros th, .tabela-clientes th, .tabela-produtos th,
+            .tabela-parceiros td, .tabela-clientes td, .tabela-produtos td {
+                padding: 5px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
             }
             
 
-            .tabela-parceiros th, .tabela-produtos th {
+            .tabela-parceiros th,  .tabela-clientes th,.tabela-produtos th {
                 background-color: #f4f4f4;
                 font-weight: bold;
-                border-radius: 8px;
+                border-radius: 0px;
             }
 
-            .tabela-parceiros img.logo-parceiro {
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
+            /*.tabela-parceiros img.imagem {
+                width: 80px;
+                height: 80px;
                 object-fit: cover;
+                border-radius: 10px;
+                border: 1px solid #ddd;
             }
 
-            .tabela-parceiros .detalhes-link, .tabela-produtos .detalhes-link {
+            .tabela-clientes img.imagem {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 10px;
+                border: 1px solid #ddd;
+            }*/
+            .tabela-parceiros .detalhes-link, .tabela-clientes .detalhes-link,.tabela-produtos .detalhes-link {
                 color: #007bff;
                 text-decoration: none;
                 font-weight: bold;
             }
 
-            .tabela-parceiros .detalhes-link:hover, .tabela-produtos .detalhes-link:hover {
+            .tabela-parceiros .detalhes-link:hover, .tabela-clientes .detalhes-link:hover, .tabela-produtos .detalhes-link:hover {
                 text-decoration: underline;
             }
-            .logo-produto {
+            .imagem {
                 width: 80px;
                 height: 80px;
                 object-fit: cover;
@@ -253,7 +261,7 @@
     width: 200px;
 }
 
-.filtros-produtos button {
+.filtrar {
     background-color: #007bff; /* Cor de fundo azul */
     color: #fff; /* Cor do texto */
     border: none; /* Sem borda */
@@ -264,16 +272,16 @@
     transition: background-color 0.3s ease; /* Transição suave para o hover */
 }
 
-.filtros-produtos button:hover {
+.filtrar:hover {
     background-color: #0056b3; /* Cor de fundo mais escura no hover */
 }
 
-.filtros-produtos button:active {
+.filtrar:active {
     background-color: #003f7f; /* Cor mais escura quando pressionado */
 }
 
 @media (max-width: 768px) {
-    .filtros-produtos button {
+    /*.filtros-produtos*/ .filtrar {
         width: 100%;
         font-size: 14px;
         padding: 12px;
@@ -390,6 +398,9 @@
                 <div class="tab active" onclick="mostrarConteudoGerenciamento('parceiros',this)">
                     <span>Parceiros</span>
                 </div>
+                <div class="tab" onclick="mostrarConteudoGerenciamento('clientes',this)">
+                    <span>Clientes</span>
+                </div>
                 <div class="tab" onclick="mostrarConteudoGerenciamento('produtos',this)">
                     <span>Produtos</span>
                 </div>
@@ -397,6 +408,74 @@
 
             <!-- Conteúdos correspondentes às abas -->
             <div id="conteudo-parceiros" class="conteudo-aba" style="display: block;">
+                <div class="filtros-parceiros">
+                    <label for="cidade">
+                        Cidade:
+                        <select name="cidade" id="cidade">
+                            <option value="">Todas as Cidades</option>
+                            <?php
+                            // Consulta SQL para obter cidades únicas
+                            $queryCidade = "SELECT DISTINCT estado, cidade FROM meus_parceiros ORDER BY cidade ASC";
+                            $resultCidades = $mysqli->query($queryCidade);
+
+                            if ($resultCidades->num_rows > 0) {
+                                while ($cidade = $resultCidades->fetch_assoc()) {
+                                    // Formata o nome da cidade no formato "São Paulo / SP"
+                                    $cidadeFormatada = htmlspecialchars($cidade['cidade']) . " / " . htmlspecialchars($cidade['estado']);
+                                    echo "<option value='" . htmlspecialchars($cidade['cidade']) . "'>" . $cidadeFormatada . "</option>";
+                                }
+                            } else {
+                                echo "<option value=''>Nenhuma cidade encontrada</option>";
+                            }
+                            ?>
+                            <input type="hidden" id="uf" name="uf" value="<?php echo isset($cidade['estado']) ? htmlspecialchars($cidade['estado']) : ''; ?>">
+                        </select>
+                    </label>
+
+                    <label for="categoriaPareceiro">
+                        Categoria:
+                        <select name="categoriaPareceiro" id="categoriaPareceiro">
+                            <option value="">Todas as Categorias</option>
+                            <?php
+                            $queryCategorias = "SELECT DISTINCT id, categoria FROM meus_parceiros ORDER BY categoria ASC";
+                            $resultCategorias = $mysqli->query($queryCategorias);
+
+                            if ($resultCategorias->num_rows > 0) {
+                                while ($categoria = $resultCategorias->fetch_assoc()) {
+                                    echo "<option value='" . htmlspecialchars($categoria['categoria']) . "'>" . htmlspecialchars($categoria['categoria']) . "</option>";
+                                }                                
+                            } else {
+                                echo "<option value=''>Nenhuma categoria encontrada</option>";
+                            }
+                            ?>
+                        </select>
+                    </label>
+
+                    <!-- Filtros com checkboxes -->
+                    <label for="ativoPar">
+                        <input type="checkbox" name="statusParc[]" value="ativo" id="ativoPar"> Ativo
+                    </label>
+                    <label for="inativoPar">
+                        <input type="checkbox" name="statusParc[]" value="inativo" id="inativoPar"> Inativo
+                    </label>
+
+                    <button class="filtrar" type="button" onclick="filtrarParceiros()">
+                        🔍 Filtrar
+                    </button>
+                    <?php
+                        include('../../conexao.php');
+
+                        // Consulta SQL para carregar os produtos
+                        $sql = "SELECT * FROM meus_parceiros ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        // Conta o número total de produtos carregados
+                        $totalParceiros = $result->num_rows;
+
+                    ?>
+                    <span id="total-parceiros" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de parceiros: <?php echo $totalParceiros; ?></span>
+                </div>
+
                 <table class="tabela-parceiros">
                     <thead>
                         <tr>
@@ -407,7 +486,7 @@
                             <th>Detalhes</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="parceiros-tabela">
                         <?php
                         include('../../conexao.php');
                         $sql = "SELECT id, data_cadastro, logo, nomeFantasia, categoria FROM meus_parceiros ORDER BY data_cadastro DESC";
@@ -417,7 +496,7 @@
                             while ($parceiro = $result->fetch_assoc()) {
                                 echo "<tr>";
                                 echo "<td>" . date('d/m/Y', strtotime($parceiro['data_cadastro'])) . "</td>";
-                                echo "<td><img src='../parceiros/arquivos/" . $parceiro['logo'] . "' alt='Logo' class='logo-parceiro'></td>";
+                                echo "<td><img src='../parceiros/arquivos/" . $parceiro['logo'] . "' alt='Logo' class='imagem'></td>";
                                 echo "<td>" . htmlspecialchars($parceiro['nomeFantasia']) . "</td>";
                                 echo "<td>" . htmlspecialchars($parceiro['categoria']) . "</td>";
                                 echo "<td><a href='detalhes_parceiro.php?id=" . $parceiro['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
@@ -431,7 +510,92 @@
                 </table>
             </div>
 
-            
+            <!-- Conteúdos correspondentes às abas -->
+            <div id="conteudo-clientes" class="conteudo-aba" style="display: block;">
+                <div class="filtros-clientes">
+                    <label for="cidade">
+                        Cidade:
+                        <select name="cidade" id="cidade">
+                            <option value="">Todas as Cidades</option>
+                            <?php
+                            // Consulta SQL para obter cidades únicas
+                            $queryCidade = "SELECT DISTINCT uf, cidade FROM meus_clientes ORDER BY cidade ASC";
+                            $resultCidades = $mysqli->query($queryCidade);
+
+                            if ($resultCidades->num_rows > 0) {
+                                while ($cidade = $resultCidades->fetch_assoc()) {
+                                    // Formata o nome da cidade no formato "São Paulo / SP"
+                                    $cidadeFormatada = htmlspecialchars($cidade['cidade']) . " / " . htmlspecialchars($cidade['uf']);
+                                    echo "<option value='" . htmlspecialchars($cidade['cidade']) . "'>" . $cidadeFormatada . "</option>";
+                                }
+                            } else {
+                                echo "<option value=''>Nenhuma cidade encontrada</option>";
+                            }
+                            ?>
+                            <input type="hidden" id="uf" name="uf" value="<?php echo isset($cidade['uf']) ? htmlspecialchars($cidade['uf']) : ''; ?>">
+                        </select>
+                    </label>
+
+                    <!-- Filtros com checkboxes -->
+                    <label for="ativoCli">
+                        <input type="checkbox" name="statusCli[]" value="ativo" id="ativoCli"> Ativo
+                    </label>
+                    <label for="inativoCli">
+                        <input type="checkbox" name="statusCli[]" value="inativo" id="inativoCli"> Inativo
+                    </label>
+                    <label for="crediario">
+                        <input type="checkbox" name="statusCli[]" value="crediario" id="crediario"> Crediário
+                    </label>
+
+                    <button class="filtrar" type="button" onclick="filtrarClientes()">
+                        🔍 Filtrar
+                    </button>
+                    <?php
+                        include('../../conexao.php');
+
+                        // Consulta SQL para carregar os produtos
+                        $sql = "SELECT * FROM meus_clientes ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        // Conta o número total de produtos carregados
+                        $totalClientes = $result->num_rows;
+
+                    ?>
+                    <span id="total-clientes" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de clientes: <?php echo $totalClientes; ?></span>
+                </div>
+
+                <table class="tabela-clientes">
+                    <thead>
+                        <tr>
+                            <th>Data de Cadastro</th>
+                            <th>Imagem</th>
+                            <th>Nome Completo</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientes-tabela">
+                        <?php
+                        include('../../conexao.php');
+                        $sql = "SELECT * FROM meus_clientes ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            while ($cliente = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . date('d/m/Y', strtotime($cliente['data_cadastro'])) . "</td>";
+                                echo "<td><img src='../clientes/arquivos/" . $cliente['imagem'] . "' alt='sem imagem' class='imagem'></td>";
+                                echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
+                                echo "<td><a href='detalhes_cliente.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>Nenhum cliente encontrado.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+
             <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
                 <div class="filtros-produtos">
                     <label for="categoria">
@@ -473,7 +637,7 @@
                         <input type="checkbox" name="status[]" value="frete-gratis" id="frete-gratis"> Frete Grátis
                     </label>
 
-                    <button type="button" onclick="filtrarProdutos()">
+                    <button class="filtrar" type="button" onclick="filtrarProdutos()">
                         🔍 Filtrar
                     </button>
                     <?php
@@ -488,8 +652,6 @@
 
                     ?>
                     <span id="total-produtos" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de produtos: <?php echo $totalProdutos; ?></span>
-
-
                 </div>
 
                 <table class="tabela-produtos">
@@ -519,7 +681,7 @@
 
                                 echo "<tr>";
                                 echo "<td>" . date('d/m/Y', strtotime($produto['data'])) . "</td>";
-                                echo "<td><img src='../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='logo-produto'></td>";
+                                echo "<td><img src='../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='imagem'></td>";
                                 echo "<td>" . htmlspecialchars($produto['nome_produto']) . "</td>";
                                 echo "<td>" . htmlspecialchars($produto['categoria']) . "</td>";
                                 echo "<td><a href='detalhes_produto.php?id=" . $produto['id_produto'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
@@ -613,33 +775,103 @@
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 2000);
 
-        function filtrarProdutos() {
-    // Obtém os valores dos filtros
-    const categoria = document.getElementById('categoria').value;
-    const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
-        .map(checkbox => checkbox.value);
+        function atualizarUF() {
+            const cidadeSelect = document.getElementById('cidade');
+            const ufInput = document.getElementById('uf');
 
-    // Cria uma requisição AJAX
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'filtrar_produtos.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    // Quando a requisição for concluída, atualiza a tabela
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            document.getElementById('produtos-tabela').innerHTML = xhr.responseText;
-
-            // Conta o número de produtos carregados
-            const totalProdutos = document.querySelectorAll('#produtos-tabela tr').length;
-            document.getElementById('total-produtos').textContent = `Total de produtos: ${totalProdutos}`;
+            // Obtém o UF selecionado no atributo data-estado
+            const ufSelecionado = cidadeSelect.options[cidadeSelect.selectedIndex].getAttribute('data-estado');
+            ufInput.value = ufSelecionado || '';
         }
-    };
 
-    // Envia os dados dos filtros para o servidor
-    xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
-}
+        function filtrarParceiros() {
+            // Obtém os valores dos filtros
+            const cidade = document.getElementById('cidade').value;
+            const uf = document.getElementById('uf').value;
+            const categoria = document.getElementById('categoriaPareceiro').value;
+            const status = Array.from(document.querySelectorAll('input[name="statusParc[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_parceiros.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('parceiros-tabela').innerHTML = xhr.responseText;
+
+                    // Conta o número de parceiros carregados
+                    const linhasParceiros = document.querySelectorAll('#parceiros-tabela tr');
+                    const totalParceiros = Array.from(linhasParceiros).filter(linha => !linha.querySelector('.msg')).length;
+                    document.getElementById('total-parceiros').textContent = `Total de parceiros: ${totalParceiros}`;
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            const dados = `cidade=${encodeURIComponent(cidade)}&uf=${encodeURIComponent(uf)}&categoria=${encodeURIComponent(categoria)}&statusParc=${encodeURIComponent(JSON.stringify(status))}`;
+            xhr.send(dados);
+            //console.log(dados);
+        }
 
 
+        function filtrarClientes() {
+            // Obtém os valores dos filtros
+            const cidade = document.getElementById('cidade').value;
+            const uf = document.getElementById('uf').value;
+            const status = Array.from(document.querySelectorAll('input[name="statusCli[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_clientes.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('clientes-tabela').innerHTML = xhr.responseText;
+
+                // Conta o número de clientes carregados
+                const linhasClientes = document.querySelectorAll('#clientes-tabela tr');
+                const totalClientes = Array.from(linhasClientes).filter(linha => !linha.querySelector('.msg')).length;
+                document.getElementById('total-clientes').textContent = `Total de clientes: ${totalClientes}`;
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            const dados = `cidade=${encodeURIComponent(cidade)}&uf=${encodeURIComponent(uf)}&statusCli=${encodeURIComponent(JSON.stringify(status))}`;
+            xhr.send(dados);
+            //console.log(dados);
+        }
+
+        function filtrarProdutos() {
+            // Obtém os valores dos filtros
+            const categoria = document.getElementById('categoria').value;
+            const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_produtos.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('produtos-tabela').innerHTML = xhr.responseText;
+
+                    // Conta o número de produtos carregados
+                    const linhasProdutos = document.querySelectorAll('#produtos-tabela tr');
+                    const totalProdutos = Array.from(linhasProdutos).filter(linha => !linha.querySelector('.msg')).length;
+                    document.getElementById('total-produtos').textContent = `Total de produtos: ${totalProdutos}`;
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
+        }
 
     </script>
 
