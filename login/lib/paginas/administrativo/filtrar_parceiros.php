@@ -2,8 +2,8 @@
 include('../../conexao.php');
 
 // Obtém os filtros enviados
-$cidade = $_POST['cidade'];
-$uf = $_POST['uf'];
+$cidade = $_POST['cidadeParc'];
+$uf = $_POST['ufParc'];
 $categoria = $_POST['categoria'];
 $status = json_decode($_POST['statusParc'], true);
 

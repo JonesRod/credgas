@@ -165,12 +165,18 @@
                 margin-top: 0px;
                 padding: auto;
             }
-            #conteudo-parceiros, #conteudo-clientes,#conteudo-produtos{
+            #conteudo-parceiros, 
+            #conteudo-clientes, 
+            #conteudo-produtos,
+            #conteudo-crediario{
                 background-color: #fff;
             }
 
             /* Estilização da tabela de parceiros e produtos */
-            .tabela-parceiros, .tabela-clientes, .tabela-produtos {
+            .tabela-parceiros, 
+            .tabela-clientes, 
+            .tabela-produtos,
+            .tabela-crediario {
                 width: 100%;
                 border-collapse: collapse;
                 border-radius: 8px;
@@ -179,42 +185,42 @@
                 padding: 0; /* Remove qualquer padding interno */
             }
             /* Ajuste para as células da tabela */
-            .tabela-parceiros th, .tabela-clientes th, .tabela-produtos th,
-            .tabela-parceiros td, .tabela-clientes td, .tabela-produtos td {
+            .tabela-parceiros th, 
+            .tabela-clientes th, 
+            .tabela-produtos th,
+            .tabela-crediario th,
+            .tabela-parceiros td, 
+            .tabela-clientes td, 
+            .tabela-produtos td,
+            .tabela-crediario td {
                 padding: 5px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
             }
             
 
-            .tabela-parceiros th,  .tabela-clientes th,.tabela-produtos th {
+            .tabela-parceiros th, 
+            .tabela-clientes th, 
+            .tabela-produtos th,
+            .tabela-crediario th {
                 background-color: #f4f4f4;
                 font-weight: bold;
                 border-radius: 0px;
             }
 
-            /*.tabela-parceiros img.imagem {
-                width: 80px;
-                height: 80px;
-                object-fit: cover;
-                border-radius: 10px;
-                border: 1px solid #ddd;
-            }
-
-            .tabela-clientes img.imagem {
-                width: 80px;
-                height: 80px;
-                object-fit: cover;
-                border-radius: 10px;
-                border: 1px solid #ddd;
-            }*/
-            .tabela-parceiros .detalhes-link, .tabela-clientes .detalhes-link,.tabela-produtos .detalhes-link {
+            .tabela-parceiros .detalhes-link, 
+            .tabela-clientes .detalhes-link, 
+            .tabela-produtos .detalhes-link,
+            .tabela-crediario .detalhes-link {
                 color: #007bff;
                 text-decoration: none;
                 font-weight: bold;
             }
 
-            .tabela-parceiros .detalhes-link:hover, .tabela-clientes .detalhes-link:hover, .tabela-produtos .detalhes-link:hover {
+            .tabela-parceiros .detalhes-link:hover, 
+            .tabela-clientes .detalhes-link:hover, 
+            .tabela-produtos .detalhes-link:hover, 
+            .tabela-crediario .detalhes-link:hover {
                 text-decoration: underline;
             }
             .imagem {
@@ -226,33 +232,37 @@
             }
             /* Estilo dos filtros de produtos */
 /* Estilo dos filtros de produtos */
-.filtros-produtos {
+.filtros-parceiros, 
+.filtros-clientes, 
+.filtros-produtos, 
+.filtros-crediario {
     margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
 }
 
-.filtros-produtos label {
+.filtros-parceiros label, 
+.filtros-clientes label, 
+.filtros-produtos label, 
+.filtros-crediario label {
     display: flex;
     align-items: center;
     font-size: 14px;
     cursor: pointer;
 }
 
-.filtros-produtos select {
-    margin-left: 8px;
-    padding: 5px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-}
-
-.filtros-produtos input[type="checkbox"] {
+.filtros-parceiros input, 
+.filtros-clientes input, 
+.filtros-produtos input, 
+.filtros-crediario input[type="checkbox"] {
     margin-right: 5px;
 }
 /* Caixa de seleção estilizada */
-.filtros-produtos select {
+.filtros-parceiros select, 
+.filtros-clientes select, 
+.filtros-produtos select, 
+.filtros-crediario select {
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -404,14 +414,17 @@
                 <div class="tab" onclick="mostrarConteudoGerenciamento('produtos',this)">
                     <span>Produtos</span>
                 </div>
+                <div class="tab" onclick="mostrarConteudoGerenciamento('crediario',this)">
+                    <span>Crediáro</span>
+                </div>
             </div>
 
             <!-- Conteúdos correspondentes às abas -->
             <div id="conteudo-parceiros" class="conteudo-aba" style="display: block;">
                 <div class="filtros-parceiros">
-                    <label for="cidade">
+                    <label for="cidadeParc">
                         Cidade:
-                        <select name="cidade" id="cidade">
+                        <select name="cidadeParc" id="cidadeParc">
                             <option value="">Todas as Cidades</option>
                             <?php
                             // Consulta SQL para obter cidades únicas
@@ -428,7 +441,7 @@
                                 echo "<option value=''>Nenhuma cidade encontrada</option>";
                             }
                             ?>
-                            <input type="hidden" id="uf" name="uf" value="<?php echo isset($cidade['estado']) ? htmlspecialchars($cidade['estado']) : ''; ?>">
+                            <input type="hidden" id="ufParc" name="ufParc" value="<?php echo isset($cidade['estado']) ? htmlspecialchars($cidade['estado']) : ''; ?>">
                         </select>
                     </label>
 
@@ -513,9 +526,9 @@
             <!-- Conteúdos correspondentes às abas -->
             <div id="conteudo-clientes" class="conteudo-aba" style="display: block;">
                 <div class="filtros-clientes">
-                    <label for="cidade">
+                    <label for="cidadeCli">
                         Cidade:
-                        <select name="cidade" id="cidade">
+                        <select name="cidadeCli" id="cidadeCli">
                             <option value="">Todas as Cidades</option>
                             <?php
                             // Consulta SQL para obter cidades únicas
@@ -532,7 +545,7 @@
                                 echo "<option value=''>Nenhuma cidade encontrada</option>";
                             }
                             ?>
-                            <input type="hidden" id="uf" name="uf" value="<?php echo isset($cidade['uf']) ? htmlspecialchars($cidade['uf']) : ''; ?>">
+                            <input type="hidden" id="ufCli" name="ufCli" value="<?php echo isset($cidade['uf']) ? htmlspecialchars($cidade['uf']) : ''; ?>">
                         </select>
                     </label>
 
@@ -618,23 +631,29 @@
                     </label>
 
                     <!-- Filtros com checkboxes -->
-                    <label for="ativo">
-                        <input type="checkbox" name="status[]" value="ativo" id="ativo"> Ativo
+                    <label for="ativoPro">
+                        <input type="checkbox" name="statusPro[]" value="ativoPro" id="ativoPro"> Ativo
                     </label>
-                    <label for="inativo">
-                        <input type="checkbox" name="status[]" value="inativo" id="inativo"> Inativo
+                    <label for="inativoPro">
+                        <input type="checkbox" name="statusPro[]" value="inativoPro" id="inativoPro"> Inativo
+                    </label>
+                    <label for="crediarioVende">
+                        <input type="checkbox" name="statusPro[]" value="crediarioVende" id="crediarioVende"> Crediário
+                    </label>
+                    <label for="oculto">
+                        <input type="checkbox" name="statusPro[]" value="oculto" id="oculto"> Oculto
                     </label>
                     <label for="mais-vendidos">
-                        <input type="checkbox" name="status[]" value="mais-vendidos" id="mais-vendidos"> Mais Vendidos
+                        <input type="checkbox" name="statusPro[]" value="mais-vendidos" id="mais-vendidos"> Mais Vendidos
                     </label>
                     <label for="novidades">
-                        <input type="checkbox" name="status[]" value="novidades" id="novidades"> Novidades
+                        <input type="checkbox" name="statusPro[]" value="novidades" id="novidades"> Novidades
                     </label>
                     <label for="promocao">
-                        <input type="checkbox" name="status[]" value="promocao" id="promocao"> Promoção
+                        <input type="checkbox" name="statusPro[]" value="promocao" id="promocao"> Promoção
                     </label>
                     <label for="frete-gratis">
-                        <input type="checkbox" name="status[]" value="frete-gratis" id="frete-gratis"> Frete Grátis
+                        <input type="checkbox" name="statusPro[]" value="frete-gratis" id="frete-gratis"> Frete Grátis
                     </label>
 
                     <button class="filtrar" type="button" onclick="filtrarProdutos()">
@@ -695,6 +714,101 @@
                 </table>
 
             </div> 
+
+            <!-- Conteúdos correspondentes às abas -->
+            <div id="conteudo-crediario" class="conteudo-aba" style="display: block;">
+                <div class="filtros-crediario">
+                    <label for="cidadeCred">
+                        Cidade:
+                        <select name="cidadeCred" id="cidadeCred">
+                            <option value="">Todas as Cidades</option>
+                            <?php
+                            // Consulta SQL para obter cidades únicas
+                            $queryCidade = "SELECT DISTINCT uf, cidade FROM meus_clientes ORDER BY cidade ASC";
+                            $resultCidades = $mysqli->query($queryCidade);
+
+                            if ($resultCidades->num_rows > 0) {
+                                while ($cidade = $resultCidades->fetch_assoc()) {
+                                    // Formata o nome da cidade no formato "São Paulo / SP"
+                                    $cidadeFormatada = htmlspecialchars($cidade['cidade']) . " / " . htmlspecialchars($cidade['uf']);
+                                    echo "<option value='" . htmlspecialchars($cidade['cidade']) . "'>" . $cidadeFormatada . "</option>";
+                                }
+                            } else {
+                                echo "<option value=''>Nenhuma cidade encontrada</option>";
+                            }
+                            ?>
+                            <input type="hidden" id="ufCred" name="ufCred" value="<?php echo isset($cidade['uf']) ? htmlspecialchars($cidade['uf']) : ''; ?>">
+                        </select>
+                    </label>
+
+                    <!-- Filtros com checkboxes -->
+                    <label for="analise">
+                        <input type="checkbox" name="statusCred[]" value="analise" id="analise"> Em análise
+                    </label>
+                    <label for="ativoCred">
+                        <input type="checkbox" name="statusCred[]" value="ativoCred" id="ativoCred"> Ativo
+                    </label>
+                    <label for="reprovados">
+                        <input type="checkbox" name="statusCred[]" value="reprovados" id="reprovados"> Reprovados
+                    </label>
+                    <label for="emDia">
+                        <input type="checkbox" name="statusCred[]" value="emDia" id="emDia"> Em dia
+                    </label>
+                    <label for="atrasados">
+                        <input type="checkbox" name="statusCred[]" value="atrasados" id="atrasados"> Atrasados
+                    </label>
+                    <label for="inadimplentes">
+                        <input type="checkbox" name="statusCred[]" value="inadimplentes" id="inadimplentes"> Inadimplentes SPC
+                    </label>
+                    <button class="filtrar" type="button" onclick="filtrarCrediario()">
+                        🔍 Filtrar
+                    </button>
+                    <?php
+                        include('../../conexao.php');
+
+                        // Consulta SQL para carregar os produtos
+                        $sql = "SELECT * FROM meus_clientes ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        // Conta o número total de produtos carregados
+                        $totalClientes = $result->num_rows;
+
+                    ?>
+                    <span id="total-crediario" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de clientes: <?php echo $totalClientes; ?></span>
+                </div>
+
+                <table class="tabela-crediario">
+                    <thead>
+                        <tr>
+                            <th>Data da Aprovação</th>
+                            <th>Imagem</th>
+                            <th>Nome Completo</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crediario-tabela">
+                        <?php
+                        include('../../conexao.php');
+                        $sql = "SELECT * FROM meus_clientes ORDER BY data_cadastro DESC";
+                        $result = $mysqli->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            while ($cliente = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . date('d/m/Y', strtotime($cliente['data_crediario'])) . "</td>";
+                                echo "<td><img src='../clientes/arquivos/" . $cliente['imagem'] . "' alt='sem imagem' class='imagem'></td>";
+                                echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
+                                echo "<td><a href='detalhes_crediario.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>Nenhum cliente encontrado.</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            
         </div>
     </main>
 
@@ -775,19 +889,28 @@
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 2000);
 
-        function atualizarUF() {
-            const cidadeSelect = document.getElementById('cidade');
-            const ufInput = document.getElementById('uf');
+        function atualizarUFParceiros() {
+            const cidadeSelect = document.getElementById('cidadeParc');
+            const ufInput = document.getElementById('ufParc');
 
             // Obtém o UF selecionado no atributo data-estado
             const ufSelecionado = cidadeSelect.options[cidadeSelect.selectedIndex].getAttribute('data-estado');
             ufInput.value = ufSelecionado || '';
         }
 
+        function atualizarUFClientes() {
+            const cidadeSelect = document.getElementById('cidadeCli');
+            const ufInput = document.getElementById('ufCli');
+
+            // Obtém o UF selecionado no atributo data-estado
+            const ufSelecionado = cidadeSelect.options[cidadeSelect.selectedIndex].getAttribute('data-estado');
+            ufInput.value = ufSelecionado || '';
+        }
+        
         function filtrarParceiros() {
             // Obtém os valores dos filtros
-            const cidade = document.getElementById('cidade').value;
-            const uf = document.getElementById('uf').value;
+            const cidade = document.getElementById('cidadeParc').value;
+            const uf = document.getElementById('ufParc').value;
             const categoria = document.getElementById('categoriaPareceiro').value;
             const status = Array.from(document.querySelectorAll('input[name="statusParc[]"]:checked'))
                 .map(checkbox => checkbox.value);
@@ -810,16 +933,15 @@
             };
 
             // Envia os dados dos filtros para o servidor
-            const dados = `cidade=${encodeURIComponent(cidade)}&uf=${encodeURIComponent(uf)}&categoria=${encodeURIComponent(categoria)}&statusParc=${encodeURIComponent(JSON.stringify(status))}`;
+            const dados = `cidadeParc=${encodeURIComponent(cidade)}&ufParc=${encodeURIComponent(uf)}&categoria=${encodeURIComponent(categoria)}&statusParc=${encodeURIComponent(JSON.stringify(status))}`;
             xhr.send(dados);
             //console.log(dados);
         }
 
-
         function filtrarClientes() {
             // Obtém os valores dos filtros
-            const cidade = document.getElementById('cidade').value;
-            const uf = document.getElementById('uf').value;
+            const cidade = document.getElementById('cidadeCli').value;
+            const uf = document.getElementById('ufCli').value;
             const status = Array.from(document.querySelectorAll('input[name="statusCli[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
@@ -841,7 +963,7 @@
             };
 
             // Envia os dados dos filtros para o servidor
-            const dados = `cidade=${encodeURIComponent(cidade)}&uf=${encodeURIComponent(uf)}&statusCli=${encodeURIComponent(JSON.stringify(status))}`;
+            const dados = `cidadeCli=${encodeURIComponent(cidade)}&ufCli=${encodeURIComponent(uf)}&statusCli=${encodeURIComponent(JSON.stringify(status))}`;
             xhr.send(dados);
             //console.log(dados);
         }
@@ -849,7 +971,7 @@
         function filtrarProdutos() {
             // Obtém os valores dos filtros
             const categoria = document.getElementById('categoria').value;
-            const status = Array.from(document.querySelectorAll('input[name="status[]"]:checked'))
+            const status = Array.from(document.querySelectorAll('input[name="statusPro[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
             // Cria uma requisição AJAX
@@ -870,7 +992,37 @@
             };
 
             // Envia os dados dos filtros para o servidor
-            xhr.send('categoria=' + categoria + '&status=' + JSON.stringify(status));
+            xhr.send('categoria=' + categoria + '&statusPro=' + JSON.stringify(status));
+        }
+
+        function filtrarCrediario() {
+            // Obtém os valores dos filtros
+            const cidade = document.getElementById('cidadeCred').value;
+            const uf = document.getElementById('ufCred').value;
+            const status = Array.from(document.querySelectorAll('input[name="statusCred[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_crediario.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('crediario-tabela').innerHTML = xhr.responseText;
+
+                // Conta o número de clientes carregados
+                const linhasCrediario = document.querySelectorAll('#crediario-tabela tr');
+                const totalCrediario = Array.from(linhasCrediario).filter(linha => !linha.querySelector('.msg')).length;
+                document.getElementById('total-crediario').textContent = `Total de clientes: ${totalCrediario}`;
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            const dados = `cidadeCred=${encodeURIComponent(cidade)}&ufCred=${encodeURIComponent(uf)}&statusCred=${encodeURIComponent(JSON.stringify(status))}`;
+            xhr.send(dados);
+            //console.log(dados);
         }
 
     </script>

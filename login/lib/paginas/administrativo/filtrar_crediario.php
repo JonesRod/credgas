@@ -2,9 +2,9 @@
 include('../../conexao.php');
 
 // Obtém os filtros enviados
-$cidade = $_POST['cidadeCli'];
-$uf = $_POST['ufCli'];
-$status = json_decode($_POST['statusCli'], true);
+$cidade = $_POST['cidadeCred'];
+$uf = $_POST['ufCred'];
+$status = json_decode($_POST['statusCred'], true);
 
 // Monta a consulta SQL
 $sql = "SELECT * FROM meus_clientes WHERE 1=1";
@@ -21,15 +21,25 @@ if (!empty($uf)) {
 
 // Filtro por status
 $statusConditions = [];
+
 if (!empty($status)) {
-    if (in_array("ativo", $status)) {
-        $statusConditions[] = "status = 'ATIVO'";
+    if (in_array("analise", $status)) {
+        $statusConditions[] = "situacao_crediario = 'em analise'";
     }
-    if (in_array("inativo", $status)) {
-        $statusConditions[] = "status = 'INATIVO'";
-    }
-    if (in_array("crediario", $status)) {
+    if (in_array("ativoCred", $status)) {
         $statusConditions[] = "status_crediario = 'Aprovado'";
+    }
+    if (in_array("reprovados", $status)) {
+        $statusConditions[] = "status_crediario = 'Reprovado'";
+    }
+    if (in_array("emDia", $status)) {
+        $statusConditions[] = "situacao_crediario = 'em dia'";
+    }
+    if (in_array("atrasados", $status)) {
+        $statusConditions[] = "situacao_crediario = 'atrasado'";
+    }
+    if (in_array("inadimplentes", $status)) {
+        $statusConditions[] = "situacao_crediario = 'inadimplente'";
     }
 }
 if (!empty($statusConditions)) {
@@ -58,10 +68,10 @@ if ($totalClientes > 0) {
     echo "<tbody>";
     while ($cliente = $result->fetch_assoc()) {
         echo "<tr>";
-        echo "<td>" . date('d/m/Y', strtotime($cliente['data_cadastro'])) . "</td>";
+        echo "<td>" . date('d/m/Y', strtotime($cliente['data_crediario'])) . "</td>";
         echo "<td><img src='../clientes/arquivos/" . $cliente['imagem'] . "' alt='sem imagem' class='imagem'></td>";
         echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
-        echo "<td><a href='detalhes_cliente.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+        echo "<td><a href='detalhes_crediario.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
         echo "</tr>";
     }
     echo '</tbody>';

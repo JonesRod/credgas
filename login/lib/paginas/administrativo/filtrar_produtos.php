@@ -3,7 +3,7 @@ include('../../conexao.php');
 
 // Obtém os filtros enviados
 $categoria = $_POST['categoria'];
-$status = json_decode($_POST['status'], true);
+$status = json_decode($_POST['statusPro'], true);
 
 // Monta a consulta SQL
 $sql = "SELECT * FROM produtos WHERE 1=1";
@@ -18,11 +18,17 @@ $statusConditions = [];
 
 if (!empty($status)) {
     // Filtra por status "ativo" ou "inativo"
-    if (in_array("ativo", $status)) {
+    if (in_array("ativoPro", $status)) {
         $statusConditions[] = "produto_aprovado = 'sim'";
     }
     if (in_array("inativo", $status)) {
         $statusConditions[] = "produto_aprovado = 'nao'";
+    }
+    if (in_array("crediarioVende", $status)) {
+        $statusConditions[] = "vende_crediario = 'sim'";
+    }
+    if (in_array("oculto", $status)) {
+        $statusConditions[] = "oculto = 'sim'";
     }
 
     // Filtra por novidades (últimos 30 dias)
