@@ -512,7 +512,7 @@
                                 echo "<td><img src='../parceiros/arquivos/" . $parceiro['logo'] . "' alt='Logo' class='imagem'></td>";
                                 echo "<td>" . htmlspecialchars($parceiro['nomeFantasia']) . "</td>";
                                 echo "<td>" . htmlspecialchars($parceiro['categoria']) . "</td>";
-                                echo "<td><a href='detalhes_parceiro.php?id=" . $parceiro['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "<td><a href='detalhes/detalhes_parceiro.php?id=" . $parceiro['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
                                 echo "</tr>";
                             }
                         } else {
