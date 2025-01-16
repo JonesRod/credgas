@@ -598,7 +598,7 @@
                                 echo "<td>" . date('d/m/Y', strtotime($cliente['data_cadastro'])) . "</td>";
                                 echo "<td><img src='../clientes/arquivos/" . $cliente['imagem'] . "' alt='sem imagem' class='imagem'></td>";
                                 echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
-                                echo "<td><a href='detalhes_cliente.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                                echo "<td><a href='detalhes/detalhes_cliente.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
                                 echo "</tr>";
                             }
                         } else {

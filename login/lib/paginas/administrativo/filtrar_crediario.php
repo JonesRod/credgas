@@ -33,7 +33,7 @@ if (!empty($status)) {
         $statusConditions[] = "status_crediario = 'Reprovado'";
     }
     if (in_array("emDia", $status)) {
-        $statusConditions[] = "situacao_crediario = 'em dia'";
+        $statusConditions[] = "situacao_crediario = '' or situacao_crediario = 'em dia'";
     }
     if (in_array("atrasados", $status)) {
         $statusConditions[] = "situacao_crediario = 'atrasado'";
