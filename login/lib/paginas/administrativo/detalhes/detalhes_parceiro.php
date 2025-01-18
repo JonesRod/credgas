@@ -594,7 +594,7 @@ $parceiro = $result->fetch_assoc();
         document.getElementById('loading').style.display = 'flex';
     }
 
-    function filtrarProdutos() {
+        function filtrarProdutos() {
             // Obtém os valores dos filtros
             const id = document.getElementById('id').value;
             const categoria = document.getElementById('categoria').value;
