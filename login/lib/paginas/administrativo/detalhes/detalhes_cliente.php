@@ -122,12 +122,112 @@ img{
                 padding: 8px 15px;
             }
         }
+
+            #conteudo-compras{
+                background-color: #fff;
+            }
+
+            /* Estilização da tabela de parceiros e produtos */
+            .tabela-compras {
+                width: 100%;
+                border-collapse: collapse;
+                border-radius: 8px;
+                background-color: #fff;
+                margin: 0; /* Remove as margens */
+                padding: 0; /* Remove qualquer padding interno */
+            }
+            /* Ajuste para as células da tabela */
+            .tabela-compras th,
+            .tabela-compras td {
+                padding: 5px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .tabela-compras th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+                border-radius: 0px;
+            }
+
+            .tabela-compras .detalhes-link {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+            .tabela-compras .detalhes-link:hover {
+                text-decoration: underline;
+            }
+            .imagem {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 10px;
+                border: 1px solid #ddd;
+            }
+            /* Estilo dos filtros de produtos */
+/* Estilo dos filtros de produtos */
+.filtros-compras {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filtros-compras label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.filtros-compras input[type="checkbox"] {
+    margin-right: 5px;
+}
+/* Caixa de seleção estilizada */
+.filtros-compras select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    width: 200px;
+}
+
+.filtrar {
+    background-color: #007bff; /* Cor de fundo azul */
+    color: #fff; /* Cor do texto */
+    border: none; /* Sem borda */
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 5px 20px; /* Espaçamento interno */
+    font-size: 15px; /* Tamanho da fonte */
+    cursor: pointer; /* Cursor de ponteiro */
+    transition: background-color 0.3s ease; /* Transição suave para o hover */
+}
+
+.filtrar:hover {
+    background-color: #0056b3; /* Cor de fundo mais escura no hover */
+}
+
+.filtrar:active {
+    background-color: #003f7f; /* Cor mais escura quando pressionado */
+}
+
+@media (max-width: 768px) {
+    /*.filtros-produtos*/ .filtrar {
+        width: 100%;
+        font-size: 14px;
+        padding: 12px;
+    }
+}
     </style>
 </head>
 <body>
     <div class="container">
         <?php if ($cliente): ?>
         <h2>Informações do Cliente</h2>
+        <input type="hidden" id="id" value="<?php echo htmlspecialchars($cliente['id']); ?>">
         <div class="img">
             <img src="<?php echo '../../clientes/arquivos/'.htmlspecialchars($cliente['imagem']); ?>" alt="sem imagem">
         </div>       
@@ -175,7 +275,7 @@ img{
 
                     if ($resultFormasPagamento->num_rows > 0) {
                         while ($forma = $resultFormasPagamento->fetch_assoc()) {
-                            echo "<option value='" . htmlspecialchars($forma['id']) . "'>" . htmlspecialchars($forma['nome']) . "</option>";
+                            echo "<option value='" . htmlspecialchars($forma['nome']) . "'>" . htmlspecialchars($forma['nome']) . "</option>";
                         }
                     } else {
                         echo "<option value=''>Nenhuma forma de pagamento encontrada</option>";
@@ -183,7 +283,7 @@ img{
                     ?>
                 </select>
 
-                <button id="filtrar" onclick="filtrarCompras()">Filtrar</button>
+                <button class="filtrar" id="filtrar" onclick="filtrarCompras()">Filtrar</button>
                 <?php
                     include('../../../conexao.php');
 
@@ -223,10 +323,10 @@ img{
 
                             echo "<tr>";
                             echo "<td>" . date('d/m/Y', strtotime($compras['data'])) . "</td>";
-                            echo "<td>" . htmlspecialchars($compras['nu_pedido']) . "</td>";
+                            echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
                             echo "<td>" . htmlspecialchars($compras['produtos']) . "</td>";
-                            echo "<td>" . htmlspecialchars($compras['valor_produtos']) . "</td>";
-                            echo "<td><a href='detalhes_compras.php?id=" . $compras['id_cliente'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                            echo "<td>R$ " . htmlspecialchars(number_format($compras['valor_produtos'], 2, ',', '.')) . "</td>";
+                            echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
                             echo "</tr>";
                         }
                     } else {
@@ -250,32 +350,46 @@ img{
     </div>
 </body>
     <script>
-        function filtrarCompras() {
-            // Obtém os valores dos filtros
-            const dataInicio = document.getElementById('data_inicio').value;
-            const dataFim = document.getElementById('data_fim').value;
-            const formaPagamento = document.getElementById('forma_pagamento').value;
+function filtrarCompras() {
+    // Obtém os valores dos filtros
+    const id = document.getElementById('id').value;
+    const dataInicio = document.getElementById('data_inicio').value;
+    const dataFim = document.getElementById('data_fim').value;
+    const formaPagamento = document.querySelector('#forma_pagamento').value;
 
-            // Cria uma requisição AJAX
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'filtrar_compras.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // Valida os campos obrigatórios
+    if (!dataInicio || !dataFim) {
+        alert("Por favor, preencha as datas de início e fim.");
+        return;
+    }
 
-            // Quando a requisição for concluída, atualiza a tabela
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    document.getElementById('compras-tabela').innerHTML = xhr.responseText;
+    // Cria uma requisição AJAX
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'filtrar_compras.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-                    // Conta o número de produtos carregados
-                    const linhasCompras = document.querySelectorAll('#compras-tabela tr');
-                    const totalComprar = linhasCompras.length;
-                    document.getElementById('total-compras').textContent = `Total de compras: ${totalProdutos}`;
-                }
-            };
+    // Dados enviados na requisição
+    const params = `id_cliente=${id}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
+    console.log("Enviando dados:", params); // Debug
 
-            // Envia os dados dos filtros para o servidor
-            xhr.send(`data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`);
+    // Quando a requisição for concluída, atualiza a tabela
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            document.getElementById('compras-tabela').innerHTML = xhr.responseText;
+
+            // Conta o número de compras carregadas
+            const linhasCompras = document.querySelectorAll('#compras-tabela tr');
+            const totalComprar = linhasCompras.length;
+            document.getElementById('total-compras').textContent = `Total de compras: ${totalComprar}`;
+        } else {
+            console.error("Erro ao carregar dados:", xhr.statusText);
         }
+    };
+
+    // Envia os dados dos filtros para o servidor
+    xhr.send(params);
+}
+
 
     </script>
 </html>
