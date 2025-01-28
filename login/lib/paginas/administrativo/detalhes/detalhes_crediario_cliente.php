@@ -226,12 +226,23 @@ img{
 <body>
     <div class="container">
         <?php if ($cliente): ?>
-        <h2>Informações do Cliente</h2>
+        <h2>Informações do Crediario do Cliente</h2>
         <input type="hidden" id="id" value="<?php echo htmlspecialchars($cliente['id']); ?>">
         <div class="img">
             <img src="<?php echo '../../clientes/arquivos/'.htmlspecialchars($cliente['imagem']); ?>" alt="sem imagem">
         </div>       
-        <div class="info"><strong>Data de Cadastro:</strong> <?php echo date("d/m/Y", strtotime($cliente['data_cadastro'])); ?></div>
+        <div class="info"><strong>Data de Cadastro:</strong> <?php echo date("d/m/Y", strtotime($cliente['data_crediario'])); ?></div>
+        <div class="info"><strong>Status:</strong> 
+            <?php 
+                $status = htmlspecialchars($cliente['status_crediario']);
+                if($status = 'Aprovado'){
+                    echo 'ATIVO';
+                }else{
+                    echo 'INATIVO'; 
+                }
+                
+            ?>
+        </div>
         <div class="info"><strong>Nome:</strong> <?php echo htmlspecialchars($cliente['nome_completo']); ?></div>
         <div class="info"><strong>CPF:</strong> <?php echo htmlspecialchars($cliente['cpf']); ?></div>
         <div class="info"><strong>Data de Nascimento:</strong> <?php echo date("d/m/Y", strtotime($cliente['nascimento'])); ?></div>
@@ -253,16 +264,22 @@ img{
         <div class="info"><strong>Bairro:</strong> <?php echo htmlspecialchars($cliente['bairro']); ?></div>
 
         <hr>
-        <h3>Histórico de compras</h3>
+        <h3>Compras á pagar</h3>
 
         <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
             <div class="filtros-compras">
                 <!-- Filtro por intervalo de datas -->
                 <label for="data_inicio">Data Início:</label>
-                <input type="date" id="data_inicio" name="data_inicio">
+                <?php
+                    $dataSeteDiasAtras = date('Y-m-d', strtotime('-7 days'));
+                ?>
+                <input type="date" id="data_inicio" name="data_inicio" value="<?php echo $dataSeteDiasAtras; ?>">
 
                 <label for="data_fim">Data Fim:</label>
-                <input type="date" id="data_fim" name="data_fim">
+                <?php
+                    $dataHoje = date('Y-m-d');
+                ?>
+                <input type="date" id="data_fim" name="data_fim" value="<?php echo $dataHoje; ?>">
 
                 <!-- Filtro por formas de pagamento carregadas do banco -->
                 <label for="forma_pagamento">Forma de Pagamento:</label>
@@ -286,11 +303,20 @@ img{
                 <button class="filtrar" id="filtrar" onclick="filtrarCompras()">Filtrar</button>
                 <?php
                     include('../../../conexao.php');
+                    // Dados do filtro
+                    $data_inicio = $dataSeteDiasAtras;
+                    $data_fim = $dataHoje;
 
                     // Consulta SQL para carregar os produtos
-                    $sql = "SELECT * FROM vendas WHERE id_cliente = $id_cliente";
-                    $result = $mysqli->query($sql);
+                    $sql = "SELECT * FROM vendas_crediario WHERE id_cliente = $id_cliente";
+                    
+                    // Aplica os filtros
+                    if (!empty($dataInicio) && !empty($dataFim)) {
+                        $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
+                    }
 
+                    $sql .= " ORDER BY data DESC";
+                    $result = $mysqli->query($sql);
 
                     // Conta o número total de produtos carregados
                     $totalCompras = $result->num_rows;
@@ -304,7 +330,7 @@ img{
                     <tr>
                         <th>Data</th>
                         <th>Nº Pedido</th>
-                        <th>Produto</th>
+                        <th>Produto(s)</th>
                         <th>Valor</th>
                         <th>Detalhes</th>
                     </tr>
@@ -315,22 +341,131 @@ img{
                     include('../../../conexao.php');
 
                     // Consulta SQL para carregar os produtos
-                    $sql = "SELECT id, data, nu_pedido, id_cliente, id_parceiro, produtos, valor_produtos FROM vendas WHERE id_cliente = $id_cliente ORDER BY data DESC";
+                    $sql = "SELECT id, data, nu_pedido, id_cliente, id_parceiro, produtos, valor_produtos FROM vendas_crediario WHERE id_cliente = $id_cliente";
+                    // Adiciona os filtros de data se eles forem fornecidos
+                    // Aplica os filtros
+                    if (!empty($dataInicio) && !empty($dataFim)) {
+                        $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
+                    }
+
+                    $sql .= " ORDER BY data DESC";
+
                     $result = $mysqli->query($sql);
 
                     if ($result->num_rows > 0) {
                         while ($compras = $result->fetch_assoc()) {
 
                             echo "<tr>";
-                            echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
                             echo "<td>" . date('d/m/Y', strtotime($compras['data'])) . "</td>";
+                            echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
                             echo "<td>" . htmlspecialchars($compras['produtos']) . "</td>";
                             echo "<td>R$ " . htmlspecialchars(number_format($compras['valor_produtos'], 2, ',', '.')) . "</td>";
                             echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
                             echo "</tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='5'>Nenhum produto encontrado.</td></tr>";
+                        echo "<tr><td colspan='5'>Nenhum compra á pagar.</td></tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+
+
+        <hr>
+        <h3>Histórico de compras</h3>
+
+        <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
+            <div class="filtros-compras">
+                <!-- Filtro por intervalo de datas -->
+                <label for="data_inicio">Data Início:</label>
+                <input type="date" id="data_inicio" name="data_inicio" value="<?php echo $dataSeteDiasAtras; ?>">
+
+                <label for="data_fim">Data Fim:</label>
+                <input type="date" id="data_fim" name="data_fim" value="<?php echo $dataHoje; ?>">
+
+                <!-- Filtro por formas de pagamento carregadas do banco -->
+                <label for="forma_pagamento">Forma de Pagamento:</label>
+                <select name="forma_pagamento" id="forma_pagamento">
+                    <option value="">Todas as Formas</option>
+                    <?php
+                    // Consulta para buscar as formas de pagamento disponíveis no banco
+                    $queryFormasPagamento = "SELECT id, nome FROM formas_pagamento ORDER BY nome ASC";
+                    $resultFormasPagamento = $mysqli->query($queryFormasPagamento);
+
+                    if ($resultFormasPagamento->num_rows > 0) {
+                        while ($forma = $resultFormasPagamento->fetch_assoc()) {
+                            echo "<option value='" . htmlspecialchars($forma['nome']) . "'>" . htmlspecialchars($forma['nome']) . "</option>";
+                        }
+                    } else {
+                        echo "<option value=''>Nenhuma forma de pagamento encontrada</option>";
+                    }
+                    ?>
+                </select>
+
+                <button class="filtrar" id="filtrar" onclick="filtrarCompras()">Filtrar</button>
+                <?php
+                    include('../../../conexao.php');
+                    // Dados do filtro
+                    $data_inicio = $dataSeteDiasAtras;
+                    $data_fim = $dataHoje;
+
+                    // Consulta SQL para carregar os produtos
+                    $sql = "SELECT * FROM historico_crediario WHERE id_cliente = $id_cliente";
+                    // Aplica os filtros
+                    if (!empty($dataInicio) && !empty($dataFim)) {
+                        $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
+                    }
+
+                    $sql .= " ORDER BY data DESC";
+                    $result = $mysqli->query($sql);
+
+                    // Conta o número total de produtos carregados
+                    $totalCompras = $result->num_rows;
+
+                ?>
+                <span id="total-compras" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de compras: <?php echo $totalCompras; ?></span>
+            </div>
+
+            <table class="tabela-compras">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Nº Pedido</th>
+                        <th>Produto(s)</th>
+                        <th>Valor</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+
+                <tbody id="compras-tabela">
+                    <?php
+                    include('../../../conexao.php');
+
+                    // Consulta SQL para carregar os produtos
+                    $sql = "SELECT id, data, nu_pedido, id_cliente, id_parceiro, produtos, valor_produtos FROM historico_crediario WHERE id_cliente = $id_cliente";
+                    // Adiciona os filtros de data se eles forem fornecidos
+                    // Aplica os filtros
+                    if (!empty($dataInicio) && !empty($dataFim)) {
+                        $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
+                    }
+
+                    $sql .= " ORDER BY data DESC";
+
+                    $result = $mysqli->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        while ($compras = $result->fetch_assoc()) {
+
+                            echo "<tr>";
+                            echo "<td>" . date('d/m/Y', strtotime($compras['data'])) . "</td>";
+                            echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
+                            echo "<td>" . htmlspecialchars($compras['produtos']) . "</td>";
+                            echo "<td>R$ " . htmlspecialchars(number_format($compras['valor_produtos'], 2, ',', '.')) . "</td>";
+                            echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                            echo "</tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='5'>Nenhum compra á pagar.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -346,49 +481,48 @@ img{
                 <a href="../admin_home.php" class="back-link">Voltar</a>
             </div>
         <?php endif; ?>
-
     </div>
 </body>
     <script>
-function filtrarCompras() {
-    // Obtém os valores dos filtros
-    const id = document.getElementById('id').value;
-    const dataInicio = document.getElementById('data_inicio').value;
-    const dataFim = document.getElementById('data_fim').value;
-    const formaPagamento = document.querySelector('#forma_pagamento').value;
+        function filtrarCompras() {
+            // Obtém os valores dos filtros
+            const id = document.getElementById('id').value;
+            const dataInicio = document.getElementById('data_inicio').value;
+            const dataFim = document.getElementById('data_fim').value;
+            const formaPagamento = document.querySelector('#forma_pagamento').value;
 
-    // Valida os campos obrigatórios
-    if (!dataInicio || !dataFim) {
-        alert("Por favor, preencha as datas de início e fim.");
-        return;
-    }
+            // Valida os campos obrigatórios
+            if (!dataInicio || !dataFim) {
+                alert("Por favor, preencha as datas de início e fim.");
+                return;
+            }
 
-    // Cria uma requisição AJAX
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'filtrar_compras.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_compras_crediario.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-    // Dados enviados na requisição
-    const params = `id_cliente=${id}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
-    console.log("Enviando dados:", params); // Debug
+            // Dados enviados na requisição
+            const params = `id_cliente=${id}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
+            console.log("Enviando dados:", params); // Debug
 
-    // Quando a requisição for concluída, atualiza a tabela
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            document.getElementById('compras-tabela').innerHTML = xhr.responseText;
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('compras-tabela').innerHTML = xhr.responseText;
 
-            // Conta o número de compras carregadas
-            const linhasCompras = document.querySelectorAll('#compras-tabela tr');
-            const totalComprar = Array.from(linhasCompras).filter(linha => !linha.querySelector('.msg')).length;
-            document.getElementById('total-compras').textContent = `Total de compras: ${totalComprar}`;
-        } else {
-            console.error("Erro ao carregar dados:", xhr.statusText);
+                    // Conta o número de compras carregadas
+                    const linhasCompras = document.querySelectorAll('#compras-tabela tr');
+                    const totalComprar = Array.from(linhasCompras).filter(linha => !linha.querySelector('.msg')).length;
+                    document.getElementById('total-compras').textContent = `Total de compras: ${totalComprar}`;
+                } else {
+                    console.error("Erro ao carregar dados:", xhr.statusText);
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            xhr.send(params);
         }
-    };
-
-    // Envia os dados dos filtros para o servidor
-    xhr.send(params);
-}
 
 
     </script>

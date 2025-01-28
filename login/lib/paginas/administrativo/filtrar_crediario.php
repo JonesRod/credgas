@@ -71,7 +71,7 @@ if ($totalClientes > 0) {
         echo "<td>" . date('d/m/Y', strtotime($cliente['data_crediario'])) . "</td>";
         echo "<td><img src='../clientes/arquivos/" . $cliente['imagem'] . "' alt='sem imagem' class='imagem'></td>";
         echo "<td>" . htmlspecialchars($cliente['nome_completo']) . "</td>";
-        echo "<td><a href='detalhes_crediario.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+        echo "<td><a href='detalhes/detalhes_crediario_cliente.php?id=" . $cliente['id'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
         echo "</tr>";
     }
     echo '</tbody>';

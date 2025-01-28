@@ -8,7 +8,7 @@ $dataFim = isset($_POST['data_fim']) ? $mysqli->real_escape_string($_POST['data_
 $formaPagamento = isset($_POST['forma_pagamento']) ? $mysqli->real_escape_string($_POST['forma_pagamento']) : '';
 
 // Monta a consulta SQL
-$sql = "SELECT * FROM vendas WHERE id_cliente = $id";
+$sql = "SELECT * FROM vendas_crediario WHERE id_cliente = $id";
 
 // Aplica os filtros
 if (!empty($dataInicio) && !empty($dataFim)) {
@@ -40,14 +40,14 @@ if ($totalCompras > 0) {
             echo "<td>" . date('d/m/Y', strtotime($compra['data'])) . "</td>";
             echo "<td>" . htmlspecialchars($compra['produtos']) . "</td>";
             echo "<td>R$ " . htmlspecialchars(number_format($compra['valor_produtos'], 2, ',', '.')) . "</td>";
-            echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compra['id']) . "&id_cliente=" . htmlspecialchars($compra['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
+            echo "<td><a href='detalhes_compras_crediario.php?id=" . htmlspecialchars($compra['id']) . "&id_cliente=" . htmlspecialchars($compra['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
             echo "</tr>";
         }
     echo '</tbody>';
     echo "</table>";
 } else {
     $totalCompras = 0;
-    echo "<tr><td colspan='100%'><div class='msg'>Nenhum produto encontrado.</div></td></tr>";
+    echo "<tr><td colspan='100%'><div class='msg'>Nenhum compra á pagar.</div></td></tr>";
 }
 
 ?>
