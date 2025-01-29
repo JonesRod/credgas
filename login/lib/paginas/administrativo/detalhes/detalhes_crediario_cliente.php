@@ -128,7 +128,8 @@ img{
             }
 
             /* Estilização da tabela de parceiros e produtos */
-            .tabela-compras {
+            .tabela-compras,
+            .tabela-Historico-compras {
                 width: 100%;
                 border-collapse: collapse;
                 border-radius: 8px;
@@ -138,25 +139,30 @@ img{
             }
             /* Ajuste para as células da tabela */
             .tabela-compras th,
-            .tabela-compras td {
+            .tabela-compras td,
+            .tabela-Historico-compras th,
+            .tabela-Historico-compras td {
                 padding: 5px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
             }
             
-            .tabela-compras th {
+            .tabela-compras th,
+            .tabela-Historico-compras th {
                 background-color: #f4f4f4;
                 font-weight: bold;
                 border-radius: 0px;
             }
 
-            .tabela-compras .detalhes-link {
+            .tabela-compras .detalhes-link,
+            .tabela-Historico-compras .detalhes-link {
                 color: #007bff;
                 text-decoration: none;
                 font-weight: bold;
             }
 
-            .tabela-compras .detalhes-link:hover {
+            .tabela-compras .detalhes-link:hover,
+            .tabela-Historico-compras .detalhes-link:hover{
                 text-decoration: underline;
             }
             .imagem {
@@ -168,25 +174,29 @@ img{
             }
             /* Estilo dos filtros de produtos */
 /* Estilo dos filtros de produtos */
-.filtros-compras {
+.filtros-compras,
+.filtros-Historico-compras {
     margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
 }
 
-.filtros-compras label {
+.filtros-compras label,
+.filtros-Historico-compras label {
     display: flex;
     align-items: center;
     font-size: 14px;
     cursor: pointer;
 }
 
-.filtros-compras input[type="checkbox"] {
+.filtros-compras input[type="checkbox"],
+.filtros-Historico-compras input[type="checkbox"] {
     margin-right: 5px;
 }
 /* Caixa de seleção estilizada */
-.filtros-compras select {
+.filtros-compras select,
+.filtros-Historico-compras select {
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -269,6 +279,10 @@ img{
         <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
             <div class="filtros-compras">
                 <!-- Filtro por intervalo de datas -->
+                <label for="nu-pedido-compra">Pedido:</label>
+                <input type="text" id="nu-pedido-compra" name="nu-pedido-compra" 
+                placeholder="0000" maxlength="4" oninput="formatarPedido(this)">
+
                 <label for="data_inicio">Data Início:</label>
                 <?php
                     $dataSeteDiasAtras = date('Y-m-d', strtotime('-7 days'));
@@ -309,7 +323,7 @@ img{
 
                     // Consulta SQL para carregar os produtos
                     $sql = "SELECT * FROM vendas_crediario WHERE id_cliente = $id_cliente";
-                    
+
                     // Aplica os filtros
                     if (!empty($dataInicio) && !empty($dataFim)) {
                         $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
@@ -375,17 +389,21 @@ img{
         <h3>Histórico de compras</h3>
 
         <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
-            <div class="filtros-compras">
+            <div class="filtros-Historico-compras">
                 <!-- Filtro por intervalo de datas -->
-                <label for="data_inicio">Data Início:</label>
-                <input type="date" id="data_inicio" name="data_inicio" value="<?php echo $dataSeteDiasAtras; ?>">
+                <label for="nu-pedido-historico-compra">Pedido:</label>
+                <input type="text" id="nu-pedido-historico-compra" name="nu-pedido-historico-compra" 
+                placeholder="0000" maxlength="4" oninput="formatarPedido(this)">
 
-                <label for="data_fim">Data Fim:</label>
-                <input type="date" id="data_fim" name="data_fim" value="<?php echo $dataHoje; ?>">
+                <label for="data_inicioH">Data Início:</label>
+                <input type="date" id="data_inicioH" name="data_inicioH" value="<?php echo $dataSeteDiasAtras; ?>">
+
+                <label for="data_fimH">Data Fim:</label>
+                <input type="date" id="data_fimH" name="data_fimH" value="<?php echo $dataHoje; ?>">
 
                 <!-- Filtro por formas de pagamento carregadas do banco -->
-                <label for="forma_pagamento">Forma de Pagamento:</label>
-                <select name="forma_pagamento" id="forma_pagamento">
+                <label for="forma_pagamentoH">Forma de Pagamento:</label>
+                <select name="forma_pagamentoH" id="forma_pagamentoH">
                     <option value="">Todas as Formas</option>
                     <?php
                     // Consulta para buscar as formas de pagamento disponíveis no banco
@@ -402,7 +420,7 @@ img{
                     ?>
                 </select>
 
-                <button class="filtrar" id="filtrar" onclick="filtrarCompras()">Filtrar</button>
+                <button class="filtrar" id="filtrarHistorico" onclick="filtrarHistoricoCompras()">Filtrar</button>
                 <?php
                     include('../../../conexao.php');
                     // Dados do filtro
@@ -420,13 +438,13 @@ img{
                     $result = $mysqli->query($sql);
 
                     // Conta o número total de produtos carregados
-                    $totalCompras = $result->num_rows;
+                    $totalComprasH = $result->num_rows;
 
                 ?>
-                <span id="total-compras" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de compras: <?php echo $totalCompras; ?></span>
+                <span id="total-Historico-compras" style="margin-left: 10px; margin-top: 10px; font-weight: bold;">Total de compras: <?php echo $totalComprasH; ?></span>
             </div>
 
-            <table class="tabela-compras">
+            <table class="tabela-Historico-compras">
                 <thead>
                     <tr>
                         <th>Data</th>
@@ -437,7 +455,7 @@ img{
                     </tr>
                 </thead>
 
-                <tbody id="compras-tabela">
+                <tbody id="Historico-compras-tabela">
                     <?php
                     include('../../../conexao.php');
 
@@ -487,6 +505,7 @@ img{
         function filtrarCompras() {
             // Obtém os valores dos filtros
             const id = document.getElementById('id').value;
+            const nuPedidoCompra = document.getElementById('nu-pedido-compra').value;
             const dataInicio = document.getElementById('data_inicio').value;
             const dataFim = document.getElementById('data_fim').value;
             const formaPagamento = document.querySelector('#forma_pagamento').value;
@@ -503,7 +522,7 @@ img{
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
             // Dados enviados na requisição
-            const params = `id_cliente=${id}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
+            const params = `id_cliente=${id}&nu_pedido=${nuPedidoCompra}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
             console.log("Enviando dados:", params); // Debug
 
             // Quando a requisição for concluída, atualiza a tabela
@@ -524,6 +543,51 @@ img{
             xhr.send(params);
         }
 
+        function filtrarHistoricoCompras() {
+            // Obtém os valores dos filtros
+            const id = document.getElementById('id').value;
+            const nuPedidoCompra = document.getElementById('nu-pedido-historico-compra').value;
+            const dataInicioH = document.getElementById('data_inicioH').value;
+            const dataFimH = document.getElementById('data_fimH').value;
+            const formaPagamentoH = document.querySelector('#forma_pagamentoH').value;
+
+            // Valida os campos obrigatórios
+            if (!dataInicioH || !dataFimH) {
+                alert("Por favor, preencha as datas de início e fim.");
+                return;
+            }
+
+            // Cria uma requisição AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'filtrar_historico-compras_crediario.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Dados enviados na requisição
+            const params = `id_cliente=${id}&nu_pedido=${nuPedidoCompra}&data_inicioH=${dataInicioH}&data_fimH=${dataFimH}&forma_pagamentoH=${formaPagamentoH}`;
+            console.log("Enviando dados:", params); // Debug
+
+            // Quando a requisição for concluída, atualiza a tabela
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.getElementById('Historico-compras-tabela').innerHTML = xhr.responseText;
+
+                    // Conta o número de compras carregadas
+                    const linhasComprasH = document.querySelectorAll('#Historico-compras-tabela tr');
+                    const totalComprarH = Array.from(linhasComprasH).filter(linha => !linha.querySelector('.msg')).length;
+                    document.getElementById('total-Historico-compras').textContent = `Total de compras: ${totalComprarH}`;
+                } else {
+                    console.error("Erro ao carregar dados:", xhr.statusText);
+                }
+            };
+
+            // Envia os dados dos filtros para o servidor
+            xhr.send(params);
+        }
+
+        function formatarPedido(campo) {
+            // Remove qualquer caractere que não seja número
+            let valor = campo.value.replace(/\D/g, '');
+        }
 
     </script>
 </html>

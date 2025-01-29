@@ -3,29 +3,28 @@ include('../../../conexao.php');
 
 // Recupera os filtros enviados
 $id = isset($_POST['id_cliente']) ? $mysqli->real_escape_string($_POST['id_cliente']) : '';
-
 $nu_pedido = isset($_POST['nu_pedido']) ? $mysqli->real_escape_string($_POST['nu_pedido']) : '';
 // Formata o número para ter exatamente 4 dígitos, preenchendo com zeros à esquerda
 //$nu_pedido = str_pad($nu_pedido, 4, '0', STR_PAD_LEFT);
 
-$dataInicio = isset($_POST['data_inicio']) ? $mysqli->real_escape_string($_POST['data_inicio']) : '';
-$dataFim = isset($_POST['data_fim']) ? $mysqli->real_escape_string($_POST['data_fim']) : '';
-$formaPagamento = isset($_POST['forma_pagamento']) ? $mysqli->real_escape_string($_POST['forma_pagamento']) : '';
+$dataInicioH = isset($_POST['data_inicioH']) ? $mysqli->real_escape_string($_POST['data_inicioH']) : '';
+$dataFimH = isset($_POST['data_fimH']) ? $mysqli->real_escape_string($_POST['data_fimH']) : '';
+$formaPagamentoH = isset($_POST['forma_pagamentoH']) ? $mysqli->real_escape_string($_POST['forma_pagamentoH']) : '';
 
 // Monta a consulta SQL
-$sql = "SELECT * FROM vendas_crediario WHERE id_cliente = $id";
+$sql = "SELECT * FROM historico_crediario WHERE id_cliente = $id";
 
 // Aplica os filtros
 if (!empty($nu_pedido)) {
     $sql .= " AND nu_pedido = '$nu_pedido'";
 }
 
-if (!empty($dataInicio) && !empty($dataFim)) {
-    $sql .= " AND DATE(data) BETWEEN '$dataInicio' AND '$dataFim'";
+if (!empty($dataInicioH) && !empty($dataFimH)) {
+    $sql .= " AND DATE(data) BETWEEN '$dataInicioH' AND '$dataFimH'";
 }
 
-if (!empty($formaPagamento)) {
-    $sql .= " AND forma_pagamento = '$formaPagamento'";
+if (!empty($formaPagamentoH)) {
+    $sql .= " AND forma_pagamento = '$formaPagamentoH'";
 }
 
 $sql .= " ORDER BY data DESC";
@@ -37,10 +36,10 @@ if (!$result) {
     exit;
 }
 // Conta o número de produtos
-$totalCompras = $result->num_rows;
+$totalComprasH = $result->num_rows;
 
 // Retorna os resultados em formato de tabela
-if ($totalCompras > 0) {
+if ($totalComprasH > 0) {
     echo "<table>";
     echo "<tbody>";
         while ($compra = $result->fetch_assoc()) {
@@ -55,10 +54,9 @@ if ($totalCompras > 0) {
     echo '</tbody>';
     echo "</table>";
 } else {
-    $totalCompras = 0;
-    echo "<tr><td colspan='100%'><div class='msg'>Nenhum compra á pagar.</div></td></tr>";
+    $totalComprasH = 0;
+    echo "<tr><td colspan='100%'><div class='msg'>Nenhum compra realizada ainda!</div></td></tr>";
 }
-
 ?>
 <style>
 .msg {
