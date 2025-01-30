@@ -224,6 +224,10 @@ img{
     background-color: #003f7f; /* Cor mais escura quando pressionado */
 }
 
+.linha-historico{
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
 @media (max-width: 768px) {
     /*.filtros-produtos*/ .filtrar {
         width: 100%;
@@ -385,7 +389,8 @@ img{
             </table>
 
 
-        <hr>
+        <hr class="linha-historico">
+
         <h3>Histórico de compras</h3>
 
         <div id="conteudo-produtos" class="conteudo-aba" style="display: block;">
@@ -523,7 +528,7 @@ img{
 
             // Dados enviados na requisição
             const params = `id_cliente=${id}&nu_pedido=${nuPedidoCompra}&data_inicio=${dataInicio}&data_fim=${dataFim}&forma_pagamento=${formaPagamento}`;
-            console.log("Enviando dados:", params); // Debug
+            //console.log("Enviando dados:", params); // Debug
 
             // Quando a requisição for concluída, atualiza a tabela
             xhr.onload = function () {
@@ -564,7 +569,7 @@ img{
 
             // Dados enviados na requisição
             const params = `id_cliente=${id}&nu_pedido=${nuPedidoCompra}&data_inicioH=${dataInicioH}&data_fimH=${dataFimH}&forma_pagamentoH=${formaPagamentoH}`;
-            console.log("Enviando dados:", params); // Debug
+            //console.log("Enviando dados:", params); // Debug
 
             // Quando a requisição for concluída, atualiza a tabela
             xhr.onload = function () {
