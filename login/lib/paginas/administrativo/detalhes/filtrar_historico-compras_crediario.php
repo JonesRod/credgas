@@ -48,7 +48,7 @@ if ($totalComprasH > 0) {
             echo "<td>" . htmlspecialchars(str_pad($compra['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
             echo "<td>" . htmlspecialchars($compra['produtos']) . "</td>";
             echo "<td>R$ " . htmlspecialchars(number_format($compra['valor_produtos'], 2, ',', '.')) . "</td>";
-            echo "<td><a href='detalhes_compras_crediario.php?id=" . htmlspecialchars($compra['id']) . "&id_cliente=" . htmlspecialchars($compra['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
+            echo "<td><a href='detalhes_historico_compras_crediario.php?id=" . htmlspecialchars($compra['id']) . "&id_cliente=" . htmlspecialchars($compra['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
             echo "</tr>";
         }
     echo '</tbody>';

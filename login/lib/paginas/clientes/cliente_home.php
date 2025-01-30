@@ -99,6 +99,77 @@ if (isset($_SESSION['id'])) {
             border-radius: 4px; /* Bordas arredondadas */
         }
 
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            width: 280px;
+            height: 350px;
+            text-align: center;
+        }
+        .popup #info {
+            margin: 12px 12px -10px 12px;
+            border: 1px solid black; /* Adiciona uma borda */
+            border-radius: 5px; /* Arredonda os cantos */
+        }
+
+
+        .popup h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .popup p{
+            margin: 5px;
+        }
+
+        .popup input {
+            width: 50px;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .close-btn, .confirm-btn {
+            width: 90%;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 3px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .close-btn {
+            background: red;
+        }
+
+        .confirm-btn {
+            background: #28a745;
+        }
+
+        .close-btn:hover, .confirm-btn:hover {
+            transform: translateY(-3px);
+        }
+
+
     </style>
 </head>
 <body>
@@ -377,7 +448,8 @@ if (isset($_SESSION['id'])) {
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
                         <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                            <a href="#" class="btn">Comprar</a>
+                            <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['nome_produto']; ?>', '<?php echo $valor_produto; ?>')">Comprar</a>
+                            <div class="overlay" id="overlay" onclick="fecharPopup()"></div>
                         <?php else: ?>
                             <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                         <?php endif; ?>
@@ -771,6 +843,61 @@ if (isset($_SESSION['id'])) {
         </div>
     </main>
 
+    <div class="popup" id="popup">
+        <h2>Detalhes do Produto</h2>
+        <aside id="info">
+            <p id="produtoNome">Nome: Produto Exemplo</p>
+            
+            <label>Quantidade: 
+                <input type="number" id="quantidade" value="1" min="1" oninput="calcularTotal()">
+            </label>        
+            
+            <p id="produtoPreco">Preço: R$ 99,99</p>
+            <p id="total">Valor Total: R$ 99,99</p>
+        </aside>   
+        <br>
+        <button class="confirm-btn">Adicionar ao Carrinho</button>
+        <br>
+        <button class="confirm-btn">Comprar</button>
+        <br>
+        <button class="close-btn" onclick="fecharPopup()">Cancelar</button>             
+    </div>
+
+    <script>
+        let precoProduto = 0; // Variável global para armazenar o preço do produto
+
+        function abrirPopup(nome, preco) {
+            // Armazena o preço do produto
+            precoProduto = parseFloat(preco);
+            let precoFormatado = precoProduto.toFixed(2).replace('.', ',');
+
+            document.getElementById('produtoNome').innerText = "Produto: " + nome;
+            document.getElementById('produtoPreco').innerText = "Preço: R$ " + precoFormatado;
+            document.getElementById('total').innerText = "Valor Total: R$ " + precoFormatado;
+
+            document.getElementById('popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function calcularTotal() {
+            let quantidade = parseInt(document.getElementById('quantidade').value);
+            if (isNaN(quantidade) || quantidade < 1) {
+                quantidade = 1; // Evita valores inválidos
+            }
+
+            let total = precoProduto * quantidade;
+            let totalFormatado = total.toFixed(2).replace('.', ',');
+
+            document.getElementById('total').innerText = "Valor Total: R$ " + totalFormatado;
+        }
+
+        function fecharPopup() {
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+
+
     <footer class="menu-mobile">
         <ul>
             <li><a href="perfil_cliente.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
@@ -1060,7 +1187,7 @@ if (isset($_SESSION['id'])) {
         });
     </script>
 
-    </body>
+</body>
     <!-- Footer 
     <footer>
         <p>&copy; 2024 <?php //echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>

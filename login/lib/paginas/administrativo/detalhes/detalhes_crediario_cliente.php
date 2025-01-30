@@ -378,7 +378,7 @@ img{
                             echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
                             echo "<td>" . htmlspecialchars($compras['produtos']) . "</td>";
                             echo "<td>R$ " . htmlspecialchars(number_format($compras['valor_produtos'], 2, ',', '.')) . "</td>";
-                            echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                            echo "<td><a href='detalhes_compras_crediario.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
                             echo "</tr>";
                         }
                     } else {
@@ -484,7 +484,7 @@ img{
                             echo "<td>" . htmlspecialchars(str_pad($compras['nu_pedido'], 4, '0', STR_PAD_LEFT)) . "</td>";
                             echo "<td>" . htmlspecialchars($compras['produtos']) . "</td>";
                             echo "<td>R$ " . htmlspecialchars(number_format($compras['valor_produtos'], 2, ',', '.')) . "</td>";
-                            echo "<td><a href='detalhes_compras.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                            echo "<td><a href='detalhes_historico_compras_crediario.php?id=" . htmlspecialchars($compras['id']) . "&id_cliente=" . htmlspecialchars($compras['id_cliente']) . "' class='detalhes-link'>Ver Detalhes</a></td>";
                             echo "</tr>";
                         }
                     } else {
