@@ -69,6 +69,7 @@ if (isset($_SESSION['id'])) {
     // Exibir o total de notificações
     //echo "Total de notificações: $total_notificacoes";
 
+    
 
 ?> 
 
@@ -111,11 +112,11 @@ if (isset($_SESSION['id'])) {
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             width: 280px;
-            height: 350px;
+            height: 310px;
             text-align: center;
         }
         .popup #info {
-            margin: 12px 12px -10px 12px;
+            margin: 12px 12px 8px 12px;
             border: 1px solid black; /* Adiciona uma borda */
             border-radius: 5px; /* Arredonda os cantos */
         }
@@ -125,14 +126,33 @@ if (isset($_SESSION['id'])) {
             margin-top: 0;
             margin-bottom: 15px;
         }
+
+        .popup aside {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 5px;
+            padding-bottom: 10px;
+        }
         .popup p{
-            margin: 5px;
+            text-align: left;
+            padding-left: 5px;
         }
 
         .popup input {
-            width: 50px;
-            text-align: center;
+            flex: 1;
+            border: none;
+            text-align: left;
             margin: 5px;
+            width: 80px;
+        }
+        .popup input:focus {
+            outline: none;
+        }
+        .popup #produtoNome{
+            font-weight: bold; /* Deixa o texto em negrito */
+            text-align: center;
+            width: 95%;
         }
 
         .overlay {
@@ -169,7 +189,20 @@ if (isset($_SESSION['id'])) {
             transform: translateY(-3px);
         }
 
-
+        #resposra-carrinho {
+        position: fixed;  /* Fixa a posição na tela */
+        top: 50%;         /* Coloca no centro vertical */
+        left: 50%;        /* Coloca no centro horizontal */
+        transform: translate(-50%, -50%); /* Ajusta para centralizar exatamente */
+        background-color: rgba(0, 0, 0, 0.7);  /* Fundo semitransparente */
+        color: white;     /* Cor do texto */
+        padding: 20px;    /* Espaçamento interno */
+        border-radius: 10px; /* Bordas arredondadas */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra para dar destaque */
+        font-size: 16px;  /* Tamanho da fonte */
+        z-index: 9999;    /* Garante que o popup fique acima de outros elementos */
+        display: none;    /* Inicialmente escondido */
+    }
     </style>
 </head>
 <body>
@@ -448,8 +481,10 @@ if (isset($_SESSION['id'])) {
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
                         <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                            <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['nome_produto']; ?>', '<?php echo $valor_produto; ?>')">Comprar</a>
-                            <div class="overlay" id="overlay" onclick="fecharPopup()"></div>
+                            <a href="#" class="btn" onclick="abrirPopup(
+                            '<?php echo $produto['id_produto']; ?>',
+                            '<?php echo $produto['nome_produto']; ?>', 
+                            '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
                         <?php else: ?>
                             <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                         <?php endif; ?>
@@ -576,7 +611,10 @@ if (isset($_SESSION['id'])) {
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn">Comprar</a>
+                                    <a href="#" class="btn" onclick="abrirPopup(
+                                    '<?php echo $produto['id_produto']; ?>',
+                                    '<?php echo $produto['nome_produto']; ?>', 
+                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
                                 <?php else: ?>
                                     <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                                 <?php endif; ?>
@@ -703,7 +741,10 @@ if (isset($_SESSION['id'])) {
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn">Comprar</a>
+                                    <a href="#" class="btn" onclick="abrirPopup(
+                                    '<?php echo $produto['id_produto']; ?>',
+                                    '<?php echo $produto['nome_produto']; ?>', 
+                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
                                 <?php else: ?>
                                     <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                                 <?php endif; ?>
@@ -827,7 +868,10 @@ if (isset($_SESSION['id'])) {
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn">Comprar</a>
+                                    <a href="#" class="btn" onclick="abrirPopup(
+                                    '<?php echo $produto['id_produto']; ?>',
+                                    '<?php echo $produto['nome_produto']; ?>', 
+                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a> 
                                 <?php else: ?>
                                     <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                                 <?php endif; ?>
@@ -845,56 +889,129 @@ if (isset($_SESSION['id'])) {
 
     <div class="popup" id="popup">
         <h2>Detalhes do Produto</h2>
-        <aside id="info">
-            <p id="produtoNome">Nome: Produto Exemplo</p>
-            
-            <label>Quantidade: 
-                <input type="number" id="quantidade" value="1" min="1" oninput="calcularTotal()">
-            </label>        
-            
-            <p id="produtoPreco">Preço: R$ 99,99</p>
-            <p id="total">Valor Total: R$ 99,99</p>
-        </aside>   
-        <br>
-        <button class="confirm-btn">Adicionar ao Carrinho</button>
-        <br>
-        <button class="confirm-btn">Comprar</button>
-        <br>
+        <form id="formCarrinho" action="comprar/carrinho.php">
+            <aside id="info">
+                <input type="hidden" id="id_cli" name="id_cli" value="<?php echo htmlspecialchars( $id); ?>">
+                <input type="hidden" id="id_produto_carrinho" name="id_produto_carrinho">
+                <input type="text" id="produtoNome" name="produtoNome" readonly>
+                
+                <p>Preço R$: 
+                    <input type="text" id="produtoPreco" name="produtoPreco" readonly> 
+                </p>
+                               
+                <p>Quantidade: 
+                    <input type="number" id="quantidade" name="quantidade" value="1" min="1" oninput="calcularTotal()">
+                </p>
+                
+                <p>Valor Total R$: 
+                    <input type="text" id="total" name="total" readonly>
+                </p>
+                
+            </aside>   
+
+            <button type="submit" class="confirm-btn">Adicionar ao Carrinho</button>            
+        </form>
         <button class="close-btn" onclick="fecharPopup()">Cancelar</button>             
     </div>
+
+    <div id="resposra-carrinho" style="display: none;">
+        <!-- Mensagem de retorno -->
+        <p id="mensagem"></p>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="fecharPopup()"></div>
 
     <script>
         let precoProduto = 0; // Variável global para armazenar o preço do produto
 
-        function abrirPopup(nome, preco) {
-            // Armazena o preço do produto
-            precoProduto = parseFloat(preco);
-            let precoFormatado = precoProduto.toFixed(2).replace('.', ',');
+        function abrirPopup(id, produto, preco) {
+            // Converte para float e garante apenas 2 casas decimais
+            precoProduto = parseFloat(preco).toFixed(2);
 
-            document.getElementById('produtoNome').innerText = "Produto: " + nome;
-            document.getElementById('produtoPreco').innerText = "Preço: R$ " + precoFormatado;
-            document.getElementById('total').innerText = "Valor Total: R$ " + precoFormatado;
+            // Formata corretamente no padrão brasileiro
+            let precoFormatado = Number(precoProduto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+            // Define os valores nos inputs
+            document.getElementById('id_produto_carrinho').value = id;
+            document.getElementById('produtoNome').value = produto;
+            document.getElementById('produtoPreco').value = precoFormatado;
+            document.getElementById('total').value = precoFormatado;
+
+            // Exibe o popup
             document.getElementById('popup').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
         }
 
         function calcularTotal() {
             let quantidade = parseInt(document.getElementById('quantidade').value);
+
             if (isNaN(quantidade) || quantidade < 1) {
                 quantidade = 1; // Evita valores inválidos
             }
 
-            let total = precoProduto * quantidade;
-            let totalFormatado = total.toFixed(2).replace('.', ',');
+            // Calcula o total
+            let total = (precoProduto * quantidade).toFixed(2);
 
-            document.getElementById('total').innerText = "Valor Total: R$ " + totalFormatado;
+            // Formata corretamente no padrão brasileiro
+            let totalFormatado = Number(total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Atualiza o valor total no input
+            document.getElementById('total').value = totalFormatado;
         }
 
         function fecharPopup() {
+            document.getElementById('quantidade').value = 1;
             document.getElementById('popup').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('overlay');
+
+            overlay.addEventListener('click', function(event) {
+                fecharPopup();
+            });
+        });
+
+        document.getElementById("formCarrinho").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evita o envio tradicional do formulário
+
+            let formData = new FormData(this);
+
+            fetch("comprar/carrinho.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())  // Recebe a resposta como texto
+            .then(data => {
+                //console.log("Resposta recebida:", data);  // Verifique o conteúdo da resposta
+                try {
+                    let jsonResponse = JSON.parse(data);  // Tente fazer o parse
+                    let mensagem = document.getElementById("mensagem");
+                    mensagem.innerText = jsonResponse.message;
+                    mensagem.style.color = jsonResponse.status === "success" ? "green" : "red";
+                    fecharPopup();
+                    abrirResposta();
+                } catch (e) {
+                    console.error('Erro ao interpretar JSON:', e);
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+            });
+        });
+
+        function abrirResposta() {
+            // Exibe o popup
+            document.getElementById('resposra-carrinho').style.display = 'block';
+
+            // Esconde o popup após 3 segundos (3000 milissegundos)
+            setTimeout(function() {
+                document.getElementById('resposra-carrinho').style.display = 'none';
+            }, 3000);
+        }
+
+
     </script>
 
 
