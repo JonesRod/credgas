@@ -66,11 +66,30 @@ if (isset($_SESSION['id'])) {
     $stmt->fetch();
     $stmt->close();
 
-    // Exibir o total de notificações
-    //echo "Total de notificações: $total_notificacoes";
+    // Obtém a data de hoje menos 1 dias
+    $data_limite = date('Y-m-d', strtotime('-1 days'));
 
-    
+    // Exclui produtos do carrinho do cliente adicionados há mais de 2 dias
+    $sql_delete = "DELETE FROM carrinho WHERE id_cliente = ? AND DATE(data) < ?";
+    $stmt_delete = $mysqli->prepare($sql_delete);
+    $stmt_delete->bind_param("is", $id_cliente, $data_limite);
+    $stmt_delete->execute();
+    $stmt_delete->close();
 
+
+    // Consulta para somar todas as quantidades de produtos no carrinho de um cliente específico
+    $sql_query = "SELECT SUM(qt) AS total_carrinho FROM carrinho WHERE id_cliente = ?";
+    $stmt = $mysqli->prepare($sql_query);
+    $stmt->bind_param("i", $id); // Substituir $id_cliente pelo ID do cliente
+    $stmt->execute();
+    $stmt->bind_result($total_carrinho);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Se não houver produtos no carrinho, definir como 0 para evitar retorno null
+    $total_carrinho = $total_carrinho ?? 0;
+
+    //echo "Total de produtos no carrinho: " . $total_carrinho;
 ?> 
 
 <!DOCTYPE html>
@@ -112,7 +131,7 @@ if (isset($_SESSION['id'])) {
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             width: 280px;
-            height: 310px;
+            height: 320px;
             text-align: center;
         }
         .popup #info {
@@ -146,9 +165,17 @@ if (isset($_SESSION['id'])) {
             margin: 5px;
             width: 80px;
         }
+
         .popup input:focus {
             outline: none;
+        }        
+        .popup input[type="number"] {
+            border: 1px solid #000; /* Cor da borda */
+            padding: 5px; /* Espaçamento interno */
+            border-radius: 4px; /* Bordas arredondadas */
+            outline: none; /* Remove o contorno ao focar */
         }
+
         .popup #produtoNome{
             font-weight: bold; /* Deixa o texto em negrito */
             text-align: center;
@@ -203,6 +230,7 @@ if (isset($_SESSION['id'])) {
         z-index: 9999;    /* Garante que o popup fique acima de outros elementos */
         display: none;    /* Inicialmente escondido */
     }
+
     </style>
 </head>
 <body>
@@ -236,7 +264,13 @@ if (isset($_SESSION['id'])) {
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
                 </div>
-                <i class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i>
+                <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" style="color:#f0f0f0;"><i class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i></a>
+                    <!-- Exibir a contagem de notificações -->
+                    <?php if ($total_carrinho > 0): ?>
+                        <span id="carrinho-count" class="carrinho-count"><?php echo htmlspecialchars($total_carrinho); ?></span>
+                    <?php else: ?>
+                        <span id="carrinho-count" class="carrinho-count" style="display: none;"></span>
+                    <?php endif; ?>               
                 <i class="fas fa-bars" title="Menu" onclick="toggleMenu()"></i>
             <?php else: ?>
                 <span>Seja bem-vindo!</span>
@@ -1014,12 +1048,19 @@ if (isset($_SESSION['id'])) {
 
     </script>
 
-
     <footer class="menu-mobile">
         <ul>
             <li><a href="perfil_cliente.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
             <li><a href="crediario.php" title="Crediário"><i class="fas fa-handshake"></i></a></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i class="fas fa-shopping-cart"></i></a></li>
+            <li><a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i class="fas fa-shopping-cart"></i></a>
+                <!-- Exibir a contagem de notificações -->
+                <?php if ($total_carrinho > 0): ?>
+                    <span id="carrinho-count-rodape" class="carrinho-count-rodape"><?php echo htmlspecialchars($total_carrinho); ?></span>
+                <?php else: ?>
+                    <span id="carrinho-count-rodape" class="carrinho-count-rodape" style="display: none;"></span>
+                <?php endif; ?>             
+            </li>
+            <li><a href="configuracoes.php?id_cliente=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
             <li><a href="cliente_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>
         </ul>
     </footer>
@@ -1078,6 +1119,33 @@ if (isset($_SESSION['id'])) {
 
         // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
         setInterval(fetchNotifications, 2000);
+
+        function fetchCarrinho() {
+            fetch(`get_carrinho.php?id=${sessionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const carrinhoCount = document.getElementById('carrinho-count');
+                    const carrinhoCountRodape = document.getElementById('carrinho-count-rodape');
+                    carrinhoCount.innerText = data.total_carrinho;
+                    carrinhoCountRodape.innerText = data.total_carrinho;
+
+                    // Ocultar o contador se for zero
+                    if (data.total_carrinho > 0) {
+                        carrinhoCount.style.display = 'inline';
+                        carrinhoCountRodape.style.display = 'inline';
+                    } else {
+                        carrinhoCount.style.display = 'none';
+                        carrinhoCountRodape.style.display = 'none';
+                    }
+                }).catch(error => console.error('Error fetching notifications:', error));
+                //console.log('oi');
+        }
+
+        // Chama a função pela primeira vez
+        fetchCarrinho();
+
+        // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
+        setInterval(fetchCarrinho, 2000);
 
 
         $(document).ready(function() {

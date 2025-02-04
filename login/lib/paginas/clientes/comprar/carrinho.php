@@ -7,7 +7,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id_cliente = $_POST['id_cli'] ?? '';
     $id_produto = $_POST['id_produto_carrinho'] ?? '';
     $qt = $_POST['quantidade'] ?? '1';
-    //var_dump($_POST);
 
     $sql_produtos = $mysqli->query("SELECT * FROM produtos WHERE id_produto = $id_produto") or die($mysqli->error);
     $dadosProduto = $sql_produtos->fetch_assoc();
@@ -39,22 +38,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
 
     $total = $valor_produto * $qt;
-    
+
     if (!empty($id_produto) && !empty($id_cliente)) {
-        try {
-            $sql = "INSERT INTO carrinho (data, id_parceiro, id_cliente, id_produto, valor_produto, taxa_padrao, frete, qt, total)
+        // Verifica se o produto já está no carrinho do cliente
+        $sql_check = "SELECT * FROM carrinho WHERE id_cliente = '$id_cliente' AND id_produto = '$id_produto'";
+        $result_check = $mysqli->query($sql_check);
+
+        if ($result_check->num_rows > 0) {
+            // Produto já está no carrinho, atualiza a quantidade
+            $row = $result_check->fetch_assoc();
+            $new_qt = $row['qt'] + $qt;
+            $new_total = $valor_produto * $new_qt;
+
+            // Atualiza o carrinho com a nova quantidade e total
+            $sql_update = "UPDATE carrinho SET qt = '$new_qt', total = '$new_total' WHERE id_cliente = '$id_cliente' AND id_produto = '$id_produto'";
+            $mysqli->query($sql_update) or die($mysqli->error);
+
+            echo json_encode(["status" => "success", "message" => "Quantidade atualizada no carrinho!"]);
+        } else {
+            // Produto não está no carrinho, insere um novo
+            $sql_insert = "INSERT INTO carrinho (data, id_parceiro, id_cliente, id_produto, valor_produto, taxa_padrao, frete, qt, total)
                 VALUES (Now(), '$id_parceiro', '$id_cliente', '$id_produto', '$valor_produto', '$taxa_padrao', '$frete', '$qt', '$total')";
 
-            $deu_certo = $mysqli->query(query: $sql) or die($mysqli->error);
+            $mysqli->query($sql_insert) or die($mysqli->error);
 
             echo json_encode(["status" => "success", "message" => "Produto adicionado ao carrinho!"]);
-        } catch (PDOException $e) {
-            echo json_encode(["status" => "error", "message" => "Erro ao adicionar: " . $e->getMessage()]);
         }
     } else {
         echo json_encode(["status" => "error", "message" => "Dados incompletos!"]);
     }
-    
+
 } else {
     echo json_encode(["status" => "error", "message" => "Método inválido!"]);
 }

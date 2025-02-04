@@ -185,7 +185,17 @@ aside#menu-lateral ul li:hover span {
     font-size: 12px;
     font-weight: bold;
 }
-
+.carrinho-count {
+    position: absolute;
+    top: 0px;
+    right: 33px;
+    background-color:chocolate;
+    color: white;
+    padding: 3px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+}
 
 /* Painel de notificações estilo semelhante ao menu lateral */
 #painel-notificacoes {
@@ -635,8 +645,20 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
 }
 .notificacao-count {
     font-size: 5px;
-
-
+}
+.carrinho-count {
+    display: none;
+}
+.carrinho-count-rodape {
+    position: absolute;
+    top: 0px;
+    /*right: 260px;*/
+    background-color:chocolate;
+    color: white;
+    padding: 3px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
 }
 }
 @media (max-width: 480px) {
@@ -662,6 +684,9 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
         display: none; /* Oculta o ícone do menu em telas pequenas */
     }
     .menu-superior-direito .fa-shopping-cart{
+        display: none;
+    }
+    .carrinho-count {
         display: none;
     }
 
