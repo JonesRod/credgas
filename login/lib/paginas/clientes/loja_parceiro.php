@@ -445,7 +445,7 @@ background:darkorange;
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
                 </div>
-                <i class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i>
+                <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id_cliente); ?>" style="color:#f0f0f0;"><i class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i></a>
                     <!-- Exibir a contagem de notificações -->
                     <?php if ($total_carrinho > 0): ?>
                         <span id="carrinho-count" class="carrinho-count"><?php echo htmlspecialchars($total_carrinho); ?></span>
@@ -1147,7 +1147,6 @@ background:darkorange;
         <ul>
             <!--<li><a href="parceiro_home.php" title="Página Inicial"><i class="fas fa-home"></i></a></li>-->
             <li><a href="perfil_loja.php" title="Perfil da Loja"><i class="fas fa-user"></i></a></li>
-            <li title="Pedidos"><i class="fas fa-box"></i></li> <!-- pedidos -->
             <li><a href="configuracoes.php?id_parceiro=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i class="fas fa-shopping-cart"></i></a>
                 <!-- Exibir a contagem de notificações -->
                 <?php if ($total_carrinho > 0): ?>
@@ -1239,7 +1238,7 @@ background:darkorange;
                         carrinhoCountRodape.style.display = 'none';
                     }
                 }).catch(error => console.error('Error fetching notifications:', error));
-                console.log('oi'.sessionId);
+                //console.log('oi');
         }
 
         // Chama a função pela primeira vez

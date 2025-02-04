@@ -602,6 +602,9 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
     .menu-superior-direito .fa-bars {
         display: none; /* Oculta o ícone do menu em telas pequenas */
     }
+    .carrinho-count {
+        display: none !important;
+    }
     .menu-superior-direito span{
         /*position: absolute; /* Mantém a barra lateral fixa */
         font-size: 0.7rem; /* Tamanho reduzido para o nome fantasia */

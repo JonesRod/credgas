@@ -650,9 +650,16 @@ h2 {
     aside#menu-lateral {
         display: none; /* Oculta a barra lateral em telas pequenas */
     }
+    .menu-superior-direito .fa-shopping-cart {
+        display: none; /* Oculta o ícone do carrinho em telas pequenas */
+    }
+
+    .carrinho-count {
+        display: none !important;
+    }
 
     /* Adicionando esta linha para esconder o ícone do menu */
-    .menu-superior-direito .fa-store {
+    .menu-superior-direito .fa-bars {
         display: none; /* Oculta o ícone do menu em telas pequenas */
     }
 
