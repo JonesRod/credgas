@@ -380,7 +380,31 @@
             <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             
-            <h3>Imagens do Produto</h3>
+            <!-- Opção de Vender no Crediário -->
+            <p><strong>Vender no Crediário:</strong></p>
+            <label>
+                <input type="radio" name="vender_crediario" value="sim" onclick="toggleParcelas(true)"> Sim
+            </label>
+            <label>
+                <input type="radio" name="vender_crediario" value="nao" checked onclick="toggleParcelas(false)"> Não
+            </label>
+
+            <!-- Select de Parcelas (inicialmente oculto) -->
+            <div id="parcelas-container" style="display: none; margin-top: 10px;">
+                <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
+                <select name="parcelas" id="parcelas">
+                    <?php for ($i = 1; $i <= 12; $i++): ?>
+                        <option value="<?= $i; ?>"><?= $i; ?>x</option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+
+            <script>
+                function toggleParcelas(mostrar) {
+                    document.getElementById('parcelas-container').style.display = mostrar ? 'block' : 'none';
+                }
+            </script>
+
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
                     <div class="main-image">

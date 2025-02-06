@@ -542,7 +542,7 @@ $parceiro = $result->fetch_assoc();
                         echo "<td><img src='../../parceiros/produtos/img_produtos/" . $primeiraImagem . "' alt='Imagem do Produto' class='imagem'></td>";
                         echo "<td>" . htmlspecialchars($produto['nome_produto']) . "</td>";
                         echo "<td>" . htmlspecialchars($produto['categoria']) . "</td>";
-                        echo "<td><a href='detalhes_produto.php?id=" . $produto['id_produto'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
+                        echo "<td><a href='detalhes_produto.php?id_parceiro=" . $parceiro_id . '&id_produto=' . $produto['id_produto'] . "' class='detalhes-link'>Ver Detalhes</a></td>";
                         echo "</tr>";
                     }
                 } else {

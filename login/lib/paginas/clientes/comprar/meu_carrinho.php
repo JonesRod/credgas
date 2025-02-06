@@ -35,7 +35,6 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -84,6 +83,21 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             background: #ddd;
             padding: 5px;
         }
+        .voltar {
+            display: block;
+            width: 200px;
+            text-align: center;
+            margin: 20px auto;
+            padding: 10px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .voltar:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -101,7 +115,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                     <span>Valor Unitário</span>
                     <span>Taxa</span>
                     <span>Frete</span>
-                    <span>Quantidade</span>
+                    <span>Qt</span>
                     <span>Total</span>
                 </div>
 
@@ -122,6 +136,9 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     <?php else: ?>
         <p>Seu carrinho está vazio.</p>
     <?php endif; ?>
+
+    <!-- Botão Voltar -->
+    <a href="javascript:history.back()" class="voltar">Voltar</a>
 </div>
 
 </body>
