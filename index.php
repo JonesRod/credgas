@@ -8,7 +8,7 @@
     // Verifica se o usuário está logado
     $usuarioLogado = isset($_SESSION['id']);
     //$id_conf = '1';
-
+    //echo $usuarioLogado;
 
     $dados = $mysqli->query("SELECT * FROM config_admin WHERE logo != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $dadosEscolhido = $dados->fetch_assoc();
@@ -27,6 +27,9 @@
     $taxa_padrao = $mysqli->query("SELECT * FROM config_admin WHERE taxa_padrao != '' ORDER BY data_alteracao DESC LIMIT 1") or die($mysqli->error);
     $taxa = $taxa_padrao->fetch_assoc();
 
+    //$sql_usuario = $mysqli->query("SELECT * FROM meus_clientes WHERE id= $usuarioLogado") or die($mysqli->error);
+    //$usuario = $sql_usuario->fetch_assoc();
+    //echo $usuario['nome_completo'];
 ?>
 
 <!DOCTYPE html>
@@ -63,14 +66,8 @@
                 </h1>
             </div>
             <div class="user-area">
-                <?php if ($usuarioLogado): ?>
-                    <span>Bem-vindo, <strong><?php echo htmlspecialchars($_SESSION['nome_completo']); ?></strong></span>
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-shopping-cart"></i>
-                <?php else: ?>
-                    <span>Seja bem-vindo!</span>
-                    <a href="login/lib/login.php" class="btn-login">Entrar</a>
-                <?php endif; ?>
+                <span>Seja bem-vindo!</span>
+                <a href="login/lib/login.php" class="btn-login">Entrar</a>
             </div>
         </div>
     </header>

@@ -25,25 +25,33 @@ function formatarValor(input) {
 
 // Função para calcular o valor com taxa
 function calcularTaxa() {
-    let valorProduto = parseFloat(document.getElementById('valor_produto').value.replace(/\./g, '').replace(',', '.'));
-    let taxa = document.getElementById('taxa').value;
+    let valorProdutoInput = document.getElementById('valor_produto');
+    let taxaInput = document.getElementById('taxa');
+    let valorProdutoTaxaInput = document.getElementById('valor_produto_taxa');
 
-    if (!isNaN(valorProduto)) {
-        // Calcula o valor do produto com 10% de taxa
-        let valorProdutoTaxa = valorProduto + (valorProduto * taxa);
-
-        // Formata o número no formato "0,00" com separadores de milhares
-        let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-        // Exibe o valor formatado no campo de valor_produto_taxa
-        document.getElementById('valor_produto_taxa').value = valorFormatado;
-    } else {
-        document.getElementById('valor_produto_taxa').value = "0,00";       
+    // Verifica se os inputs existem
+    if (!valorProdutoInput || !taxaInput || !valorProdutoTaxaInput) {
+        console.error("Elementos não encontrados.");
+        return;
     }
+
+    // Obtém e formata os valores
+    let valorProduto = parseFloat(valorProdutoInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+    let taxa = parseFloat(taxaInput.value) || 0;
+
+    // Calcula o valor com a taxa correta
+    let valorProdutoTaxa = valorProduto + (valorProduto * taxa) / 100;
+
+    // Formata o número no padrão brasileiro
+    let valorFormatado = valorProdutoTaxa.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    // Exibe o valor formatado no campo
+    valorProdutoTaxaInput.value = valorFormatado;
 }
+
 
 // Função para formatar o valor digitado no campo "valor_produto"
 function formatarValorFrete(input) {

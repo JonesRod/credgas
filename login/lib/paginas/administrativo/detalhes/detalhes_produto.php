@@ -383,18 +383,26 @@
             <!-- Opção de Vender no Crediário -->
             <p><strong>Vender no Crediário:</strong></p>
             <label>
-                <input type="radio" name="vender_crediario" value="sim" onclick="toggleParcelas(true)"> Sim
+                <?php
+                    $vender_crediario = $produto['vende_crediario'] ?? 'nao'; // Valor salvo no banco, padrão "não"
+                    $parcelas_selecionadas = $produto['qt_parcelas'] ?? 1; // Número de parcelas salvo no banco, padrão 1
+                ?>
+                <input type="radio" name="vende_crediario" value="sim" 
+                <?= $vender_crediario === 'sim' ? 'checked' : ''; ?> 
+                onclick="toggleParcelas(true)"> Sim
             </label>
             <label>
-                <input type="radio" name="vender_crediario" value="nao" checked onclick="toggleParcelas(false)"> Não
+                <input type="radio" name="vende_crediario" value="nao" 
+                <?= $vender_crediario === 'nao' || $vender_crediario === '' ? 'checked' : ''; ?> 
+                onclick="toggleParcelas(false)"> Não
             </label>
 
-            <!-- Select de Parcelas (inicialmente oculto) -->
-            <div id="parcelas-container" style="display: none; margin-top: 10px;">
+            <!-- Select de Parcelas -->
+            <div id="parcelas-container" style="display: <?= $vender_crediario === 'sim' ? 'block' : 'none'; ?>; margin-top: 10px;">
                 <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
                 <select name="parcelas" id="parcelas">
                     <?php for ($i = 1; $i <= 12; $i++): ?>
-                        <option value="<?= $i; ?>"><?= $i; ?>x</option>
+                        <option value="<?= $i; ?>" <?= $i == $parcelas_selecionadas ? 'selected' : ''; ?>><?= $i; ?>x</option>
                     <?php endfor; ?>
                 </select>
             </div>

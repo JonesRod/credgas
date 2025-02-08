@@ -4,10 +4,11 @@
     // Inicia a sessão
     if (!isset($_SESSION)) {
         session_start();
+        
     }
 
     // Verifica se o ID do parceiro foi enviado via POST
-    if (isset($_POST['id_parceiro'])) {
+    if (isset($_SESSION['id']) && isset($_POST['id_parceiro'])) {
         $id_parceiro = mysqli_real_escape_string($mysqli, $_POST['id_parceiro']);
     } else {
         session_unset();
@@ -73,18 +74,6 @@
             //$mysqli->close();
         ?>
 
-        <!-- Categoria-->
-        <!--<div class="form-group">
-            <label for="descricao_produto">Categoria:</label>
-            <select required name="categoria" id="categoria">
-                <option value="Escolha"></option>
-                <option value="Alimenticios">Alimenticios</option>
-                <option value="Utilitarios">Utilitarios</option>
-                <option value="Limpeza">Limpeza</option>
-                <option value="Bebidas">Bebidas</option>
-            </select>
-        </div>-->
-
         <!-- Valor do produto com taxa da plataforma -->
         <?php
             // Consulta para buscar as categorias
@@ -98,22 +87,12 @@
         
         <div class="form-group">
             <label for="valor_produto">Valor do Produto (R$):</label>
-            <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>"> 
+            <input type="hidden" id="taxa" name="taxa" value="<?= htmlspecialchars($taxa['taxa_padrao'] ?? 0); ?>"> 
             <input type="text" id="valor_produto" name="valor_produto" required oninput="formatarValor(this)">
         </div>
 
-        <!-- Valor do produto com taxa da plataforma -->
-        <?php
-            // Consulta para buscar as categorias
-            $taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
-            WHERE taxa_padrao != '' ORDER BY data_alteracao DESC 
-            LIMIT 1") or die($mysqli->error);
-
-            $taxa = $taxa_padrao->fetch_assoc();
-        ?>
         <div class="form-group">
             <label for="valor_produto_taxa">Valor do Produto + taxa da plataforma (R$):</label>
-            <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>">
             <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" readonly>
         </div>
 

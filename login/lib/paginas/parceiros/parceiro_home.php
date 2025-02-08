@@ -91,19 +91,36 @@
     // Executa a consulta e verifica erros
     $frete_gratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
 
-    // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $id";
-    $result = $mysqli->query(query: $sql_query_not_par);
+    // Consulta para somar todas as notificações por coluna
+    $sql_query_not_par = "
+    SELECT 
+        SUM(plataforma) AS total_plataforma, 
+        SUM(not_novo_produto) AS total_not_novo_produto,
+        SUM(not_adicao_produto) AS total_not_adicao_produto,
+        SUM(pedidos) AS total_pedidos
+    FROM contador_notificacoes_parceiro
+    WHERE id_parceiro = $id";  // Pode adicionar mais condições se necessário
+
+    $result = $mysqli->query($sql_query_not_par);
+
+    // Verifica se há resultados
+    if ($result) {
     $row = $result->fetch_assoc();
-    $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
-    $not_novo_produto= $row['not_novo_produto'] ?? 0;
-    $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
-    $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
 
+    // Recupera as somas
+    $total_plataforma = $row['total_plataforma'] ?? 0;
+    $total_not_novo_produto = $row['total_not_novo_produto'] ?? 0;
+    $total_not_adicao_produto = $row['total_not_adicao_produto'] ?? 0;
+    $total_pedidos = $row['total_pedidos'] ?? 0;
 
-    // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
-    //echo $total_notificacoes; 
+    // Soma os totais das colunas
+    $total_notificacoes = $total_plataforma + $total_not_novo_produto + $total_not_adicao_produto + $total_pedidos;
+
+    //echo "Total de notificações: $total_notificacoes";
+    } else {
+    echo "Erro na consulta!";
+    }
+
 
     //Consulta para buscar produtos ocultos do catálogo
     $produtos_ocultos = $mysqli->query("SELECT * FROM produtos 
@@ -220,16 +237,15 @@
         </div>
     </header>
 
-    <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
     <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
+        <h2>Notificações: <?php echo htmlspecialchars($total_notificacoes); ?></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $not_novo_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $pedidos; ?></li>
-
+            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $total_not_novo_produto; ?></li>
+            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $total_not_adicao_produto; ?></li>
+            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $total_pedidos; ?></li>
         </ul>
     </aside>
+
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral" >
@@ -352,7 +368,7 @@
 
                 <form method="POST" action="produtos/adicionar_produto.php" class="catalogo-form">
                     <input type="hidden" name="id_parceiro" value="<?php echo $id; ?>">
-                    <button class="button">Cadastrar produto</button>    
+                    <button class="button">Cadastrar novo produto</button>    
                 </form>
             </div>
 
@@ -889,28 +905,45 @@
             window.location.href = url;
         }
 
+// Obtém o ID da sessão do PHP
+var sessionId = <?php echo json_encode($id); ?>;
 
-        function fetchNotifications(id) {
-            fetch(`get_notifications.php?id=${sessionId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const notificationCount = document.getElementById('notificacao-count');
-                    notificationCount.innerText = data.total_notificacoes;
+function fetchNotifications(id) {
+    fetch(`get_notifications.php?id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            const notificationCount = document.getElementById('notificacao-count');
+            if (notificationCount) {
+                notificationCount.innerText = data.total_notificacoes;
 
-                    // Ocultar o contador se for zero
-                    if (data.total_notificacoes > 0) {
-                        notificationCount.style.display = 'inline';
-                    } else {
-                        notificationCount.style.display = 'none';
-                    }
-                }).catch(error => console.error('Error fetching notifications:', error));
-        }
+                // Exibe a contagem de notificações se maior que 0
+                notificationCount.style.display = data.total_notificacoes > 0 ? 'inline' : 'none';
+            }
 
-        // Chama a função pela primeira vez
-        fetchNotifications();
+            // Atualiza a lista de notificações
+            const notificationList = document.getElementById('lista-notificacoes');
+            if (notificationList) {
+                notificationList.innerHTML = ''; // Limpa a lista anterior
 
-        // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        setInterval(fetchNotifications, 5000);
+                if (data.notificacoes && data.notificacoes.length > 0) {
+                    data.notificacoes.forEach(notificacao => {
+                        const li = document.createElement('li');
+                        li.innerText = notificacao.mensagem;
+                        li.onclick = () => abrirNotificacao(notificacao.id);
+                        notificationList.appendChild(li);
+                    });
+                }
+            }
+        })
+        .catch(error => console.error('Erro ao buscar notificações:', error));
+}
+
+// Executa a função de busca de notificações
+fetchNotifications(sessionId);
+setInterval(() => fetchNotifications(sessionId), 3000);
+
+
+
 
         ///pesquizador de produto no catalogo
         document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {

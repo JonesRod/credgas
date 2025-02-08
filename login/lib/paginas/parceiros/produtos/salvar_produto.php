@@ -1,21 +1,37 @@
 <?php
 include('../../../conexao.php');  // Inclui o arquivo de conexão com o banco de dados
 
-// Verifica se as imagens foram enviadas e se há pelo menos uma imagem
-/*if (isset($_FILES['produtoImagens']) && count($_FILES['produtoImagens']['name']) > 0) {
-    var_dump($_FILES['produtoImagens']);
-}*/
+    // Inicia a sessão
+    if (!isset($_SESSION)) {
+        session_start();
+    }
+
+    // Verifica se o ID do parceiro foi enviado via POST
+    if (isset($_SESSION['id']) && isset($_POST['id_parceiro'])) {
+        $id_parceiro = mysqli_real_escape_string($mysqli, $_POST['id_parceiro']);
+    } else {
+        session_unset();
+        session_destroy();
+        header("Location: ../../../../../index.php");
+        exit();
+    }
 
 // Verifica se o formulário foi enviado via método POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    var_dump($_POST);
+    //var_dump($_POST);
     //die();
     // Coleta e sanitiza os dados do formulário
     $id_parceiro = $_POST['id_parceiro'];
     $nome_produto = $mysqli->real_escape_string(trim($_POST['nome_produto']));
     $descricao_produto = $mysqli->real_escape_string(trim($_POST['descricao_produto']));
     $categoria = $mysqli->real_escape_string(trim($_POST['categoria']));
-    $valor_produto = str_replace(search: ',', replace: '.', subject: $_POST['valor_produto']);
+
+    $valor_produto = $_POST['valor_produto'];
+
+    // Remove pontos de milhares e substitui vírgula decimal por ponto
+    $valor_produto = str_replace('.', '', $valor_produto); // Remove todos os pontos
+    $valor_produto = str_replace(',', '.', $valor_produto); // Substitui a vírgula pelo ponto
+
     $taxa = str_replace(search: ',', replace: '.', subject: $_POST['taxa']);
     $frete_gratis = isset($_POST['frete_gratis']) ? 1 : 0;  // Define 1 para frete grátis, caso esteja marcado
     $valor_frete = str_replace(search: ',', replace: '.', subject: $_POST['valor_frete']);

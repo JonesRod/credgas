@@ -43,11 +43,21 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id_produto = $_GET['id_produto'];
+        $id_produto = $_GET['id_produto']; // Pegue o ID do produto do POST
+        $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] === 'sim' ? 'sim' : 'nao';
+        $parcelas = isset($_POST['parcelas']) ? intval($_POST['parcelas']) : 0;
+        
+        echo ($id_produto);
+        echo ($vende_crediario);
+        echo ($parcelas);
+        //die();
+
         if (isset($_POST['aprovar'])) {
-            $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim' WHERE id_produto = ?";
+            // Atualiza o produto com segurança
+            $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
-            $stmt->bind_param("i", $id_produto);
+
+            $stmt->bind_param("ssi", $vende_crediario, $parcelas, $id_produto);
 
             if ($stmt->execute()) {
                 if (isset($_GET['id'])) {
@@ -330,6 +340,9 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .crediario{
+            margin-bottom: 20px;
+        }
 
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
@@ -377,7 +390,7 @@
             <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             
-            <h3>Imagens do Produto</h3>
+
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
                     <div class="main-image">
@@ -395,6 +408,35 @@
 
             <div class="buttons-container">
                 <form method="POST" action="">
+                    <!-- Opção de Vender no Crediário -->
+                    <p><strong>Vender no Crediário:</strong></p>
+                    <div class="crediario">
+                        <label>
+                            <?php
+                                $vender_crediario = $produto['vende_crediario'] ?? 'nao'; // Valor salvo no banco, padrão "não"
+                                $parcelas_selecionadas = $produto['qt_parcelas'] ?? 1; // Número de parcelas salvo no banco, padrão 1
+                            ?>
+                            <input type="radio" name="vende_crediario" value="sim" 
+                            <?= $vender_crediario === 'sim' ? 'checked' : ''; ?> 
+                            onclick="toggleParcelas(true)"> Sim
+                        </label>
+                        <label>
+                            <input type="radio" name="vende_crediario" value="nao" 
+                            <?= $vender_crediario === 'nao' || $vender_crediario === '' ? 'checked' : ''; ?> 
+                            onclick="toggleParcelas(false)"> Não
+                        </label>                        
+                    </div>
+
+                    <!-- Select de Parcelas -->
+                    <div class="crediario" id="parcelas-container" style="display: <?= $vender_crediario === 'sim' ? 'block' : 'none'; ?>; margin-top: 10px;">
+                        <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
+                        <select name="parcelas" id="parcelas">
+                            <?php for ($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?= $i; ?>" <?= $i == $parcelas_selecionadas ? 'selected' : ''; ?>><?= $i; ?>x</option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+
                     <button type="submit" name="aprovar" class="btn btn-success">Aprovar</button>
                     <button type="submit" name="reprovar" class="btn btn-danger">Reprovar</button>
                 </form>
@@ -402,6 +444,10 @@
         <?php endif; ?>
     </div>
     <script>
+
+        function toggleParcelas(mostrar) {
+            document.getElementById('parcelas-container').style.display = mostrar ? 'block' : 'none';
+        }
         function changeMainImage(thumbnail) {
             const mainImage = document.querySelector('.main-image img');
             mainImage.src = thumbnail.src;

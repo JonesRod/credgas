@@ -312,31 +312,27 @@
         
         <div class="menu-superior-direito">
             <span>Olá, <strong><?php echo explode(' ', trim($usuario['nome']))[0]; ?></strong></span>
-            <!-- Ícone de notificações com contagem -->
             <div class="notificacoes">
                 <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
-                <!-- Exibir a contagem de notificações -->
-                <?php if ($total_notificacoes > 0): ?>
-                    <span id="notificacao-count" class="notificacao-count"><?php echo htmlspecialchars($total_notificacoes); ?></span>
-                <?php else: ?>
-                    <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
-                <?php endif; ?>
-
+                <span id="notificacao-count" class="notificacao-count" 
+                    <?php echo ($total_notificacoes > 0) ? '' : 'style="display: none;"'; ?>>
+                    <?php echo htmlspecialchars($total_notificacoes); ?>
+                </span>
             </div>
             <i class="fas fa-bars" onclick="toggleMenu()"></i>
         </div>
     </header>
 
-    <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
+    <!-- Painel de notificações -->
     <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars(string: $total_notificacoes); ?></h2>
+        <h2>Notificações: <span id="notificacao-header-count"><?php echo $total_notificacoes; ?></span></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Cliente: <?php echo $not_novo_cliente; ?></li>  
-            <li onclick="abrirNotificacao(2)">Solicitação de cadastro de Parceiro: <?php echo $not_inscr_parceiro; ?></li>
-            <li onclick="abrirNotificacao(3)">Solicitação de crediario: <?php echo $not_crediario; ?></li>
-            <li onclick="abrirNotificacao(4)">Novo Produto: <?php echo $not_novos_produtos; ?></li>    
-            <li onclick="abrirNotificacao(5)">Edição de Produto: <?php echo $not_edicao_produtos; ?></li>         
-            <li onclick="abrirNotificacao(6)">Nova mensagem recebida: <?php echo $not_msg; ?></li>
+            <li data-category="Novo Cliente" onclick="abrirNotificacao(1)">Novo Cliente: <?php echo $not_novo_cliente; ?></li>
+            <li data-category="Solicitação de Cadastro de Parceiro" onclick="abrirNotificacao(2)">Solicitação de cadastro de Parceiro: <?php echo $not_inscr_parceiro; ?></li>
+            <li data-category="Solicitação de Crediário" onclick="abrirNotificacao(3)">Solicitação de crediário: <?php echo $not_crediario; ?></li>
+            <li data-category="Novo Produto" onclick="abrirNotificacao(4)">Novo Produto: <?php echo $not_novos_produtos; ?></li>
+            <li data-category="Edição de Produto" onclick="abrirNotificacao(5)">Edição de Produto: <?php echo $not_edicao_produtos; ?></li>
+            <li data-category="Nova Mensagem Recebida" onclick="abrirNotificacao(6)">Nova mensagem recebida: <?php echo $not_msg; ?></li>
         </ul>
     </aside>
 
@@ -865,29 +861,50 @@
             window.location.href = url;
         }
 
-
         function fetchNotifications() {
             fetch('get_notifications.php')
                 .then(response => response.json())
                 .then(data => {
-                    const notificationCount = document.getElementById('notificacao-count');
-                    notificationCount.innerText = data.total_notificacoes;
+                   // console.log('Notificações recebidas:', data); // Depuração
 
-                    // Ocultar o contador se for zero
-                    if (data.total_notificacoes > 0) {
-                        notificationCount.style.display = 'inline';
-                    } else {
-                        notificationCount.style.display = 'none';
+                    if (data.error) {
+                        console.error('Erro ao obter notificações:', data.error);
+                        return;
                     }
-                }).catch(error => console.error('Error fetching notifications:', error));
-                //console.log('oi');
+
+                    // Atualiza a contagem de notificações no ícone 🔔
+                    const notificationCount = document.getElementById('notificacao-count');
+                    if (notificationCount) {
+                        if (data.total_notificacoes > 0) {
+                            notificationCount.innerText = data.total_notificacoes;
+                            notificationCount.style.display = 'inline-block'; // Exibe o contador
+                        } else {
+                            notificationCount.style.display = 'none'; // Oculta se não houver notificações
+                        }
+                    }
+
+                    // Atualiza a contagem de notificações no painel 📋
+                    const notificationHeaderCount = document.querySelector('#painel-notificacoes h2 span');
+                    if (notificationHeaderCount) {
+                        notificationHeaderCount.innerText = data.total_notificacoes;
+                    }
+
+                    // Atualiza as notificações individuais
+                    document.querySelectorAll('#lista-notificacoes li').forEach((li) => {
+                        const category = li.getAttribute('data-category');
+                        if (category && data.notificacoes[category] !== undefined) {
+                            li.innerText = `${category}: ${data.notificacoes[category]}`;
+                        }
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar notificações:', error));
         }
 
-        // Chama a função pela primeira vez
+        // Atualiza a cada 3 segundos ⏳
         fetchNotifications();
+        setInterval(fetchNotifications, 3000);
 
-        // Configura um intervalo para chamar a função a cada 5 segundos (5000 milissegundos)
-        setInterval(fetchNotifications, 2000);
+
 
         function atualizarUFParceiros() {
             const cidadeSelect = document.getElementById('cidadeParc');

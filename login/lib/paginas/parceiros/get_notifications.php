@@ -1,22 +1,54 @@
 <?php
+header('Content-Type: application/json');
+
 include('../../conexao.php');
 
-    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $id";
-    $result = $mysqli->query(query: $sql_query_not_par);
+// Consulta para somar todas as notificações por coluna
+$sql_query_not_par = "
+    SELECT 
+        SUM(plataforma) AS total_plataforma, 
+        SUM(not_novo_produto) AS total_not_novo_produto,
+        SUM(not_adicao_produto) AS total_not_adicao_produto,
+        SUM(pedidos) AS total_pedidos
+    FROM contador_notificacoes_parceiro
+    WHERE id_parceiro = $id";
+
+$result = $mysqli->query($sql_query_not_par);
+
+if ($result) {
     $row = $result->fetch_assoc();
-    $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
-    $not_novo_produto= $row['not_novo_produto'] ?? 0;
-    $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
-    $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
 
+    $total_plataforma = $row['total_plataforma'] ?? 0;
+    $total_not_novo_produto = $row['total_not_novo_produto'] ?? 0;
+    $total_not_adicao_produto = $row['total_not_adicao_produto'] ?? 0;
+    $total_pedidos = $row['total_pedidos'] ?? 0;
 
-    // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
+    $total_notificacoes = $total_plataforma + $total_not_novo_produto + $total_not_adicao_produto + $total_pedidos;
 
-    // Retorna os dados em formato JSON
-    header('Content-Type: application/json');
-    echo json_encode(['total_notificacoes' => $total_notificacoes]);
+    // Criar array de notificações
+    $notificacoes = [];
+    if ($total_not_novo_produto > 0) {
+        $notificacoes[] = ['id' => 1, 'mensagem' => "Novo Produto: $total_not_novo_produto"];
+    }
+    if ($total_not_adicao_produto > 0) {
+        $notificacoes[] = ['id' => 2, 'mensagem' => "Edição de Produtos: $total_not_adicao_produto"];
+    }
+    if ($total_pedidos > 0) {
+        $notificacoes[] = ['id' => 3, 'mensagem' => "Pedidos: $total_pedidos"];
+    }
+
+    echo json_encode([
+        'total_notificacoes' => $total_notificacoes,
+        'notificacoes' => $notificacoes
+    ]);
+} else {
+    echo json_encode([
+        'erro' => 'Erro na consulta SQL'
+    ]);
+}
+
+    
 ?>
+
