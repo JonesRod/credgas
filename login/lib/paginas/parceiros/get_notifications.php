@@ -29,14 +29,17 @@ if ($result) {
 
     // Criar array de notificações
     $notificacoes = [];
+    if ($total_plataforma > 0) {
+        $notificacoes[] = ['id' => 1, 'mensagem' => "Plataforma: $total_plataforma"];
+    }
     if ($total_not_novo_produto > 0) {
-        $notificacoes[] = ['id' => 1, 'mensagem' => "Novo Produto: $total_not_novo_produto"];
+        $notificacoes[] = ['id' => 2, 'mensagem' => "Novo Produto: $total_not_novo_produto"];
     }
     if ($total_not_adicao_produto > 0) {
-        $notificacoes[] = ['id' => 2, 'mensagem' => "Edição de Produtos: $total_not_adicao_produto"];
+        $notificacoes[] = ['id' => 3, 'mensagem' => "Edição de Produtos: $total_not_adicao_produto"];
     }
     if ($total_pedidos > 0) {
-        $notificacoes[] = ['id' => 3, 'mensagem' => "Pedidos: $total_pedidos"];
+        $notificacoes[] = ['id' => 4, 'mensagem' => "Pedidos: $total_pedidos"];
     }
 
     echo json_encode([

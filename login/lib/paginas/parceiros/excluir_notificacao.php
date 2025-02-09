@@ -78,7 +78,7 @@ if (isset($_GET['id_notificacao'])) {
 <body>
     <div class="mensagem <?php echo $tipo_mensagem; ?>">
         <p><?php echo $mensagem; ?></p>
-        <a href="detalhes_notificacao_edi_prod.php">Voltar</a>
+        <a href="detalhes_notificacao_novo_prod.php">Voltar</a>
     </div>
 
     <script>

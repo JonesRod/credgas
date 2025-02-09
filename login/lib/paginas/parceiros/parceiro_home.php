@@ -238,13 +238,15 @@
     </header>
 
     <aside id="painel-notificacoes">
-        <h2>Notificações: <?php echo htmlspecialchars($total_notificacoes); ?></h2>
+        <h2>Notificações: <span id="notificacao-header-count"><?php echo htmlspecialchars($total_notificacoes); ?></span></h2>
         <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php echo $total_not_novo_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php echo $total_not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(3)">Pedidos: <?php echo $total_pedidos; ?></li>
+            <li data-id="1" onclick="abrirNotificacao(1)">Plataforma: <?php echo $total_plataforma; ?></li>
+            <li data-id="2" onclick="abrirNotificacao(2)">Novo Produto: <?php echo $total_not_novo_produto; ?></li>
+            <li data-id="3" onclick="abrirNotificacao(3)">Edição de Produtos: <?php echo $total_not_adicao_produto; ?></li>
+            <li data-id="4" onclick="abrirNotificacao(4)">Pedidos: <?php echo $total_pedidos; ?></li>
         </ul>
     </aside>
+
 
 
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
@@ -880,12 +882,15 @@
             // Define a URL com base no ID da notificação
             switch (id) {
                 case 1:
-                    url = `detalhes_notificacao_novo_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    url = `detalhes_notificacao_plataforma.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
                     break;
                 case 2:
-                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    url = `detalhes_notificacao_novo_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
                     break;
                 case 3:
+                    url = `detalhes_notificacao_edi_prod.php?id=${id}&session_id=${sessionId}&id_produto=${id_produto}`;
+                    break;
+                case 4:
                     url = `not_detalhes_crediario.php?session_id=${sessionId}`;
                     break;
                 default:
@@ -905,44 +910,52 @@
             window.location.href = url;
         }
 
-// Obtém o ID da sessão do PHP
-var sessionId = <?php echo json_encode($id); ?>;
+        function fetchNotifications(id) {
+            fetch(`get_notifications.php?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Dados recebidos:", data); // Debug no console
 
-function fetchNotifications(id) {
-    fetch(`get_notifications.php?id=${id}`)
-        .then(response => response.json())
-        .then(data => {
-            const notificationCount = document.getElementById('notificacao-count');
-            if (notificationCount) {
-                notificationCount.innerText = data.total_notificacoes;
+                    // Atualiza a contagem no ícone 🔔
+                    const notificationCount = document.getElementById('notificacao-count');
+                    if (notificationCount) {
+                        if (data.total_notificacoes > 0) {
+                            notificationCount.innerText = data.total_notificacoes;
+                            notificationCount.style.display = 'inline-block';
+                        } else {
+                            notificationCount.style.display = 'none';
+                        }
+                    }
 
-                // Exibe a contagem de notificações se maior que 0
-                notificationCount.style.display = data.total_notificacoes > 0 ? 'inline' : 'none';
-            }
+                    // Atualiza a contagem no h2 📋
+                    const notificationHeaderCount = document.getElementById('notificacao-header-count');
+                    if (notificationHeaderCount) {
+                        notificationHeaderCount.innerText = data.total_notificacoes;
+                    }
 
-            // Atualiza a lista de notificações
-            const notificationList = document.getElementById('lista-notificacoes');
-            if (notificationList) {
-                notificationList.innerHTML = ''; // Limpa a lista anterior
+                    // Atualiza os valores das notificações mantendo as li sempre visíveis
+                    const notificacoes = {
+                        1: "Plataforma",
+                        2: "Novo Produto",
+                        3: "Edição de Produtos",
+                        4: "Pedidos"
+                    };
 
-                if (data.notificacoes && data.notificacoes.length > 0) {
-                    data.notificacoes.forEach(notificacao => {
-                        const li = document.createElement('li');
-                        li.innerText = notificacao.mensagem;
-                        li.onclick = () => abrirNotificacao(notificacao.id);
-                        notificationList.appendChild(li);
+                    Object.keys(notificacoes).forEach(id => {
+                        const li = document.querySelector(`#lista-notificacoes li[data-id="${id}"]`);
+                        if (li) {
+                            const count = data.notificacoes.find(n => n.id == id)?.mensagem.match(/\d+/)?.[0] || 0;
+                            li.innerText = `${notificacoes[id]}: ${count}`;
+                        }
                     });
-                }
-            }
-        })
-        .catch(error => console.error('Erro ao buscar notificações:', error));
-}
 
-// Executa a função de busca de notificações
-fetchNotifications(sessionId);
-setInterval(() => fetchNotifications(sessionId), 3000);
+                })
+                .catch(error => console.error('Erro ao buscar notificações:', error));
+        }
 
-
+        // Executa a busca inicial e define o intervalo para atualizar a cada 3 segundos
+        fetchNotifications(sessionId);
+        setInterval(() => fetchNotifications(sessionId), 3000);
 
 
         ///pesquizador de produto no catalogo

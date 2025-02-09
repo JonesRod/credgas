@@ -227,13 +227,13 @@ $result = $mysqli->query($sql_query) or die($mysqli->error);
 
 </body>
 <script>
-// Função para excluir a notificação
-function confirmarExclusao(btn) {
-    var idNotificacao = btn.closest('tr').querySelector('td.hide-id-column').textContent;
-    if (confirm("Tem certeza de que deseja excluir esta notificação?")) {
-        // Redireciona para a página de exclusão
-        window.location.href = `excluir_notificacao.php?id_notificacao=${idNotificacao}`;
+    // Função para excluir a notificação
+    function confirmarExclusao(btn) {
+        var idNotificacao = btn.closest('tr').querySelector('td.hide-id-column').textContent;
+        if (confirm("Tem certeza de que deseja excluir esta notificação?")) {
+            // Redireciona para a página de exclusão
+            window.location.href = `excluir_notificacao.php?id_notificacao=${idNotificacao}`;
+        }
     }
-}
 </script>
 </html>
