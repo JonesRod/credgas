@@ -18,13 +18,13 @@
     }
 
     // Obter os IDs da URL
-    $id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : null;
+    //$id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : null;
     $id_produto = isset($_GET['id_produto']) ? intval($_GET['id_produto']) : null;
 
     $produto = [];
     $imagens = [];
 
-    if ($id_parceiro && $id_produto) {
+    if ($id_produto) {
         $stmt = $mysqli->prepare("SELECT * FROM produtos WHERE id_produto = ?");
         $stmt->bind_param("i", $id_produto);
         $stmt->execute();
@@ -144,7 +144,7 @@
                 $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, msg, analize)
                 VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique os dados editados do seu produto e tente novamente!', 'REPROVADO')";
         
-                if ($mysqli->query($sql_not_parc)) {
+                if ($mysqli->query($sql_not_admin) && $mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
                     header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
                     exit();
@@ -173,9 +173,7 @@
             text-align: center;
             font-size: 1.8em;
             color: #333;
-            
-        
-        margin-bottom: 20px;
+            margin-bottom: 20px;
             text-transform: uppercase;
             border-bottom: 2px solid #ddd;
             padding-bottom: 10px;
@@ -184,13 +182,9 @@
         /* Estilo para o parágrafo */
         p {
             font-size: 1.1em;
-            
-        
         line-height: 1.5;
-            
-        
         color: #555;
-        margin: 10px 0;
+        margin: 5px 0;
         }
 
         /* Destaque para os rótulos */
@@ -200,16 +194,18 @@
         }
 
         /* Estilo para o contêiner da descrição */
-        .descricao-box {   
-            max-height: 150px;
+        .descricao-box { 
+            width: 90%;  
+            height: auto;
+            /*max-height: 150px;*/
             overflow-y: auto;
-            padding: 15px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background-color: #f9f9f9;
             font-size: 1em;
             color: #444;
-            margin: 10px 0;
+            margin: 5px 0;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -218,13 +214,13 @@
             flex-direction: column;
             align-items: center; /* Centraliza horizontalmente */
             justify-content: center; /* Centraliza verticalmente */
-            margin: 30px auto; /* Adiciona espaçamento e centraliza horizontalmente */
-            max-width: 600px; /* Define uma largura máxima */
-            padding: 15px; /* Espaçamento interno */
+            margin: 0px auto; /* Adiciona espaçamento e centraliza horizontalmente */
+            max-width: 500px; /* Define uma largura máxima */
+            padding: 10px; /* Espaçamento interno */
             /*border: 1px solid #ddd; /* Borda para destaque */
             border-radius: 10px; /* Bordas arredondadas */
             /*background-color: #f9f9f9; /* Cor de fundo */
-        /*box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+            /*box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
         }
 
         /* Ajuste para a imagem principal */
@@ -263,10 +259,11 @@
         }
 
         .container {
-            margin: 30px auto; /* Centraliza horizontalmente e adiciona espaçamento */
+            margin: 20px auto; /* Centraliza horizontalmente e adiciona espaçamento */
             max-width: 500px; /* Define a largura máxima */
             text-align: center; /* Centraliza o conteúdo interno */
-            padding: 20px;
+            padding: 5px;
+            padding-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 10px;
             background-color: #ffffff;
@@ -337,8 +334,7 @@
                 font-size: 1em;
             }
             .descricao-box {
-                
-
+            
                 font-size: 0.9em;
             }
             .container {
@@ -364,35 +360,62 @@
 <body>
     <div class="container">
         <?php if (!empty($error_msg)) : ?>
-            <p class="error"><?= htmlspecialchars($error_msg); ?></p>
+        <p class="error"><?= htmlspecialchars($error_msg); ?></p>
         <?php elseif (!empty($produto)) : ?>
-            <h2>Detalhes do Produto</h2>
-            <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
-            <p><strong>Descrição:</strong></p>
-            <div class="descricao-box"><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></div>
-            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
-            <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
-            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
-            
+            <h2>Detalhes do produto</h2>
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
                     <div class="main-image">
-                        <img class="active" src="../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
+                        <img class="active" src="paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
                     </div>
                     <div class="thumbnail-container">
                         <?php foreach ($imagens as $index => $imagem) : ?>
-                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
+                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
                         <?php endforeach; ?>
                     </div>
                 </div>
             <?php else : ?>
                 <p>Sem imagens disponíveis para este produto.</p>
             <?php endif; ?>
+            <?php 
+                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+            ?>
+                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+            <?php 
+                endif;
 
+                // Exibe o ícone de promoção, se o produto estiver em promoção
+                if ($produto['promocao'] === 'sim'): 
+            ?>
+                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+            <?php 
+                endif; 
+            ?>  
+            <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
+            <p><strong>Descrição:</strong></p>
+            <textarea class="descricao-box" readonly><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></textarea>
+            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
+            <?php if ($produto['frete_gratis'] === 'sim'): ?>
+                <p><strong>Frete Grátis:</strong> SIM</p>
+            <?php endif; ?>
+
+            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
+            
             <div class="buttons-container">
+                
                 <form method="POST" action="">
-                    <button type="submit" name="aprovar" class="btn btn-success">Aprovar</button>
-                    <button type="submit" name="reprovar" class="btn btn-danger">Reprovar</button>
+                    <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                        <!-- Botões para usuários logados -->
+                        <button type="submit" name="adicionar" class="btn btn-success">Adicionar ao Carrinho</button>
+                        <button type="submit" name="comprar" class="btn btn-danger">Comprar</button>
+                    <?php else: ?>
+                        <!-- Botões que redirecionam para a página de login -->
+                        <a href="../../index.php" class="btn btn-success">Voltar</a>
+                        <a href="login.php" class="btn btn-success">Adicionar ao Carrinho</a>
+                        <a href="login.php" class="btn btn-success">Comprar</a>
+                    <?php endif; ?>
+
                 </form>
             </div>
         <?php endif; ?>

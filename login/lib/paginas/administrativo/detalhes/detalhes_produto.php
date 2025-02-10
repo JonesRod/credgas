@@ -46,121 +46,71 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id_produto = $_GET['id_produto'];
-        if (isset($_POST['aprovar'])) {
-            $sql_aprovar = "UPDATE produtos SET produto_aprovado = 'sim' WHERE id_produto = ?";
+        $id_produto = $_GET['id_produto']; // Pegue o ID do produto do POST
+        $taxa_padrao = isset($_POST['taxa_padrao']) ? $_POST['taxa_padrao'] : '';
+
+        // Remove pontos e substitui a vírgula por ponto
+        $taxa_padrao = str_replace('.', '', $taxa_padrao); // Remove pontos (separadores de milhar)
+        $taxa_padrao = str_replace(',', '.', $taxa_padrao); // Troca a vírgula por ponto
+
+        $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] === 'sim' ? 'sim' : 'nao';
+        $parcelas = isset($_POST['parcelas']) ? intval($_POST['parcelas']) : 0;
+        
+        //echo ($id_produto);
+        //echo ($vende_crediario);
+        //echo ($parcelas);
+        //die();
+
+        if (isset($_POST['salvar'])) {
+            // Atualiza o produto com segurança
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, produto_aprovado = 'sim', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
-            $stmt->bind_param("i", $id_produto);
+
+            $stmt->bind_param("sssi", $taxa_padrao, $vende_crediario, $parcelas, $id_produto);
 
             if ($stmt->execute()) {
-                //$sql_not_admin = "UPDATE contador_notificacoes_admin SET not_atualizar_produto = '0' WHERE id_produto = $id_produto";
-                if (isset($_GET['id'])) {
-                    //echo ('oi');
-                
-                    $id = $_GET['id'];
-                
-                    // Consulta para buscar a notificação com o ID fornecido
-                    $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
-                    $result = $mysqli->query($sql_not) or die($mysqli->error);
-                
-                    if (isset($_GET['id'])) {
-                        //echo ('oi');
-                    
-                        $id = $_GET['id'];
-                    
-                        // Consulta para buscar a notificação com o ID fornecido
-                        $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
-                        $result = $mysqli->query($sql_not) or die($mysqli->error);
-                    
-                        // Verifica se a notificação foi encontrada
-                        if ($result->num_rows > 0) {
-                            // Exclui a notificação da tabela
-                            $sql_delete = "DELETE FROM contador_notificacoes_admin WHERE id = $id";
-                            if ($mysqli->query($sql_delete)) {
-                                //echo "Notificação excluída com sucesso.";
-                            } else {
-                                //echo "Erro ao excluir a notificação: " . $mysqli->error;
-                            }
-                        } else {
-                            //echo "Notificação não encontrada.";
-                        }
-                    }
-                    
-                }
-                
-                $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, analize)
-                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'APROVADO')";
             
-                if ($mysqli->query($sql_not_parc)) {
-                    // Redirecionar se todas as operações forem bem-sucedidas
-                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
-                    exit();
-                } else {
-                    $error_msg = "Erro ao processar notificações: " . $mysqli->error;
-                }
+                // Redireciona mantendo os parâmetros na URL
+                header("Location: " . $_SERVER['PHP_SELF'] . "?id_parceiro=$id_parceiro&id_produto=$id_produto");
+                exit; // Garante que o código pare aqui
             } else {
-                $error_msg = "Erro ao aprovar o produto.";
+                $error_msg = "Erro ao salvar alteração.";
             }
-            
+            //echo ('oii');
             $stmt->close();
-        } elseif (isset($_POST['reprovar'])) {
-            $sql_reprovar = "UPDATE produtos SET produto_aprovado = 'nao' WHERE id_produto = ?";
-            $stmt = $mysqli->prepare($sql_reprovar);
-            $stmt->bind_param("i", $id_produto);
-        
+
+        }elseif (isset($_POST['bloquear'])) {
+            // Atualiza o produto com segurança
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, produto_aprovado = 'nao', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
+            $stmt = $mysqli->prepare($sql_aprovar);
+
+            $stmt->bind_param("sssi", $taxa_padrao, $vende_crediario, $parcelas, $id_produto);
+
             if ($stmt->execute()) {
-                if (isset($_GET['id'])) {
-                    //echo ('oi');
-                
-                    $id = $_GET['id'];
-                
-                    // Consulta para buscar a notificação com o ID fornecido
-                    $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
-                    $result = $mysqli->query($sql_not) or die($mysqli->error);
-                
-                    if (isset($_GET['id'])) {
-                        //echo ('oi');
-                    
-                        $id = $_GET['id'];
-                    
-                        // Consulta para buscar a notificação com o ID fornecido
-                        $sql_not = "SELECT * FROM contador_notificacoes_admin WHERE id = $id";
-                        $result = $mysqli->query($sql_not) or die($mysqli->error);
-                    
-                        // Verifica se a notificação foi encontrada
-                        if ($result->num_rows > 0) {
-                            // Exclui a notificação da tabela
-                            $sql_delete = "DELETE FROM contador_notificacoes_admin WHERE id = $id";
-                            if ($mysqli->query($sql_delete)) {
-                                //echo "Notificação excluída com sucesso.";
-                            } else {
-                                //echo "Erro ao excluir a notificação: " . $mysqli->error;
-                            }
-                        } else {
-                            //echo "Notificação não encontrada.";
-                        }
-                    }
-                    
-                }
-        
+
                 // Inserir notificação para o parceiro
                 $sql_not_parc = "INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, id_produto, not_adicao_produto, msg, analize)
-                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique os dados editados do seu produto e tente novamente!', 'REPROVADO')";
+                VALUES (NOW(), '$id_parceiro', '$id_produto', '1', 'Verifique as informações do seu produto e tente novamente!', 'REPROVADO')";
         
                 if ($mysqli->query($sql_not_parc)) {
                     // Redirecionar se todas as operações forem bem-sucedidas
-                    header("Location: not_detalhes_edicao_produtos.php?id_produto=$id_produto");
+                    header("Location: " . $_SERVER['PHP_SELF'] . "?id_parceiro=$id_parceiro&id_produto=$id_produto");
                     exit();
+                    
                 } else {
                     $error_msg = "Erro ao processar notificações: " . $mysqli->error;
-                }
+                }   
+
+                // Redireciona mantendo os parâmetros na URL
+                header("Location: " . $_SERVER['PHP_SELF'] . "?id_parceiro=$id_parceiro&id_produto=$id_produto");
+                exit; // Garante que o código pare aqui
             } else {
-                $error_msg = "Erro ao reprovar o produto.";
+                $error_msg = "Erro ao salvar alteração.";
             }
-        
+
             $stmt->close();
+
         }
-        
     }
 ?>
 
@@ -330,6 +280,9 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .crediario{
+            margin-bottom: 20px;
+        }
 
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
@@ -371,6 +324,7 @@
         <?php elseif (!empty($produto)) : ?>
             <h2>Detalhes do Produto</h2>
             <p><strong>Parceiro:</strong> <?= htmlspecialchars($parceiro['nomeFantasia']); ?></p>
+            <p><strong>Status:</strong> <?= ($produto['produto_aprovado'] == 'sim') ? 'Ativo' : 'Inativo'; ?></p>
             <p><strong>Categoria:</strong> <?= htmlspecialchars($produto['categoria']); ?></p>
             <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
             <p><strong>Qt vendido:</strong> <?= htmlspecialchars($produto['qt_vendido']); ?></p>
@@ -379,39 +333,6 @@
             <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
             <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
-            
-            <!-- Opção de Vender no Crediário -->
-            <p><strong>Vender no Crediário:</strong></p>
-            <label>
-                <?php
-                    $vender_crediario = $produto['vende_crediario'] ?? 'nao'; // Valor salvo no banco, padrão "não"
-                    $parcelas_selecionadas = $produto['qt_parcelas'] ?? 1; // Número de parcelas salvo no banco, padrão 1
-                ?>
-                <input type="radio" name="vende_crediario" value="sim" 
-                <?= $vender_crediario === 'sim' ? 'checked' : ''; ?> 
-                onclick="toggleParcelas(true)"> Sim
-            </label>
-            <label>
-                <input type="radio" name="vende_crediario" value="nao" 
-                <?= $vender_crediario === 'nao' || $vender_crediario === '' ? 'checked' : ''; ?> 
-                onclick="toggleParcelas(false)"> Não
-            </label>
-
-            <!-- Select de Parcelas -->
-            <div id="parcelas-container" style="display: <?= $vender_crediario === 'sim' ? 'block' : 'none'; ?>; margin-top: 10px;">
-                <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
-                <select name="parcelas" id="parcelas">
-                    <?php for ($i = 1; $i <= 12; $i++): ?>
-                        <option value="<?= $i; ?>" <?= $i == $parcelas_selecionadas ? 'selected' : ''; ?>><?= $i; ?>x</option>
-                    <?php endfor; ?>
-                </select>
-            </div>
-
-            <script>
-                function toggleParcelas(mostrar) {
-                    document.getElementById('parcelas-container').style.display = mostrar ? 'block' : 'none';
-                }
-            </script>
 
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
@@ -427,6 +348,48 @@
             <?php else : ?>
                 <p>Sem imagens disponíveis para este produto.</p>
             <?php endif; ?>
+
+            <form method="POST" action="">
+                <label><strong>Taxa padrão: R$ </strong></label>
+                <input type="text" name="taxa_padrao" required value="<?= number_format($produto['taxa_padrao'] ?? 0, 2, ',', '.'); ?>">
+                <!-- Opção de Vender no Crediário --> 
+                <p><strong>Vender no Crediário:</strong></p>
+                <div class="crediario">
+                    <label>
+                        <?php
+                            $vender_crediario = $produto['vende_crediario'] ?? 'nao'; // Valor salvo no banco, padrão "não"
+                            $parcelas_selecionadas = $produto['qt_parcelas'] ?? 1; // Número de parcelas salvo no banco, padrão 1
+                        ?>
+                        <input type="radio" name="vende_crediario" value="sim" 
+                        <?= $vender_crediario === 'sim' ? 'checked' : ''; ?> 
+                        onclick="toggleParcelas(true)"> Sim
+                    </label>
+                    <label>
+                        <input type="radio" name="vende_crediario" value="nao" 
+                        <?= $vender_crediario === 'nao' || $vender_crediario === '' ? 'checked' : ''; ?> 
+                        onclick="toggleParcelas(false)"> Não
+                    </label>                        
+                </div>
+
+                <!-- Select de Parcelas -->
+                <div class="crediario" id="parcelas-container" style="display: <?= $vender_crediario === 'sim' ? 'block' : 'none'; ?>; margin-top: 10px;">
+                    <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
+                    <select name="parcelas" id="parcelas">
+                        <?php for ($i = 1; $i <= 12; $i++): ?>
+                            <option value="<?= $i; ?>" <?= $i == $parcelas_selecionadas ? 'selected' : ''; ?>><?= $i; ?>x</option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+
+                <button type="submit" name="salvar" class="btn btn-success">Salvar</button>
+                <button type="submit" name="bloquear" class="btn btn-danger">Bloquear</button>
+            </form>
+
+            <script>
+                function toggleParcelas(mostrar) {
+                    document.getElementById('parcelas-container').style.display = mostrar ? 'block' : 'none';
+                }
+            </script>
 
             <!-- Link para voltar -->
             <div style="text-align: center; margin-top: 30px;"> <!-- Aumentar a margem -->

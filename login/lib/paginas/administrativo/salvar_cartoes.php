@@ -65,11 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Caso seja adição, a query será para INSERT
         $sql = "INSERT INTO cartoes (id_admin, nome, 1x, 2x, 3x, 4x, 5x, 6x, 7x, 8x, 9x, 10x, 11x, 12x) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         // Prepara a consulta SQL
         $stmt = $mysqli->prepare($sql);
-        $stmt->bind_param('issssssssssssss',
+        $stmt->bind_param('isiiiiiiiiiiii',
             $id_admin,
             $nome_cartao,
             $parcelas['1x'],

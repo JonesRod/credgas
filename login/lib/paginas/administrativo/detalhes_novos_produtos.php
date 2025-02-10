@@ -47,9 +47,9 @@
         $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] === 'sim' ? 'sim' : 'nao';
         $parcelas = isset($_POST['parcelas']) ? intval($_POST['parcelas']) : 0;
         
-        echo ($id_produto);
-        echo ($vende_crediario);
-        echo ($parcelas);
+        //echo ($id_produto);
+        //echo ($vende_crediario);
+        //echo ($parcelas);
         //die();
 
         if (isset($_POST['aprovar'])) {
@@ -208,22 +208,22 @@
             font-weight: bold;
         }
 
-/* Estilo para o contêiner da descrição */
-.descricao-box {
-    max-height: none;  /* Remove o limite de altura */
-    height: auto;      /* Permite que o contêiner ajuste a altura conforme o conteúdo */
-    overflow-y: auto;  /* Permite rolagem, se necessário */
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    font-size: 1em;
-    color: #444;
-    margin: 10px 0;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    white-space: normal;  /* Garante que o texto quebre automaticamente */
-    word-wrap: break-word;  /* Quebra as palavras longas, se necessário */
-}
+        /* Estilo para o contêiner da descrição */
+        .descricao-box {
+            max-height: none;  /* Remove o limite de altura */
+            height: auto;      /* Permite que o contêiner ajuste a altura conforme o conteúdo */
+            overflow-y: auto;  /* Permite rolagem, se necessário */
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            font-size: 1em;
+            color: #444;
+            margin: 10px 0;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            white-space: normal;  /* Garante que o texto quebre automaticamente */
+            word-wrap: break-word;  /* Quebra as palavras longas, se necessário */
+        }
 
 
         .image-slider {

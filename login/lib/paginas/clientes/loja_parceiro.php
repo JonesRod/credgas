@@ -14,7 +14,7 @@
         $usuario = $sql_query->fetch_assoc(); 
 
         // Consulta para buscar os dados do parceiro
-        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
         $result = $mysqli->query($sql);
 
         if ($result->num_rows > 0) {

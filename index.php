@@ -102,7 +102,7 @@
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
-                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                 if ($result_parceiros->num_rows > 0) {
@@ -127,7 +127,7 @@
                 <?php 
                     
                     // Consulta para buscar parceiros ativos e abertos
-                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                     if ($result_parceiros->num_rows > 0): 
@@ -247,10 +247,7 @@
                         SELECT DISTINCT mp.* 
                         FROM meus_parceiros mp
                         JOIN produtos p ON mp.id = p.id_parceiro
-                        WHERE 
-                            mp.status = 'ATIVO' 
-                            AND mp.aberto_fechado_manual = 'Aberto'
-                    ";
+                        WHERE mp.status = 'ATIVO'";
 
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -389,10 +386,7 @@
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE 
-                        mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado_manual = 'Aberto'
-                ";
+                    WHERE mp.status = 'ATIVO'";
     
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -515,10 +509,7 @@
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE 
-                        mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado_manual = 'Aberto'
-                ";
+                    WHERE mp.status = 'ATIVO'";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -617,6 +608,7 @@
                     <?php else: ?>
                         <p>Não há produtos no momento.</p>
                     <?php endif; ?>
+
                     <!-- Mensagem de produto não encontrado -->
                     <p id="mensagemNaoEncontradoNovidades" style="display: none;">Produto não encontrado.</p>
                 </div>

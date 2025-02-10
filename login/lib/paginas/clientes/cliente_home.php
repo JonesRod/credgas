@@ -400,7 +400,7 @@ if (isset($_SESSION['id'])) {
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
-                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                 if ($result_parceiros->num_rows > 0) {
@@ -425,7 +425,7 @@ if (isset($_SESSION['id'])) {
                 <?php 
                     
                     // Consulta para buscar parceiros ativos e abertos
-                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                     if ($result_parceiros->num_rows > 0): 
@@ -511,7 +511,7 @@ if (isset($_SESSION['id'])) {
                         ?>
                         
                         <p class="moeda">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                        <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                        <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
                         <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -549,9 +549,10 @@ if (isset($_SESSION['id'])) {
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE 
-                        mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado_manual = 'Aberto'
+                    WHERE mp.status = 'ATIVO'
+                    AND p.oculto != 'sim' 
+                    AND p.produto_aprovado = 'sim'
+                    AND p.promocao = 'sim'
                 ";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
@@ -560,36 +561,23 @@ if (isset($_SESSION['id'])) {
                     while ($parceiro = $result_parceiros->fetch_assoc()): 
                         // Exibe cada parceiro no carrossel
                         $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
-                        $id_parceiro = $parceiro['id'];
-                        
-                        $sql_produtos = "
-                        SELECT * 
-                        FROM produtos 
-                        WHERE id_parceiro = $id_parceiro 
-                        AND oculto != 'sim' 
-                        AND produto_aprovado = 'sim'
-                        AND promocao = 'sim'
-                    ";
-                    
-                    $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
-                ?>
-                <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
-                    <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
-                    alt="Loja não encontrada">
-                    <h3>
-                        <?php
-                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
-                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
                         ?>
-                    </h3>
-                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
-                </div>
-                <?php endwhile; ?>
+                        <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
+                            <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                            alt="Loja não encontrada">
+                            <h3>
+                                <?php
+                                    $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                                    echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 18 caracteres com "..."
+                                ?>
+                            </h3>
+                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                        </div>
+                    <?php endwhile; ?>
                 <?php else: ?>
-                    <p>Nenhum parceiro ativo no momento.</p>
+                    <p>Nenhum parceiro com promoção no momento.</p>
                 <?php endif; ?>
             </div>
-
 
             <!-- Mensagem de Parceiro Não Encontrado -->
             <p id="mensagemParNaoEncontradoPromocao" style="display: none;">Parceiro não encontrado.</p> 
@@ -641,7 +629,7 @@ if (isset($_SESSION['id'])) {
                                 
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -655,7 +643,7 @@ if (isset($_SESSION['id'])) {
                             </div>
                         <?php endwhile; ?>
                     <?php else: ?>
-                    <p>Não há produtos na promoção no momento.</p>    
+                        <p>Não há produtos na promoção no momento.</p>    
                     <?php endif; ?>
                     
                     <!-- Mensagem de produto não encontrado -->
@@ -680,10 +668,7 @@ if (isset($_SESSION['id'])) {
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE 
-                        mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado_manual = 'Aberto'
-                ";
+                    WHERE mp.status = 'ATIVO'";
     
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -771,7 +756,7 @@ if (isset($_SESSION['id'])) {
                                 ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -809,10 +794,7 @@ if (isset($_SESSION['id'])) {
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE 
-                        mp.status = 'ATIVO' 
-                        AND mp.aberto_fechado_manual = 'Aberto'
-                ";
+                    WHERE mp.status = 'ATIVO'";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -898,7 +880,7 @@ if (isset($_SESSION['id'])) {
                                                      
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -911,6 +893,7 @@ if (isset($_SESSION['id'])) {
                                 <?php endif; ?>
                             </div>
                         <?php endwhile; ?>
+                        
                     <?php else: ?>
                         <p>Não há produtos no momento.</p>
                     <?php endif; ?>

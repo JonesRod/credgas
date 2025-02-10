@@ -904,8 +904,6 @@
         fetchNotifications();
         setInterval(fetchNotifications, 3000);
 
-
-
         function atualizarUFParceiros() {
             const cidadeSelect = document.getElementById('cidadeParc');
             const ufInput = document.getElementById('ufParc');
