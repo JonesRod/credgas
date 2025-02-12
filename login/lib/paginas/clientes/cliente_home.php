@@ -16,18 +16,7 @@ if (isset($_SESSION['id'])) {
     $usuario = $sql_query->get_result()->fetch_assoc();
     //echo 'oii1'; // Para verificar que está no bloco de sessão
 
-}/* elseif (isset($_GET['id'])) {
-    // Se o ID for passado pela URL
-    $id = intval($_GET['id']); // Usa o ID da URL, e sempre converta para inteiro
-
-    // Consulta para buscar os dados do cliente
-    $sql_query = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
-    $sql_query->bind_param("i", $id); // Bind para evitar injeção de SQL
-    $sql_query->execute();
-    $usuario = $sql_query->get_result()->fetch_assoc();
-    echo 'oii2'; // Para verificar que está no bloco do GET
-
-}*/ else {
+}else {
     // Se não houver ID na sessão ou na URL
     //echo 'oii3';
     // Redirecionamento opcional para a página de login
@@ -511,7 +500,7 @@ if (isset($_SESSION['id'])) {
                         ?>
                         
                         <p class="moeda">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                        <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                        <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                         <!-- Verifica se o usuário está logado para permitir a compra -->
                         <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -629,7 +618,7 @@ if (isset($_SESSION['id'])) {
                                 
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -756,7 +745,7 @@ if (isset($_SESSION['id'])) {
                                 ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
@@ -880,7 +869,7 @@ if (isset($_SESSION['id'])) {
                                                      
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id_cliente; ?>?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>

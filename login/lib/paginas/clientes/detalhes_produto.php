@@ -6,7 +6,7 @@
     }
 
     // Verificar se a sessão está ativa
-    if (isset($_SESSION['id'])) {
+    if (isset($_SESSION['id']) && isset($_GET['id_cliente']) && isset($_GET['id_produto'])) {
         $id = $_SESSION['id'];
         $sql_query = $mysqli->query("SELECT * FROM meus_clientes WHERE id = '$id'") or die($mysqli->error);
         $usuario = $sql_query->fetch_assoc();
@@ -18,8 +18,11 @@
     }
 
     // Obter os IDs da URL
-    //$id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : null;
+    $id_cliente = isset($_GET['id_cliente']) ? intval($_GET['id_cliente']) : null;
     $id_produto = isset($_GET['id_produto']) ? intval($_GET['id_produto']) : null;
+
+    //echo $id_produto;
+    //echo $id_cliente;
 
     $produto = [];
     $imagens = [];
@@ -324,6 +327,125 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .descricao-box {
+            min-height: 100px;
+            max-height: 150px; /* Altura máxima */
+            height: auto; /* Altura ajustável automaticamente */
+            font-size: 0.9em;
+            overflow: auto; /* Adiciona rolagem caso o conteúdo ultrapasse 150px */
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            width: 280px;
+            height: 380px;
+            text-align: center;
+        }
+        .popup #info {
+            margin: 12px 12px 8px 12px;
+            border: 1px solid black; /* Adiciona uma borda */
+            border-radius: 5px; /* Arredonda os cantos */
+        }
+
+
+        .popup h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .popup aside {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 5px;
+            padding-bottom: 10px;
+        }
+        .popup p{
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        .popup input {
+            flex: 1;
+            border: none;
+            text-align: left;
+            margin: 5px;
+            width: 80px;
+        }
+
+        .popup input:focus {
+            outline: none;
+        }        
+        .popup input[type="number"] {
+            border: 1px solid #000; /* Cor da borda */
+            padding: 5px; /* Espaçamento interno */
+            border-radius: 4px; /* Bordas arredondadas */
+            outline: none; /* Remove o contorno ao focar */
+        }
+
+        .popup #produtoNome{
+            font-weight: bold; /* Deixa o texto em negrito */
+            text-align: center;
+            width: 95%;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .close-btn, .confirm-btn {
+            width: 90%;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 3px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .close-btn {
+            background: red;
+        }
+
+        .confirm-btn {
+            background: #28a745;
+        }
+
+        .close-btn:hover, .confirm-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        #resposra-carrinho {
+            position: fixed;  /* Fixa a posição na tela */
+            top: 50%;         /* Coloca no centro vertical */
+            left: 50%;        /* Coloca no centro horizontal */
+            transform: translate(-50%, -50%); /* Ajusta para centralizar exatamente */
+            background-color: rgba(0, 0, 0, 0.7);  /* Fundo semitransparente */
+            color: white;     /* Cor do texto */
+            padding: 20px;    /* Espaçamento interno */
+            border-radius: 10px; /* Bordas arredondadas */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra para dar destaque */
+            font-size: 16px;  /* Tamanho da fonte */
+            z-index: 9999;    /* Garante que o popup fique acima de outros elementos */
+            display: none;    /* Inicialmente escondido */
+        }
+
 
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
@@ -334,8 +456,11 @@
                 font-size: 1em;
             }
             .descricao-box {
-            
+                min-height: 100px;
+                max-height: 150px; /* Altura máxima */
+                height: auto; /* Altura ajustável automaticamente */
                 font-size: 0.9em;
+                overflow: auto; /* Adiciona rolagem caso o conteúdo ultrapasse 150px */
             }
             .container {
                 max-width: 95%;
@@ -366,11 +491,11 @@
             <?php if (!empty($imagens)) : ?>
                 <div class="image-slider">
                     <div class="main-image">
-                        <img class="active" src="paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
+                        <img class="active" src="../../paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
                     </div>
                     <div class="thumbnail-container">
                         <?php foreach ($imagens as $index => $imagem) : ?>
-                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
+                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="../../paginas/parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
                         <?php endforeach; ?>
                     </div>
                 </div>
@@ -396,30 +521,79 @@
             <p><strong>Descrição:</strong></p>
             <textarea class="descricao-box" readonly><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></textarea>
             <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
-            <?php if ($produto['frete_gratis'] === 'sim'): ?>
-                <p><strong>Frete Grátis:</strong> SIM</p>
+            <?php if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): ?>
+                <p><strong style="color: green;">Frete Grátis</strong></p>
+            <?php else: ?>
+                <p><strong style="color: red;">Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             <?php endif; ?>
 
-            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
-            
             <div class="buttons-container">
                 
                 <form method="POST" action="">
+                    <!-- Preço do produto -->
+                    <?php
+                        $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            ? floatval($produto['valor_promocao'] ?? 0) 
+                            : floatval($produto['valor_produto'] ?? 0);  
+                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                    ?>
+
                     <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                         <!-- Botões para usuários logados -->
                         <button type="submit" name="adicionar" class="btn btn-success">Adicionar ao Carrinho</button>
                         <button type="submit" name="comprar" class="btn btn-danger">Comprar</button>
                     <?php else: ?>
                         <!-- Botões que redirecionam para a página de login -->
-                        <a href="../../index.php" class="btn btn-success">Voltar</a>
-                        <a href="login.php" class="btn btn-success">Adicionar ao Carrinho</a>
-                        <a href="login.php" class="btn btn-success">Comprar</a>
+                        <a href="cliente_home.php" class="btn btn-success">Voltar</a>
+                        <a href="#" class="btn btn-success" 
+                            onclick="abrirPopup(
+                            '<?php echo $produto['id_produto']; ?>',
+                            '<?php echo $produto['nome_produto']; ?>', 
+                            '<?php echo $valor_produto; ?>')
+                        ">Adicionar ao Carrinho</a>
+
+                        <a href="" class="btn btn-success">Comprar</a>
                     <?php endif; ?>
 
                 </form>
             </div>
         <?php endif; ?>
     </div>
+    <div class="popup" id="popup">
+        <h2>Detalhes do Produto</h2>
+        <form id="formCarrinho" action="comprar/carrinho.php">
+            <aside id="info">
+                <input type="hidden" id="id_cli" name="id_cli" value="<?php echo htmlspecialchars( $id_cliente); ?>">
+                <input type="hidden" id="id_produto_carrinho" name="id_produto_carrinho">
+                <input type="text" id="produtoNome" name="produtoNome" readonly>
+                
+                <p>Preço R$: 
+                    <input type="text" id="produtoPreco" name="produtoPreco" readonly> 
+                </p>
+                               
+                <p>Quantidade: 
+                    <input type="number" id="quantidade" name="quantidade" value="1" min="1" oninput="calcularTotal()">
+                </p>
+                
+                <p>Valor Total R$: 
+                    <input type="text" id="total" name="total" readonly>
+                </p>
+                
+            </aside>   
+
+            <button type="submit" class="confirm-btn">Adicionar ao Carrinho</button>            
+        </form>
+        <button class="close-btn" onclick="fecharPopup()">Cancelar</button>             
+    </div>
+
+    <div id="resposra-carrinho" style="display: none;">
+        <!-- Mensagem de retorno -->
+        <p id="mensagem"></p>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="fecharPopup()"></div>
+
     <script>
         function changeMainImage(thumbnail) {
             const mainImage = document.querySelector('.main-image img');
@@ -429,6 +603,95 @@
             thumbnails.forEach((thumb) => thumb.classList.remove('active'));
 
             thumbnail.classList.add('active');
+        }
+
+        let precoProduto = 0; // Variável global para armazenar o preço do produto
+
+        function abrirPopup(id, produto, preco) {
+            // Converte para float e garante apenas 2 casas decimais
+            precoProduto = parseFloat(preco).toFixed(2);
+
+            // Formata corretamente no padrão brasileiro
+            let precoFormatado = Number(precoProduto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Define os valores nos inputs
+            document.getElementById('id_produto_carrinho').value = id;
+            document.getElementById('produtoNome').value = produto;
+            document.getElementById('produtoPreco').value = precoFormatado;
+            document.getElementById('total').value = precoFormatado;
+
+            // Exibe o popup
+            document.getElementById('popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function calcularTotal() {
+            let quantidade = parseInt(document.getElementById('quantidade').value);
+
+            if (isNaN(quantidade) || quantidade < 1) {
+                quantidade = 1; // Evita valores inválidos
+            }
+
+            // Calcula o total
+            let total = (precoProduto * quantidade).toFixed(2);
+
+            // Formata corretamente no padrão brasileiro
+            let totalFormatado = Number(total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Atualiza o valor total no input
+            document.getElementById('total').value = totalFormatado;
+        }
+
+        function fecharPopup() {
+            document.getElementById('quantidade').value = 1;
+            document.getElementById('popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('overlay');
+
+            overlay.addEventListener('click', function(event) {
+                fecharPopup();
+            });
+        });
+
+        document.getElementById("formCarrinho").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evita o envio tradicional do formulário
+
+            let formData = new FormData(this);
+
+            fetch("comprar/carrinho.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())  // Recebe a resposta como texto
+            .then(data => {
+                //console.log("Resposta recebida:", data);  // Verifique o conteúdo da resposta
+                try {
+                    let jsonResponse = JSON.parse(data);  // Tente fazer o parse
+                    let mensagem = document.getElementById("mensagem");
+                    mensagem.innerText = jsonResponse.message;
+                    mensagem.style.color = jsonResponse.status === "success" ? "green" : "red";
+                    fecharPopup();
+                    abrirResposta();
+                } catch (e) {
+                    console.error('Erro ao interpretar JSON:', e);
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+            });
+        });
+
+        function abrirResposta() {
+            // Exibe o popup
+            document.getElementById('resposra-carrinho').style.display = 'block';
+
+            // Esconde o popup após 3 segundos (3000 milissegundos)
+            setTimeout(function() {
+                document.getElementById('resposra-carrinho').style.display = 'none';
+            }, 3000);
         }
 
     </script>

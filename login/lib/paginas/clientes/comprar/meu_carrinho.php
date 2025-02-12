@@ -111,9 +111,9 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                 <h3>Loja: <?php echo htmlspecialchars($dados['nomeFantasia']); ?></h3>
                 
                 <div class="produto header">
+                    <span style="display: none;">id_produto</span>
                     <span>Produto</span>
                     <span>Valor Unitário</span>
-                    <span>Taxa</span>
                     <span>Frete</span>
                     <span>Qt</span>
                     <span>Total</span>
@@ -121,16 +121,16 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
 
                 <?php foreach ($dados['produtos'] as $produto): ?>
                     <div class="produto">
+                        <span style="display: none;"><?php echo htmlspecialchars($produto['id_produto']); ?></span>
                         <span><?php echo htmlspecialchars($produto['nome_produto']); ?></span>
                         <span>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></span>
-                        <span><?php echo number_format($produto['taxa_padrao'], 2, ',', '.'); ?>%</span>
                         <span>R$ <?php echo number_format($produto['frete'], 2, ',', '.'); ?></span>
-                        <span><?php echo $produto['qt']; ?></span>
+                        <span><input type="number" style="width: 40px;" value="<?php echo $produto['qt']; ?>"></span>
                         <span>R$ <?php echo number_format($produto['total'], 2, ',', '.'); ?></span>
                     </div>
                 <?php endforeach; ?>
 
-                <div class="total">Total do Parceiro: R$ <?php echo number_format($dados['total'], 2, ',', '.'); ?></div>
+                <div class="total" style="margin-right: 30px;">Total: R$ <?php echo number_format($dados['total'], 2, ',', '.'); ?></div>
             </div>
         <?php endforeach; ?>
     <?php else: ?>
@@ -138,6 +138,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     <?php endif; ?>
 
     <!-- Botão Voltar -->
+    <a href="javascript:history.back()" class="voltar">Voltar</a>
     <a href="javascript:history.back()" class="voltar">Voltar</a>
 </div>
 
