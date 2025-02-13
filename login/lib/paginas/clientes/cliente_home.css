@@ -627,7 +627,6 @@ padding-left: 5px;  /* Garante que não há espaçamento interno */
     flex-grow: 1; /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
     padding-left: 15px; /* Espaço entre a logo e o nome */
     margin: 15px 0; /* Ajusta o espaçamento para telas pequenas */
-
 }
 
 /* Cartão do produto */
