@@ -15,7 +15,7 @@
     $produtos = $result->fetch_all(MYSQLI_ASSOC);
 
     // Buscar se o parceiro aceita cartão de crédito
-    $stmt = $mysqli->prepare("SELECT cartao_debito, cartao_credito, outras_formas FROM meus_parceiros WHERE id = ?");
+    $stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
     $stmt->bind_param("i", $id_parceiro);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -24,6 +24,12 @@
     $cartao_debito_ativo = !empty($parceiro['cartao_debito']); 
     $cartao_credito_ativo = !empty($parceiro['cartao_credito']); // Se estiver vazio, será falso
     $outros = !empty($parceiro['outras_formas']); 
+
+    $cidade_parceiro = !empty($parceiro['cidade']) ? $parceiro['cidade'] : '';
+    $uf_parceiro = !empty($parceiro['estado']) ? $parceiro['estado'] : '';
+    $endereco_parceiro = !empty($parceiro['endereco']) ? $parceiro['endereco'] : '';
+    $numero_parceiro = !empty($parceiro['numero']) ? $parceiro['numero'] : '';
+    $bairro_parceiro = !empty($parceiro['bairro']) ? $parceiro['bairro'] : '';
 
     // Buscar se o parceiro aceita cartão de crédito
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
@@ -98,7 +104,7 @@
                 <input type="radio" name="entrega" value="entregar" checked onclick="verificarEndereco()"> Entregar
             </label>
             <label>
-                <input type="radio" name="entrega" value="buscar" onclick="atualizarTotal(false); esconderCamposEndereco()"> Retirar no local
+                <input type="radio" name="entrega" value="buscar" onclick="atualizarTotal(false); esconderCamposEndereco(); mostrarEnderecoLoja()"> Retirar no local
             </label>
 
             <?php if (!empty($endereco_cadastrado)): ?>
@@ -134,25 +140,24 @@
                 <button type="button" onclick="usarEnderecoCadastrado()">Usar meu endereço</button>
             </div>
 
-            <?php if (!empty($endereco_loja)): ?>
-                <div id="enderecoCadastrado">
+            <?php if (!empty($endereco_parceiro)): ?>
+                <div id="enderecoParceiro" style="display: none;">
                     <h3>Endereço da loja</h3>
                     <p><strong>Cidade/UF:</strong> 
-                        <span id="cidade_uf"><?php echo $cidade.'/'.$uf; ?></span>
+                        <span id="cidade_uf"><?php echo $cidade_parceiro . '/' . $uf_parceiro; ?></span>
                     </p>
                     <p><strong>Rua/AV.:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($endereco_cadastrado); ?></span>
+                        <span id="ruaParceiro"><?php echo htmlspecialchars($endereco_parceiro); ?></span>
                     </p>
                     <p><strong>Número:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($numero); ?></span>
+                        <span id="numeroParceiro"><?php echo htmlspecialchars($numero_parceiro); ?></span>
                     </p>
-                    <p><strong>Bairro</strong>:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($bairro); ?></span>
+                    <p><strong>Bairro:</strong> 
+                        <span id="bairroParceiro"><?php echo htmlspecialchars($bairro_parceiro); ?></span>
                     </p>
-                    <button type="button" onclick="usarEnderecoCadastrado()">Usar este endereço</button>
-                    <button type="button" onclick="mostrarCamposEndereco()">Outro endereço</button>
                 </div>
             <?php endif; ?>
+
 
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
             <input type="hidden" id="inputTotal" name="total" value="<?php echo $totalComFrete; ?>">
@@ -197,8 +202,10 @@
             
             if (enderecoCadastrado.trim() !== "") {
                 document.getElementById("enderecoCadastrado").style.display = "block";
+                document.getElementById("enderecoParceiro").style.display = "none";
             } else {
                 usarEnderecoCadastrado();
+                document.getElementById("enderecoParceiro").style.display = "none";
             }
         }
 
@@ -215,7 +222,13 @@
         function esconderCamposEndereco() {
             document.getElementById("enderecoCadastrado").style.display = "none";
             document.getElementById("novoEndereco").style.display = "none";
+
         }
+        function mostrarEnderecoLoja(){
+            document.getElementById("enderecoParceiro").style.display = "block";
+        }
+
+
 
         function atualizarTotal(cobrarFrete) {
             let total = cobrarFrete ? totalGeral + maiorFrete : totalGeral;
