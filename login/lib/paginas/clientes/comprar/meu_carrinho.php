@@ -56,10 +56,17 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         table {
             width: 100%;
             border-collapse: collapse;
+            border-radius: 20px;
         }
         thead {
             background-color: #007bff;
             color: white;
+        }
+        #direita{
+            border-radius: 5px 0 0 0;
+        }
+        #esquerda{
+            border-radius: 0 5px 0 0;
         }
         th, td {
             padding: 3px;
@@ -74,7 +81,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             font-size: 16px;
             background-color: chartreuse;
             padding: 5px;
-            border-radius: 5px;
+            border-radius: 0 0 5px 5px;
         }
         .comprar {
             width: 100px;
@@ -131,21 +138,21 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
 
     <?php if (!empty($carrinho)): ?>
         <?php foreach ($carrinho as $id_parceiro => $dados): ?>
-            <div class="parceiro">
+            <div class="parceiro" data-id-parceiro="<?php echo $id_parceiro; ?>">
                 <h3>Loja: <?php echo htmlspecialchars($dados['nomeFantasia']); ?></h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Produto</th>
-                            <th>Valor Unitário</th>
+                            <th id="direita">Produto</th>
+                            <th>Valor uni.</th>
                             <th>Qt</th>
                             <th>Total</th>
-                            <th>Ação</th>
+                            <th id="esquerda">Ação</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($dados['produtos'] as $produto): ?>
-                            <tr class="produto" data-id-produto="<?php echo $produto['id_produto']; ?>" data-id-cliente="<?php echo $id_cliente; ?>">
+                            <tr title="Detalhes" class="produto" data-id-produto="<?php echo $produto['id_produto']; ?>" data-id-cliente="<?php echo $id_cliente; ?>">
                                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
                                 <td class="preco-produto" data-valor="<?php echo $produto['valor_produto']; ?>">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></td>
                                 <td>
@@ -167,7 +174,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                 </table>
                 <div class="total">
                     Total: R$ <?php echo number_format($dados['total'], 2, ',', '.'); ?>
-                    <button class="comprar">Comprar</button>
+                    <button class="comprar" data-id-cliente="<?php echo $id_cliente; ?>">Comprar</button>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -208,72 +215,159 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             });
         });
     });
+
     document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".lixeira").forEach(lixeira => {
-        lixeira.addEventListener("click", function (event) {
-            event.stopPropagation();  // Evita que o clique no produto seja disparado
-            let id = this.getAttribute("data-id");
-            let idCliente = this.getAttribute("data-id-cliente");
+        document.querySelectorAll(".lixeira").forEach(lixeira => {
+            lixeira.addEventListener("click", function (event) {
+                event.stopPropagation();  // Evita que o clique no produto seja disparado
+                let id = this.getAttribute("data-id");
+                let idCliente = this.getAttribute("data-id-cliente");
 
-            if (!id || !idCliente) {
-                return;  // Previne a execução caso algum valor esteja faltando
-            }
+                if (!id || !idCliente) {
+                    return;  // Previne a execução caso algum valor esteja faltando
+                }
 
-            let url = `remover_produto.php?id=${id}&id_cliente=${idCliente}`;
+                let url = `remover_produto.php?id=${id}&id_cliente=${idCliente}`;
 
-            if (confirm("Tem certeza que deseja remover este item do carrinho?")) {
-                fetch(url)
-                    .then(response => response.text())
-                    .then(data => {
-                        if (data.trim() === "sucesso") {
-                            let produto = this.closest(".produto");
-                            let parceiroDiv = produto.closest(".parceiro");
+                if (confirm("Tem certeza que deseja remover este item do carrinho?")) {
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(data => {
+                            if (data.trim() === "sucesso") {
+                                let produto = this.closest(".produto");
+                                let parceiroDiv = produto.closest(".parceiro");
 
-                            // Remove o produto da interface
-                            produto.remove();
+                                // Remove o produto da interface
+                                produto.remove();
 
-                            // Recalcula os totais após a remoção
-                            atualizarTotalParceiro(parceiroDiv);
-                            atualizarTotalGeral();
-                        } else {
-                            alert("Erro ao remover o produto.");
-                        }
-                    });
+                                // Recalcula os totais após a remoção
+                                atualizarTotalParceiro(parceiroDiv);
+                                atualizarTotalGeral();
+                            } else {
+                                alert("Erro ao remover o produto.");
+                            }
+                        });
+                }
+            });
+        });
+    });
+
+    // Função para atualizar o total do parceiro
+    function atualizarTotalParceiro(parceiroDiv) {
+        let totalParceiro = 0;
+        let totaisProdutos = parceiroDiv.querySelectorAll(".total-produto");
+
+        totaisProdutos.forEach(span => {
+            totalParceiro += parseFloat(span.innerText.replace("R$ ", "").replace(".", "").replace(",", "."));
+        });
+
+        // Atualiza o total do parceiro
+        const totalDiv = parceiroDiv.querySelector(".total");
+        if (totalDiv) {
+            totalDiv.firstChild.textContent = "Total: R$ " + totalParceiro.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+        }
+    }
+
+    // Função para atualizar o total geral do carrinho
+    function atualizarTotalGeral() {
+        let totalGeral = 0;
+        document.querySelectorAll(".parceiro").forEach(parceiro => {
+            let totalParceiro = parseFloat(parceiro.querySelector(".total").innerText.replace("Total: R$ ", "").replace(".", "").replace(",", "."));
+            totalGeral += totalParceiro;
+        });
+
+        // Atualiza o total geral
+        const totalCarrinho = document.querySelector(".total");
+        if (totalCarrinho) {
+            totalCarrinho.firstChild.textContent = "Total: R$ " + totalGeral.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+        }
+    }
+
+    // Clique na linha do produto (mas não no input ou ícone de lixeira)
+    document.querySelectorAll(".produto").forEach(produto => {
+        produto.addEventListener("click", function (event) {
+            let target = event.target;
+            if (!target.classList.contains("quantidade") && !target.classList.contains("lixeira")) {
+                let idProduto = this.getAttribute("data-id-produto");
+                let idCliente = this.getAttribute("data-id-cliente");
+                window.location.href = `../detalhes_produto.php?id_produto=${idProduto}&id_cliente=${idCliente}`;
             }
         });
     });
-});
 
-// Função para atualizar o total do parceiro
-function atualizarTotalParceiro(parceiroDiv) {
-    let totalParceiro = 0;
-    let totaisProdutos = parceiroDiv.querySelectorAll(".total-produto");
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".comprar").forEach(botao => {
+            botao.addEventListener("click", function () {
+                let parceiroDiv = this.closest(".parceiro");
+                let idParceiro = parceiroDiv.getAttribute("data-id-parceiro"); // ID do parceiro
+                let idCliente = this.getAttribute("data-id-cliente"); // ID do cliente
+                let produtos = [];
 
-    totaisProdutos.forEach(span => {
-        totalParceiro += parseFloat(span.innerText.replace("R$ ", "").replace(".", "").replace(",", "."));
+                // ✅ Log para depuração
+                console.log("ID Parceiro:", idParceiro);
+                console.log("ID Cliente:", idCliente);
+
+                // 🚨 Verificação se os IDs estão corretos
+                if (!idCliente || !idParceiro) {
+                    alert("Erro: Cliente ou Parceiro não identificado.");
+                    return;
+                }
+
+                parceiroDiv.querySelectorAll(".produto").forEach(produto => {
+                    let idProduto = produto.getAttribute("data-id-produto");
+                    let quantidade = parseInt(produto.querySelector(".quantidade").value) || 0;
+
+                    // ✅ Apenas adiciona produtos com quantidade > 0
+                    if (idProduto && quantidade > 0) {
+                        produtos.push({
+                            id_produto: idProduto,
+                            quantidade: quantidade
+                        });
+                    }
+                });
+
+                // 🚨 Se não houver produtos válidos, impedir a requisição
+                if (produtos.length === 0) {
+                    alert("Nenhum produto selecionado!");
+                    return;
+                }
+                console.log("Enviando para o servidor:", JSON.stringify({
+                    id_cliente: idCliente,
+                    id_parceiro: idParceiro,
+                    produtos: produtos
+                }));
+                fetch("atualizar_carrinho.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id_cliente: idCliente,
+                        id_parceiro: idParceiro,
+                        produtos: produtos,
+                    })
+                })
+                .then(response => response.text()) // 👈 Primeiro, pega como texto
+                .then(text => {
+                    console.log("Resposta bruta do servidor:", text); // 👀 Log da resposta
+                    return JSON.parse(text); // Depois, tenta converter para JSON
+                })
+                .then(data => {
+                    console.log("Resposta JSON processada:", data);
+                    if (data.status === "sucesso") {
+                        window.location.href = "finalizar_compra.php?id_parceiro=" + idParceiro + "&id_cliente=" + idCliente;
+                    } else {
+                        alert("Erro ao atualizar o carrinho: " + data.mensagem);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao processar resposta:", error);
+                    alert("Erro ao conectar ao servidor.");
+                });
+
+            });
+        });
     });
 
-    // Atualiza o total do parceiro
-    const totalDiv = parceiroDiv.querySelector(".total");
-    if (totalDiv) {
-        totalDiv.firstChild.textContent = "Total: R$ " + totalParceiro.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-    }
-}
 
-// Função para atualizar o total geral do carrinho
-function atualizarTotalGeral() {
-    let totalGeral = 0;
-    document.querySelectorAll(".parceiro").forEach(parceiro => {
-        let totalParceiro = parseFloat(parceiro.querySelector(".total").innerText.replace("Total: R$ ", "").replace(".", "").replace(",", "."));
-        totalGeral += totalParceiro;
-    });
-
-    // Atualiza o total geral
-    const totalCarrinho = document.querySelector(".total");
-    if (totalCarrinho) {
-        totalCarrinho.firstChild.textContent = "Total: R$ " + totalGeral.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-    }
-}
 
 </script>
 </body>

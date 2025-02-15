@@ -31,30 +31,22 @@ try {
             throw new Exception("Produto inválido");
         }
 
-        // Verifica se o produto está no carrinho antes de tentar atualizar
-        $stmt = $mysqli->prepare("SELECT qt FROM carrinho WHERE id_cliente = ? AND id_produto = ?");
-        $stmt->bind_param("ii", $id_cliente, $id_produto);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 0) {
-            throw new Exception("Produto não encontrado no carrinho. O cliente já adicionou esse item?");
+        if ($quantidade <= 0) {
+            $stmt = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_produto = ?");
+            $stmt->bind_param("ii", $id_cliente, $id_produto);
+            $stmt->execute();
         } else {
-            $row = $result->fetch_assoc();
-            if ($row['qt'] == $quantidade) {
-                throw new Exception("A quantidade do produto já está definida como $quantidade.");
+            $stmt = $mysqli->prepare("UPDATE carrinho SET qt = ? WHERE id_cliente = ? AND id_produto = ?");
+            if (!$stmt) {
+                throw new Exception("Erro ao preparar a query: " . $mysqli->error);
             }
+            $stmt->bind_param("iii", $quantidade, $id_cliente, $id_produto);
+            $stmt->execute();
+
+            /*if ($stmt->affected_rows === 0) {
+                throw new Exception("Nenhum item atualizado. Verifique se o produto já está no carrinho.");
+            }*/
         }
-
-        // Agora executa o UPDATE normalmente
-        $stmt = $mysqli->prepare("UPDATE carrinho SET qt = ? WHERE id_cliente = ? AND id_produto = ?");
-        $stmt->bind_param("iii", $quantidade, $id_cliente, $id_produto);
-        $stmt->execute();
-
-        if ($stmt->affected_rows === 0) {
-            throw new Exception("Nenhum item atualizado. Verifique se o produto já está no carrinho.");
-        }
-
     }
 
     echo json_encode(["status" => "sucesso", "mensagem" => "Carrinho atualizado com sucesso"]);

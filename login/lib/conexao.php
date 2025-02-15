@@ -1,6 +1,6 @@
 <?php
     //acesso do banco root
-    $host = "localhost";
+    /*$host = "localhost";
     $usuario = "root";
     $senha = "";
     $banco = "jr_comercio";
@@ -11,6 +11,22 @@
     $senha = "Batata/2023";
     $banco = "id21385241_banco40ribas";*/
 
-    $mysqli = new mysqli(hostname: $host, username: $usuario, password: $senha, database: $banco);
+    /*$mysqli = new mysqli(hostname: $host, username: $usuario, password: $senha, database: $banco);*/
+
+
+
+    $host = "localhost";
+    $usuario = "root";
+    $senha = "";
+    $banco = "jr_comercio";
+
+    $mysqli = new mysqli($host, $usuario, $senha, $banco);
+
+    // Verifica se houve erro na conexão
+    if ($mysqli->connect_error) {
+        die("Falha na conexão: " . $mysqli->connect_error);
+    } else {
+        //echo "Conexão bem-sucedida!";
+    }
 
 ?>

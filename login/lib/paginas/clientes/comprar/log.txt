@@ -1,0 +1,21 @@
+Array
+(
+    [id_cliente] => 15
+    [id_parceiro] => 14
+    [produtos] => Array
+        (
+            [0] => Array
+                (
+                    [id_produto] => 57
+                    [quantidade] => 1
+                )
+
+            [1] => Array
+                (
+                    [id_produto] => 68
+                    [quantidade] => 1
+                )
+
+        )
+
+)
