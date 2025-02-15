@@ -156,8 +156,16 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
                                 <td class="preco-produto" data-valor="<?php echo $produto['valor_produto']; ?>">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></td>
                                 <td>
-                                    <input type="number" style="width: 40px; border: none;" class="quantidade" data-id="<?php echo $produto['id_produto']; ?>" value="<?php echo $produto['qt']; ?>" min="1">
+                                    <input type="number" 
+                                        style="width: 40px; border: none;" 
+                                        class="quantidade" 
+                                        data-id="<?php echo $produto['id_produto']; ?>" 
+                                        data-id-cliente="<?php echo $id_cliente; ?>"
+                                        value="<?php echo $produto['qt']; ?>" 
+                                        min="1"
+                                        onchange="atualizarQuantidade(this)">
                                 </td>
+
                                 <td class="total-produto" id="total-produto-<?php echo $produto['id_produto']; ?>">
                                     R$ <?php echo number_format($produto['valor_produto'] * $produto['qt'], 2, ',', '.'); ?>
                                 </td>
@@ -172,9 +180,10 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <div class="total">
-                    Total: R$ <?php echo number_format($dados['total'], 2, ',', '.'); ?>
-                    <button class="comprar" data-id-cliente="<?php echo $id_cliente; ?>">Comprar</button>
+                <div class="total">Total: R$ 
+                    <?php 
+                        echo number_format($dados['total'], 2, ',','.');
+                    ?><button class="comprar" data-id-cliente="<?php echo $id_cliente; ?>">Comprar</button>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -295,6 +304,32 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         });
     });
 
+    function atualizarQuantidade(elemento) {
+        let id_produto = elemento.getAttribute("data-id");
+        let id_cliente = elemento.getAttribute("data-id-cliente");
+        let nova_quantidade = elemento.value;
+
+        // Enviar os dados via AJAX
+        fetch("atualizar_quantidade.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id_cliente: id_cliente,
+                id_produto: id_produto,
+                quantidade: nova_quantidade
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "sucesso") {
+                console.log("Quantidade atualizada!");
+            } else {
+                console.error("Erro ao atualizar:", data.mensagem);
+            }
+        })
+        .catch(error => console.error("Erro na requisição:", error));
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".comprar").forEach(botao => {
             botao.addEventListener("click", function () {
@@ -347,7 +382,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                 })
                 .then(response => response.text()) // 👈 Primeiro, pega como texto
                 .then(text => {
-                    console.log("Resposta bruta do servidor:", text); // 👀 Log da resposta
+                    //console.log("Resposta bruta do servidor:", text); // 👀 Log da resposta
                     return JSON.parse(text); // Depois, tenta converter para JSON
                 })
                 .then(data => {
@@ -359,15 +394,13 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                     }
                 })
                 .catch(error => {
-                    console.error("Erro ao processar resposta:", error);
+                    //console.error("Erro ao processar resposta:", error);
                     alert("Erro ao conectar ao servidor.");
                 });
 
             });
         });
     });
-
-
 
 </script>
 </body>
