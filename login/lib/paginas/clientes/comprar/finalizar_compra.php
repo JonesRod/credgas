@@ -58,7 +58,9 @@
 <body>
     <h2>Finalizar Compra</h2>
 
-    <h3>Saldo de crédito: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
+    <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
+        <h3>Saldo disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
+    <?php endif; ?>
 
     <?php if (!empty($produtos)): ?>
         <table border="1">
@@ -128,6 +130,7 @@
             <?php endif; ?>
 
             <div id="novoEndereco" style="display: none; margin-top: 10px;">
+                <h3>Endereço da entrega</h3>
                 <label>Rua/Av.:</label>
                 <input type="text" name="rua" placeholder="Digite a rua/avenida"><br>
 
@@ -158,12 +161,12 @@
                 </div>
             <?php endif; ?>
 
-
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
             <input type="hidden" id="inputTotal" name="total" value="<?php echo $totalComFrete; ?>">
             <br>
             <label>Escolha a forma de pagamento:</label>
-            <select name="forma_pagamento">
+            <select name="forma_pagamento" id="forma_pagamento" onchange="mostrarCartoes()">
+                <option value="pix">PIX</option>
                 <?php if ($cartao_credito_ativo): ?>
                     <option value="cartaoCred">Cartão de Crédito</option>
                 <?php endif; ?>
@@ -173,18 +176,26 @@
                 <?php endif; ?>
 
                 <option value="boleto">Boleto Bancário</option>
-                <option value="pix">PIX</option>
 
                 <?php if ($outros): ?>
                     <option value="outros">Outros</option>
                 <?php endif; ?>
-                <?php if ($totalCrediario >= 0): ?>
-                    <option value="crediario">Crediário</option>
-                <?php endif; ?>
             </select>
 
-            <h3>Limite disponível de crédito: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
-            
+<!-- Áreas para exibir os cartões aceitos -->
+<div id="cartoesCredAceitos" style="display: none;">
+    <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
+</div>
+
+<div id="cartoesDebAceitos" style="display: none;">
+    <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
+</div>
+
+<div id="outros" style="display: none;">
+    <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
+</div>
+            <br>
+            <a href="javascript:history.back()" class="voltar">Voltar</a>
             <button type="submit">Finalizar Compra</button>
         </form>
     <?php else: ?>
@@ -224,11 +235,10 @@
             document.getElementById("novoEndereco").style.display = "none";
 
         }
+
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
         }
-
-
 
         function atualizarTotal(cobrarFrete) {
             let total = cobrarFrete ? totalGeral + maiorFrete : totalGeral;
@@ -240,6 +250,30 @@
             document.getElementById('total').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
             document.getElementById('inputTotal').value = total;
         }
+
+
+        function mostrarCartoes() {
+    let formaPagamento = document.getElementById("forma_pagamento").value;
+    
+    let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
+    let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
+    let outros = document.getElementById("outros");
+
+    // Esconde todos os elementos antes de exibir o correto
+    cartoesCredAceitos.style.display = "none";
+    cartoesDebAceitos.style.display = "none";
+    outros.style.display = "none";
+
+    if (formaPagamento === "cartaoCred") {
+        cartoesCredAceitos.style.display = "block";
+    } else if (formaPagamento === "cartaoDeb") {
+        cartoesDebAceitos.style.display = "block";
+    } else if (formaPagamento === "outros") {
+        outros.style.display = "block";
+    }
+}
+
+
 </script>
 
 </body>

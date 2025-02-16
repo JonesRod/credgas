@@ -1,65 +1,37 @@
-<?php
-try {
-    header('Content-Type: application/json');
-    $dados = json_decode(file_get_contents("php://input"), true);
+<label>Escolha a forma de pagamento:</label>
+<select name="forma_pagamento" id="forma_pagamento" onchange="mostrarCartoes()">
+    <?php if ($cartao_credito_ativo): ?>
+        <option value="cartaoCred">Cartão de Crédito</option>
+    <?php endif; ?>
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Erro ao decodificar JSON: " . json_last_error_msg());
-    }
+    <?php if ($cartao_debito_ativo): ?>
+        <option value="cartaoDeb">Cartão de Débito</option> function mostrarCartoes() {
+let formaPagamento = document.getElementById("forma_pagamento").value;
+let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
+let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
+let outros = document.getElementById("outros");
 
-    include('../../../conexao.php'); // Conexão com o banco
 
-    session_start();
 
-    if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-        throw new Exception("Método inválido");
-    }
 
-    $id_cliente = $dados['id_cliente'] ?? null;
-    $id_parceiro = $dados['id_parceiro'] ?? null;
-    $produtos = $dados['produtos'] ?? [];
-
-    if (!$id_cliente || !$id_parceiro || empty($produtos)) {
-        throw new Exception("Dados incompletos");
-    }
-
-    foreach ($produtos as $produto) {
-        $id_produto = $produto['id_produto'] ?? null;
-        $quantidade = $produto['quantidade'] ?? null;
-
-        if (!$id_produto || $quantidade === null) {
-            throw new Exception("Produto inválido");
-        }
-
-        // Verifica se o produto está no carrinho antes de tentar atualizar
-        $stmt = $mysqli->prepare("SELECT qt FROM carrinho WHERE id_cliente = ? AND id_produto = ?");
-        $stmt->bind_param("ii", $id_cliente, $id_produto);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows === 0) {
-            throw new Exception("Produto não encontrado no carrinho. O cliente já adicionou esse item?");
-        } else {
-            $row = $result->fetch_assoc();
-            if ($row['qt'] == $quantidade) {
-                throw new Exception("A quantidade do produto já está definida como $quantidade.");
-            }
-        }
-
-        // Agora executa o UPDATE normalmente
-        $stmt = $mysqli->prepare("UPDATE carrinho SET qt = ? WHERE id_cliente = ? AND id_produto = ?");
-        $stmt->bind_param("iii", $quantidade, $id_cliente, $id_produto);
-        $stmt->execute();
-
-        if ($stmt->affected_rows === 0) {
-            throw new Exception("Nenhum item atualizado. Verifique se o produto já está no carrinho.");
-        }
-
-    }
-
-    echo json_encode(["status" => "sucesso", "mensagem" => "Carrinho atualizado com sucesso"]);
-
-} catch (Exception $e) {
-    echo json_encode(["status" => "erro", "mensagem" => $e->getMessage()]);
+if (cartoesAceitos) { // Verifica se o elemento existe
+if (formaPagamento === "cartaoCred") {
+cartoesCredAceitos.style.display = "block";
+} else if (formaPagamento === "cartaoDeb"){
+cartoesDebAceitos.style.display = "block";
+}else if (formaPagamento === "outros"){
+outros.style.display = "block";
+}else {
+cartoesAceitos.style.display = "none";
 }
-?>
+}
+} 
+    <?php endif; ?>
+
+    <option value="boleto">Boleto Bancário</option>
+    <option value="pix">PIX</option>
+
+    <?php if ($outros): ?>
+        <option value="outros">Outros</option>
+    <?php endif; ?>
+</select>
