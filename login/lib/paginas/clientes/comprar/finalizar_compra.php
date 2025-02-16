@@ -6,9 +6,10 @@
     $id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : 0;
 
     // Buscar os produtos do carrinho
-    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, p.valor_produto, c.frete FROM carrinho c 
+    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, p.valor_produto, p.qt_parcelas, c.frete FROM carrinho c 
                             JOIN produtos p ON c.id_produto = p.id_produto 
                             WHERE c.id_cliente = ? AND p.id_parceiro = ?");
+
     $stmt->bind_param("ii", $id_cliente, $id_parceiro);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -25,11 +26,13 @@
     $cartao_credito_ativo = !empty($parceiro['cartao_credito']); // Se estiver vazio, será falso
     $outros = !empty($parceiro['outras_formas']); 
 
+    $nomeFantasia = !empty($parceiro['nomeFantasia']) ? $parceiro['nomeFantasia'] : '';
     $cidade_parceiro = !empty($parceiro['cidade']) ? $parceiro['cidade'] : '';
     $uf_parceiro = !empty($parceiro['estado']) ? $parceiro['estado'] : '';
     $endereco_parceiro = !empty($parceiro['endereco']) ? $parceiro['endereco'] : '';
     $numero_parceiro = !empty($parceiro['numero']) ? $parceiro['numero'] : '';
     $bairro_parceiro = !empty($parceiro['bairro']) ? $parceiro['bairro'] : '';
+    $telefoneComercial = !empty($parceiro['telefoneComercial']) ? $parceiro['telefoneComercial'] : '';
 
     // Buscar se o parceiro aceita cartão de crédito
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
@@ -71,30 +74,46 @@
                 <th>Total</th>
             </tr>
             <?php 
-            $totalGeral = 0;
-            $maiorFrete = 0;
 
-            foreach ($produtos as $produto): 
-                $total = $produto['valor_produto'] * $produto['qt'];
-                $totalGeral += $total;
+                if (!empty($produtos) && is_array($produtos)) {
+                    foreach ($produtos as $produto): 
+                        $totalGeral = 0;
+                        $maiorFrete = 0;
+                        $qtParcelas = $produto['qt_parcelas'];
+                        $maiorQtPar = 0;
 
-                // Verifica o maior frete no carrinho
-                if ($produto['frete'] > $maiorFrete) {
-                    $maiorFrete = $produto['frete'];
-                }
+                        $total = $produto['valor_produto'] * $produto['qt'];
+                        $totalGeral += $total;
+
+                        // Verifica o maior frete no carrinho
+                        if ($produto['frete'] > $maiorFrete) {
+                            $maiorFrete = $produto['frete'];
+                
+                        }
+                        // Verifica o maior quantidae de parcelas
+                        if ($qtParcelas > $maiorQtPar) {
+                            $maiorQtPar = $qtParcelas;
+                            //echo $maiorQtPar;
+                        }
+
             ?>
+            <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <tr>
                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
-                <td><?php echo $produto['qt']; ?></td>
+                <td style="text-align: center;"><?php echo $produto['qt']; ?></td>
                 <td>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></td>
                 <td>R$ <?php echo number_format($total, 2, ',', '.'); ?></td>
             </tr>
             <?php endforeach; 
+                // Soma o maior frete ao total da compra
+                $totalComFrete = $totalGeral + $maiorFrete;
+                $totalCrediario = $limite_cred - $totalComFrete;
+            } else {
+                echo '<tr><td colspan="4">Nenhum produto no carrinho.</td></tr>';
+            }
             
-            // Soma o maior frete ao total da compra
-            $totalComFrete = $totalGeral + $maiorFrete;
-            $totalCrediario = $limite_cred - $totalComFrete;
             ?>
+
         </table>
 
         <form action="processar_pagamento.php" method="post">
@@ -145,7 +164,11 @@
 
             <?php if (!empty($endereco_parceiro)): ?>
                 <div id="enderecoParceiro" style="display: none;">
-                    <h3>Endereço da loja</h3>
+                    <p>
+                        <strong>
+                            Loja: <span id="nomeFantasia"><?php echo $nomeFantasia; ?></span>
+                        </strong> 
+                    </p>
                     <p><strong>Cidade/UF:</strong> 
                         <span id="cidade_uf"><?php echo $cidade_parceiro . '/' . $uf_parceiro; ?></span>
                     </p>
@@ -158,6 +181,9 @@
                     <p><strong>Bairro:</strong> 
                         <span id="bairroParceiro"><?php echo htmlspecialchars($bairro_parceiro); ?></span>
                     </p>
+                    <p><strong>WhatsApp:</strong> 
+                        <span id="telefone"><?php echo htmlspecialchars($telefoneComercial); ?></span>
+                    </p>
                 </div>
             <?php endif; ?>
 
@@ -165,7 +191,7 @@
             <input type="hidden" id="inputTotal" name="total" value="<?php echo $totalComFrete; ?>">
             <br>
             <label>Escolha a forma de pagamento:</label>
-            <select name="forma_pagamento" id="forma_pagamento" onchange="mostrarCartoes()">
+            <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
                 <option value="pix">PIX</option>
                 <?php if ($cartao_credito_ativo): ?>
                     <option value="cartaoCred">Cartão de Crédito</option>
@@ -175,6 +201,10 @@
                     <option value="cartaoDeb">Cartão de Débito</option>
                 <?php endif; ?>
 
+                <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
+                    <option value="crediario">Crediario</option>
+                <?php endif; ?>
+
                 <option value="boleto">Boleto Bancário</option>
 
                 <?php if ($outros): ?>
@@ -182,18 +212,29 @@
                 <?php endif; ?>
             </select>
 
-<!-- Áreas para exibir os cartões aceitos -->
-<div id="cartoesCredAceitos" style="display: none;">
-    <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
-</div>
+            <!-- Áreas para exibir os cartões aceitos -->
+            <div id="cartoesCredAceitos" style="display: none; margin-top: 10px;">
+                <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
+            </div>
 
-<div id="cartoesDebAceitos" style="display: none;">
-    <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
-</div>
+            <div id="cartoesDebAceitos" style="display: none; margin-top: 10px;">
+                <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
+            </div>
 
-<div id="outros" style="display: none;">
-    <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
-</div>
+            <div id="outros" style="display: none; margin-top: 10px;">
+                <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
+            </div>
+
+            <!-- Opção de Crediário -->
+            <div id="crediarioOpcoes" style="display: none; margin-top: 10px;">
+                
+                <label>Dividir em 
+                    <select name="parcelas" id="parcelas">
+                        <option value="">Selecione</option>
+                    </select>
+                    parcelas.
+                </label>
+            </div>
             <br>
             <a href="javascript:history.back()" class="voltar">Voltar</a>
             <button type="submit">Finalizar Compra</button>
@@ -251,28 +292,50 @@
             document.getElementById('inputTotal').value = total;
         }
 
+        function formasPagamento() {
+            let formaPagamento = document.getElementById("forma_pagamento").value;
+            
+            let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
+            let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
+            let crediarioOpcoes = document.getElementById("crediarioOpcoes");
+            let parcelasSelect = document.getElementById("parcelas");
+            let outros = document.getElementById("outros");
 
-        function mostrarCartoes() {
-    let formaPagamento = document.getElementById("forma_pagamento").value;
-    
-    let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
-    let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
-    let outros = document.getElementById("outros");
+            // Esconde todos os elementos antes de exibir o correto
+            if (cartoesCredAceitos) cartoesCredAceitos.style.display = "none";
+            if (cartoesDebAceitos) cartoesDebAceitos.style.display = "none";
+            if (crediarioOpcoes) crediarioOpcoes.style.display = "none";
+            if (outros) outros.style.display = "none";
 
-    // Esconde todos os elementos antes de exibir o correto
-    cartoesCredAceitos.style.display = "none";
-    cartoesDebAceitos.style.display = "none";
-    outros.style.display = "none";
+            if (formaPagamento === "cartaoCred") {
+                if (cartoesCredAceitos) cartoesCredAceitos.style.display = "block";
+            } else if (formaPagamento === "cartaoDeb") {
+                if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
+            } else if (formaPagamento === "crediario") {
+                if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
 
-    if (formaPagamento === "cartaoCred") {
-        cartoesCredAceitos.style.display = "block";
-    } else if (formaPagamento === "cartaoDeb") {
-        cartoesDebAceitos.style.display = "block";
-    } else if (formaPagamento === "outros") {
-        outros.style.display = "block";
-    }
-}
+                // Limpa as opções anteriores
+                parcelasSelect.innerHTML = '<option value="">Selecione</option>';
 
+                // Obtém o número máximo de parcelas do PHP
+                let maxParcelas = document.getElementById("qt_parcelas").value;
+
+                //console.log("Max Parcelas:", maxParcelas);
+
+                if (maxParcelas > 0) {
+                    for (let i = 1; i <= maxParcelas; i++) {
+                        let option = document.createElement("option");
+                        option.value = i + "x";
+                        option.textContent = i + "x";
+                        parcelasSelect.appendChild(option);
+                    }
+                } else {
+                    console.error("Erro: qt_parcelar inválido.");
+                }
+            } else if (formaPagamento === "outros") {
+                if (outros) outros.style.display = "block";
+            }
+        }
 
 </script>
 
