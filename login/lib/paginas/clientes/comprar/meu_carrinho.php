@@ -5,7 +5,7 @@ session_start();
 if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     $id_cliente = intval($_GET['id_cliente']);
 
-    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, pa.nomeFantasia 
+    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, pa.nomeFantasia 
                                     FROM carrinho c
                                     INNER JOIN produtos p ON c.id_produto = p.id_produto
                                     INNER JOIN meus_parceiros pa ON c.id_parceiro = pa.id
@@ -25,7 +25,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         }
 
         $carrinho[$id_parceiro]['produtos'][] = $produto;
-        $carrinho[$id_parceiro]['total'] += $produto['valor_produto'] * $produto['qt'];
+        $carrinho[$id_parceiro]['total'] += (($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']) * $produto['qt'];
     }
 }
 ?>
@@ -154,7 +154,10 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                         <?php foreach ($dados['produtos'] as $produto): ?>
                             <tr title="Detalhes" class="produto" data-id-produto="<?php echo $produto['id_produto']; ?>" data-id-cliente="<?php echo $id_cliente; ?>">
                                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
-                                <td class="preco-produto" data-valor="<?php echo $produto['valor_produto']; ?>">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></td>
+                                <td class="preco-produto" data-valor="
+                                    <?php $preco=(($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']);
+                                        echo $preco;
+                                    ?>">R$ <?php echo number_format($preco, 2, ',', '.'); ?></td>
                                 <td>
                                     <input type="number" 
                                         style="width: 40px; border: none;" 
@@ -167,7 +170,8 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                                 </td>
 
                                 <td class="total-produto" id="total-produto-<?php echo $produto['id_produto']; ?>">
-                                    R$ <?php echo number_format($produto['valor_produto'] * $produto['qt'], 2, ',', '.'); ?>
+                                    R$ <?php $precoTotal=(($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']) * $produto['qt'];
+                                        echo number_format($precoTotal, 2, ',', '.'); ?>
                                 </td>
                                 <td>
                                     <span class="lixeira">

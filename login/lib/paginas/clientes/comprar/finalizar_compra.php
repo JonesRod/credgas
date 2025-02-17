@@ -49,6 +49,24 @@
     $numero = !empty($cliente['numero']) ? $cliente['numero'] : '';
     $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
 
+    // Prepara e executa a consulta
+    $taxa = $mysqli->prepare("SELECT data_alteracao, taxa_padrao, taxa_crediario FROM config_admin WHERE taxa_crediario <> '' ORDER BY data_alteracao DESC LIMIT 1");
+
+    if ($taxa) {
+        $taxa->execute();
+        $taxa->bind_result($dataRegistro,$taxa_padrao, $valorTaxaCrediario);
+        $taxa->fetch();
+        $taxa->close();
+    }
+
+    if (!empty($dataRegistro) && !empty($valorTaxaCrediario)) {
+        // Formata a taxa para exibir vírgula decimal e ponto como separador de milhar
+        //$valorTaxaCrediario = number_format($valorTaxaCrediario, 2, ',', '.');
+        
+        //echo "Última alteração: " . $dataRegistro . " - Taxa: " . $valorTaxaCrediario . "%";
+    } else {
+        //echo "Nenhum registro encontrado.";
+    }
 ?>
 
 <!DOCTYPE html>
@@ -74,52 +92,60 @@
                 <th>Total</th>
             </tr>
             <?php 
-
                 if (!empty($produtos) && is_array($produtos)) {
-                    foreach ($produtos as $produto): 
-                        $totalGeral = 0;
-                        $maiorFrete = 0;
-                        $qtParcelas = $produto['qt_parcelas'];
-                        $maiorQtPar = 0;
+                    $totalGeral = 0; // MOVIDO PARA FORA DO LOOP
+                    $maiorFrete = 0;
+                    $maiorQtPar = 0;
 
-                        $total = $produto['valor_produto'] * $produto['qt'];
-                        $totalGeral += $total;
+                    foreach ($produtos as $produto): 
+                        $qtParcelas = $produto['qt_parcelas'];
+
+                        $valorProComTaxa = ($produto['valor_produto'] * $taxa_padrao) / 100 + $produto['valor_produto'];
+                        $total = $valorProComTaxa * $produto['qt'];
+                        
+                        $totalGeral += $total; // Agora ele soma corretamente a cada loop
 
                         // Verifica o maior frete no carrinho
                         if ($produto['frete'] > $maiorFrete) {
                             $maiorFrete = $produto['frete'];
-                
-                        }
-                        // Verifica o maior quantidae de parcelas
-                        if ($qtParcelas > $maiorQtPar) {
-                            $maiorQtPar = $qtParcelas;
-                            //echo $maiorQtPar;
                         }
 
+                        // Verifica o maior quantidade de parcelas
+                        if ($qtParcelas > $maiorQtPar) {
+                            $maiorQtPar = $qtParcelas;
+                        }
             ?>
-            <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <tr>
                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
                 <td style="text-align: center;"><?php echo $produto['qt']; ?></td>
-                <td>R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></td>
+                <td>R$ <?php echo number_format($valorProComTaxa, 2, ',', '.'); ?></td>
                 <td>R$ <?php echo number_format($total, 2, ',', '.'); ?></td>
             </tr>
             <?php endforeach; 
+                
                 // Soma o maior frete ao total da compra
                 $totalComFrete = $totalGeral + $maiorFrete;
                 $totalCrediario = $limite_cred - $totalComFrete;
             } else {
                 echo '<tr><td colspan="4">Nenhum produto no carrinho.</td></tr>';
             }
-            
             ?>
-
         </table>
 
+
         <form action="processar_pagamento.php" method="post">
-            <h3>Total: <span><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
+            <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
             <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
-            <h3>Valor Total: <span id="total"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
+            <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$  
+                <span id="taxaCrediario">
+                    <?php
+                        $total = ($totalComFrete * $valorTaxaCrediario) / 100;
+                        echo number_format($total, 2, ',', '.'); 
+                    ?>
+                </span>
+            </h3>
+
+            <h3>Valor Total: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
         
             <label>
                 <input type="radio" name="entrega" value="entregar" checked onclick="verificarEndereco()"> Entregar
@@ -189,6 +215,7 @@
 
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
             <input type="hidden" id="inputTotal" name="total" value="<?php echo $totalComFrete; ?>">
+            <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
             <label>Escolha a forma de pagamento:</label>
             <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
@@ -274,7 +301,6 @@
         function esconderCamposEndereco() {
             document.getElementById("enderecoCadastrado").style.display = "none";
             document.getElementById("novoEndereco").style.display = "none";
-
         }
 
         function mostrarEnderecoLoja(){
@@ -288,8 +314,10 @@
             let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
 
             document.getElementById('frete').innerText = freteTexto;
-            document.getElementById('total').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-            document.getElementById('inputTotal').value = total;
+            document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
+            //document.getElementById('inputTotal').value = total;
+
+            atualizarValorTotal();
         }
 
         function formasPagamento() {
@@ -300,12 +328,14 @@
             let crediarioOpcoes = document.getElementById("crediarioOpcoes");
             let parcelasSelect = document.getElementById("parcelas");
             let outros = document.getElementById("outros");
+            let taxaCred = document.getElementById("taxaCred");
 
             // Esconde todos os elementos antes de exibir o correto
             if (cartoesCredAceitos) cartoesCredAceitos.style.display = "none";
             if (cartoesDebAceitos) cartoesDebAceitos.style.display = "none";
             if (crediarioOpcoes) crediarioOpcoes.style.display = "none";
             if (outros) outros.style.display = "none";
+            if (taxaCred) taxaCred.style.display = "none";
 
             if (formaPagamento === "cartaoCred") {
                 if (cartoesCredAceitos) cartoesCredAceitos.style.display = "block";
@@ -313,13 +343,12 @@
                 if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
             } else if (formaPagamento === "crediario") {
                 if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
-
                 // Limpa as opções anteriores
                 parcelasSelect.innerHTML = '<option value="">Selecione</option>';
 
                 // Obtém o número máximo de parcelas do PHP
                 let maxParcelas = document.getElementById("qt_parcelas").value;
-
+                //atualizarValorTotal();
                 //console.log("Max Parcelas:", maxParcelas);
 
                 if (maxParcelas > 0) {
@@ -332,10 +361,34 @@
                 } else {
                     console.error("Erro: qt_parcelar inválido.");
                 }
+                if (taxaCred) taxaCred.style.display = "block";
+                atualizarValorTotal();
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
             }
         }
+        
+        // Função para atualizar o valor total
+        function atualizarValorTotal() {
+            var taxaCred = document.getElementById("taxaCred");
+            
+            var total = parseFloat("<?php echo $totalComFrete; ?>"); // Pega o total original em JavaScript
+            var taxaCrediario = parseFloat(document.getElementById("taxaCrediario").textContent.replace(',', '.')); // Pega a taxa
+
+            var valorTotal = total;
+
+            if (taxaCred.style.display === "block") {
+                // Se a taxa estiver visível, soma a taxa ao total
+                valorTotal += taxaCrediario;
+            }
+
+            // Atualiza o valor total na tela
+            document.getElementById("ValorTotal").textContent = "R$ " + valorTotal.toFixed(2).replace('.', ',');
+        }
+
+        // Chama a função sempre que necessário (por exemplo, ao mostrar a taxa)
+        atualizarValorTotal();
+
 
 </script>
 
