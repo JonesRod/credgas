@@ -48,6 +48,7 @@
     $endereco_cadastrado = !empty($cliente['endereco']) ? $cliente['endereco'] : '';
     $numero = !empty($cliente['numero']) ? $cliente['numero'] : '';
     $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
+    $celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
 
     // Prepara e executa a consulta
     $taxa = $mysqli->prepare("SELECT data_alteracao, taxa_padrao, taxa_crediario FROM config_admin WHERE taxa_crediario <> '' ORDER BY data_alteracao DESC LIMIT 1");
@@ -136,7 +137,7 @@
         <form action="processar_pagamento.php" method="post">
             <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
             <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
-            <input type="text" name="valorTaxaCrediario" value="<?php echo $valorTaxaCrediario; ?>">
+            <input type="hidden" name="valorTaxaCrediario" value="<?php echo $valorTaxaCrediario; ?>">
             <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$  
                 <span id="taxaCrediario">
                     <?php
@@ -170,6 +171,9 @@
                     <p><strong>Bairro</strong>:</strong> 
                         <span id="enderecoAtual"><?php echo htmlspecialchars($bairro); ?></span>
                     </p>
+                    <p><strong>WhatsApp:</strong> 
+                        <span id="celular1"><?php echo htmlspecialchars($celular1); ?></span>
+                    </p>
                     <button type="button" onclick="usarEnderecoCadastrado()">Usar este endereço</button>
                     <button type="button" onclick="mostrarCamposEndereco()">Outro endereço</button>
                 </div>
@@ -177,6 +181,9 @@
 
             <div id="novoEndereco" style="display: none; margin-top: 10px;">
                 <h3>Endereço da entrega</h3>
+                <span id="msgAlerta"></span>
+                <br>
+                <br>
                 <label>Rua/Av.:</label>
                 <input type="text" name="rua" placeholder="Digite a rua/avenida"><br>
 
@@ -185,6 +192,9 @@
 
                 <label>Número:</label>
                 <input type="text" name="numero" placeholder="Digite o número"><br>
+
+                <label>Contato/WhatsApp:</label>
+                <input type="text" name="contato" id="contato" placeholder="Digite o número" oninput="formatarCelular(this)" onblur="verificaCelular()"><br>
 
                 <button type="button" onclick="usarEnderecoCadastrado()">Usar meu endereço</button>
             </div>
@@ -280,8 +290,6 @@
         let taxaCred = document.getElementById('taxaCred');
 
         function verificarEndereco() {
-            atualizarTotal(true);
-            
             if (enderecoCadastrado.trim() !== "") {
                 document.getElementById("enderecoCadastrado").style.display = "block";
                 document.getElementById("enderecoParceiro").style.display = "none";
@@ -289,6 +297,7 @@
                 usarEnderecoCadastrado();
                 document.getElementById("enderecoParceiro").style.display = "none";
             }
+            atualizarTotal(true);
         }
 
         function mostrarCamposEndereco() {
@@ -332,13 +341,9 @@
                 if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
             } else if (formaPagamento === "crediario") {
                 if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
-                // Limpa as opções anteriores
                 parcelasSelect.innerHTML = '<option value="">Selecione</option>';
 
-                // Obtém o número máximo de parcelas do PHP
                 let maxParcelas = document.getElementById("qt_parcelas").value;
-                //atualizarValorTotal();
-                //console.log("Max Parcelas:", maxParcelas);
 
                 if (maxParcelas > 0) {
                     for (let i = 1; i <= maxParcelas; i++) {
@@ -350,42 +355,82 @@
                 } else {
                     console.error("Erro: qt_parcelar inválido.");
                 }
-                if (taxaCred) taxaCred.style.display = "block";
-                atualizarTotal();
+                //if (taxaCred) taxaCred.style.display = "block";
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
             }
+
+            // Chamar a função com o parâmetro correto baseado na entrega
+            let enderecoParceiro = document.getElementById("enderecoParceiro");
+            let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+            atualizarTotal(cobrarFrete);
         }
-        
+
         function atualizarTotal(cobrarFrete) {
-            let total = cobrarFrete ? totalGeral + maiorFrete : totalGeral;
-            
-            // Exibir "Entrega Grátis" caso o frete seja 0
+            // Garantir que o cálculo do total sempre seja reiniciado corretamente
+            let totalBase = totalGeral;
+
+            if (cobrarFrete) {
+                totalBase += maiorFrete;
+            }
+
+            // Atualizar o frete na tela
             let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
             document.getElementById('frete').innerText = freteTexto;
-            
-            // Atualizar o valor total antes de adicionar a taxa de crediário
-            document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
 
-            // Verificar se a taxa de crediário está visível
-            if (document.getElementById("taxaCred").style.display === "block") {
-                let taxaCrediarioValor = (total * valorTaxaCrediario) / 100;
-                
-                document.getElementById('taxaCrediario').innerText = 'R$ ' + taxaCrediarioValor.toFixed(2).replace('.', ',');
-                
-                // Atualiza o valor total com a taxa aplicada
-                total += taxaCrediarioValor;
-                document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-            }
+            // Atualizar o valor total antes de aplicar a taxa
+            document.getElementById('ValorTotal').innerText = 'R$ ' + totalBase.toFixed(2).replace('.', ',');
 
-            // Verifica se o endereço do parceiro está oculto e exibe o endereço cadastrado
-            let enderecoParceiro = document.getElementById("enderecoParceiro");
-            if (window.getComputedStyle(enderecoParceiro).display === "none") {
-                document.getElementById("enderecoCadastrado").style.display = "block";
+            // Verifica se o endereço do parceiro está oculto ou visível
+            let selectPagamento = document.getElementById("forma_pagamento");
+            let opcaoSelecionada = selectPagamento.value;
+            let taxaCred = document.getElementById("taxaCred");
+
+            if (opcaoSelecionada === "crediario") {
+                let taxaCrediarioValor = (totalBase * valorTaxaCrediario) / 100;
+                document.getElementById('taxaCrediario').innerText = taxaCrediarioValor.toFixed(2).replace('.', ',');
+
+                // Atualizar o total corretamente após aplicar a taxa
+                totalBase += taxaCrediarioValor;
+                document.getElementById('ValorTotal').innerText = 'R$ ' + totalBase.toFixed(2).replace('.', ',');
+
+                //console.log("Taxa crediário aplicada com frete:", cobrarFrete ? "Sim" : "Não");
+            } else {
+                //console.log("Nenhuma taxa de crediário aplicada.");
             }
         }
 
-</script>
+        function formatarCelular(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            if (value.length > 11) {
+                value = value.substr(0, 11);
+            }
+            if (value.length > 10) {
+                value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
+            } else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length > 1) {
+                value = value.replace(/(\d{1})/, '($1');
+            }
+            input.value = value;
+        }
+        
+        function verificaCelular(){
+            var celular =document.getElementById('contato').value;
+            //console.log(celular.length);
+            if(celular.length < 15 ){
+                
+                document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
+                document.getElementById('contato').focus();
+            }else{
+                document.querySelector('#msgAlerta').textContent = "";
+            }
+        }
+    </script>
 
 </body>
 </html>
