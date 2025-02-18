@@ -136,6 +136,7 @@
         <form action="processar_pagamento.php" method="post">
             <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
             <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
+            <input type="text" name="valorTaxaCrediario" value="<?php echo $valorTaxaCrediario; ?>">
             <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$  
                 <span id="taxaCrediario">
                     <?php
@@ -144,7 +145,7 @@
                     ?>
                 </span>
             </h3>
-
+            
             <h3>Valor Total: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
         
             <label>
@@ -214,7 +215,7 @@
             <?php endif; ?>
 
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-            <input type="hidden" id="inputTotal" name="total" value="<?php echo $totalComFrete; ?>">
+            
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
             <label>Escolha a forma de pagamento:</label>
@@ -275,6 +276,8 @@
         let maiorFrete = parseFloat("<?php echo $maiorFrete; ?>");
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
+        let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
+        let taxaCred = document.getElementById('taxaCred');
 
         function verificarEndereco() {
             atualizarTotal(true);
@@ -306,23 +309,9 @@
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
         }
-
-        function atualizarTotal(cobrarFrete) {
-            let total = cobrarFrete ? totalGeral + maiorFrete : totalGeral;
-            
-            // Se o frete for maior que zero, exibe o valor do frete; se não, exibe "Entrega Grátis"
-            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
-
-            document.getElementById('frete').innerText = freteTexto;
-            document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-            //document.getElementById('inputTotal').value = total;
-
-            atualizarValorTotal();
-        }
-
+        
         function formasPagamento() {
             let formaPagamento = document.getElementById("forma_pagamento").value;
-            
             let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
             let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
             let crediarioOpcoes = document.getElementById("crediarioOpcoes");
@@ -362,33 +351,39 @@
                     console.error("Erro: qt_parcelar inválido.");
                 }
                 if (taxaCred) taxaCred.style.display = "block";
-                atualizarValorTotal();
+                atualizarTotal();
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
             }
         }
         
-        // Função para atualizar o valor total
-        function atualizarValorTotal() {
-            var taxaCred = document.getElementById("taxaCred");
+        function atualizarTotal(cobrarFrete) {
+            let total = cobrarFrete ? totalGeral + maiorFrete : totalGeral;
             
-            var total = parseFloat("<?php echo $totalComFrete; ?>"); // Pega o total original em JavaScript
-            var taxaCrediario = parseFloat(document.getElementById("taxaCrediario").textContent.replace(',', '.')); // Pega a taxa
+            // Exibir "Entrega Grátis" caso o frete seja 0
+            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            document.getElementById('frete').innerText = freteTexto;
+            
+            // Atualizar o valor total antes de adicionar a taxa de crediário
+            document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
 
-            var valorTotal = total;
-
-            if (taxaCred.style.display === "block") {
-                // Se a taxa estiver visível, soma a taxa ao total
-                valorTotal += taxaCrediario;
+            // Verificar se a taxa de crediário está visível
+            if (document.getElementById("taxaCred").style.display === "block") {
+                let taxaCrediarioValor = (total * valorTaxaCrediario) / 100;
+                
+                document.getElementById('taxaCrediario').innerText = 'R$ ' + taxaCrediarioValor.toFixed(2).replace('.', ',');
+                
+                // Atualiza o valor total com a taxa aplicada
+                total += taxaCrediarioValor;
+                document.getElementById('ValorTotal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
             }
 
-            // Atualiza o valor total na tela
-            document.getElementById("ValorTotal").textContent = "R$ " + valorTotal.toFixed(2).replace('.', ',');
+            // Verifica se o endereço do parceiro está oculto e exibe o endereço cadastrado
+            let enderecoParceiro = document.getElementById("enderecoParceiro");
+            if (window.getComputedStyle(enderecoParceiro).display === "none") {
+                document.getElementById("enderecoCadastrado").style.display = "block";
+            }
         }
-
-        // Chama a função sempre que necessário (por exemplo, ao mostrar a taxa)
-        atualizarValorTotal();
-
 
 </script>
 
