@@ -321,6 +321,7 @@
         
         function formasPagamento() {
             let formaPagamento = document.getElementById("forma_pagamento").value;
+            let pix = document.getElementById("pix");
             let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
             let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
             let crediarioOpcoes = document.getElementById("crediarioOpcoes");
@@ -329,41 +330,78 @@
             let taxaCred = document.getElementById("taxaCred");
 
             // Esconde todos os elementos antes de exibir o correto
+            if (pix) pix.style.display = "none";
             if (cartoesCredAceitos) cartoesCredAceitos.style.display = "none";
             if (cartoesDebAceitos) cartoesDebAceitos.style.display = "none";
             if (crediarioOpcoes) crediarioOpcoes.style.display = "none";
             if (outros) outros.style.display = "none";
             if (taxaCred) taxaCred.style.display = "none";
 
-            if (formaPagamento === "cartaoCred") {
+            if (formaPagamento === "pix") {
+                if (pix) pix.style.display = "block";
+                    // Chamar a função com o parâmetro correto baseado na entrega
+                    let enderecoParceiro = document.getElementById("enderecoParceiro");
+                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+                    atualizarTotal(cobrarFrete);
+            } else if (formaPagamento === "cartaoCred") {
                 if (cartoesCredAceitos) cartoesCredAceitos.style.display = "block";
+                    // Chamar a função com o parâmetro correto baseado na entrega
+                    let enderecoParceiro = document.getElementById("enderecoParceiro");
+                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+                    atualizarTotal(cobrarFrete);
             } else if (formaPagamento === "cartaoDeb") {
                 if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
+                    // Chamar a função com o parâmetro correto baseado na entrega
+                    let enderecoParceiro = document.getElementById("enderecoParceiro");
+                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+                    atualizarTotal(cobrarFrete);
             } else if (formaPagamento === "crediario") {
                 if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
                 parcelasSelect.innerHTML = '<option value="">Selecione</option>';
 
                 let maxParcelas = document.getElementById("qt_parcelas").value;
 
+                // Chamar a função com o parâmetro correto baseado na entrega
+                let enderecoParceiro = document.getElementById("enderecoParceiro");
+                let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+                atualizarTotal(cobrarFrete);
+
+                // Pegar o valor atualizado do total
+                let totalAtual = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
+
                 if (maxParcelas > 0) {
                     for (let i = 1; i <= maxParcelas; i++) {
+                        let valorParcela;
+                        let labelJuros = ""; // Texto para indicar se há juros
+
+                        if (i > 3) {
+                            // Aplicar juros compostos para parcelas acima de 3x
+                            let taxaJuros = 0.0299; // 2.99% ao mês
+                            valorParcela = (totalAtual * taxaJuros) / (1 - Math.pow(1 + taxaJuros, -i));
+                            labelJuros = "";
+                        } else {
+                            // Parcelas sem juros
+                            valorParcela = totalAtual / i;
+                            labelJuros = " sem juros";
+                        }
+
                         let option = document.createElement("option");
                         option.value = i + "x";
-                        option.textContent = i + "x";
+                        option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
                         parcelasSelect.appendChild(option);
                     }
                 } else {
-                    console.error("Erro: qt_parcelar inválido.");
+                    console.error("Erro: qt_parcelas inválido.");
                 }
-                //if (taxaCred) taxaCred.style.display = "block";
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
+                    // Chamar a função com o parâmetro correto baseado na entrega
+                    let enderecoParceiro = document.getElementById("enderecoParceiro");
+                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
+                    atualizarTotal(cobrarFrete);
             }
 
-            // Chamar a função com o parâmetro correto baseado na entrega
-            let enderecoParceiro = document.getElementById("enderecoParceiro");
-            let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-            atualizarTotal(cobrarFrete);
+
         }
 
         function atualizarTotal(cobrarFrete) {
