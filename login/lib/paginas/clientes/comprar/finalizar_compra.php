@@ -378,7 +378,7 @@
                             // Aplicar juros compostos para parcelas acima de 3x
                             let taxaJuros = 0.0299; // 2.99% ao mês
                             valorParcela = (totalAtual * taxaJuros) / (1 - Math.pow(1 + taxaJuros, -i));
-                            labelJuros = "";
+                            labelJuros = " 2,99% a.m.";
                         } else {
                             // Parcelas sem juros
                             valorParcela = totalAtual / i;
