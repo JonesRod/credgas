@@ -174,7 +174,6 @@
                     <p><strong>WhatsApp:</strong> 
                         <span id="celular1"><?php echo htmlspecialchars($celular1); ?></span>
                     </p>
-                    <button type="button" onclick="usarEnderecoCadastrado()">Usar este endereço</button>
                     <button type="button" onclick="mostrarCamposEndereco()">Outro endereço</button>
                 </div>
             <?php endif; ?>
@@ -249,6 +248,21 @@
                     <option value="outros">Outros</option>
                 <?php endif; ?>
             </select>
+            
+            <div id="entrada">
+                <label>Escolha a forma de pagamento:</label>
+                <select name="forma_pagamento_entrada" id="forma_pagamento_entrada" onchange="formasPagamentoEntrada()">
+                    <option value="pix">PIX</option>
+                    <?php if ($cartao_credito_ativo): ?>
+                        <option value="cartaoCred">Cartão de Crédito</option>
+                    <?php endif; ?>
+
+                    <?php if ($cartao_debito_ativo): ?>
+                        <option value="cartaoDeb">Cartão de Débito</option>
+                    <?php endif; ?>
+
+                </select>   
+            </div>
 
             <!-- Áreas para exibir os cartões aceitos -->
             <div id="cartoesCredAceitos" style="display: none; margin-top: 10px;">
@@ -298,6 +312,7 @@
                 document.getElementById("enderecoParceiro").style.display = "none";
             }
             atualizarTotal(true);
+            formasPagamento();
         }
 
         function mostrarCamposEndereco() {
@@ -317,6 +332,8 @@
 
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
+            atualizarTotal(true);
+            formasPagamento();
         }
         
         function formasPagamento() {
@@ -422,7 +439,6 @@
             // Verifica se o endereço do parceiro está oculto ou visível
             let selectPagamento = document.getElementById("forma_pagamento");
             let opcaoSelecionada = selectPagamento.value;
-            let taxaCred = document.getElementById("taxaCred");
 
             if (opcaoSelecionada === "crediario") {
                 let taxaCrediarioValor = (totalBase * valorTaxaCrediario) / 100;
