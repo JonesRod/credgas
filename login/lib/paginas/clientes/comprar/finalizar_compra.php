@@ -249,7 +249,11 @@
                 <?php endif; ?>
             </select>
             
-            <div id="entrada">
+            <div id="entrada" style="display: none; margin-top: 10px;">
+                <h3>Entrada</h3>
+                <label for="entradaInput">Valor da entrada: </label>
+                <input type="text" id="entradaInput" name="entradaInput">
+                <br>
                 <label>Escolha a forma de pagamento:</label>
                 <select name="forma_pagamento_entrada" id="forma_pagamento_entrada" onchange="formasPagamentoEntrada()">
                     <option value="pix">PIX</option>
@@ -261,7 +265,8 @@
                         <option value="cartaoDeb">Cartão de Débito</option>
                     <?php endif; ?>
 
-                </select>   
+                </select>  
+                <p>Restante: <span id="restante">restante</span></p> 
             </div>
 
             <!-- Áreas para exibir os cartões aceitos -->
@@ -279,7 +284,7 @@
 
             <!-- Opção de Crediário -->
             <div id="crediarioOpcoes" style="display: none; margin-top: 10px;">
-                
+                <h3>Escolha em quantas parcelas você prefere.</h3>
                 <label>Dividir em 
                     <select name="parcelas" id="parcelas">
                         <option value="">Selecione</option>
@@ -345,6 +350,7 @@
             let parcelasSelect = document.getElementById("parcelas");
             let outros = document.getElementById("outros");
             let taxaCred = document.getElementById("taxaCred");
+            let entrada = document.getElementById("entrada");
 
             // Esconde todos os elementos antes de exibir o correto
             if (pix) pix.style.display = "none";
@@ -353,6 +359,7 @@
             if (crediarioOpcoes) crediarioOpcoes.style.display = "none";
             if (outros) outros.style.display = "none";
             if (taxaCred) taxaCred.style.display = "none";
+            if (entrada) entrada.style.display = "none";
 
             if (formaPagamento === "pix") {
                 if (pix) pix.style.display = "block";
@@ -377,6 +384,8 @@
                 parcelasSelect.innerHTML = '<option value="">Selecione</option>';
 
                 let maxParcelas = document.getElementById("qt_parcelas").value;
+
+                if (entrada) entrada.style.display = "block";
 
                 // Chamar a função com o parâmetro correto baseado na entrega
                 let enderecoParceiro = document.getElementById("enderecoParceiro");
