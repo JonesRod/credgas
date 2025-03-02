@@ -266,7 +266,7 @@
                     <?php endif; ?>
 
                 </select>  
-                <p>Restante: <span id="restante">restante</span></p> 
+                <p>Restante: <span id="restante">R$ 0,00</span></p> 
             </div>
 
             <!-- Áreas para exibir os cartões aceitos -->
@@ -318,6 +318,7 @@
             }
             atualizarTotal(true);
             formasPagamento();
+            atualizarRestante();
         }
 
         function mostrarCamposEndereco() {
@@ -339,6 +340,7 @@
             document.getElementById("enderecoParceiro").style.display = "block";
             atualizarTotal(true);
             formasPagamento();
+            atualizarRestante();
         }
         
         function formasPagamento() {
@@ -430,6 +432,34 @@
 
         }
 
+        function formasPagamentoEntrada() {
+            let formaPagamentoEntrada = document.getElementById("forma_pagamento_entrada").value;
+            // Lógica para tratar a forma de pagamento da entrada, se necessário
+        }
+
+        function formatarValor(valor) {
+            valor = valor.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            valor = (valor / 100).toFixed(2) + ''; // Divide por 100 e fixa duas casas decimais
+            valor = valor.replace(".", ","); // Substitui ponto por vírgula
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); // Adiciona ponto como separador de milhar
+            return valor;
+        }
+
+        document.getElementById('entradaInput').addEventListener('input', function() {
+            let entrada = this.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            entrada = (entrada / 100).toFixed(2); // Divide por 100 e fixa duas casas decimais
+            this.value = formatarValor(this.value); // Formata o valor enquanto o usuário digita
+
+            atualizarRestante();
+        });
+
+        document.getElementById('entradaInput').addEventListener('input', function() {
+            let entrada = parseFloat(this.value.replace(',', '.')) || 0;
+            let totalBase = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
+            let restante = totalBase - entrada;
+            document.getElementById('restante').innerText = 'R$ ' + restante.toFixed(2).replace('.', ',');
+        });
+
         function atualizarTotal(cobrarFrete) {
             // Garantir que o cálculo do total sempre seja reiniciado corretamente
             let totalBase = totalGeral;
@@ -492,6 +522,13 @@
             }else{
                 document.querySelector('#msgAlerta').textContent = "";
             }
+        }
+
+        function atualizarRestante() {
+            let entrada = parseFloat(document.getElementById('entradaInput').value.replace(',', '.')) || 0;
+            let totalBase = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
+            let restante = totalBase - entrada;
+            document.getElementById('restante').innerText = 'R$ ' + restante.toFixed(2).replace('.', ',');
         }
     </script>
 
