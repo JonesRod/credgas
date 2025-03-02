@@ -227,8 +227,9 @@
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
-            <label>Escolha a forma de pagamento:</label>
+            <label>Escolha a 1ª forma de pagamento:</label>
             <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
+                <option value="selecionar">Selecionar</option>
                 <option value="pix">PIX</option>
                 <?php if ($cartao_credito_ativo): ?>
                     <option value="cartaoCred">Cartão de Crédito</option>
@@ -250,7 +251,7 @@
             </select>
             
             <div id="entrada" style="display: none; margin-top: 10px;">
-                <h3>Entrada</h3>
+                <h3>1ª forma de pagamento ou Entrada</h3>
                 <label for="entradaInput">Valor da entrada: </label>
                 <input type="text" id="entradaInput" name="entradaInput">
                 <br>
@@ -363,6 +364,15 @@
             if (taxaCred) taxaCred.style.display = "none";
             if (entrada) entrada.style.display = "none";
 
+            if (formaPagamento === "selecionar") {
+                if (entrada) entrada.style.display = "none";
+            } else {
+                if (entrada) {
+                    entrada.style.display = "block";
+                    atualizarRestante(); // Calcular o restante quando o campo de entrada for exibido
+                }
+            }
+
             if (formaPagamento === "pix") {
                 if (pix) pix.style.display = "block";
                     // Chamar a função com o parâmetro correto baseado na entrega
@@ -429,7 +439,7 @@
                     atualizarTotal(cobrarFrete);
             }
 
-
+            atualizarRestante(); // Recalcular o restante toda vez que a forma de pagamento for alterada
         }
 
         function formasPagamentoEntrada() {
