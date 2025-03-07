@@ -308,6 +308,7 @@
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
         let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
         let taxaCred = document.getElementById('taxaCred');
+        let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
 
         function verificarEndereco() {
             if (enderecoCadastrado.trim() !== "") {
@@ -395,7 +396,7 @@
                         if (i > 3) {
                             // Aplicar juros compostos para parcelas acima de 3x
                             let taxaJuros = 0.0299; // 2.99% ao mês
-                            valorParcela = (totalAtual * taxaJuros) / (1 - Math.pow(1 + taxaJuros, -i));
+                            valorParcela = (totalAtual * Math.pow(1 + taxaJuros, i)) / i;
                             labelJuros = " 2,99% a.m.";
                         } else {
                             // Parcelas sem juros
@@ -454,22 +455,9 @@
                 tabela.appendChild(linha);
             });
 
-            let totalComFrete = totalGeral + maiorFrete;
+            let totalComFrete = parseFloat(totalGeral) + parseFloat(maiorFrete);
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
             document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
-        }
-
-        function formasPagamentoEntrada() {
-            let formaPagamentoEntrada = document.getElementById("forma_pagamento_entrada").value;
-            // Lógica para tratar a forma de pagamento da entrada, se necessário
-        }
-
-        function formatarValor(valor) {
-            valor = valor.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-            valor = (valor / 100).toFixed(2) + ''; // Divide por 100 e fixa duas casas decimais
-            valor = valor.replace(".", ","); // Substitui ponto por vírgula
-            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); // Adiciona ponto como separador de milhar
-            return valor;
         }
 
         document.getElementById('entradaInput').addEventListener('input', function() {
