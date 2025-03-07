@@ -339,7 +339,7 @@
 
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
-            atualizarTotal(true);
+            atualizarTotal(false);
             formasPagamento();
             atualizarRestante();
         }
@@ -375,22 +375,10 @@
 
             if (formaPagamento === "pix") {
                 if (pix) pix.style.display = "block";
-                    // Chamar a função com o parâmetro correto baseado na entrega
-                    let enderecoParceiro = document.getElementById("enderecoParceiro");
-                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-                    atualizarTotal(cobrarFrete);
             } else if (formaPagamento === "cartaoCred") {
                 if (cartoesCredAceitos) cartoesCredAceitos.style.display = "block";
-                    // Chamar a função com o parâmetro correto baseado na entrega
-                    let enderecoParceiro = document.getElementById("enderecoParceiro");
-                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-                    atualizarTotal(cobrarFrete);
             } else if (formaPagamento === "cartaoDeb") {
                 if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
-                    // Chamar a função com o parâmetro correto baseado na entrega
-                    let enderecoParceiro = document.getElementById("enderecoParceiro");
-                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-                    atualizarTotal(cobrarFrete);
             } else if (formaPagamento === "crediario") {
                 if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
                 parcelasSelect.innerHTML = '<option value="">Selecione</option>';
@@ -398,14 +386,6 @@
                 let maxParcelas = document.getElementById("qt_parcelas").value;
 
                 if (entrada) entrada.style.display = "block";
-
-                // Chamar a função com o parâmetro correto baseado na entrega
-                let enderecoParceiro = document.getElementById("enderecoParceiro");
-                let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-                atualizarTotal(cobrarFrete);
-
-                // Pegar o valor atualizado do total
-                let totalAtual = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
 
                 if (maxParcelas > 0) {
                     for (let i = 1; i <= maxParcelas; i++) {
@@ -431,15 +411,52 @@
                 } else {
                     console.error("Erro: qt_parcelas inválido.");
                 }
+
+                atualizarTabelaCrediario(); // Atualizar a tabela de produtos com a taxa do crediário
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
-                    // Chamar a função com o parâmetro correto baseado na entrega
-                    let enderecoParceiro = document.getElementById("enderecoParceiro");
-                    let cobrarFrete = window.getComputedStyle(enderecoParceiro).display === "none"; // Se o endereço está oculto, cobrar frete
-                    atualizarTotal(cobrarFrete);
             }
 
+            atualizarTotal(document.querySelector('input[name="entrega"]:checked').value === "entregar");
             atualizarRestante(); // Recalcular o restante toda vez que a forma de pagamento for alterada
+        }
+
+        function atualizarTabelaCrediario() {
+            let produtos = <?php echo json_encode($produtos); ?>;
+            let taxaCrediario = parseFloat("<?php echo $valorTaxaCrediario; ?>") / 100;
+            let tabela = document.querySelector("table");
+            let linhas = tabela.querySelectorAll("tr");
+
+            // Remove todas as linhas de produtos existentes
+            linhas.forEach((linha, index) => {
+                if (index > 0) linha.remove();
+            });
+
+            let totalGeral = 0;
+            let maiorFrete = 0;
+            produtos.forEach(produto => {
+                let valorProComTaxa = produto.valor_produto * (1 + taxaCrediario);
+                let total = valorProComTaxa * produto.qt;
+                totalGeral += total;
+
+                // Verifica o maior frete no carrinho
+                if (produto.frete > maiorFrete) {
+                    maiorFrete = produto.frete;
+                }
+
+                let linha = document.createElement("tr");
+                linha.innerHTML = `
+                    <td>${produto.nome_produto}</td>
+                    <td style="text-align: center;">${produto.qt}</td>
+                    <td>R$ ${valorProComTaxa.toFixed(2).replace('.', ',')}</td>
+                    <td>R$ ${total.toFixed(2).replace('.', ',')}</td>
+                `;
+                tabela.appendChild(linha);
+            });
+
+            let totalComFrete = totalGeral + maiorFrete;
+            document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
+            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
         }
 
         function formasPagamentoEntrada() {
@@ -501,6 +518,8 @@
             } else {
                 //console.log("Nenhuma taxa de crediário aplicada.");
             }
+
+            atualizarRestante(); // Recalcular o restante após atualizar o total
         }
 
         function formatarCelular(input) {
