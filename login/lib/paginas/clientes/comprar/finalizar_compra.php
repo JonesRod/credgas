@@ -435,6 +435,7 @@
 
             let totalGeral = 0;
             let maiorFrete = 0;
+            
             produtos.forEach(produto => {
                 let valorProComTaxa = produto.valor_produto * (1 + taxaCrediario);
                 let total = valorProComTaxa * produto.qt;
@@ -456,8 +457,10 @@
             });
 
             let totalComFrete = parseFloat(totalGeral) + parseFloat(maiorFrete);
-            document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
-            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + parseFloat(maiorFrete).toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            document.getElementById('Total').innerText = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
+            let freteComTaxa = maiorFrete + ((maiorFrete * parseFloat("<?php echo $valorTaxaCrediario; ?>")) / 100);
+            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + freteComTaxa.toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            document.getElementById('ValorTotal').innerText = 'R$ ' + (totalGeral + freteComTaxa).toFixed(2).replace('.', ',');
         }
 
         document.getElementById('entradaInput').addEventListener('input', function() {
@@ -484,11 +487,12 @@
             }
 
             // Atualizar o frete na tela
-            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + parseFloat(maiorFrete).toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            let freteComTaxa = maiorFrete + ((maiorFrete * parseFloat("<?php echo $valorTaxaCrediario; ?>")) / 100);
+            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + freteComTaxa.toFixed(2).replace('.', ',') : 'Entrega Grátis';
             document.getElementById('frete').innerText = freteTexto;
 
             // Atualizar o valor total antes de aplicar a taxa
-            document.getElementById('ValorTotal').innerText = 'R$ ' + totalBase.toFixed(2).replace('.', ',');
+            document.getElementById('ValorTotal').innerText = 'R$ ' + (totalBase + freteComTaxa).toFixed(2).replace('.', ',');
 
             // Verifica se o endereço do parceiro está oculto ou visível
             let selectPagamento = document.getElementById("forma_pagamento");
@@ -500,7 +504,7 @@
 
                 // Atualizar o total corretamente após aplicar a taxa
                 totalBase += taxaCrediarioValor;
-                document.getElementById('ValorTotal').innerText = 'R$ ' + totalBase.toFixed(2).replace('.', ',');
+                document.getElementById('ValorTotal').innerText = 'R$ ' + (totalBase + freteComTaxa).toFixed(2).replace('.', ',');
 
                 //console.log("Taxa crediário aplicada com frete:", cobrarFrete ? "Sim" : "Não");
             } else {
