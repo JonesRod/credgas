@@ -457,7 +457,7 @@
 
             let totalComFrete = parseFloat(totalGeral) + parseFloat(maiorFrete);
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
-            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + parseFloat(maiorFrete).toFixed(2).replace('.', ',') : 'Entrega Grátis';
         }
 
         document.getElementById('entradaInput').addEventListener('input', function() {
@@ -484,7 +484,7 @@
             }
 
             // Atualizar o frete na tela
-            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + maiorFrete.toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + parseFloat(maiorFrete).toFixed(2).replace('.', ',') : 'Entrega Grátis';
             document.getElementById('frete').innerText = freteTexto;
 
             // Atualizar o valor total antes de aplicar a taxa
