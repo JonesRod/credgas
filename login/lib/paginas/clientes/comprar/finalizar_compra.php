@@ -76,6 +76,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>Finalizar Compra</h2>
@@ -227,76 +228,10 @@
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
-            <label>Escolha a 1ª forma de pagamento:</label>
-            <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
-                <option value="selecionar">Selecionar</option>
-                <option value="pix">PIX</option>
-                <?php if ($cartao_credito_ativo): ?>
-                    <option value="cartaoCred">Cartão de Crédito</option>
-                <?php endif; ?>
-
-                <?php if ($cartao_debito_ativo): ?>
-                    <option value="cartaoDeb">Cartão de Débito</option>
-                <?php endif; ?>
-
-                <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
-                    <option value="crediario">Crediario</option>
-                <?php endif; ?>
-
-                <option value="boleto">Boleto Bancário</option>
-
-                <?php if ($outros): ?>
-                    <option value="outros">Outros</option>
-                <?php endif; ?>
-            </select>
-            
-            <div id="entrada" style="display: none; margin-top: 10px;">
-                <h3>1ª forma de pagamento ou Entrada</h3>
-                <label for="entradaInput">Valor da entrada: </label>
-                <input type="text" id="entradaInput" name="entradaInput">
-                <br>
-                <label>Escolha a forma de pagamento:</label>
-                <select name="forma_pagamento_entrada" id="forma_pagamento_entrada" onchange="formasPagamentoEntrada()">
-                    <option value="pix">PIX</option>
-                    <?php if ($cartao_credito_ativo): ?>
-                        <option value="cartaoCred">Cartão de Crédito</option>
-                    <?php endif; ?>
-
-                    <?php if ($cartao_debito_ativo): ?>
-                        <option value="cartaoDeb">Cartão de Débito</option>
-                    <?php endif; ?>
-
-                </select>  
-                <p>Restante: <span id="restante">R$ 0,00</span></p> 
-            </div>
-
-            <!-- Áreas para exibir os cartões aceitos -->
-            <div id="cartoesCredAceitos" style="display: none; margin-top: 10px;">
-                <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
-            </div>
-
-            <div id="cartoesDebAceitos" style="display: none; margin-top: 10px;">
-                <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
-            </div>
-
-            <div id="outros" style="display: none; margin-top: 10px;">
-                <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
-            </div>
-
-            <!-- Opção de Crediário -->
-            <div id="crediarioOpcoes" style="display: none; margin-top: 10px;">
-                <h3>Escolha em quantas parcelas você prefere.</h3>
-                <label>Dividir em 
-                    <select name="parcelas" id="parcelas">
-                        <option value="">Selecione</option>
-                    </select>
-                    parcelas.
-                </label>
-            </div>
-            <br>
             <a href="javascript:history.back()" class="voltar">Voltar</a>
-            <button type="submit">Finalizar Compra</button>
+            <button type="submit">Continua</button>
         </form>
+
     <?php else: ?>
         <p>Erro: Nenhum produto encontrado.</p>
     <?php endif; ?>
@@ -306,9 +241,9 @@
         let maiorFrete = parseFloat("<?php echo $maiorFrete; ?>");
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
-        let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
-        let taxaCred = document.getElementById('taxaCred');
-        let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
+        //let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
+        //let taxaCred = document.getElementById('taxaCred');
+        //let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
 
         function verificarEndereco() {
             if (enderecoCadastrado.trim() !== "") {
@@ -318,7 +253,7 @@
                 usarEnderecoCadastrado();
                 document.getElementById("enderecoParceiro").style.display = "none";
             }
-            atualizarTotal(true);
+            //atualizarTotal(true);
             //formasPagamento();
             //atualizarRestante();
         }
@@ -340,7 +275,7 @@
 
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
-            atualizarTotal(false);
+            //atualizarTotal(false);
             //formasPagamento();
             //atualizarRestante();
         }
@@ -426,9 +361,9 @@
             });
         });
 
-        document.getElementById('forma_pagamento').addEventListener('change', function() {
+        /*document.getElementById('forma_pagamento').addEventListener('change', function() {
             formasPagamento();
-        });
+        });*/
 
         function atualizarTotal(cobrarFrete) {
             // Garantir que o cálculo do total sempre seja reiniciado corretamente
@@ -444,7 +379,7 @@
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
 
             // Recalcular o restante após atualizar o total
-            atualizarRestante();
+           // atualizarRestante();
         }
 
         function atualizarRestante() {

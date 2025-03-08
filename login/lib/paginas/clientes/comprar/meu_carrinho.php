@@ -392,7 +392,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                 .then(data => {
                     console.log("Resposta JSON processada:", data);
                     if (data.status === "sucesso") {
-                        window.location.href = "finalizar_compra.php?id_parceiro=" + idParceiro + "&id_cliente=" + idCliente;
+                        window.location.href = "forma_entrega.php?id_parceiro=" + idParceiro + "&id_cliente=" + idCliente;
                     } else {
                         alert("Erro ao atualizar o carrinho: " + data.mensagem);
                     }

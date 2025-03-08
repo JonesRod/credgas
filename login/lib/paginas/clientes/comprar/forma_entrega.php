@@ -76,13 +76,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+input[type="text"], select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.voltar {
+    display: block;
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+    text-decoration: none;
+}
+
+.voltar:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    table, th, td {
+        display: block;
+        width: 100%;
+    }
+
+    th, td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    th::before, td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 10px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    th::before {
+        background-color: #f2f2f2;
+    }
+}
+
+    </style>
 </head>
 <body>
-    <h2>Finalizar Compra</h2>
-
-    <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
-        <h3>Saldo disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
-    <?php endif; ?>
+    <h2>Minha compra</h2>
 
     <?php if (!empty($produtos)): ?>
         <table border="1">
@@ -133,7 +237,6 @@
             ?>
         </table>
 
-
         <form action="processar_pagamento.php" method="post">
             <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
             <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
@@ -148,7 +251,7 @@
             </h3>
             
             <h3>Valor Total: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
-        
+            <h2>Escolha a forma de entrega!</h2>
             <label>
                 <input type="radio" name="entrega" value="entregar" checked onclick="verificarEndereco()"> Entregar
             </label>
@@ -227,76 +330,10 @@
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
-            <label>Escolha a 1ª forma de pagamento:</label>
-            <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
-                <option value="selecionar">Selecionar</option>
-                <option value="pix">PIX</option>
-                <?php if ($cartao_credito_ativo): ?>
-                    <option value="cartaoCred">Cartão de Crédito</option>
-                <?php endif; ?>
-
-                <?php if ($cartao_debito_ativo): ?>
-                    <option value="cartaoDeb">Cartão de Débito</option>
-                <?php endif; ?>
-
-                <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
-                    <option value="crediario">Crediario</option>
-                <?php endif; ?>
-
-                <option value="boleto">Boleto Bancário</option>
-
-                <?php if ($outros): ?>
-                    <option value="outros">Outros</option>
-                <?php endif; ?>
-            </select>
-            
-            <div id="entrada" style="display: none; margin-top: 10px;">
-                <h3>1ª forma de pagamento ou Entrada</h3>
-                <label for="entradaInput">Valor da entrada: </label>
-                <input type="text" id="entradaInput" name="entradaInput">
-                <br>
-                <label>Escolha a forma de pagamento:</label>
-                <select name="forma_pagamento_entrada" id="forma_pagamento_entrada" onchange="formasPagamentoEntrada()">
-                    <option value="pix">PIX</option>
-                    <?php if ($cartao_credito_ativo): ?>
-                        <option value="cartaoCred">Cartão de Crédito</option>
-                    <?php endif; ?>
-
-                    <?php if ($cartao_debito_ativo): ?>
-                        <option value="cartaoDeb">Cartão de Débito</option>
-                    <?php endif; ?>
-
-                </select>  
-                <p>Restante: <span id="restante">R$ 0,00</span></p> 
-            </div>
-
-            <!-- Áreas para exibir os cartões aceitos -->
-            <div id="cartoesCredAceitos" style="display: none; margin-top: 10px;">
-                <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
-            </div>
-
-            <div id="cartoesDebAceitos" style="display: none; margin-top: 10px;">
-                <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
-            </div>
-
-            <div id="outros" style="display: none; margin-top: 10px;">
-                <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
-            </div>
-
-            <!-- Opção de Crediário -->
-            <div id="crediarioOpcoes" style="display: none; margin-top: 10px;">
-                <h3>Escolha em quantas parcelas você prefere.</h3>
-                <label>Dividir em 
-                    <select name="parcelas" id="parcelas">
-                        <option value="">Selecione</option>
-                    </select>
-                    parcelas.
-                </label>
-            </div>
-            <br>
             <a href="javascript:history.back()" class="voltar">Voltar</a>
-            <button type="submit">Finalizar Compra</button>
+            <button type="submit">Continua</button>
         </form>
+
     <?php else: ?>
         <p>Erro: Nenhum produto encontrado.</p>
     <?php endif; ?>
@@ -306,9 +343,6 @@
         let maiorFrete = parseFloat("<?php echo $maiorFrete; ?>");
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
-        let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
-        let taxaCred = document.getElementById('taxaCred');
-        let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
 
         function verificarEndereco() {
             if (enderecoCadastrado.trim() !== "") {
@@ -318,9 +352,6 @@
                 usarEnderecoCadastrado();
                 document.getElementById("enderecoParceiro").style.display = "none";
             }
-            atualizarTotal(true);
-            //formasPagamento();
-            //atualizarRestante();
         }
 
         function mostrarCamposEndereco() {
@@ -340,94 +371,13 @@
 
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
-            atualizarTotal(false);
-            //formasPagamento();
-            //atualizarRestante();
         }
         
-        function formasPagamento() {
-            let formaPagamento = document.getElementById("forma_pagamento").value;
-            let pix = document.getElementById("pix");
-            let cartoesCredAceitos = document.getElementById("cartoesCredAceitos");
-            let cartoesDebAceitos = document.getElementById("cartoesDebAceitos");
-            let crediarioOpcoes = document.getElementById("crediarioOpcoes");
-            let parcelasSelect = document.getElementById("parcelas");
-            let outros = document.getElementById("outros");
-            let taxaCred = document.getElementById("taxaCred");
-            let entrada = document.getElementById("entrada");
-
-            // Esconde todos os elementos antes de exibir o correto
-            if (pix) pix.style.display = "none";
-            if (cartoesCredAceitos) cartoesCredAceitos.style.display = "none";
-            if (cartoesDebAceitos) cartoesDebAceitos.style.display = "none";
-            if (crediarioOpcoes) crediarioOpcoes.style.display = "none";
-            if (outros) outros.style.display = "none";
-            if (taxaCred) taxaCred.style.display = "none";
-            if (entrada) entrada.style.display = "none";
-
-            if (formaPagamento === "selecionar") {
-                if (entrada) entrada.style.display = "none";
-            } else {
-                if (entrada) {
-                    entrada.style.display = "block";
-                    atualizarRestante(); // Calcular o restante quando o campo de entrada for exibido
-                }
-            }
-
-            if (formaPagamento === "pix") {
-                if (pix) pix.style.display = "block";
-            } else if (formaPagamento === "cartaoCred") {
-                if (cartoesCredAceitos) cartoesCredAceitos.style.display = "block";
-            } else if (formaPagamento === "cartaoDeb") {
-                if (cartoesDebAceitos) cartoesDebAceitos.style.display = "block";
-            } else if (formaPagamento === "crediario") {
-                if (crediarioOpcoes) crediarioOpcoes.style.display = "block";
-                parcelasSelect.innerHTML = '<option value="">Selecione</option>';
-
-                let maxParcelas = document.getElementById("qt_parcelas").value;
-
-                if (entrada) entrada.style.display = "block";
-
-                if (maxParcelas > 0) {
-                    for (let i = 1; i <= maxParcelas; i++) {
-                        let valorParcela;
-                        let labelJuros = ""; // Texto para indicar se há juros
-
-                        if (i > 3) {
-                            // Aplicar juros compostos para parcelas acima de 3x
-                            let taxaJuros = 0.0299; // 2.99% ao mês
-                            valorParcela = (totalAtual * Math.pow(1 + taxaJuros, i)) / i;
-                            labelJuros = " 2,99% a.m.";
-                        } else {
-                            // Parcelas sem juros
-                            valorParcela = totalAtual / i;
-                            labelJuros = " sem juros";
-                        }
-
-                        let option = document.createElement("option");
-                        option.value = i + "x";
-                        option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
-                        parcelasSelect.appendChild(option);
-                    }
-                } else {
-                    console.error("Erro: qt_parcelas inválido.");
-                }
-            } else if (formaPagamento === "outros") {
-                if (outros) outros.style.display = "block";
-            }
-
-            atualizarTotal(document.querySelector('input[name="entrega"]:checked').value === "entregar");
-            atualizarRestante(); // Recalcular o restante toda vez que a forma de pagamento for alterada
-        }
 
         document.querySelectorAll('input[name="entrega"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 atualizarTotal(this.value === "entregar");
             });
-        });
-
-        document.getElementById('forma_pagamento').addEventListener('change', function() {
-            formasPagamento();
         });
 
         function atualizarTotal(cobrarFrete) {
@@ -443,15 +393,6 @@
             let totalComFrete = totalBase + (cobrarFrete ? freteComTaxa : 0);
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
 
-            // Recalcular o restante após atualizar o total
-            atualizarRestante();
-        }
-
-        function atualizarRestante() {
-            let entrada = parseFloat(document.getElementById('entradaInput').value.replace(',', '.')) || 0;
-            let totalBase = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
-            let restante = totalBase - entrada;
-            document.getElementById('restante').innerText = 'R$ ' + restante.toFixed(2).replace('.', ',');
         }
 
     </script>
