@@ -447,6 +447,8 @@
             </div>
 
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+            <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
+            <input type="hidden" name="valor_total" value="<?php echo $totalComFrete; ?>">
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
@@ -523,8 +525,53 @@
 
         }
 
-    // Chamar a função para definir a cor inicial do frete
-    atualizarTotal(true);
+        // Chamar a função para definir a cor inicial do frete
+        atualizarTotal(true);
+
+        function enviarFormulario() {
+            const form = document.querySelector('form');
+            const enderecoSelecionado = document.querySelector('input[name="entrega"]:checked').value;
+            const novoEndereco = document.getElementById("novoEndereco");
+
+            if (enderecoSelecionado === 'entregar' && novoEndereco.style.display === "block") {
+                const rua = document.querySelector('input[name="rua"]').value;
+                const bairro = document.querySelector('input[name="bairro"]').value;
+                const numero = document.querySelector('input[name="numero"]').value;
+                const contato = document.querySelector('input[name="contato"]').value;
+
+                if (rua && bairro && numero && contato) {
+                    form.submit();
+                } else {
+                    alert('Por favor, preencha todos os campos do endereço.');
+                }
+            } else {
+                form.submit();
+            }
+        }
+
+        document.querySelector('button[type="submit"]').addEventListener('click', function(event) {
+            event.preventDefault();
+            enviarFormulario();
+        });
+
+        function formatarCelular(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            if (value.length > 11) {
+                value = value.substr(0, 11);
+            }
+            if (value.length > 10) {
+                value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
+            } else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length = 1) {
+                value = value.replace(/(\d{1})/, '($1');
+            }
+            input.value = value;
+        }
 
     </script>
 

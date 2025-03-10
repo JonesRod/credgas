@@ -168,7 +168,7 @@ function formatarCelular(input) {
         value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
     }else if (value.length > 2) {
         value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
-    }else if (value.length > 1) {
+    }else if (value.length = 1) {
         value = value.replace(/(\d{1})/, '($1');
     }
     input.value = value;
