@@ -76,7 +76,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra</title>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>Finalizar Compra</h2>
@@ -228,10 +227,76 @@
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <br>
-            <a href="javascript:history.back()" class="voltar">Voltar</a>
-            <button type="submit">Continua</button>
-        </form>
+            <label>Escolha a 1ª forma de pagamento:</label>
+            <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
+                <option value="selecionar">Selecionar</option>
+                <option value="pix">PIX</option>
+                <?php if ($cartao_credito_ativo): ?>
+                    <option value="cartaoCred">Cartão de Crédito</option>
+                <?php endif; ?>
 
+                <?php if ($cartao_debito_ativo): ?>
+                    <option value="cartaoDeb">Cartão de Débito</option>
+                <?php endif; ?>
+
+                <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
+                    <option value="crediario">Crediario</option>
+                <?php endif; ?>
+
+                <option value="boleto">Boleto Bancário</option>
+
+                <?php if ($outros): ?>
+                    <option value="outros">Outros</option>
+                <?php endif; ?>
+            </select>
+            
+            <div id="entrada" style="display: none; margin-top: 10px;">
+                <h3>1ª forma de pagamento ou Entrada</h3>
+                <label for="entradaInput">Valor da entrada: </label>
+                <input type="text" id="entradaInput" name="entradaInput">
+                <br>
+                <label>Escolha a forma de pagamento:</label>
+                <select name="forma_pagamento_entrada" id="forma_pagamento_entrada" onchange="formasPagamentoEntrada()">
+                    <option value="pix">PIX</option>
+                    <?php if ($cartao_credito_ativo): ?>
+                        <option value="cartaoCred">Cartão de Crédito</option>
+                    <?php endif; ?>
+
+                    <?php if ($cartao_debito_ativo): ?>
+                        <option value="cartaoDeb">Cartão de Débito</option>
+                    <?php endif; ?>
+
+                </select>  
+                <p>Restante: <span id="restante">R$ 0,00</span></p> 
+            </div>
+
+            <!-- Áreas para exibir os cartões aceitos -->
+            <div id="cartoesCredAceitos" style="display: none; margin-top: 10px;">
+                <p>Cartões de Crédito aceitos: <?php echo htmlspecialchars($parceiro['cartao_credito']); ?></p>
+            </div>
+
+            <div id="cartoesDebAceitos" style="display: none; margin-top: 10px;">
+                <p>Cartões de Débito aceitos: <?php echo htmlspecialchars($parceiro['cartao_debito']); ?></p>
+            </div>
+
+            <div id="outros" style="display: none; margin-top: 10px;">
+                <p>Outras formas de pagamento disponíveis: <?php echo htmlspecialchars($parceiro['outras_formas']); ?></p>
+            </div>
+
+            <!-- Opção de Crediário -->
+            <div id="crediarioOpcoes" style="display: none; margin-top: 10px;">
+                <h3>Escolha em quantas parcelas você prefere.</h3>
+                <label>Dividir em 
+                    <select name="parcelas" id="parcelas">
+                        <option value="">Selecione</option>
+                    </select>
+                    parcelas.
+                </label>
+            </div>
+            <br>
+            <a href="javascript:history.back()" class="voltar">Voltar</a>
+            <button type="submit">Finalizar Compra</button>
+        </form>
     <?php else: ?>
         <p>Erro: Nenhum produto encontrado.</p>
     <?php endif; ?>
@@ -241,9 +306,9 @@
         let maiorFrete = parseFloat("<?php echo $maiorFrete; ?>");
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
-        //let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
-        //let taxaCred = document.getElementById('taxaCred');
-        //let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
+        let valorTaxaCrediario = "<?php echo $valorTaxaCrediario ?? ''; ?>";
+        let taxaCred = document.getElementById('taxaCred');
+        let totalAtual = parseFloat("<?php echo $totalGeral; ?>");
 
         function verificarEndereco() {
             if (enderecoCadastrado.trim() !== "") {
@@ -253,9 +318,9 @@
                 usarEnderecoCadastrado();
                 document.getElementById("enderecoParceiro").style.display = "none";
             }
-            //atualizarTotal(true);
-            //formasPagamento();
-            //atualizarRestante();
+            atualizarTotal(true);
+            formasPagamento();
+            atualizarRestante();
         }
 
         function mostrarCamposEndereco() {
@@ -275,9 +340,9 @@
 
         function mostrarEnderecoLoja(){
             document.getElementById("enderecoParceiro").style.display = "block";
-            //atualizarTotal(false);
-            //formasPagamento();
-            //atualizarRestante();
+            atualizarTotal(false);
+            formasPagamento();
+            atualizarRestante();
         }
         
         function formasPagamento() {
@@ -347,6 +412,8 @@
                 } else {
                     console.error("Erro: qt_parcelas inválido.");
                 }
+
+                atualizarTabelaCrediario(); // Atualizar a tabela de produtos com a taxa do crediário
             } else if (formaPagamento === "outros") {
                 if (outros) outros.style.display = "block";
             }
@@ -355,31 +422,126 @@
             atualizarRestante(); // Recalcular o restante toda vez que a forma de pagamento for alterada
         }
 
-        document.querySelectorAll('input[name="entrega"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                atualizarTotal(this.value === "entregar");
+        function atualizarTabelaCrediario() {
+            let produtos = <?php echo json_encode($produtos); ?>;
+            let taxaCrediario = parseFloat("<?php echo $valorTaxaCrediario; ?>") / 100;
+            let tabela = document.querySelector("table");
+            let linhas = tabela.querySelectorAll("tr");
+
+            // Remove todas as linhas de produtos existentes
+            linhas.forEach((linha, index) => {
+                if (index > 0) linha.remove();
             });
+
+            let totalGeral = 0;
+            let maiorFrete = 0;
+            
+            produtos.forEach(produto => {
+                let valorProComTaxa = produto.valor_produto * (1 + taxaCrediario);
+                let total = valorProComTaxa * produto.qt;
+                totalGeral += total;
+
+                // Verifica o maior frete no carrinho
+                if (produto.frete > maiorFrete) {
+                    maiorFrete = produto.frete;
+                }
+
+                let linha = document.createElement("tr");
+                linha.innerHTML = `
+                    <td>${produto.nome_produto}</td>
+                    <td style="text-align: center;">${produto.qt}</td>
+                    <td>R$ ${valorProComTaxa.toFixed(2).replace('.', ',')}</td>
+                    <td>R$ ${total.toFixed(2).replace('.', ',')}</td>
+                `;
+                tabela.appendChild(linha);
+            });
+
+            let totalComFrete = parseFloat(totalGeral) + parseFloat(maiorFrete);
+            document.getElementById('Total').innerText = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
+            let freteComTaxa = maiorFrete + ((maiorFrete * parseFloat("<?php echo $valorTaxaCrediario; ?>")) / 100);
+            document.getElementById('frete').innerText = (maiorFrete > 0) ? 'R$ ' + freteComTaxa.toFixed(2).replace('.', ',') : 'Entrega Grátis';
+            document.getElementById('ValorTotal').innerText = 'R$ ' + (totalGeral + (document.querySelector('input[name="entrega"]:checked').value === "entregar" ? freteComTaxa : maiorFrete)).toFixed(2).replace('.', ',');
+        }
+
+        document.getElementById('entradaInput').addEventListener('input', function() {
+            let entrada = this.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            entrada = (entrada / 100).toFixed(2); // Divide por 100 e fixa duas casas decimais
+            this.value = formatarValor(this.value); // Formata o valor enquanto o usuário digita
+
+            atualizarRestante();
         });
 
-        /*document.getElementById('forma_pagamento').addEventListener('change', function() {
-            formasPagamento();
-        });*/
+        document.getElementById('entradaInput').addEventListener('input', function() {
+            let entrada = parseFloat(this.value.replace(',', '.')) || 0;
+            let totalBase = parseFloat(document.getElementById('ValorTotal').innerText.replace('R$', '').replace(',', '.'));
+            let restante = totalBase - entrada;
+            document.getElementById('restante').innerText = 'R$ ' + restante.toFixed(2).replace('.', ',');
+        });
 
         function atualizarTotal(cobrarFrete) {
             // Garantir que o cálculo do total sempre seja reiniciado corretamente
             let totalBase = totalGeral;
 
             // Atualizar o frete na tela
+            let selectPagamento = document.getElementById("forma_pagamento");
+            let opcaoSelecionada = selectPagamento.value;
             let freteComTaxa = maiorFrete;
+
+            if (opcaoSelecionada === "crediario" && cobrarFrete) {
+                freteComTaxa += (maiorFrete * parseFloat("<?php echo $valorTaxaCrediario; ?>")) / 100;
+            }
+
             let freteTexto = (cobrarFrete && maiorFrete > 0) ? 'R$ ' + freteComTaxa.toFixed(2).replace('.', ',') : 'Entrega Grátis';
             document.getElementById('frete').innerText = freteTexto;
 
-            // Atualizar o valor total
-            let totalComFrete = totalBase + (cobrarFrete ? freteComTaxa : 0);
-            document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
+            // Atualizar o valor total antes de aplicar a taxa
+            document.getElementById('ValorTotal').innerText = 'R$ ' + (totalBase + (cobrarFrete ? freteComTaxa : 0)).toFixed(2).replace('.', ',');
 
-            // Recalcular o restante após atualizar o total
-           // atualizarRestante();
+            if (opcaoSelecionada === "crediario") {
+                let taxaCrediarioValor = (totalBase * valorTaxaCrediario) / 100;
+                document.getElementById('taxaCrediario').innerText = taxaCrediarioValor.toFixed(2).replace('.', ',');
+
+                // Atualizar o total corretamente após aplicar a taxa
+                totalBase += taxaCrediarioValor;
+                document.getElementById('ValorTotal').innerText = 'R$ ' + (totalBase + (cobrarFrete ? freteComTaxa : maiorFrete)).toFixed(2).replace('.', ',');
+
+                //console.log("Taxa crediário aplicada com frete:", cobrarFrete ? "Sim" : "Não");
+            } else {
+                //console.log("Nenhuma taxa de crediário aplicada.");
+            }
+
+            atualizarRestante(); // Recalcular o restante após atualizar o total
+        }
+
+        function formatarCelular(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
+            if (value.length > 11) {
+                value = value.substr(0, 11);
+            }
+            if (value.length > 10) {
+                value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
+            } else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length > 2) {
+                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
+            }else if (value.length > 1) {
+                value = value.replace(/(\d{1})/, '($1');
+            }
+            input.value = value;
+        }
+        
+        function verificaCelular(){
+            var celular =document.getElementById('contato').value;
+            //console.log(celular.length);
+            if(celular.length < 15 ){
+                
+                document.querySelector('#msgAlerta').textContent = "Preencha o campo Celular corretamente!";
+                document.getElementById('contato').focus();
+            }else{
+                document.querySelector('#msgAlerta').textContent = "";
+            }
         }
 
         function atualizarRestante() {
@@ -388,6 +550,16 @@
             let restante = totalBase - entrada;
             document.getElementById('restante').innerText = 'R$ ' + restante.toFixed(2).replace('.', ',');
         }
+
+        document.querySelectorAll('input[name="entrega"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                atualizarTotal(this.value === "entregar");
+            });
+        });
+
+        document.getElementById('forma_pagamento').addEventListener('change', function() {
+            formasPagamento();
+        });
 
     </script>
 

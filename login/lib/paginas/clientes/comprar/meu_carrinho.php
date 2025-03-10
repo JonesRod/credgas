@@ -5,6 +5,16 @@ session_start();
 if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     $id_cliente = intval($_GET['id_cliente']);
 
+    // Obtém a data de hoje menos 1 dia
+    $data_limite = date('Y-m-d', strtotime('-1 days'));
+
+    // Exclui produtos do carrinho do cliente adicionados há mais de 1 dia
+    $sql_delete = "DELETE FROM carrinho WHERE id_cliente = ? AND DATE(data) < ?";
+    $stmt_delete = $mysqli->prepare($sql_delete);
+    $stmt_delete->bind_param("is", $id_cliente, $data_limite);
+    $stmt_delete->execute();
+    $stmt_delete->close();
+
     $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, pa.nomeFantasia 
                                     FROM carrinho c
                                     INNER JOIN produtos p ON c.id_produto = p.id_produto

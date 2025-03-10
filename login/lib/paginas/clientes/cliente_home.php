@@ -58,10 +58,10 @@ if (isset($_SESSION['id'])) {
     // Obtém a data de hoje menos 1 dias
     $data_limite = date('Y-m-d', strtotime('-1 days'));
 
-    // Exclui produtos do carrinho do cliente adicionados há mais de 2 dias
+    // Exclui produtos do carrinho do cliente adicionados há mais de 1 dias
     $sql_delete = "DELETE FROM carrinho WHERE id_cliente = ? AND DATE(data) < ?";
     $stmt_delete = $mysqli->prepare($sql_delete);
-    $stmt_delete->bind_param("is", $id_cliente, $data_limite);
+    $stmt_delete->bind_param("is", $id, $data_limite); // Corrigir $id_cliente para $id
     $stmt_delete->execute();
     $stmt_delete->close();
 
