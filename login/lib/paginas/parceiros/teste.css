@@ -149,84 +149,7 @@
             
             <h3>Valor Total: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
         
-            <label>
-                <input type="radio" name="entrega" value="entregar" checked onclick="verificarEndereco()"> Entregar
-            </label>
-            <label>
-                <input type="radio" name="entrega" value="buscar" onclick="atualizarTotal(false); esconderCamposEndereco(); mostrarEnderecoLoja()"> Retirar no local
-            </label>
 
-            <?php if (!empty($endereco_cadastrado)): ?>
-                <div id="enderecoCadastrado">
-                    <h3>Meu endereço</h3>
-                    <p><strong>Cidade/UF:</strong> 
-                        <span id="cidade_uf"><?php echo $cidade.'/'.$uf; ?></span>
-                    </p>
-                    <p><strong>Rua/AV.:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($endereco_cadastrado); ?></span>
-                    </p>
-                    <p><strong>Número:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($numero); ?></span>
-                    </p>
-                    <p><strong>Bairro</strong>:</strong> 
-                        <span id="enderecoAtual"><?php echo htmlspecialchars($bairro); ?></span>
-                    </p>
-                    <p><strong>WhatsApp:</strong> 
-                        <span id="celular1"><?php echo htmlspecialchars($celular1); ?></span>
-                    </p>
-                    <button type="button" onclick="mostrarCamposEndereco()">Outro endereço</button>
-                </div>
-            <?php endif; ?>
-
-            <div id="novoEndereco" style="display: none; margin-top: 10px;">
-                <h3>Endereço da entrega</h3>
-                <span id="msgAlerta"></span>
-                <br>
-                <br>
-                <label>Rua/Av.:</label>
-                <input type="text" name="rua" placeholder="Digite a rua/avenida"><br>
-
-                <label>Bairro:</label>
-                <input type="text" name="bairro" placeholder="Digite o bairro"><br>
-
-                <label>Número:</label>
-                <input type="text" name="numero" placeholder="Digite o número"><br>
-
-                <label>Contato/WhatsApp:</label>
-                <input type="text" name="contato" id="contato" placeholder="Digite o número" oninput="formatarCelular(this)" onblur="verificaCelular()"><br>
-
-                <button type="button" onclick="usarEnderecoCadastrado()">Usar meu endereço</button>
-            </div>
-
-            <?php if (!empty($endereco_parceiro)): ?>
-                <div id="enderecoParceiro" style="display: none;">
-                    <p>
-                        <strong>
-                            Loja: <span id="nomeFantasia"><?php echo $nomeFantasia; ?></span>
-                        </strong> 
-                    </p>
-                    <p><strong>Cidade/UF:</strong> 
-                        <span id="cidade_uf"><?php echo $cidade_parceiro . '/' . $uf_parceiro; ?></span>
-                    </p>
-                    <p><strong>Rua/AV.:</strong> 
-                        <span id="ruaParceiro"><?php echo htmlspecialchars($endereco_parceiro); ?></span>
-                    </p>
-                    <p><strong>Número:</strong> 
-                        <span id="numeroParceiro"><?php echo htmlspecialchars($numero_parceiro); ?></span>
-                    </p>
-                    <p><strong>Bairro:</strong> 
-                        <span id="bairroParceiro"><?php echo htmlspecialchars($bairro_parceiro); ?></span>
-                    </p>
-                    <p><strong>WhatsApp:</strong> 
-                        <span id="telefone"><?php echo htmlspecialchars($telefoneComercial); ?></span>
-                    </p>
-                </div>
-            <?php endif; ?>
-
-            <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-            
-            <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
-            <br>
             <label>Escolha a 1ª forma de pagamento:</label>
             <select name="forma_pagamento" id="forma_pagamento" onchange="formasPagamento()">
                 <option value="selecionar">Selecionar</option>
@@ -459,6 +382,7 @@
 </body>
 </html>
 
+no span se a caixa estiver selecionada mostrar quais bandeira são aceitas vindas do bd na coluna cartao_credito e cartao_debito
 
 
 

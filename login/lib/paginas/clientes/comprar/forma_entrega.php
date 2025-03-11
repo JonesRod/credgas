@@ -305,7 +305,7 @@
     <h2>Minha compra</h2>
 
     <?php if (!empty($produtos)): ?>
-        <form action="processar_pagamento.php" method="post">        
+        <form action="pagamento.php" method="post">        
             <table border="1">
                 <tr>
                     <th>Produto</th>

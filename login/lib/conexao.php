@@ -24,9 +24,16 @@
 
     // Verifica se houve erro na conexão
     if ($mysqli->connect_error) {
-        die("Falha na conexão: " . $mysqli->connect_error);
+        // Tenta conexão com PDO
+        try {
+            $pdo = new PDO("mysql:host=$host;dbname=$banco", $usuario, $senha);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            //echo "Conexão com PDO bem-sucedida!";
+        } catch (PDOException $e) {
+            die("Falha na conexão com PDO: " . $e->getMessage());
+        }
     } else {
-        //echo "Conexão bem-sucedida!";
+        //echo "Conexão com mysqli bem-sucedida!";
     }
 
 ?>
