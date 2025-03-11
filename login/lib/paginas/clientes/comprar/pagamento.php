@@ -204,22 +204,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div id="pg_entrega" style="display: none; margin-top: 10px;">
-            <label>Escolha até 2 formas de pagamento:</label>
+            <label>Selecione até 3 formas de pagamento:</label>
             <div>
                 <div>
                     <label>
-                        <input type="checkbox" name="forma_pagamento_entrega[]" value="pix" onchange="limitarCheckboxes(this, 2)"> PIX
+                        <input type="checkbox" name="forma_pagamento_entrega[]" value="pix" onchange="limitarCheckboxes(this, 3)"> PIX
                     </label>
                 </div>
                 <div>
                     <label>
-                        <input type="checkbox" name="forma_pagamento_entrega[]" value="dinheiro" onchange="limitarCheckboxes(this, 2)"> Dinheiro
+                        <input type="checkbox" name="forma_pagamento_entrega[]" value="dinheiro" onchange="limitarCheckboxes(this, 3)"> Dinheiro
                     </label>
                 </div>
                 <?php if ($cartao_credito_ativo): ?>
                     <div>
                         <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoCred" onchange="limitarCheckboxes(this, 2)"> Cartão de Crédito
+                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoCred" onchange="limitarCheckboxes(this, 3)"> Cartão de Crédito
                         </label>
                         <span id="bandeiras_credito_entrega" style="display: none;">Cartões de Crédito aceitos: <?php echo $parceiro['cartao_credito']; ?></span>
                     </div>
@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if ($cartao_debito_ativo): ?>
                     <div>
                         <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoDeb" onchange="limitarCheckboxes(this, 2)"> Cartão de Débito
+                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoDeb" onchange="limitarCheckboxes(this, 3)"> Cartão de Débito
                         </label>
                         <span id="bandeiras_debito_entrega" style="display: none;">Cartões de Débito aceitos: <?php echo $parceiro['cartao_debito']; ?></span>
                     </div>
@@ -235,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if ($outros): ?>
                     <div>
                         <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="outros" onchange="limitarCheckboxes(this, 2)"> Outros
+                            <input type="checkbox" name="forma_pagamento_entrega[]" value="outros" onchange="limitarCheckboxes(this, 3)"> Outros
                         </label>
                         <span id="bandeiras_outros_entrega" style="display: none;">Outras formas aceitas: <?php echo $parceiro['outras_formas']; ?></span>
                     </div>
@@ -244,17 +244,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div id="pg_crediario" style="display: none; margin-top: 10px;">
-            <label>Dar entrada:</label>
             <div>
-                <select id="formas_pagamento_crediario" name="forma_pagamento[]" multiple size="3" onchange="limitarSelect(this)">
+                <label>Dar entrada: R$ </label>
+                <input type="text" id="entradaInput" name="entrada" value="0,00" oninput="formatarMoeda(this); atualizarRestante(); verificarEntradaMinima()">
+                <select id="formas_pagamento_crediario" name="forma_pagamento[]" onchange="mostrarBandeirasCriterio(this); limitarSelect(this);">
                     <option value="pix">PIX</option>
-                    <?php if ($cartao_credito_ativo): ?>
+                    <?php if ($admin_cartoes_credito): ?>
                         <option value="cartaoCred">Cartão de Crédito</option>
                     <?php endif; ?>
-                    <?php if ($cartao_debito_ativo): ?>
+                    <?php if ($admin_cartoes_debito): ?>
                         <option value="cartaoDeb">Cartão de Débito</option>
                     <?php endif; ?>
                 </select>
+                <div id="bandeiras_crediario" style="margin-top: 10px;">
+                    <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
+                    <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
+                </div>
             </div>
         </div>
         
@@ -507,6 +512,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Lógica para confirmar o pagamento com cartão de débito
             alert('Pagamento com cartão de débito confirmado!');
             fecharPopup('popup_cartaoDeb');
+        }
+
+        function mostrarBandeirasCriterio(select) {
+            const selectedOptions = Array.from(select.selectedOptions);
+            document.getElementById('bandeiras_credito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
+            document.getElementById('bandeiras_debito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
+        }
+
+        function mostrarBandeirasCriterio(select) {
+            const selectedOptions = Array.from(select.selectedOptions);
+            document.getElementById('bandeiras_credito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
+            document.getElementById('bandeiras_debito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
+        }
+
+        function verificarEntradaMinima() {
+            const total = parseFloat('<?php echo $total; ?>');
+            const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
+            const entradaInput = document.getElementById('entradaInput');
+            const entrada = parseFloat(entradaInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const diferenca = total - limiteCred;
+
+            if (total > limiteCred && entrada < diferenca) {
+                alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
+                entradaInput.value = diferenca.toFixed(2).replace('.', ',');
+                atualizarRestante();
+            }
         }
     </script>
 </body>
