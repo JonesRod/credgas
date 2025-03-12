@@ -61,12 +61,30 @@
             <h3>Escolha a 2ª forma de pagamento</h3>
             <h3>Valor restante: R$ <span id="valor_restante"></span></h3>
             <label>Escolha a 2ª forma de pagamento:</label>
-            <select id="segunda_forma_pagamento" name="segunda_forma_pagamento">
+            <select id="segunda_forma_pagamento" name="segunda_forma_pagamento" onchange="mostrarCamposSegundaForma()">
                 <option value="selecionar">Selecionar</option>    
                 <option value="pix">PIX</option>
                 <option value="cartaoCred">Cartão de Crédito</option>
                 <option value="cartaoDeb">Cartão de Débito</option>
             </select>
+            <br>
+            <div id="campos_pix" style="display: none;">
+                <label for="valor_pix_segunda">Valor a ser pago: R$ </label>
+                <input type="text" id="valor_pix_segunda" name="valor_pix_segunda" readonly>
+            </div>
+            <div id="campos_cartaoCred" style="display: none;">
+                <label for="valor_cartaoCred_segunda">Valor a ser pago: R$ </label>
+                <input type="text" id="valor_cartaoCred_segunda" name="valor_cartaoCred_segunda" readonly>
+                <br>
+                <label for="parcelas_cartaoCred_segunda">Quantidade de parcelas:</label>
+                <select id="parcelas_cartaoCred_segunda" name="parcelas_cartaoCred_segunda">
+                    <!-- Opções serão preenchidas dinamicamente -->
+                </select>
+            </div>
+            <div id="campos_cartaoDeb" style="display: none;">
+                <label for="valor_cartaoDeb_segunda">Valor a ser pago: R$ </label>
+                <input type="text" id="valor_cartaoDeb_segunda" name="valor_cartaoDeb_segunda" readonly>
+            </div>
             <br>
             <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
             <button type="button" onclick="enviarSegundaForma()">Continuar</button>
@@ -176,8 +194,99 @@
             valorPixInput.value = document.getElementById('valor_pix').value;
             form.appendChild(valorPixInput);
 
+            if (segundaForma === 'pix') {
+                const valorPixSegundaInput = document.createElement('input');
+                valorPixSegundaInput.type = 'hidden';
+                valorPixSegundaInput.name = 'valor_pix_segunda';
+                valorPixSegundaInput.value = document.getElementById('valor_pix_segunda').value;
+                form.appendChild(valorPixSegundaInput);
+            } else if (segundaForma === 'cartaoCred') {
+                const valorCartaoCredSegundaInput = document.createElement('input');
+                valorCartaoCredSegundaInput.type = 'hidden';
+                valorCartaoCredSegundaInput.name = 'valor_cartaoCred_segunda';
+                valorCartaoCredSegundaInput.value = document.getElementById('valor_cartaoCred_segunda').value;
+                form.appendChild(valorCartaoCredSegundaInput);
+
+                const parcelasCartaoCredSegundaInput = document.createElement('input');
+                parcelasCartaoCredSegundaInput.type = 'hidden';
+                parcelasCartaoCredSegundaInput.name = 'parcelas_cartaoCred_segunda';
+                parcelasCartaoCredSegundaInput.value = document.getElementById('parcelas_cartaoCred_segunda').value;
+                form.appendChild(parcelasCartaoCredSegundaInput);
+            } else if (segundaForma === 'cartaoDeb') {
+                const valorCartaoDebSegundaInput = document.createElement('input');
+                valorCartaoDebSegundaInput.type = 'hidden';
+                valorCartaoDebSegundaInput.name = 'valor_cartaoDeb_segunda';
+                valorCartaoDebSegundaInput.value = document.getElementById('valor_cartaoDeb_segunda').value;
+                form.appendChild(valorCartaoDebSegundaInput);
+            }
+
             document.body.appendChild(form);
             form.submit();
+        }
+
+        function mostrarCamposSegundaForma() {
+            const forma = document.getElementById('segunda_forma_pagamento').value;
+            const restante = parseFloat(document.getElementById('valor_restante').innerText.replace(',', '.'));
+
+            document.getElementById('campos_pix').style.display = forma === 'pix' ? 'block' : 'none';
+            document.getElementById('campos_cartaoCred').style.display = forma === 'cartaoCred' ? 'block' : 'none';
+            document.getElementById('campos_cartaoDeb').style.display = forma === 'cartaoDeb' ? 'block' : 'none';
+
+            if (forma === 'pix') {
+                document.getElementById('valor_pix_segunda').value = restante.toFixed(2).replace('.', ',');
+            } else if (forma === 'cartaoCred') {
+                document.getElementById('valor_cartaoCred_segunda').value = restante.toFixed(2).replace('.', ',');
+                mostrarParcelasCartaoCred(restante);
+            } else if (forma === 'cartaoDeb') {
+                document.getElementById('valor_cartaoDeb_segunda').value = restante.toFixed(2).replace('.', ',');
+            }
+        }
+
+        function mostrarParcelasCartaoCred(restante) {
+            const parcelasSelect = document.getElementById('parcelas_cartaoCred_segunda');
+            parcelasSelect.innerHTML = '';
+
+            const maxParcelas = 12; // Defina o número máximo de parcelas
+
+            if (maxParcelas > 0) {
+                for (let i = 1; i <= maxParcelas; i++) {
+                    let valorParcela;
+                    let labelJuros = ''; // Texto para indicar se há juros
+
+                    if (i > 3) {
+                        // Aplicar juros compostos para parcelas acima de 3x
+                        const taxaJuros = 0.0299; // 2.99% ao mês
+                        valorParcela = (restante * Math.pow(1 + taxaJuros, i)) / i;
+                        labelJuros = ' com 2,99% a.m.';
+                    } else {
+                        // Parcelas sem juros
+                        valorParcela = restante / i;
+                        labelJuros = ' sem juros';
+                    }
+
+                    const option = document.createElement('option');
+                    option.value = i + 'x';
+                    option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
+                    parcelasSelect.appendChild(option);
+                }
+            } else {
+                console.error('Erro: maxParcelas inválido.');
+            }
+        }
+
+        function atualizarValorParcelas() {
+            const restante = parseFloat(document.getElementById('valor_restante').innerText.replace(',', '.'));
+            const parcelas = parseInt(document.getElementById('parcelas_cartaoCred_segunda').value);
+            let valorParcela;
+
+            if (parcelas > 3) {
+                const taxaJuros = 0.0299; // 2.99% ao mês
+                valorParcela = (restante * Math.pow(1 + taxaJuros, parcelas)) / parcelas;
+            } else {
+                valorParcela = restante / parcelas;
+            }
+
+            document.getElementById('valor_parcelas_cartaoCred_segunda').value = `${parcelas}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}`;
         }
 
         function fecharPopup(popupId) {
