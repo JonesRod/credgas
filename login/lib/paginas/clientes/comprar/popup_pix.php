@@ -69,7 +69,7 @@
             </select>
             <br>
             <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
-            <button type="button" onclick="abrirSegundaForma()">Continuar</button>
+            <button type="button" onclick="enviarSegundaForma()">Continuar</button>
         </div>
     </div>
 
@@ -100,8 +100,36 @@
                 document.getElementById('valor_restante').innerText = restante.toFixed(2).replace('.', ',');
                 document.getElementById('popup_segunda_forma').style.display = 'block';
             } else {
-                alert('Pagamento com ' + metodo + ' confirmado!');
-                window.history.back();
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'processar_pagamento.php';
+
+                const idClienteInput = document.createElement('input');
+                idClienteInput.type = 'hidden';
+                idClienteInput.name = 'id_cliente';
+                idClienteInput.value = '<?php echo $id_cliente; ?>';
+                form.appendChild(idClienteInput);
+
+                const idParceiroInput = document.createElement('input');
+                idParceiroInput.type = 'hidden';
+                idParceiroInput.name = 'id_parceiro';
+                idParceiroInput.value = '<?php echo $id_parceiro; ?>';
+                form.appendChild(idParceiroInput);
+
+                const totalInput = document.createElement('input');
+                totalInput.type = 'hidden';
+                totalInput.name = 'valor_total';
+                totalInput.value = '<?php echo $total; ?>';
+                form.appendChild(totalInput);
+
+                const valorPixInput = document.createElement('input');
+                valorPixInput.type = 'hidden';
+                valorPixInput.name = 'valor_pix';
+                valorPixInput.value = document.getElementById('valor_pix').value;
+                form.appendChild(valorPixInput);
+
+                document.body.appendChild(form);
+                form.submit();
             }
         }
 
@@ -120,14 +148,36 @@
 
         function abrirSegundaForma() {
             const segundaForma = document.getElementById('segunda_forma_pagamento').value;
-            fecharPopup('popup_segunda_forma'); // Fechar o popup atual antes de abrir o próximo
-            if (segundaForma === 'pix') {
-                abrirPopup('PIX', 'segunda');
-            } else if (segundaForma === 'cartaoCred') {
-                abrirPopup('Cartão de Crédito', 'segunda');
-            } else if (segundaForma === 'cartaoDeb') {
-                abrirPopup('Cartão de Débito', 'segunda');
-            }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = segundaForma + '_pagamento.php';
+
+            const idClienteInput = document.createElement('input');
+            idClienteInput.type = 'hidden';
+            idClienteInput.name = 'id_cliente';
+            idClienteInput.value = '<?php echo $id_cliente; ?>';
+            form.appendChild(idClienteInput);
+
+            const idParceiroInput = document.createElement('input');
+            idParceiroInput.type = 'hidden';
+            idParceiroInput.name = 'id_parceiro';
+            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
+            form.appendChild(idParceiroInput);
+
+            const totalInput = document.createElement('input');
+            totalInput.type = 'hidden';
+            totalInput.name = 'valor_total';
+            totalInput.value = '<?php echo $total; ?>';
+            form.appendChild(totalInput);
+
+            const valorPixInput = document.createElement('input');
+            valorPixInput.type = 'hidden';
+            valorPixInput.name = 'valor_pix';
+            valorPixInput.value = document.getElementById('valor_pix').value;
+            form.appendChild(valorPixInput);
+
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function fecharPopup(popupId) {
