@@ -140,25 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p id="bandeiras_debito" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                 </div>
                 
-                <button id="btn_pix_online" type="button" style="display: none;" onclick="abrirPopup('PIX')">Pagar com PIX</button>
-                <button id="btn_cartaoCred_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Crédito')">Pagar com Cartão de Crédito</button>
-                <button id="btn_cartaoDeb_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Débito')">Pagar com Cartão de Débito</button>
-            </div>
-        </div>
-
-        <div id="popup_pix" class="popup" style="display: none;">
-            <div class="popup-content">
-                <span class="close" onclick="fecharPopup('popup_pix')">&times;</span>
-                <h3>Pagar com PIX</h3>
-                <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
-                <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
-                <img src="qr_code_pix.png" alt="QR Code PIX">
-                <label for="valor_pix">Valor a ser pago: R$ </label>
-                <input type="text" id="valor_pix" name="valor_pix" value="<?php echo number_format($total, 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorPix()">
-                <br>
-                <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
-                <button type="button" onclick="fecharPopup('popup_pix')">Voltar</button>
-                <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
+                <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
+                <button id="btn_cartaoCred_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Crédito', 'primeira')">Pagar com Cartão de Crédito</button>
+                <button id="btn_cartaoDeb_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Débito', 'primeira')">Pagar com Cartão de Débito</button>
             </div>
         </div>
 
@@ -170,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Insira os dados do seu cartão de crédito para efetuar o pagamento.</p>
                 <!-- Adicione aqui o formulário para pagamento com cartão de crédito -->
                 <label for="valor_cartaoCred">Valor a ser pago: R$ </label>
-                <input type="text" id="valor_cartaoCred" name="valor_cartaoCred" value="<?php echo number_format($total, 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoCred()">
+                <input type="text" id="valor_cartaoCred" name="valor_cartaoCred" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoCred()">
                 <br>
                 <label for="parcelas_cartaoCred">Quantidade de parcelas:</label>
                 <select id="parcelas_cartaoCred" name="parcelas_cartaoCred">
@@ -183,8 +167,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endfor; ?>
                 </select>
                 <br>
-                <button type="button" onclick="fecharPopup('popup_cartaoCred')">Voltar</button>
-                <button type="button" onclick="confirmarPagamentoCartao()">Pagar</button>
+                <button type="button" onclick="fecharPopup('popup_cartaoCred')">Cancelar</button>
+                <button type="button" onclick="continuarPagamento('Cartão de Crédito')">Continuar</button>
             </div>
         </div>
 
@@ -196,15 +180,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Insira os dados do seu cartão de débito para efetuar o pagamento.</p>
                 <!-- Adicione aqui o formulário para pagamento com cartão de débito -->
                 <label for="valor_cartaoDeb">Valor a ser pago: R$ </label>
-                <input type="text" id="valor_cartaoDeb" name="valor_cartaoDeb" value="<?php echo number_format($total, 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoDeb()">
+                <input type="text" id="valor_cartaoDeb" name="valor_cartaoDeb" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoDeb()">
                 <br>
-                <button type="button" onclick="fecharPopup('popup_cartaoDeb')">Voltar</button>
-                <button type="button" onclick="confirmarPagamentoCartaoDeb()">Pagar</button>
+                <button type="button" onclick="fecharPopup('popup_cartaoDeb')">Cancelar</button>
+                <button type="button" onclick="continuarPagamento('Cartão de Débito')">Continuar</button>
+            </div>
+        </div>
+
+        <div id="popup_segunda_forma" class="popup" style="display: none;">
+            <div class="popup-content">
+                <span class="close" onclick="fecharPopup('popup_segunda_forma')">&times;</span>
+                <h3>Escolha a 2ª forma de pagamento</h3>
+                <h3>Valor restante: R$ <span id="valor_restante"></span></h3>
+                <label>Escolha a 2ª forma de pagamento:</label>
+                <select id="segunda_forma_pagamento" name="segunda_forma_pagamento">
+                    <option value="selecionar">Selecionar</option>    
+                    <option value="pix">PIX</option>
+                    <?php if ($admin_cartoes_credito): ?>
+                        <option value="cartaoCred">Cartão de Crédito</option>
+                    <?php endif; ?>
+                    <?php if ($admin_cartoes_debito): ?>
+                        <option value="cartaoDeb">Cartão de Débito</option>
+                    <?php endif; ?>
+                </select>
+                <br>
+                <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
+                <button type="button" onclick="abrirSegundaForma()">Continuar</button>
             </div>
         </div>
 
         <div id="pg_entrega" style="display: none; margin-top: 10px;">
-            <label>Selecione até 3 formas de pagamento:</label>
+            <h3>Selecione até 3 formas de pagamento:</h3>
             <div>
                 <div>
                     <label>
@@ -264,7 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         
         <button type="button" onclick="window.history.back();">Voltar</button>
-        <button type="submit">Confirmar Pagamento</button>
         
     </form>
 
@@ -307,7 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('bandeiras_outros_entrega').style.display = checkedCheckboxes.some(option => option.value === 'outros') ? 'block' : 'none';
         }
 
-        function abrirPopup(metodo) {
+        function abrirPopup(metodo, etapa) {
             if (metodo === 'PIX') {
                 document.getElementById('popup_pix').style.display = 'block';
             } else if (metodo === 'Cartão de Crédito') {
@@ -316,6 +321,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else if (metodo === 'Cartão de Débito') {
                 document.getElementById('popup_cartaoDeb').style.display = 'block';
             }
+        }
+
+        function continuarPagamento(metodo) {
+            fecharPopup('popup_' + metodo.toLowerCase().replace(' ', ''));
+            document.getElementById('valor_restante').innerText = calcularRestante(metodo);
+            document.getElementById('popup_segunda_forma').style.display = 'block';
+        }
+
+        function abrirSegundaForma() {
+            const segundaForma = document.getElementById('segunda_forma_pagamento').value;
+            fecharPopup('popup_segunda_forma'); // Fechar o popup atual antes de abrir o próximo
+            if (segundaForma === 'pix') {
+                abrirPopup('PIX', 'segunda');
+            } else if (segundaForma === 'cartaoCred') {
+                abrirPopup('Cartão de Crédito', 'segunda');
+            } else if (segundaForma === 'cartaoDeb') {
+                abrirPopup('Cartão de Débito', 'segunda');
+            }
+        }
+
+        function calcularRestante(metodo) {
+            const total = parseFloat('<?php echo $total; ?>');
+            let valorPago = 0;
+            if (metodo === 'PIX') {
+                valorPago = parseFloat(document.getElementById('valor_pix').value.replace(/\./g, '').replace(',', '.'));
+            } else if (metodo === 'Cartão de Crédito') {
+                valorPago = parseFloat(document.getElementById('valor_cartaoCred').value.replace(/\./g, '').replace(',', '.'));
+            } else if (metodo === 'Cartão de Débito') {
+                valorPago = parseFloat(document.getElementById('valor_cartaoDeb').value.replace(/\./g, '').replace(',', '.'));
+            }
+            return (total - valorPago).toFixed(2).replace('.', ',');
         }
 
         function fecharPopup(popupId) {
@@ -451,14 +487,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const total = parseFloat(document.getElementById('valor_cartaoCred').value.replace(/\./g, '').replace(',', '.'));
             const parcelasSelect = document.getElementById('parcelas_cartaoCred');
             parcelasSelect.innerHTML = `
-                <option value="1">1x de R$ ${total.toFixed(2).replace('.', ',')} sem juros</option>
-                <option value="2">2x de R$ ${(total / 2).toFixed(2).replace('.', ',')} sem juros</option>
-                <option value="3">3x de R$ ${(total / 3).toFixed(2).replace('.', ',')} sem juros</option>
+                <option value="1">1x de R$ ${total.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} sem juros</option>
+                <option value="2">2x de R$ ${(total / 2).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} sem juros</option>
+                <option value="3">3x de R$ ${(total / 3).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} sem juros</option>
             `;
             for (let i = 4; i <= 12; i++) {
                 const valorParcela = (total * Math.pow(1 + 0.0299, i)) / i;
-                parcelasSelect.innerHTML += `<option value="${i}">${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')} com 2,99% a.m.</option>`;
+                parcelasSelect.innerHTML += `<option value="${i}">${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} com 2,99% a.m.</option>`;
             }
+        }
+
+        for (let i = 4; i <= 12; i++) {
+            const valorParcela = (total * Math.pow(1 + 0.0299, i)) / i;
+            parcelasSelect.innerHTML += `<option value="${i}">${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} com 2,99% a.m.</option>`;
         }
 
         function formatarMoeda(input) {
@@ -475,7 +516,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (valorPix > total) {
                 alert('O valor a ser pago não pode ser maior que o valor da compra.');
                 //exit;
-                document.getElementById('valor_pix').value = '<?php echo number_format($total, 2, ',', '.'); ?>';
+                document.getElementById('valor_pix').value = '<?php echo number_format('0', 2, ',', '.'); ?>';
             }
         }
 
@@ -485,7 +526,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (valorCartaoCred > total) {
                 alert('O valor a ser pago não pode ser maior que o valor da compra.');
                 //exit;
-                document.getElementById('valor_cartaoCred').value = '<?php echo number_format($total, 2, ',', '.'); ?>';
+                document.getElementById('valor_cartaoCred').value = '<?php echo number_format('0', 2, ',', '.'); ?>';
                 calcularParcelas();
             } else {
                 calcularParcelas();
@@ -495,7 +536,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function confirmarPagamentoCartao() {
             // Lógica para confirmar o pagamento com cartão de crédito
             alert('Pagamento com cartão de crédito confirmado!');
-            fecharPopup('popup_cartaoCred');
+            fecharPopup('popup_cartaoCred'); // Fechar o popup após confirmar o pagamento
         }
 
         function verificarValorCartaoDeb() {
@@ -504,7 +545,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (valorCartaoDeb > total) {
                 alert('O valor a ser pago não pode ser maior que o valor da compra.');
                 //exit;
-                document.getElementById('valor_cartaoDeb').value = '<?php echo number_format($total, 2, ',', '.'); ?>';
+                document.getElementById('valor_cartaoDeb').value = '<?php echo number_format('0', 2, ',', '.'); ?>';
             }
         }
 
@@ -538,6 +579,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 entradaInput.value = diferenca.toFixed(2).replace('.', ',');
                 atualizarRestante();
             }
+        }
+
+        function enviarDadosPix() {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'popup_pix.php';
+
+            const idClienteInput = document.createElement('input');
+            idClienteInput.type = 'hidden';
+            idClienteInput.name = 'id_cliente';
+            idClienteInput.value = '<?php echo $id_cliente; ?>';
+            form.appendChild(idClienteInput);
+
+            const idParceiroInput = document.createElement('input');
+            idParceiroInput.type = 'hidden';
+            idParceiroInput.name = 'id_parceiro';
+            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
+            form.appendChild(idParceiroInput);
+
+            const totalInput = document.createElement('input');
+            totalInput.type = 'hidden';
+            totalInput.name = 'valor_total';
+            totalInput.value = '<?php echo $total; ?>';
+            form.appendChild(totalInput);
+
+            document.body.appendChild(form);
+            form.submit();
         }
     </script>
 </body>
