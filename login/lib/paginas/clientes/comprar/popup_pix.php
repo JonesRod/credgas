@@ -146,7 +146,17 @@
         }
 
         function gerarQRCode() {
-            let valorPix = document.getElementById('valor_pix').value;
+            let valorPix = parseFloat(document.getElementById('valor_pix').value.replace(/\./g, '').replace(',', '.'));
+            let valorTotal = <?php echo $total; ?>;
+            // Ajustar a precisão dos valores para evitar problemas de comparação
+            valorPix = parseFloat(valorPix).toFixed(2);
+            valorTotal = parseFloat(valorTotal).toFixed(2);
+
+            if (valorPix <= 0) {
+                alert('Por favor, digite um valor válido para o pagamento.');
+                return;
+            }
+
             // Lógica para gerar o QR Code com o valor do PIX
             document.getElementById('qr_code_pix').src = 'gerar_qr_code.php?valor=' + valorPix;
             document.getElementById('qr_code_pix').style.display = 'block';
@@ -156,8 +166,15 @@
             document.getElementById('pix_link').href = pixLink;
             document.getElementById('link_pix').style.display = 'block';
 
-            // Mostrar o botão "Continuar"
-            document.getElementById('btn_continuar').style.display = 'inline-block';
+            //console.log('Valor do PIX: ' + valorPix);
+            //console.log('Valor total: ' + valorTotal);
+
+            // Mostrar o botão "Continuar" apenas se o valor do pagamento for menor que o valor da compra
+            if (parseFloat(valorPix) < parseFloat(valorTotal)) {
+                document.getElementById('btn_continuar').style.display = 'inline-block';
+            } else {
+                document.getElementById('btn_continuar').style.display = 'none';
+            }
         }
 
         function continuarPagamento(metodo) {
@@ -250,18 +267,11 @@
         function enviarSegundaForma() {
             let segundaForma = document.getElementById('segunda_forma_pagamento').value;
             if (segundaForma === 'pix') {
-                let valorRestante = parseFloat(document.getElementById('valor_restante').innerText.replace(',', '.'));
-                // Lógica para gerar o QR Code com o valor restante do PIX
-                document.getElementById('qr_code_pix_segunda').src = 'gerar_qr_code.php?valor=' + valorRestante;
-
-                // Lógica para gerar o link de cópia e cola do PIX
-                let pixLink = 'pix://pagamento?valor=' + valorRestante;
-                document.getElementById('pix_link_segunda').href = pixLink;
-                document.getElementById('link_pix_segunda').style.display = 'block';
-                document.getElementById('qr_code_pix_segunda').style.display = 'block';
-
+                document.getElementById('segunada_forma_gerarQRCode').style.display = 'block';
                 document.getElementById('campos_cartaoCred').style.display = 'none';
                 document.getElementById('campos_cartaoDeb').style.display = 'none';
+                document.getElementById('link_pix_segunda').style.display = 'none';
+                document.getElementById('qr_code_pix_segunda').style.display = 'none';
             } else if (segundaForma === 'cartaoCred') {
                 document.getElementById('campos_cartaoCred').style.display = 'block';
                 document.getElementById('campos_cartaoDeb').style.display = 'none';
@@ -282,6 +292,19 @@
                 document.getElementById('link_pix_segunda').style.display = 'none';
                 document.getElementById('qr_code_pix_segunda').style.display = 'none';
             }
+        }
+
+        function mostrarQRCodeSegundaForma() {
+            let valorRestante = parseFloat(document.getElementById('valor_restante').innerText.replace(',', '.'));
+            // Lógica para gerar o QR Code com o valor restante do PIX
+            document.getElementById('qr_code_pix_segunda').src = 'gerar_qr_code.php?valor=' + valorRestante;
+
+            // Lógica para gerar o link de cópia e cola do PIX
+            let pixLink = 'pix://pagamento?valor=' + valorRestante;
+            document.getElementById('pix_link_segunda').href = pixLink;
+            document.getElementById('link_pix_segunda').style.display = 'block';
+            document.getElementById('qr_code_pix_segunda').style.display = 'block';
+            document.getElementById('segunada_forma_gerarQRCode').style.display = 'none';
         }
 
         function formatarNumeroCartao(input) {
@@ -411,6 +434,7 @@
             </div>
             <br>
             <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
+            <button type="button" id="segunada_forma_gerarQRCode" onclick="mostrarQRCodeSegundaForma()" style="display: none;">Gerar QR Code</button>
             <button type="button" id="btn_finalizar" onclick="finalizarPagamento()" style="display: none;">Finalizar</button>
         </div>
     </div>
