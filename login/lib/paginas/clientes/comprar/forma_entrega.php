@@ -451,9 +451,11 @@
             <input type="hidden" name="valor_total" value="<?php echo $totalComFrete; ?>">
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
+            <input type="hidden" name="detalhes_produtos" id="detalhes_produtos" >
             <br>
             <a href="javascript:history.back()" class="voltar">Voltar</a>
             <button type="submit">Continua</button>
+            <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
         </form>
 
     <?php else: ?>
@@ -533,6 +535,14 @@
             const enderecoSelecionado = document.querySelector('input[name="entrega"]:checked').value;
             const novoEndereco = document.getElementById("novoEndereco");
 
+            // Coletar detalhes dos produtos
+            const produtos = <?php echo json_encode($produtos); ?>;
+            const detalhesProdutos = produtos.map(produto => {
+                return `${produto.nome_produto}/${produto.qt}/${produto.valor_produto}/${produto.qt * produto.valor_produto}`;
+            }).join('|');
+
+            document.getElementById('detalhes_produtos').value = detalhesProdutos;
+
             if (enderecoSelecionado === 'entregar' && novoEndereco.style.display === "block") {
                 const rua = document.querySelector('input[name="rua"]').value;
                 const bairro = document.querySelector('input[name="bairro"]').value;
@@ -553,6 +563,20 @@
             event.preventDefault();
             enviarFormulario();
         });
+
+        function enviarDadosPix() {
+            const form = document.querySelector('form');
+
+            // Coletar detalhes dos produtos
+            const produtos = <?php echo json_encode($produtos); ?>;
+            const detalhesProdutos = produtos.map(produto => {
+                return `${produto.nome_produto}/${produto.qt}/${produto.valor_produto}/${produto.qt * produto.valor_produto}`;
+            }).join('|');
+
+            document.getElementById('detalhes_produtos').value = detalhesProdutos;
+
+            form.submit();
+        }
 
         function formatarCelular(input) {
             let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos

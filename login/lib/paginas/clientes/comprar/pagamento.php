@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
-
+    $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
+    //echo $detalhes_produtos;
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
     $stmt->bind_param("i", $id_cliente);
@@ -498,6 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         for (let i = 4; i <= 12; i++) {
+            const total = parseFloat('<?php echo $total; ?>'); // Adicionar esta linha para definir a variável total
             const valorParcela = (total * Math.pow(1 + 0.0299, i)) / i;
             parcelasSelect.innerHTML += `<option value="${i}">${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')} com 2,99% a.m.</option>`;
         }
@@ -603,6 +605,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             totalInput.name = 'valor_total';
             totalInput.value = '<?php echo $total; ?>';
             form.appendChild(totalInput);
+
+            const detalhesProdutosInput = document.createElement('input');
+            detalhesProdutosInput.type = 'hidden';
+            detalhesProdutosInput.name = 'detalhes_produtos';
+            detalhesProdutosInput.value = '<?php echo $detalhes_produtos; ?>';
+            form.appendChild(detalhesProdutosInput);
 
             document.body.appendChild(form);
             form.submit();
