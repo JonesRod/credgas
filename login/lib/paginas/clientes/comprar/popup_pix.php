@@ -40,11 +40,12 @@
         $num_cartao = $_POST['num_cartao'];
         $validade = $_POST['validade'];
         $cod_seguranca = $_POST['cod_seguranca'];
+        $tipo_cartao = 'credito'; // Adiciona o tipo de cartão como crédito
 
         // Salvar o novo cartão no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca) VALUES (?, ?, ?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
         if ($stmt) {
-            $stmt->bind_param("isss", $id_cliente, $num_cartao, $validade, $cod_seguranca);
+            $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca, $tipo_cartao);
             $stmt->execute();
             $stmt->close();
 
