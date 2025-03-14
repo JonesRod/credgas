@@ -22,18 +22,21 @@
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_cartao'])) {
         $id_cartao = intval($_POST['id_cartao']);
         $stmt = $mysqli->prepare("DELETE FROM cartoes_clientes WHERE id = ? AND id_cliente = ?");
+        
         if ($stmt) {
             $stmt->bind_param("ii", $id_cartao, $id_cliente);
-            $stmt->execute();
+            if ($stmt->execute()) {
+                echo json_encode(["sucesso" => true]);
+            } else {
+                echo json_encode(["sucesso" => false, "erro" => "Falha ao excluir"]);
+            }
             $stmt->close();
-            $mensagem = "Cartão excluído com sucesso!";
-            // Atualizar a lista de cartões
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
         } else {
-            die("Erro ao excluir o cartão: " . $mysqli->error);
+            echo json_encode(["sucesso" => false, "erro" => $mysqli->error]);
         }
+        exit;
     }
+    
 
     // Buscar cartões do cliente usando prepared statements
     $stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
@@ -93,9 +96,9 @@
                         $stmt->close();
 
                         // Salvar o pedido no banco de dados
-                        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, entrada) VALUES (?, ?, ?, ?, ?, ?)");
+                        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, entrada, valor) VALUES (?, ?, ?, ?, ?, ?)");
                         if ($stmt) {
-                            $stmt->bind_param("siissd", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $entrada);
+                            $stmt->bind_param("siissd", $data_hora, $id_cliente, $id_parceiro, $produtos, $entrada, $total);
                             $stmt->execute();
                             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
                             $stmt->close();
@@ -411,6 +414,15 @@
             if (validarCartao()) {
                 const form = document.getElementById('form_novo_cartao');
                 form.action = ''; // Defina a ação correta aqui
+                form.method = 'POST';
+
+                // Adicionar campo hidden para redirecionar após salvar
+                const redirectInput = document.createElement('input');
+                redirectInput.type = 'hidden';
+                redirectInput.name = 'redirect';
+                redirectInput.value = 'meus_pedidos.php';
+                form.appendChild(redirectInput);
+
                 form.submit();
             }
         }
@@ -456,24 +468,44 @@
             }
         }
 
-        function confirmarExclusaoCartao(idCartao) {
-            if (confirm("Tem certeza de que deseja excluir este cartão?")) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = ''; // Defina a ação correta aqui
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'id_cartao';
-                input.value = idCartao;
-                form.appendChild(input);
-                const excluirInput = document.createElement('input');
-                excluirInput.type = 'hidden';
-                excluirInput.name = 'excluir_cartao';
-                excluirInput.value = '1';
-                form.appendChild(excluirInput);
-                document.body.appendChild(form);
-                form.submit();
+        function confirmarExclusaoCartao(id_cartao) {
+            if (!confirm("Tem certeza que deseja excluir este cartão?")) {
+                return;
             }
+
+            let formData = new FormData();
+            formData.append("excluir_cartao", true);
+            formData.append("id_cartao", id_cartao);
+
+            fetch("popup_pix.php", { // Substitua pelo caminho correto do seu script PHP
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json()) // Espera uma resposta JSON do servidor
+            .then(data => {
+                if (data.sucesso) {
+                    // Remover a linha da tabela
+                    let row = document.querySelector(`input[value="${id_cartao}"]`);
+                    if (row) {
+                        row.closest("tr").remove();
+                    }
+                    // Verificar se ainda há cartões na tabela
+                    if (document.querySelectorAll('#cartoes_cadastrados tbody tr').length === 0) {
+                        let tbody = document.querySelector('#cartoes_cadastrados tbody');
+                        let tr = document.createElement('tr');
+                        let td = document.createElement('td');
+                        td.colSpan = 3;
+                        td.id = 'mensagem_sem_cartao';
+                        td.textContent = 'Nenhum cartão salvo!';
+                        tr.appendChild(td);
+                        tbody.appendChild(tr);
+                    }
+                    alert("Cartão excluído com sucesso!");
+                } else {
+                    alert("Erro ao excluir o cartão: " + data.erro);
+                }
+            })
+            .catch(error => console.error("Erro ao excluir cartão:", error));
         }
 
         document.addEventListener('DOMContentLoaded', function() {
