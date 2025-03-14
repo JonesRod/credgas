@@ -9,26 +9,49 @@
     }
 
     $id_cliente = $_SESSION['id'];
+    $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
     $id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
     $total = isset($_POST['valor_total']) ? floatval($_POST['valor_total']) : 0.0;
 
-    var_dump($_POST);
-    
     // Verificar se a conexão foi estabelecida
     if (!$mysqli) {
         die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
     }
 
+    // Função para excluir cartão
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['excluir_cartao'])) {
+        $id_cartao = intval($_POST['id_cartao']);
+        $stmt = $mysqli->prepare("DELETE FROM cartoes_clientes WHERE id = ? AND id_cliente = ?");
+        if ($stmt) {
+            $stmt->bind_param("ii", $id_cartao, $id_cliente);
+            $stmt->execute();
+            $stmt->close();
+            $mensagem = "Cartão excluído com sucesso!";
+            // Atualizar a lista de cartões
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit;
+        } else {
+            die("Erro ao excluir o cartão: " . $mysqli->error);
+        }
+    }
+
     // Buscar cartões do cliente usando prepared statements
-    $stmt = $mysqli->prepare("SELECT id, num_cartao FROM cartoes_clientes WHERE id_cliente = ?");
+    $stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
     if ($stmt) {
         $stmt->bind_param("i", $id_cliente);
         $stmt->execute();
         $result = $stmt->get_result();
 
         $cartoes = array();
+        $cartoes_credito = 0;
+        $cartoes_debito = 0;
         while ($row = $result->fetch_assoc()) {
             $cartoes[] = $row;
+            if ($row['tipo'] === 'credito') {
+                $cartoes_credito++;
+            } elseif ($row['tipo'] === 'debito') {
+                $cartoes_debito++;
+            }
         }
 
         $stmt->close();
@@ -41,17 +64,58 @@
         $validade = $_POST['validade'];
         $cod_seguranca = $_POST['cod_seguranca'];
         $tipo_cartao = 'credito'; // Adiciona o tipo de cartão como crédito
+        $data_hora = date('Y-m-d H:i:s'); // Data e hora do pedido
+        $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
+        $entrada = isset($_POST['valor_pix']) && floatval($_POST['valor_pix']) < $total ? floatval($_POST['valor_pix']) : 0; // Entrada do pedido
 
-        // Salvar o novo cartão no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
+        // Verificar se o cartão já está cadastrado
+        $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ?");
         if ($stmt) {
-            $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca, $tipo_cartao);
+            $stmt->bind_param("is", $id_cliente, $num_cartao);
             $stmt->execute();
-            $stmt->close();
+            $stmt->store_result();
 
-            $mensagem = "Pedido finalizado com sucesso!";
+            if ($stmt->num_rows > 0) {
+                $stmt->close();
+                $mensagem_erro = "Este cartão já está cadastrado.";
+            } else {
+                $stmt->close();
+
+                // Verificar se o limite de cartões foi atingido
+                if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
+                    $mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
+                } else {
+                    // Salvar o novo cartão no banco de dados
+                    $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
+                    if ($stmt) {
+                        $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca, $tipo_cartao);
+                        $stmt->execute();
+                        $stmt->close();
+
+                        // Salvar o pedido no banco de dados
+                        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, entrada) VALUES (?, ?, ?, ?, ?, ?)");
+                        if ($stmt) {
+                            $stmt->bind_param("siissd", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $entrada);
+                            $stmt->execute();
+                            $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
+                            $stmt->close();
+
+                            $mensagem = "Pedido finalizado com sucesso! Número do pedido: " . $num_pedido;
+                            echo "<script>
+                                setTimeout(function() {
+                                    window.location.href = 'meus_pedidos.php';
+                                }, 3000);
+                            </script>";
+                        } else {
+                            die("Erro ao salvar o pedido: " . $mysqli->error);
+                        }
+                    } else {
+                        die("Erro ao salvar o cartão: " . $mysqli->error);
+                    }
+                }
+            }
         } else {
-            die("Erro ao salvar o cartão: " . $mysqli->error);
+            die("Erro na preparação da consulta: " . $mysqli->error);
         }
     }
 ?>
@@ -320,9 +384,43 @@
             input.value = input.value.replace(/\D/g, '').slice(0, 3);
         }
 
+        function validarCartao() {
+            const numCartao = document.getElementById('num_cartao').value.replace(/\s/g, '');
+            const validade = document.getElementById('validade').value;
+            const codSeguranca = document.getElementById('cod_seguranca').value;
+
+            if (numCartao.length !== 16) {
+                alert('O número do cartão deve ter 16 dígitos.');
+                return false;
+            }
+
+            if (validade.length !== 5 || !/^\d{2}\/\d{2}$/.test(validade)) {
+                alert('A validade deve estar no formato MM/AA.');
+                return false;
+            }
+
+            if (codSeguranca.length !== 3) {
+                alert('O código de segurança deve ter 3 dígitos.');
+                return false;
+            }
+
+            return true;
+        }
+
         function adicionarNovoCartao() {
-            const form = document.getElementById('form_novo_cartao');
-            form.submit();
+            if (validarCartao()) {
+                const form = document.getElementById('form_novo_cartao');
+                form.action = ''; // Defina a ação correta aqui
+                form.submit();
+            }
+        }
+
+        function usarCartaoUmaVez() {
+            if (validarCartao()) {
+                const form = document.getElementById('form_novo_cartao');
+                form.action = 'salvar_pedido.php'; // Defina a ação correta aqui
+                form.submit();
+            }
         }
 
         function finalizarPagamento() {
@@ -355,6 +453,26 @@
                 setTimeout(function() {
                     document.getElementById('mensagem_final').style.display = 'block';
                 }, 3000);
+            }
+        }
+
+        function confirmarExclusaoCartao(idCartao) {
+            if (confirm("Tem certeza de que deseja excluir este cartão?")) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = ''; // Defina a ação correta aqui
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'id_cartao';
+                input.value = idCartao;
+                form.appendChild(input);
+                const excluirInput = document.createElement('input');
+                excluirInput.type = 'hidden';
+                excluirInput.name = 'excluir_cartao';
+                excluirInput.value = '1';
+                form.appendChild(excluirInput);
+                document.body.appendChild(form);
+                form.submit();
             }
         }
 
@@ -408,19 +526,23 @@
                         <tr>
                             <th>Selecionar</th>
                             <th>Número do Cartão</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($cartoes)): ?>
                             <tr>
-                                <td colspan="2" id="mensagem_sem_cartao">Nenhum cartão salvo!</td>
+                                <td colspan="3" id="mensagem_sem_cartao">Nenhum cartão salvo!</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($cartoes as $cartao): ?>
-                                <tr>
-                                    <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" onchange="verificarCartaoSelecionado()"></td>
-                                    <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
-                                </tr>
+                                <?php if ($cartao['tipo'] === 'credito'): ?>
+                                    <tr>
+                                        <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" onchange="verificarCartaoSelecionado()"></td>
+                                        <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
+                                        <td><button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button></td>
+                                    </tr>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
@@ -440,19 +562,24 @@
         </div>
     </div>
 
-    <div id="popup_novo_cartao" class="popup">
+    <div id="popup_novo_cartao" class="popup" style="display: <?php echo isset($mensagem_erro) ? 'block' : 'none'; ?>;">
         <div class="popup-content">
             <span class="close" onclick="fecharPopup('popup_novo_cartao')">&times;</span>
             <h3>Adicionar Novo Cartão</h3>
+            <?php if (isset($mensagem_erro)): ?>
+                <p style="color: red;"><?php echo $mensagem_erro; ?></p>
+            <?php endif; ?>
             <form id="form_novo_cartao" method="post">
+                <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
+                <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
                 <label for="num_cartao">Número do Cartão:</label>
-                <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)">
+                <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)" value="<?php echo isset($num_cartao) ? $num_cartao : ''; ?>">
                 <br>
                 <label for="validade">Validade:</label>
-                <input type="text" id="validade" name="validade" required oninput="formatarValidadeCartao(this)">
+                <input type="text" id="validade" name="validade" required oninput="formatarValidadeCartao(this)" value="<?php echo isset($validade) ? $validade : ''; ?>">
                 <br>
                 <label for="cod_seguranca">Código de Segurança:</label>
-                <input type="text" id="cod_seguranca" name="cod_seguranca" required oninput="formatarCodSeguranca(this)">
+                <input type="text" id="cod_seguranca" name="cod_seguranca" required oninput="formatarCodSeguranca(this)" value="<?php echo isset($cod_seguranca) ? $cod_seguranca : ''; ?>">
                 <br>
                 <button type="button" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
                 <button type="button" onclick="adicionarNovoCartao()">Salvar e Usar</button>
