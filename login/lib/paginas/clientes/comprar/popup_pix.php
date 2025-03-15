@@ -69,56 +69,64 @@
         $tipo_cartao = 'credito'; // Adiciona o tipo de cartão como crédito
         $data_hora = date('Y-m-d H:i:s'); // Data e hora do pedido
         $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
-        $entrada = isset($_POST['valor_pix']) && floatval($_POST['valor_pix']) < $total ? floatval($_POST['valor_pix']) : 0; // Entrada do pedido
+        $entrada = isset($_POST['valor_pix_entrada']) && floatval($_POST['valor_pix_entrada']) < $total ? floatval($_POST['valor_pix_entrada']) : 0; // Entrada do pedido
+        $valor_restante = $total - $entrada; // Valor restante do pedido
 
-        // Verificar se o cartão já está cadastrado
-        $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ?");
-        if ($stmt) {
-            $stmt->bind_param("is", $id_cliente, $num_cartao);
-            $stmt->execute();
-            $stmt->store_result();
+        $forma_pagamento_entrada = 'pix online'; // Forma de pagamento da entrada
+        $forma_pagamento_restante = isset($_POST['input_segunda_forma_pagamento']) ? $_POST['input_segunda_forma_pagamento'] : ''; // Forma de pagamento do restante
 
-            if ($stmt->num_rows > 0) {
-                $stmt->close();
-                $mensagem_erro = "Este cartão já está cadastrado.";
-            } else {
-                $stmt->close();
+        $salvar_cartao = isset($_POST['salvar_cartao']) ? $_POST['salvar_cartao'] : false;
 
-                // Verificar se o limite de cartões foi atingido
-                if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
-                    $mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
+        if ($salvar_cartao) {
+            // Verificar se o cartão já está cadastrado
+            $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ?");
+            if ($stmt) {
+                $stmt->bind_param("is", $id_cliente, $num_cartao);
+                $stmt->execute();
+                $stmt->store_result();
+
+                if ($stmt->num_rows > 0) {
+                    $stmt->close();
+                    $mensagem_erro = "Este cartão já está cadastrado.";
                 } else {
-                    // Salvar o novo cartão no banco de dados
-                    $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
-                    if ($stmt) {
-                        $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca, $tipo_cartao);
-                        $stmt->execute();
-                        $stmt->close();
+                    $stmt->close();
 
-                        // Salvar o pedido no banco de dados
-                        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, entrada, valor) VALUES (?, ?, ?, ?, ?, ?)");
-                        if ($stmt) {
-                            $stmt->bind_param("siissd", $data_hora, $id_cliente, $id_parceiro, $produtos, $entrada, $total);
-                            $stmt->execute();
-                            $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
-                            $stmt->close();
-
-                            $mensagem = "Pedido finalizado com sucesso! Número do pedido: " . $num_pedido;
-                            echo "<script>
-                                setTimeout(function() {
-                                    window.location.href = 'meus_pedidos.php';
-                                }, 3000);
-                            </script>";
-                        } else {
-                            die("Erro ao salvar o pedido: " . $mysqli->error);
-                        }
+                    // Verificar se o limite de cartões foi atingido
+                    if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
+                        $mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
                     } else {
-                        die("Erro ao salvar o cartão: " . $mysqli->error);
+                        // Salvar o novo cartão no banco de dados
+                        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
+                        if ($stmt) {
+                            $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca, $tipo_cartao);
+                            $stmt->execute();
+                            $stmt->close();
+                        } else {
+                            die("Erro ao salvar o cartão: " . $mysqli->error);
+                        }
                     }
                 }
+            } else {
+                die("Erro na preparação da consulta: " . $mysqli->error);
             }
+        }
+
+        // Salvar o pedido no banco de dados
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, entrada, forma_pg_entrada, valor_restante, forma_pg_restante) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt) {
+            $stmt->bind_param("siissssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante);
+            $stmt->execute();
+            $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
+            $stmt->close();
+
+            $mensagem = "Pedido finalizado com sucesso! Número do pedido: " . $num_pedido;
+            echo "<script>
+                setTimeout(function() {
+                    window.location.href = 'meus_pedidos.php';
+                }, 3000);
+            </script>";
         } else {
-            die("Erro na preparação da consulta: " . $mysqli->error);
+            die("Erro ao salvar o pedido: " . $mysqli->error);
         }
     }
 ?>
@@ -264,6 +272,9 @@
         }
 
         function abrirPopupNovoCartao() {
+            const parcelas = document.getElementById('parcelas_cartaoCred_segunda');
+            const parcelaSelecionada = parcelas.options[parcelas.selectedIndex].text;
+            document.getElementById('input_segunda_forma_pagamento').value = `Cartão de Crédito: ${parcelaSelecionada}`;
             document.getElementById('popup_novo_cartao').style.display = 'block';
         }
 
@@ -334,6 +345,7 @@
 
         function enviarSegundaForma() {
             let segundaForma = document.getElementById('segunda_forma_pagamento').value;
+            document.getElementById('input_segunda_forma_pagamento').value = segundaForma; // Atualizar o campo hidden com o valor selecionado
             if (segundaForma === 'pix') {
                 document.getElementById('segunada_forma_gerarQRCode').style.display = 'block';
                 document.getElementById('campos_cartaoCred').style.display = 'none';
@@ -410,8 +422,14 @@
             return true;
         }
 
+        function definirValorPixEntrada() {
+            let valorPix = document.getElementById('valor_pix').value;
+            document.getElementById('valor_pix_entrada').value = valorPix;
+        }
+
         function adicionarNovoCartao() {
             if (validarCartao()) {
+                definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
                 const form = document.getElementById('form_novo_cartao');
                 form.action = ''; // Defina a ação correta aqui
                 form.method = 'POST';
@@ -429,25 +447,54 @@
 
         function usarCartaoUmaVez() {
             if (validarCartao()) {
+                definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
                 const form = document.getElementById('form_novo_cartao');
-                form.action = 'salvar_pedido.php'; // Defina a ação correta aqui
+                form.action = ''; // Defina a ação correta aqui
+                form.method = 'POST';
+
+                // Adicionar campo hidden para não salvar o cartão
+                const salvarCartaoInput = document.createElement('input');
+                salvarCartaoInput.type = 'hidden';
+                salvarCartaoInput.name = 'salvar_cartao';
+                salvarCartaoInput.value = 'false';
+                form.appendChild(salvarCartaoInput);
+
                 form.submit();
             }
         }
 
         function finalizarPagamento() {
+            definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
             const cartaoSelecionado = document.querySelector('input[name="cartao_selecionado"]:checked');
             if (cartaoSelecionado) {
                 const idCartao = cartaoSelecionado.value;
+                const parcelas = document.getElementById('parcelas_cartaoCred_segunda').value;
+                const valorParcela = document.getElementById('parcelas_cartaoCred_segunda').selectedOptions[0].textContent;
+                const formaPagamentoRestante = document.getElementById('input_segunda_forma_pagamento').value;
+
+                let formaPagamentoRestanteTexto = '';
+                if (formaPagamentoRestante === 'cartaoCred') {
+                    formaPagamentoRestanteTexto = `${parcelas}x de ${valorParcela} online`;
+                } else if (formaPagamentoRestante === 'cartaoDeb') {
+                    formaPagamentoRestanteTexto = `cartão de débito online`;
+                }
+
                 // Enviar o formulário via POST
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = ''; // Defina a ação correta aqui
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'id_cartao';
-                input.value = idCartao;
-                form.appendChild(input);
+                const inputIdCartao = document.createElement('input');
+                inputIdCartao.type = 'hidden';
+                inputIdCartao.name = 'id_cartao';
+                inputIdCartao.value = idCartao;
+                form.appendChild(inputIdCartao);
+
+                const inputFormaPagamentoRestante = document.createElement('input');
+                inputFormaPagamentoRestante.type = 'hidden';
+                inputFormaPagamentoRestante.name = 'forma_pagamento_restante';
+                inputFormaPagamentoRestante.value = formaPagamentoRestanteTexto;
+                form.appendChild(inputFormaPagamentoRestante);
+
                 document.body.appendChild(form);
                 form.submit();
 
@@ -604,6 +651,10 @@
             <form id="form_novo_cartao" method="post">
                 <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
                 <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+                <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
+                <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">
+                <input type="hidden" id="input_segunda_forma_pagamento" name="input_segunda_forma_pagamento">
+                
                 <label for="num_cartao">Número do Cartão:</label>
                 <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)" value="<?php echo isset($num_cartao) ? $num_cartao : ''; ?>">
                 <br>
