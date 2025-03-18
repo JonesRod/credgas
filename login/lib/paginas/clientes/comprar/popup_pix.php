@@ -63,13 +63,21 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['num_cartao']) || isset($_POST['num_cartao_selecionado']))) {
+
         $num_cartao = isset($_POST['num_cartao']) ? $_POST['num_cartao'] : $_POST['num_cartao_selecionado'];
-        $validade = isset($_POST['validade']) ? $_POST['validade'] : $_POST['validade_selecionado'];
-        $cod_seguranca = isset($_POST['cod_seguranca']) ? $_POST['cod_seguranca'] : $_POST['cod_seguranca_selecionado'];
+        $validade = isset($_POST['validade']) ? $_POST['validade'] : (isset($_POST['validade_selecionado']) ? $_POST['validade_selecionado'] : '');
+        $cod_seguranca = isset($_POST['cod_seguranca']) ? $_POST['cod_seguranca'] : (isset($_POST['cod_seguranca_selecionado']) ? $_POST['cod_seguranca_selecionado'] : '');
         $tipo_cartao = 'credito'; // Adiciona o tipo de cartão como crédito
         $data_hora = date('Y-m-d H:i:s'); // Data e hora do pedido
-        $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
-        $entrada = isset($_POST['valor_pix_entrada']) && floatval($_POST['valor_pix_entrada']) < $total ? floatval($_POST['valor_pix_entrada']) : 0; // Entrada do pedido
+        
+        $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : (isset($_POST['detalhes_produtos_dc']) ? $_POST['detalhes_produtos_dc'] : ''); // Detalhes dos produtos
+        
+        $entrada = isset($_POST['valor_pix_entrada']) && floatval($_POST['valor_pix_entrada']) < $total 
+            ? floatval($_POST['valor_pix_entrada']) 
+            : (isset($_POST['valor_pix_entrada_dc']) && is_numeric($_POST['valor_pix_entrada_dc']) 
+                ? floatval($_POST['valor_pix_entrada_dc']) 
+                : 0.0); // Entrada do pedido
+        
         $valor_restante = $total - $entrada; // Valor restante do pedido
 
         $forma_pagamento_entrada = 'pix: online'; // Forma de pagamento da entrada
@@ -78,7 +86,6 @@
         $forma_pagamento_restante = isset($_POST['input_segunda_forma_pagamento']) && !empty($_POST['input_segunda_forma_pagamento']) 
         ? $_POST['input_segunda_forma_pagamento'] 
         : (isset($_POST['input_parcela_cartao']) ? $_POST['input_parcela_cartao'] : '');
-
 
         $salvar_cartao = isset($_POST['salvar_cartao']) ? $_POST['salvar_cartao'] : false;
 
@@ -286,6 +293,7 @@
                     const parcelaSelecionada = parcelasSelect.options[parcelasSelect.selectedIndex].text;
                     document.getElementById('input_parcela_cartao').value = parcelaSelecionada;
                 }
+                definirValorPixEntrada();
             } else {
                 // Lógica para continuar o pagamento com PIX
                 alert('Pagamento concluído com PIX.');
@@ -467,8 +475,9 @@
         }
 
         function definirValorPixEntrada() {
-            let valorPix = document.getElementById('valor_pix').value;
+            let valorPix = document.getElementById('valor_pix').value.replace(/\./g, '').replace(',', '.');
             document.getElementById('valor_pix_entrada').value = valorPix;
+            document.getElementById('valor_pix_entrada_dc').value = valorPix;
         }
 
         function adicionarNovoCartao() {
@@ -533,6 +542,19 @@
             redirectInput.name = 'redirect';
             redirectInput.value = 'meus_pedidos.php';
             form.appendChild(redirectInput);
+
+            // Adicionar campos hidden para id_parceiro e valor_total
+            const idParceiroInput = document.createElement('input');
+            idParceiroInput.type = 'hidden';
+            idParceiroInput.name = 'id_parceiro';
+            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
+            form.appendChild(idParceiroInput);
+
+            const valorTotalInput = document.createElement('input');
+            valorTotalInput.type = 'hidden';
+            valorTotalInput.name = 'valor_total';
+            valorTotalInput.value = '<?php echo $total; ?>';
+            form.appendChild(valorTotalInput);
 
             // Garantir que o formulário seja enviado corretamente
             form.submit();
@@ -661,11 +683,11 @@
                 </table>
                 <br>
                 <div id="detalhes_cartao">
-                    <!-- precisara enviar esse valor para o backend 
-                    <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
-                    <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-                    <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
-                    <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">-->
+                    <!-- precisara enviar esse valor para o backend -->
+                    <input type="text" id="detalhes_produtos_dc" name="detalhes_produtos_dc" value="<?php echo $produtos; ?>">
+                    <input type="text" id="id_parceiro_dc" name="id_parceiro_dc" value="<?php echo $id_parceiro; ?>">
+                    <input type="text" id="valor_total_dc" name="valor_total_dc" value="<?php echo number_format($total, 2, ',', '.'); ?>">
+                    <input type="text" id="valor_pix_entrada_dc" name="valor_pix_entrada_dc">
 
                     <label for="num_cartao_selecionado">Número do Cartão:</label>
                     <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
