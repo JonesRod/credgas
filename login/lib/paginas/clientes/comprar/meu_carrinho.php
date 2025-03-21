@@ -205,7 +205,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         <p>Seu carrinho está vazio.</p>
     <?php endif; ?>
 
-    <a href="javascript:history.back()" class="voltar">Voltar</a>
+    <a href="../cliente_home.php" class="voltar">Voltar</a>
 </div>
 <script>
 

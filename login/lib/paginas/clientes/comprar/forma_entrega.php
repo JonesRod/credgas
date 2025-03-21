@@ -453,7 +453,7 @@
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <input type="hidden" name="detalhes_produtos" id="detalhes_produtos" >
             <br>
-            <a href="javascript:history.back()" class="voltar">Voltar</a>
+            <a href="meu_carrinho.php?id_cliente=<?php echo $id_cliente; ?>" class="voltar">Voltar</a>
             <button type="submit">Continua</button>
             <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
         </form>
