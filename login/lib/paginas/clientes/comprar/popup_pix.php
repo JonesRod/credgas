@@ -63,7 +63,7 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['num_cartao']) || isset($_POST['num_cartao_selecionado']))) {
-
+        $nome_cartao = isset($_POST['nome_cartao']) ? $_POST['nome_cartao'] : '';
         $num_cartao = isset($_POST['num_cartao']) ? $_POST['num_cartao'] : $_POST['num_cartao_selecionado'];
         $validade = isset($_POST['validade']) ? $_POST['validade'] : (isset($_POST['validade_selecionado']) ? $_POST['validade_selecionado'] : '');
         $cod_seguranca = isset($_POST['cod_seguranca']) ? $_POST['cod_seguranca'] : (isset($_POST['cod_seguranca_selecionado']) ? $_POST['cod_seguranca_selecionado'] : '');
@@ -113,9 +113,9 @@
                         $mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
                     } else {
                         // Salvar o novo cartão no banco de dados
-                        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo) VALUES (?, ?, ?, ?, ?)");
+                        $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo, nome) VALUES (?, ?, ?, ?, ?, ?)");
                         if ($stmt) {
-                            $stmt->bind_param("issss", $id_cliente, $num_cartao, $validade, $cod_seguranca_criptografado, $tipo_cartao);
+                            $stmt->bind_param("isssss", $id_cliente, $num_cartao, $validade, $cod_seguranca_criptografado, $tipo_cartao, $nome_cartao);
                             $stmt->execute();
                             $stmt->close();
                         } else {
@@ -371,9 +371,11 @@
                         const numCartao = this.dataset.numCartao;
                         const validade = this.dataset.validade;
                         const codSeguranca = this.dataset.codSeguranca;
+                        const nomeCartao = this.dataset.nomeCartao;
                         document.getElementById('num_cartao_selecionado').value = numCartao;
                         document.getElementById('validade_selecionado').value = validade;
                         document.getElementById('cod_seguranca_selecionado').value = codSeguranca;
+                        document.getElementById('nome_cartao_selecionado').value = nomeCartao;
 
                         // Atualizar input_parcela_cartao com o valor selecionado em parcelas_cartaoCred_segunda
                         const parcelasSelect = document.getElementById('parcelas_cartaoCred_segunda');
@@ -386,18 +388,21 @@
                         document.getElementById('num_cartao_selecionado_debito').value = numCartao;
                         document.getElementById('validade_selecionado_debito').value = validade;
                         document.getElementById('cod_seguranca_selecionado_debito').value = codSeguranca;
+                        document.getElementById('nome_cartao_selecionado_debito').value = nomeCartao;
 
                     } else {
                         // Limpar os inputs se o cartão for desmarcado
                         document.getElementById('num_cartao_selecionado').value = '';
                         document.getElementById('validade_selecionado').value = '';
                         document.getElementById('cod_seguranca_selecionado').value = '';
+                        document.getElementById('nome_cartao_selecionado').value = '';
                         document.getElementById('input_parcela_cartao').value = '';
 
                         // Limpar os inputs do cartão de débito se o cartão for desmarcado
                         document.getElementById('num_cartao_selecionado_debito').value = '';
                         document.getElementById('validade_selecionado_debito').value = '';
                         document.getElementById('cod_seguranca_selecionado_debito').value = '';
+                        document.getElementById('nome_cartao_selecionado_debito').value = '';
                     }
                 });
             });
@@ -592,6 +597,10 @@
 
         function finalizarPagamento() {
             definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
+            document.getElementById('popup_confirmacao_pagamento').style.display = 'block';
+        }
+
+        function confirmarPagamento() {
             const form = document.getElementById('segunda_forma'); // Corrigir o formulário
             form.action = 'popup_pix.php'; // Defina a ação correta aqui
             form.method = 'POST';
@@ -625,6 +634,10 @@
 
             // Garantir que o formulário seja enviado corretamente
             form.submit();
+        }
+
+        function cancelarConfirmacao() {
+            document.getElementById('popup_confirmacao_pagamento').style.display = 'none';
         }
 
         function mostrarMensagemSucesso() {
@@ -754,7 +767,7 @@
                             <?php foreach ($cartoes as $cartao): ?>
                                 <?php if ($cartao['tipo'] === 'credito'): ?>
                                     <tr>
-                                        <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" onchange="verificarCartaoSelecionado()"></td>
+                                        <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" data-nome-cartao="<?php echo $cartao['nome']; ?>" onchange="verificarCartaoSelecionado()"></td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
                                         <td><button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button></td>
                                     </tr>
@@ -773,6 +786,9 @@
 
                     <label for="num_cartao_selecionado">Número do Cartão:</label>
                     <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
+                    <br>
+                    <label for="nome_cartao_selecionado">Nome do Cartão:</label>
+                    <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
                     <br>
                     <label for="validade_selecionado">Validade:</label>
                     <input type="text" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
@@ -805,7 +821,7 @@
                             <?php foreach ($cartoes as $cartao): ?>
                                 <?php if ($cartao['tipo'] === 'debito'): ?>
                                     <tr>
-                                        <td><input type="checkbox" name="cartao_debito_selecionado" value="<?php echo $cartao['id']; ?>" data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" onchange="verificarCartaoSelecionado()"></td>
+                                        <td><input type="checkbox" name="cartao_debito_selecionado" value="<?php echo $cartao['id']; ?>" data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" data-nome-cartao="<?php echo $cartao['nome']; ?>" onchange="verificarCartaoSelecionado()"></td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
                                         <td><button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button></td>
                                     </tr>
@@ -824,6 +840,9 @@
 
                     <label for="num_cartao_selecionado_debito">Número do Cartão:</label>
                     <input type="text" id="num_cartao_selecionado_debito" name="num_cartao_selecionado_debito" readonly>
+                    <br>
+                    <label for="nome_cartao_selecionado_debito">Nome do Cartão:</label>
+                    <input type="text" id="nome_cartao_selecionado_debito" name="nome_cartao_selecionado_debito" readonly>
                     <br>
                     <label for="validade_selecionado_debito">Validade:</label>
                     <input type="text" id="validade_selecionado_debito" name="validade_selecionado_debito" readonly>
@@ -860,6 +879,9 @@
                 <label for="tipo_cartao">Tipo de Cartão:</label>
                 <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php echo isset($_POST['tipo_cartao']) ? ucfirst($_POST['tipo_cartao']) : 'Crédito'; ?>" readonly>
                 <br>
+                <label for="nome_cartao">Nome descrito Cartão:</label>
+                <input type="text" id="nome_cartao" name="nome_cartao" required value="<?php echo isset($nome_cartao) ? $nome_cartao : ''; ?>">
+                <br>
                 <label for="num_cartao">Número do Cartão:</label>
                 <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)" value="<?php echo isset($num_cartao) ? $num_cartao : ''; ?>">
                 <br>
@@ -894,5 +916,15 @@
             mostrarMensagemSucesso();
         </script>
     <?php endif; ?>
+
+    <div id="popup_confirmacao_pagamento" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="cancelarConfirmacao()">&times;</span>
+            <h3>Confirmação de Pagamento</h3>
+            <p>Tem certeza que deseja confirmar o pagamento?</p>
+            <button type="button" onclick="cancelarConfirmacao()">Cancelar</button>
+            <button type="button" onclick="confirmarPagamento()">Confirmar Pagamento</button>
+        </div>
+    </div>
 </body>
 </html>
