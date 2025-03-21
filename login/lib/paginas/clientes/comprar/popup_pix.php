@@ -82,8 +82,9 @@
 
         $valor_restante = $total - $entrada; // Valor restante do pedido
 
-        $forma_pagamento_entrada = 'pix: online'; // Forma de pagamento da entrada
-
+        $forma_pagamento_entrada = 'pix'; // Forma de pagamento da entrada
+        $forma_pagamento = 'online'; // Forma de pagamento do pedido
+        
         // Forma de pagamento do restante
         $forma_pagamento_restante = isset($_POST['input_segunda_forma_pagamento']) && !empty($_POST['input_segunda_forma_pagamento']) 
         ? $_POST['input_segunda_forma_pagamento'] 
@@ -129,12 +130,22 @@
         }
 
         // Salvar o pedido no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, entrada, forma_pg_entrada, valor_restante, forma_pg_restante) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
-            $stmt->bind_param("siissssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante);
+            $stmt->bind_param("siisssssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante);
             $stmt->execute();
             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
             $stmt->close();
+
+            // Excluir o pedido do carrinho
+            $stmt = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+            if ($stmt) {
+                $stmt->bind_param("ii", $id_cliente, $id_parceiro);
+                $stmt->execute();
+                $stmt->close();
+            } else {
+                die("Erro ao excluir do carrinho: " . $mysqli->error);
+            }
 
             $mensagem = "Pedido finalizado com sucesso! Número do pedido: " . $num_pedido;
             echo "<script>
