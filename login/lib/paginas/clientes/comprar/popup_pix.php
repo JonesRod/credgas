@@ -86,9 +86,14 @@
         $forma_pagamento = 'online'; // Forma de pagamento do pedido
         
         // Forma de pagamento do restante
-        $forma_pagamento_restante = isset($_POST['input_segunda_forma_pagamento']) && !empty($_POST['input_segunda_forma_pagamento']) 
-        ? $_POST['input_segunda_forma_pagamento'] 
-        : (isset($_POST['input_parcela_cartao']) ? $_POST['input_parcela_cartao'] : '');
+        $tipo_cartao_pedido = isset($_POST['segunda_forma_pagamento']) && $_POST['segunda_forma_pagamento'] === 'cartaoDeb' ? 'debito' : 'credito';
+        $forma_pagamento_restante = 'cartao de ' . $tipo_cartao_pedido; // Forma de pagamento do restante
+        
+        //Quantidade de parcelas
+        $qt_parcelas = isset($_POST['parcelas_cartaoCred_segunda']) && !empty($_POST['parcelas_cartaoCred_segunda']) 
+            ? $_POST['parcelas_cartaoCred_segunda'] 
+            : (isset($_POST['input_parcela_cartao']) ? $_POST['input_parcela_cartao'] : '');
+
 
         $salvar_cartao = isset($_POST['salvar_cartao']) && $_POST['salvar_cartao'] === 'true';
 
@@ -130,9 +135,11 @@
         }
 
         // Salvar o pedido no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, qt_parcelas, status_cliente, status_parceiro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
-            $stmt->bind_param("siisssssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante);
+            $status_cliente = 'analise';
+            $status_parceiro = 'pendente';
+            $stmt->bind_param("siissssssssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, $qt_parcelas, $status_cliente, $status_parceiro);
             $stmt->execute();
             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
             $stmt->close();
@@ -148,7 +155,7 @@
             }
 
             $mensagem = "Pedido finalizado com sucesso! Número do pedido: " . $num_pedido;
-            echo "<script>
+           echo "<script>
                 setTimeout(function() {
                     window.location.href = 'meus_pedidos.php';
                 }, 3000);
@@ -347,10 +354,9 @@
                     }
 
                     const option = document.createElement('option');
-                    option.value = i;
+                    option.value = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
                     option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
                     parcelasSelect.appendChild(option);
-                    continuarPagamento();
                 }
             } else {
                 console.error('Erro: maxParcelas inválido.');
