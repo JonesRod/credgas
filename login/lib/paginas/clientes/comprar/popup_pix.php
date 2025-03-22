@@ -86,13 +86,16 @@
         $forma_pagamento = 'online'; // Forma de pagamento do pedido
         
         // Forma de pagamento do restante
-        $tipo_cartao_pedido = isset($_POST['segunda_forma_pagamento']) && $_POST['segunda_forma_pagamento'] === 'cartaoDeb' ? 'debito' : 'credito';
+        $tipo_cartao_pedido = isset($_POST['segunda_forma_pagamento']) && $_POST['segunda_forma_pagamento'] === 'cartaoDeb' 
+            ? 'debito' 
+            : (isset($_POST['tipo_cartao']) && strtolower($_POST['tipo_cartao']) === 'débito' ? 'debito' : 'credito');
         $forma_pagamento_restante = 'cartao de ' . $tipo_cartao_pedido; // Forma de pagamento do restante
-        
+        //echo $forma_pagamento_restante;
+        //exit;
         //Quantidade de parcelas
         $qt_parcelas = isset($_POST['parcelas_cartaoCred_segunda']) && !empty($_POST['parcelas_cartaoCred_segunda']) 
             ? $_POST['parcelas_cartaoCred_segunda'] 
-            : (isset($_POST['input_parcela_cartao']) ? $_POST['input_parcela_cartao'] : '');
+            : (isset($_POST['input_parcela_cartao']) ? $_POST['input_parcela_cartao'] : (isset($_POST['parcelas_cartaoCred_segunda_novo']) ? $_POST['parcelas_cartaoCred_segunda_novo'] : ''));
 
 
         $salvar_cartao = isset($_POST['salvar_cartao']) && $_POST['salvar_cartao'] === 'true';
@@ -326,8 +329,14 @@
 
         function abrirPopupNovoCartao() {
             const parcelas = document.getElementById('parcelas_cartaoCred_segunda');
-            const parcelaSelecionada = parcelas.options.length > 0 ? parcelas.options[parcelas.selectedIndex].text : '';
-            document.getElementById('input_segunda_forma_pagamento').value = `Cartão de Crédito: ${parcelaSelecionada}`;
+            const segundaFormaPagamento = document.getElementById('segunda_forma_pagamento').value;
+            if (segundaFormaPagamento === 'cartaoCred' && parcelas.options.length > 0) {
+                const parcelaSelecionada = parcelas.options[parcelas.selectedIndex].text;
+                document.getElementById('input_segunda_forma_pagamento').value = `Cartão de Crédito: ${parcelaSelecionada}`;
+                document.getElementById('parcelas_cartaoCred_segunda_novo').value = parcelaSelecionada; // Carregar o valor selecionado
+            } else {
+                document.getElementById('parcelas_cartaoCred_segunda_novo').value = ''; // Limpar o campo
+            }
             document.getElementById('popup_novo_cartao').style.display = 'block';
         }
 
@@ -549,67 +558,95 @@
         function adicionarNovoCartao() {
             if (validarCartao()) {
                 definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
-                const form = document.getElementById('form_novo_cartao');
-                form.action = 'popup_pix.php'; // Defina a ação correta aqui
-                form.method = 'POST';
-
-                // Adicionar campo hidden para salvar o cartão
-                const salvarCartaoInput = document.createElement('input');
-                salvarCartaoInput.type = 'hidden';
-                salvarCartaoInput.name = 'salvar_cartao';
-                salvarCartaoInput.value = 'true';
-                form.appendChild(salvarCartaoInput);
-
-                // Adicionar campo hidden para redirecionar após salvar
-                const redirectInput = document.createElement('input');
-                redirectInput.type = 'hidden';
-                redirectInput.name = 'redirect';
-                redirectInput.value = 'meus_pedidos.php';
-                form.appendChild(redirectInput);
-
-                form.submit();
+                document.getElementById('popup_confirmacao_salvar_usar').style.display = 'block';
             }
+        }
+
+        function confirmarSalvarUsar() {
+            const form = document.getElementById('form_novo_cartao');
+            form.action = 'popup_pix.php'; // Defina a ação correta aqui
+            form.method = 'POST';
+
+            // Adicionar campo hidden para salvar o cartão
+            const salvarCartaoInput = document.createElement('input');
+            salvarCartaoInput.type = 'hidden';
+            salvarCartaoInput.name = 'salvar_cartao';
+            salvarCartaoInput.value = 'true';
+            form.appendChild(salvarCartaoInput);
+
+            // Adicionar campo hidden para redirecionar após salvar
+            const redirectInput = document.createElement('input');
+            redirectInput.type = 'hidden';
+            redirectInput.name = 'redirect';
+            redirectInput.value = 'meus_pedidos.php';
+            form.appendChild(redirectInput);
+
+            // Adicionar campo hidden para quantidade de parcelas
+            const qtParcelasInput = document.createElement('input');
+            qtParcelasInput.type = 'hidden';
+            qtParcelasInput.name = 'parcelas_cartaoCred_segunda_novo';
+            qtParcelasInput.value = document.getElementById('parcelas_cartaoCred_segunda_novo').value;
+            form.appendChild(qtParcelasInput);
+
+            form.submit();
+        }
+
+        function cancelarSalvarUsar() {
+            document.getElementById('popup_confirmacao_salvar_usar').style.display = 'none';
         }
 
         function usarCartaoUmaVez() {
             if (validarCartao()) {
                 definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
-                const form = document.getElementById('form_novo_cartao'); // Corrigir o formulário
-                form.action = 'popup_pix.php'; // Defina a ação correta aqui
-                form.method = 'POST';
-
-                // Adicionar campo hidden para não salvar o cartão
-                const salvarCartaoInput = document.createElement('input');
-                salvarCartaoInput.type = 'hidden';
-                salvarCartaoInput.name = 'salvar_cartao';
-                salvarCartaoInput.value = 'false';
-                console.log('oi');
-                //exit;
-                form.appendChild(salvarCartaoInput);
-
-                // Adicionar campo hidden para redirecionar após salvar
-                const redirectInput = document.createElement('input');
-                redirectInput.type = 'hidden';
-                redirectInput.name = 'redirect';
-                redirectInput.value = 'meus_pedidos.php';
-                form.appendChild(redirectInput);
-
-                // Adicionar campos hidden para id_parceiro e valor_total
-                const idParceiroInput = document.createElement('input');
-                idParceiroInput.type = 'hidden';
-                idParceiroInput.name = 'id_parceiro';
-                idParceiroInput.value = '<?php echo $id_parceiro; ?>';
-                form.appendChild(idParceiroInput);
-
-                const valorTotalInput = document.createElement('input');
-                valorTotalInput.type = 'hidden';
-                valorTotalInput.name = 'valor_total';
-                valorTotalInput.value = '<?php echo $total; ?>';
-                form.appendChild(valorTotalInput);
-
-                // Garantir que o formulário seja enviado corretamente
-                form.submit();
+                document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'block';
             }
+        }
+
+        function confirmarUsarUmaVez() {
+            const form = document.getElementById('form_novo_cartao'); // Corrigir o formulário
+            form.action = 'popup_pix.php'; // Defina a ação correta aqui
+            form.method = 'POST';
+
+            // Adicionar campo hidden para não salvar o cartão
+            const salvarCartaoInput = document.createElement('input');
+            salvarCartaoInput.type = 'hidden';
+            salvarCartaoInput.name = 'salvar_cartao';
+            salvarCartaoInput.value = 'false';
+            form.appendChild(salvarCartaoInput);
+
+            // Adicionar campo hidden para redirecionar após salvar
+            const redirectInput = document.createElement('input');
+            redirectInput.type = 'hidden';
+            redirectInput.name = 'redirect';
+            redirectInput.value = 'meus_pedidos.php';
+            form.appendChild(redirectInput);
+
+            // Adicionar campos hidden para id_parceiro e valor_total
+            const idParceiroInput = document.createElement('input');
+            idParceiroInput.type = 'hidden';
+            idParceiroInput.name = 'id_parceiro';
+            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
+            form.appendChild(idParceiroInput);
+
+            const valorTotalInput = document.createElement('input');
+            valorTotalInput.type = 'hidden';
+            valorTotalInput.name = 'valor_total';
+            valorTotalInput.value = '<?php echo $total; ?>';
+            form.appendChild(valorTotalInput);
+
+            // Adicionar campo hidden para quantidade de parcelas
+            const qtParcelasInput = document.createElement('input');
+            qtParcelasInput.type = 'hidden';
+            qtParcelasInput.name = 'parcelas_cartaoCred_segunda_novo';
+            qtParcelasInput.value = document.getElementById('parcelas_cartaoCred_segunda_novo').value;
+            form.appendChild(qtParcelasInput);
+
+            // Garantir que o formulário seja enviado corretamente
+            form.submit();
+        }
+
+        function cancelarUsarUmaVez() {
+            document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'none';
         }
 
         function finalizarPagamento() {
@@ -892,6 +929,7 @@
                 <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
                 <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">
                 <input type="hidden" id="input_segunda_forma_pagamento" name="input_segunda_forma_pagamento">
+                <input type="text" id="parcelas_cartaoCred_segunda_novo" name="parcelas_cartaoCred_segunda_novo">
                 
                 <label for="tipo_cartao">Tipo de Cartão:</label>
                 <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php echo isset($_POST['tipo_cartao']) ? ucfirst($_POST['tipo_cartao']) : 'Crédito'; ?>" readonly>
@@ -941,6 +979,26 @@
             <p>Tem certeza que deseja confirmar o pagamento?</p>
             <button type="button" onclick="cancelarConfirmacao()">Cancelar</button>
             <button type="button" onclick="confirmarPagamento()">Confirmar Pagamento</button>
+        </div>
+    </div>
+
+    <div id="popup_confirmacao_salvar_usar" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="cancelarSalvarUsar()">&times;</span>
+            <h3>Confirmação de Pagamento</h3>
+            <p>Tem certeza que deseja salvar o cartão e finalizar o pagamento?</p>
+            <button type="button" onclick="cancelarSalvarUsar()">Cancelar</button>
+            <button type="button" onclick="confirmarSalvarUsar()">Confirmar Pagamento</button>
+        </div>
+    </div>
+
+    <div id="popup_confirmacao_usar_uma_vez" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="cancelarUsarUmaVez()">&times;</span>
+            <h3>Confirmação de Pagamento</h3>
+            <p>Tem certeza que deseja usar o cartão só dessa vez e finalizar o pagamento?</p>
+            <button type="button" onclick="cancelarUsarUmaVez()">Cancelar</button>
+            <button type="button" onclick="confirmarUsarUmaVez()">Confirmar Pagamento</button>
         </div>
     </div>
 </body>
