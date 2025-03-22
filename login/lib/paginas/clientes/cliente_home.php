@@ -776,14 +776,17 @@ if (isset($_SESSION['id'])) {
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
-
                 <?php 
-                // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
+                // Consulta para buscar parceiros que têm produtos novos, visíveis e aprovados
                 $sql_parceiros = "
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE mp.status = 'ATIVO'";
+                    WHERE mp.status = 'ATIVO'
+                    AND p.oculto != 'sim' 
+                    AND p.produto_aprovado = 'sim'
+                    AND DATEDIFF(NOW(), p.data) <= 30
+                ";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -803,6 +806,8 @@ if (isset($_SESSION['id'])) {
                     ";
                     
                     $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+
+                    if ($result_produtos->num_rows > 0): // Verifica se há produtos novos
                 ?>
                 <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
                     <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
@@ -815,9 +820,12 @@ if (isset($_SESSION['id'])) {
                     </h3>
                     <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
                 </div>
-                <?php endwhile; ?>
-                <?php else: ?>
-                    <p>Nenhum parceiro ativo no momento.</p>
+                <?php 
+                    endif; // Fecha a verificação de produtos novos
+                    endwhile; 
+                else: 
+                ?>
+                    <p>Nenhum parceiro com novidades no momento.</p>
                 <?php endif; ?>
             </div>
 
