@@ -52,12 +52,14 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             width: 90%;
             margin: 20px auto;
             font-family: Arial, sans-serif;
+            text-align: center; /* Centraliza o conteúdo */
         }
         .parceiro {
             margin-bottom: 20px;
             padding: 10px;
             border-radius: 8px;
             background: #f9f9f9;
+            text-align: left; /* Alinha o texto à esquerda dentro dos parceiros */
         }
         .parceiro h3 {
             margin: 0 0 10px 0;
@@ -139,6 +141,57 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             transform: scale(1.2);
             color: darkred;
         }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .carrinho-container {
+                width: 100%;
+                padding: 10px;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                margin: 0 0 1rem 0;
+            }
+            tr:nth-child(odd) {
+                background: #f9f9f9;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            td:before {
+                position: absolute;
+                top: 0;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+            }
+            td:nth-of-type(1):before { content: "Produto"; }
+            td:nth-of-type(2):before { content: "Valor uni."; }
+            td:nth-of-type(3):before { content: "Qt"; }
+            td:nth-of-type(4):before { content: "Total"; }
+            td:nth-of-type(5):before { content: "Ação"; }
+        }
+
+        /* Centralizar mensagem de carrinho vazio */
+        .empty-cart-message {
+            text-align: center;
+            font-size: 18px;
+            color: #555;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -202,7 +255,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             </div>
         <?php endforeach; ?>
     <?php else: ?>
-        <p>Seu carrinho está vazio.</p>
+        <p class="empty-cart-message">Seu carrinho está vazio.</p>
     <?php endif; ?>
 
     <a href="../cliente_home.php" class="voltar">Voltar</a>

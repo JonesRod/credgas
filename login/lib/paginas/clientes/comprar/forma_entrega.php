@@ -459,7 +459,8 @@
         </form>
 
     <?php else: ?>
-        <p>Erro: Nenhum produto encontrado.</p>
+        <p style="text-align: center;">Nenhum produto no carrinho.</p>
+        <a href="../cliente_home.php" class="voltar">Voltar</a>
     <?php endif; ?>
 
     <script>
