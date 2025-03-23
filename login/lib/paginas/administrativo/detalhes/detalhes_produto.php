@@ -52,21 +52,22 @@
         // Remove pontos e substitui a vírgula por ponto
         $taxa_padrao = str_replace('.', '', $taxa_padrao); // Remove pontos (separadores de milhar)
         $taxa_padrao = str_replace(',', '.', $taxa_padrao); // Troca a vírgula por ponto
-
+        $valor_venda_vista = $produto['valor_produto'] + ($produto['valor_produto'] * $taxa_padrao ) /100;
         $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] === 'sim' ? 'sim' : 'nao';
         $parcelas = isset($_POST['parcelas']) ? intval($_POST['parcelas']) : 0;
         
         //echo ($id_produto);
         //echo ($vende_crediario);
         //echo ($parcelas);
+        //echo $valor_venda_vista;
         //die();
 
         if (isset($_POST['salvar'])) {
             // Atualiza o produto com segurança
-            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, produto_aprovado = 'sim', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = 'sim', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
 
-            $stmt->bind_param("sssi", $taxa_padrao, $vende_crediario, $parcelas, $id_produto);
+            $stmt->bind_param("ssssi", $taxa_padrao, $valor_venda_vista ,$vende_crediario, $parcelas, $id_produto);
 
             if ($stmt->execute()) {
             
@@ -321,8 +322,24 @@
     <div class="container">
         <?php if (!empty($error_msg)) : ?>
             <p class="error"><?= htmlspecialchars($error_msg); ?></p>
-        <?php elseif (!empty($produto)) : ?>
-            <h2>Detalhes do Produto</h2>
+        <?php elseif (!empty($produto)) : ?> 
+        <h2>Detalhes do Produto</h2>           
+        <?php if (!empty($imagens)) : ?>
+            <div class="image-slider">
+                <div class="main-image">
+                    <img class="active" src="../../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
+                </div>
+                <div class="thumbnail-container">
+                    <?php foreach ($imagens as $index => $imagem) : ?>
+                        <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="../../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else : ?>
+            <p>Sem imagens disponíveis para este produto.</p>
+        <?php endif; ?>        
+
+            
             <p><strong>Parceiro:</strong> <?= htmlspecialchars($parceiro['nomeFantasia']); ?></p>
             <p><strong>Status:</strong> <?= ($produto['produto_aprovado'] == 'sim') ? 'Ativo' : 'Inativo'; ?></p>
             <p><strong>Categoria:</strong> <?= htmlspecialchars($produto['categoria']); ?></p>
@@ -334,24 +351,28 @@
             <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
 
-            <?php if (!empty($imagens)) : ?>
-                <div class="image-slider">
-                    <div class="main-image">
-                        <img class="active" src="../../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagens[0]); ?>" alt="Imagem Principal do Produto">
-                    </div>
-                    <div class="thumbnail-container">
-                        <?php foreach ($imagens as $index => $imagem) : ?>
-                            <img class="thumbnail <?= $index === 0 ? 'active' : ''; ?>" src="../../parceiros/produtos/img_produtos/<?= htmlspecialchars($imagem); ?>" alt="Imagem do Produto" onclick="changeMainImage(this)">
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php else : ?>
-                <p>Sem imagens disponíveis para este produto.</p>
-            <?php endif; ?>
-
             <form method="POST" action="">
-                <label><strong>Taxa padrão: R$ </strong></label>
-                <input type="text" name="taxa_padrao" required value="<?= number_format($produto['taxa_padrao'] ?? 0, 2, ',', '.'); ?>">
+                <p><strong>Taxa padrão: </strong>
+                    <input type="text" id="taxa_padrao" name="taxa_padrao" 
+                    style="max-width: 70px;
+                    font-size: 15px;
+                    text-align: center;"
+                    required value="<?= number_format($produto['taxa_padrao'] ?? 0, 2, ',', '.'); ?>" 
+                    oninput="formatarValor(this)"> %
+                </p>
+                
+                <p>
+                    <strong>Preço de venda na plataforma: R$ 
+                        <input type="text" id="preco_venda_vista"
+                        style="max-width: 100px; 
+                        border: 0px;
+                        font-size: 18px;
+                        outline: none;"  
+                        readonly
+                        value="<?= number_format($produto['valor_venda_vista'] ?? 0, 2, ',', '.'); ?>">
+                    </strong>
+                </p>
+            
                 <!-- Opção de Vender no Crediário --> 
                 <p><strong>Vender no Crediário:</strong></p>
                 <div class="crediario">
@@ -389,6 +410,49 @@
                 function toggleParcelas(mostrar) {
                     document.getElementById('parcelas-container').style.display = mostrar ? 'block' : 'none';
                 }
+
+                function changeMainImage(thumbnail) {
+                    const mainImage = document.querySelector('.main-image img');
+                    mainImage.src = thumbnail.src;
+
+                    const thumbnails = document.querySelectorAll('.thumbnail');
+                    thumbnails.forEach((thumb) => thumb.classList.remove('active'));
+
+                    thumbnail.classList.add('active');
+                }
+
+                function updateVendaVista(input) {
+                    const precoVendaVistaInput = document.getElementById('preco_venda_vista');
+                    const valorProduto = <?= $produto['valor_produto'] ?? 0; ?>;
+                    
+                    let taxaPadrao = input.value.replace('.', '').replace(',', '.');
+                    taxaPadrao = parseFloat(taxaPadrao) || 0;
+
+                    // Limitar a 2 casas decimais
+                    taxaPadrao = Math.round(taxaPadrao * 100) / 100;
+
+                    const valorVendaVista = valorProduto + (valorProduto * taxaPadrao / 100);
+                    precoVendaVistaInput.value = valorVendaVista.toFixed(2).replace('.', ',');
+
+                    // Atualizar o valor do input com 2 casas decimais
+                    input.value = taxaPadrao.toFixed(2).replace('.', ',');
+                }
+
+                // Função para formatar o valor digitado no campo "taxa"
+                function formatarValor(input) {
+                    let taxa = input.value.replace(/\D/g, '');  // Remove todos os caracteres não numéricos
+                    let valorProduto = <?= $produto['valor_produto'] ?? 0; ?>;  // Valor do produto
+                    
+                    taxa = (taxa / 100).toFixed(2);  // Divide por 100 para ajustar para formato de decimal (0.00)
+
+                    taxa = taxa.replace('.', ',');  // Substitui o ponto pela vírgula
+                    taxa = taxa.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
+
+                    input.value = taxa;  // Atualiza o valor no campo
+
+                    const valorVendaVista = valorProduto + (valorProduto * parseFloat(taxa.replace(',', '.')) / 100);
+                    document.getElementById('preco_venda_vista').value = valorVendaVista.toFixed(2).replace('.', ',');
+                }
             </script>
 
             <!-- Link para voltar -->
@@ -397,17 +461,5 @@
             </div>
         <?php endif; ?>
     </div>
-    <script>
-        function changeMainImage(thumbnail) {
-            const mainImage = document.querySelector('.main-image img');
-            mainImage.src = thumbnail.src;
-
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            thumbnails.forEach((thumb) => thumb.classList.remove('active'));
-
-            thumbnail.classList.add('active');
-        }
-
-    </script>
 </body>
 </html>

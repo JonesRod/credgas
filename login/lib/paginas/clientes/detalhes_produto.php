@@ -520,7 +520,7 @@
             <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
             <p><strong>Descrição:</strong></p>
             <textarea class="descricao-box" readonly><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></textarea>
-            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
+            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_venda_vista'] ?? 0, 2, ',', '.'); ?></p>
             <?php if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): ?>
                 <p><strong style="color: green;">Frete Grátis</strong></p>
             <?php else: ?>
@@ -536,7 +536,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                     ?>
 
                     <?php if (isset($usuarioLogado) && $usuarioLogado): ?>

@@ -154,17 +154,19 @@
         <!-- Valor do produto com taxa da plataforma -->
         <?php
             // Consulta para buscar as categorias
-            $taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
+            /*$taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
             WHERE taxa_padrao != '' ORDER BY data_alteracao DESC 
             LIMIT 1") or die($mysqli->error);
 
             $taxa = $taxa_padrao->fetch_assoc();
-            $taxa_padrao->close();
+            $taxa_padrao->close();*/
+
+
         ?>
 
         <div class="form-group">
-            <label for="valor_produto_taxa">Valor do Produto + Taxa da Plataforma (R$):</label>
-            <input type="hidden" id="taxa" name="taxa" value="<?php echo $taxa['taxa_padrao'];?>">           
+            <label for="valor_produto_taxa">Valor do Produto + Taxa da Plataforma (%): R$ </label>
+            <input type="hidden" id="taxa" name="taxa" value="<?php echo $produto['taxa_padrao'];?>">           
             <input type="text" id="valor_produto_taxa" name="valor_produto_taxa" 
             value="<?php echo htmlspecialchars($produto['taxa_padrao']); ?>" readonly required>
         </div>

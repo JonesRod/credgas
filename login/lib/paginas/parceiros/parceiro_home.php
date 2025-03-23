@@ -435,7 +435,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
@@ -531,7 +531,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
@@ -619,7 +619,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
@@ -707,7 +707,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
@@ -796,7 +796,7 @@
                         $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
-                        $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                        $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 

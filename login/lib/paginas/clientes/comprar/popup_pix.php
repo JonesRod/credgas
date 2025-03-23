@@ -149,7 +149,7 @@
 
             // Salvar notificação na tabela contador_notificacoes_cliente
             $msg = "Pedido #$num_pedido em Análise.";
-            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, lida) VALUES (?, ?, ?, 1)");
+            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, 'pedido', 1)");
             if ($stmt) {
                 $stmt->bind_param("sis", $data_hora, $id_cliente, $msg);
                 $stmt->execute();

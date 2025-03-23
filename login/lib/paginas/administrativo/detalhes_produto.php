@@ -363,6 +363,7 @@
 </head>
 <body>
     <div class="container">
+        
         <?php if (!empty($error_msg)) : ?>
             <p class="error"><?= htmlspecialchars($error_msg); ?></p>
         <?php elseif (!empty($produto)) : ?>
@@ -371,6 +372,8 @@
             <p><strong>Descrição:</strong></p>
             <div class="descricao-box"><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></div>
             <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
+            <p><strong>Valor da Taxa:</strong> <?= number_format($produto['taxa_padrao'] ?? 0, 2, ',', '.'); ?>%</p>
+            <p><strong>Preço na plataforma:</strong> R$ <?= number_format($produto['valor_venda_vista'] ?? 0, 2, ',', '.'); ?></p>
             <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             

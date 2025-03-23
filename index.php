@@ -209,7 +209,7 @@
                             $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
-                            $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
+                            $valor_produto = $produto['valor_venda_vista'] ?? 0;
                         ?>
                         
                         <p class="moeda">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
@@ -350,7 +350,7 @@
                                 ?>                      
                                 
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
@@ -473,7 +473,7 @@
                                     endif;
                                 ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->
@@ -594,7 +594,7 @@
                                 ?>
                                                      
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                                 <!-- Verifica se o usuário está logado para permitir a compra -->

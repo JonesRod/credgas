@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         categoria = '$categoria', 
         valor_produto = $valor_produto, 
         taxa_padrao = $taxa, 
+        valor_venda_vista = $valor_produto + ($valor_produto * $taxa) / 100,
         frete_gratis = '$frete_gratis', 
         valor_frete = $valor_frete, 
         imagens = '$imagens_string',

@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $valor_produto = floatval($valor_produto);
     $taxa = floatval($taxa);
+    $valor_venda_vista = $valor_produto + ($valor_produto * $taxa / 100);
+    $valor_venda_vista = number_format($valor_venda_vista, 2, '.', '');
     $frete_gratis = floatval($frete_gratis);
 
     $imagens = [];  // Inicializa um array para armazenar os nomes das imagens salvas
@@ -95,8 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
      $imagens_json = implode(',', $imagens);  // Converte o array de imagens para uma string separada por vírgulas
     
     // Monta a query SQL com placeholders
-    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, categoria, valor_produto, taxa_padrao, frete_gratis, valor_frete, imagens) 
-            VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO produtos (data, id_parceiro, nome_produto, descricao_produto, categoria, valor_produto, taxa_padrao, valor_venda_vista, frete_gratis, valor_frete, imagens) 
+            VALUES (NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
     $stmt = $mysqli->prepare($sql);
    
@@ -105,13 +107,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     // Associa os parâmetros à consulta preparada
     $stmt->bind_param(
-        'isssddsss', 
+        'isssddssss', 
         $id_parceiro,        // Inteiro (ID do parceiro)
         $nome_produto,       // String
         $descricao_produto,  // String
         $categoria,          // String
         $valor_produto,      // Double
         $taxa, // String ou Double (ajustar conforme necessidade)
+        $valor_venda_vista,  // Double
         $frete_gratis,       // String (ex.: 'sim' ou 'não')
         $valor_frete,        // String
         $imagens_json        // String (imagens separadas por vírgulas)
