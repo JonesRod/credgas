@@ -206,21 +206,67 @@ if (isset($_SESSION['id'])) {
         }
 
         #resposra-carrinho {
-        position: fixed;  /* Fixa a posição na tela */
-        top: 50%;         /* Coloca no centro vertical */
-        left: 50%;        /* Coloca no centro horizontal */
-        transform: translate(-50%, -50%); /* Ajusta para centralizar exatamente */
-        background-color: rgba(0, 0, 0, 0.7);  /* Fundo semitransparente */
-        color: white;     /* Cor do texto */
-        padding: 20px;    /* Espaçamento interno */
-        border-radius: 10px; /* Bordas arredondadas */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra para dar destaque */
-        font-size: 16px;  /* Tamanho da fonte */
-        z-index: 9999;    /* Garante que o popup fique acima de outros elementos */
-        display: none;    /* Inicialmente escondido */
-    }
+            position: fixed;  /* Fixa a posição na tela */
+            top: 50%;         /* Coloca no centro vertical */
+            left: 50%;        /* Coloca no centro horizontal */
+            transform: translate(-50%, -50%); /* Ajusta para centralizar exatamente */
+            background-color: rgba(0, 0, 0, 0.7);  /* Fundo semitransparente */
+            color: white;     /* Cor do texto */
+            padding: 20px;    /* Espaçamento interno */
+            border-radius: 10px; /* Bordas arredondadas */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra para dar destaque */
+            font-size: 16px;  /* Tamanho da fonte */
+            z-index: 9999;    /* Garante que o popup fique acima de outros elementos */
+            display: none;    /* Inicialmente escondido */
+        }
+        .conteudo-aba p{
+            margin-top: 50px;
+            margin-bottom: 50px;
+        }
 
     </style>
+    <script>
+
+        function exibirCampoPesquisaCatalogo(exibir) {
+            var inputPesquisaParceiro = document.getElementById("inputPesquisaParceiroCatalogo");
+            var inputPesquisaProduto = document.getElementById("inputPesquisaCatalogo");
+            if (inputPesquisaParceiro) {
+                inputPesquisaParceiro.style.display = exibir ? "block" : "none";
+                inputPesquisaProduto.style.display = exibir ? "block" : "none";
+                //console.log("Exibir campo de pesquisa: " + exibir);
+            }
+        }
+
+        function exibirCampoPesquisaPromocao(exibir) {
+            var inputPesquisaParceiro = document.getElementById("inputPesquisaParceiroPromocao");
+            var inputPesquisaProduto = document.getElementById("inputPesquisaPromocao");
+            if (inputPesquisaParceiro) {
+                inputPesquisaParceiro.style.display = exibir ? "block" : "none";
+                inputPesquisaProduto.style.display = exibir ? "block" : "none";
+                //console.log("Exibir campo de pesquisa: " + exibir);
+            }
+        }
+
+        function exibirCampoPesquisaFreteGratis(exibir) {
+            var inputPesquisaParceiro = document.getElementById("inputPesquisaParceiroFrete_gratis");
+            var inputPesquisaProduto = document.getElementById("inputPesquisaFrete_gratis");
+            if (inputPesquisaParceiro) {
+                inputPesquisaParceiro.style.display = exibir ? "block" : "none";
+                inputPesquisaProduto.style.display = exibir ? "block" : "none";
+                //console.log("Exibir campo de pesquisa: " + exibir);
+            }
+        }
+        function exibirCampoPesquisaNovidades(exibir) {
+            var inputPesquisaParceiro = document.getElementById("inputPesquisaParceiroNovidades");
+            var inputPesquisaProduto = document.getElementById("inputPesquisaNovidades");
+            if (inputPesquisaParceiro) {
+                inputPesquisaParceiro.style.display = exibir ? "block" : "none";
+                inputPesquisaProduto.style.display = exibir ? "block" : "none";
+                //console.log("Exibir campo de pesquisa: " + exibir);
+            }
+        }
+
+    </script>
 </head>
 <body>
 
@@ -386,6 +432,11 @@ if (isset($_SESSION['id'])) {
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
        
             <h2>Nossos Parceiros</h2>
+            <div class="container">
+                <!-- Pesquisa de Parceiros -->
+                <input id="inputPesquisaParceiroCatalogo" style="display: none;" class="input" type="text" placeholder="Pesquisar Parceiro.">             
+            </div>
+
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
@@ -406,8 +457,6 @@ if (isset($_SESSION['id'])) {
                 }
                 
             ?>
-            <!-- Pesquisa de Parceiros -->
-            <input id="inputPesquisaParceiroCatalogo" class="input" type="text" placeholder="Pesquisar Parceiro.">
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
@@ -449,10 +498,12 @@ if (isset($_SESSION['id'])) {
 
             <div class="container">
                 <!-- Pesquisa de Produtos -->
-                <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto."></div>
+                <input id="inputPesquisaCatalogo" style="display: none;" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>
 
                 <div class="products">
                     <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <script>exibirCampoPesquisaCatalogo(true);</script>
                     <?php while ($produto = $result_produtos->fetch_assoc()): ?>
                     <div class="product-card">
                         <?php
@@ -514,6 +565,7 @@ if (isset($_SESSION['id'])) {
                     </div>
                     <?php endwhile; ?>
                     <?php else: ?>
+                        <script>exibirCampoPesquisaCatalogo(false);</script>
                         <p>Não há produtos no momento.</p>
                     <?php endif; ?>
                     <!-- Mensagem de produto não encontrado -->
@@ -525,9 +577,10 @@ if (isset($_SESSION['id'])) {
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-promocoes" class="conteudo-aba" style="display: none;">
             <h2>Nossos Parceiros</h2>
-
-            <!-- Pesquisa de Parceiros -->
-            <input id="inputPesquisaParceiroPromocao" class="input" type="text" placeholder="Pesquisar Parceiro.">
+            <div class="container">
+                <!-- Pesquisa de Parceiros -->
+                <input id="inputPesquisaParceiroPromocao" style="display: none;" class="input" type="text" placeholder="Pesquisar Parceiro.">
+            </div>
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
@@ -566,6 +619,7 @@ if (isset($_SESSION['id'])) {
                 <?php else: ?>
                     <p>Nenhum parceiro com promoção no momento.</p>
                 <?php endif; ?>
+
             </div>
 
             <!-- Mensagem de Parceiro Não Encontrado -->
@@ -574,79 +628,82 @@ if (isset($_SESSION['id'])) {
             <!-- Produtos -->
             <h2>Produtos</h2>
             <div class="container">
-
                 <!-- Pesquisa de Produtos -->
-                <input id="inputPesquisaPromocao" class="input" type="text" placeholder="Pesquisar Produto."></div>
+                <input id="inputPesquisaPromocao" style="display: none;" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>
 
-                <div class="products">
-                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
-                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
-                            <div class="product-card">
-                                <?php
-                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
-                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
-                                ?>
+            <div class="products">
+                <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <script>exibirCampoPesquisaPromocao(true);</script>
+                    <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                        <div class="product-card">
+                            <?php
+                                // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                            ?>
 
-                                <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
+                            <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
 
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
 
-                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
-                                    $dataAtual = new DateTime(); // Data atual
-                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                                
-                                    if ($diasDesdeCadastro <= 30):
-                                ?>
-                                        <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php
-                                    endif;
-                                ?>                      
-                                
-                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                    <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?>                      
+                            
+                            <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
-                                <!-- Verifica se o usuário está logado para permitir a compra -->
-                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn" onclick="abrirPopup(
-                                    '<?php echo $produto['id_produto']; ?>',
-                                    '<?php echo $produto['nome_produto']; ?>', 
-                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
-                                <?php else: ?>
-                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
-                                <?php endif; ?>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p>Não há produtos na promoção no momento.</p>    
-                    <?php endif; ?>
+                            <!-- Verifica se o usuário está logado para permitir a compra -->
+                            <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                <a href="#" class="btn" onclick="abrirPopup(
+                                '<?php echo $produto['id_produto']; ?>',
+                                '<?php echo $produto['nome_produto']; ?>', 
+                                '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
+                            <?php else: ?>
+                                <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?><script>exibirCampoPesquisaPromocao(false);</script>
+                    <p>Não há produtos na promoção no momento.</p>
+                <?php else: ?>
                     
-                    <!-- Mensagem de produto não encontrado -->
-                    <p id="mensagemNaoEncontradoPromocao" style="display: none;">Produto não encontrado.</p>
-                </div>
+                    <p>Não há produtos na promoção no momento.</p>    
+                <?php endif; ?>
+                
+                <!-- Mensagem de produto não encontrado -->
+                <p id="mensagemNaoEncontradoPromocao" style="display: none;">Produto não encontrado.</p>
             </div>
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
             <h2>Nossos Parceiros</h2>
-
-            <!-- Pesquisa de Parceiros -->
-            <input id="inputPesquisaParceiroFrete_gratis" class="input" type="text" placeholder="Pesquisar Parceiro.">
+            <div class="container">
+                <!-- Pesquisa de Parceiros -->
+                <input id="inputPesquisaParceiroFrete_gratis" class="input" type="text" placeholder="Pesquisar Parceiro.">
+            </div>
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
@@ -693,7 +750,7 @@ if (isset($_SESSION['id'])) {
                 </div>
                 <?php endwhile; ?>
                 <?php else: ?>
-                    <p>Nenhum parceiro ativo no momento.</p>
+                    <p>Nenhum parceiro com frete grátis no momento.</p>
                 <?php endif; ?>
 
             </div>
@@ -705,75 +762,80 @@ if (isset($_SESSION['id'])) {
             <h2>Produtos</h2>
             <div class="container">
                 <!-- Pesquisa de Produtos -->
-                <input id="inputPesquisaFrete_gratis" class="input" type="text" placeholder="Pesquisar Produto."></div>
-                <div class="products">
-                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
-                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
-                            <div class="product-card">
-                                <?php
-                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
-                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
-                                ?>
-
-                                <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
-
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim' ): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif; 
-
-                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
-                                    $dataAtual = new DateTime(); // Data atual
-                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                                
-                                    if ($diasDesdeCadastro <= 30):
-                                ?>
-                                <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php
-                                    endif;
-                                ?>
-                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
-
-                                <!-- Verifica se o usuário está logado para permitir a compra -->
-                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn" onclick="abrirPopup(
-                                    '<?php echo $produto['id_produto']; ?>',
-                                    '<?php echo $produto['nome_produto']; ?>', 
-                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
-                                <?php else: ?>
-                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
-                                <?php endif; ?>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p>Não há produtos no momento.</p>
-                    <?php endif; ?>
-                    <!-- Mensagem de produto não encontrado -->
-                    <p id="mensagemNaoEncontradoFrete_gratis" style="display: none;">Produto não encontrado.</p>
-                </div>
+                <input id="inputPesquisaFrete_gratis" class="input" type="text" placeholder="Pesquisar Produto.">
             </div>
+
+            <div class="products">
+                <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <script>exibirCampoPesquisaFreteGratis(true);</script>
+                    <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                        <div class="product-card">
+                            <?php
+                                // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                            ?>
+
+                            <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
+
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim' ): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif; 
+
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                            <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?>
+                            <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+
+                            <!-- Verifica se o usuário está logado para permitir a compra -->
+                            <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                <a href="#" class="btn" onclick="abrirPopup(
+                                '<?php echo $produto['id_produto']; ?>',
+                                '<?php echo $produto['nome_produto']; ?>', 
+                                '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a>
+                            <?php else: ?>
+                                <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
+                    
+                <?php else: ?>
+                    <script>exibirCampoPesquisaFreteGratis(false);</script>
+                    <p>Não há produtos no momento.</p>
+                <?php endif; ?>
+                <!-- Mensagem de produto não encontrado -->
+                <p id="mensagemNaoEncontradoFrete_gratis" style="display: none;">Produto não encontrado.</p>
+            </div>
+
         </div>
 
         <!-- Conteúdos correspondentes às abas -->
         <div id="conteudo-novidades" class="conteudo-aba" style="display: none;">
             <h2>Nossos Parceiros</h2>
-
-            <!-- Pesquisa de Parceiros -->
-            <input id="inputPesquisaParceiroNovidades" class="input" type="text" placeholder="Pesquisar Parceiro.">
-
+            <div class="container">
+                <!-- Pesquisa de Parceiros -->
+                <input id="inputPesquisaParceiroNovidades" style="display: none;" class="input" type="text" placeholder="Pesquisar Parceiro.">
+            </div>
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
                 <?php 
@@ -809,6 +871,7 @@ if (isset($_SESSION['id'])) {
 
                     if ($result_produtos->num_rows > 0): // Verifica se há produtos novos
                 ?>
+            
                 <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
                     <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
                     alt="Loja não encontrada">
@@ -836,67 +899,69 @@ if (isset($_SESSION['id'])) {
             <h2>Produtos</h2>
             <div class="container">
                 <!-- Pesquisa de Produtos -->
-                <input id="inputPesquisaNovidades" class="input" type="text" placeholder="Pesquisar Produto."></div>
-                <div class="products">
-                    <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
-                        <?php while ($produto = $result_produtos->fetch_assoc()): ?>
-                            <div class="product-card">
-                                <?php
-                                    // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
-                                    $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
-                                    $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
-                                ?>
+                <input id="inputPesquisaNovidades" style="display: none;" class="input" type="text" placeholder="Pesquisar Produto.">
+            </div>
+            <div class="products">
+                <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
+                    <script>exibirCampoPesquisaNovidades(true);</script>
+                    <?php while ($produto = $result_produtos->fetch_assoc()): ?>
+                        <div class="product-card">
+                            <?php
+                                // Supondo que a coluna 'imagens' contém os nomes das imagens separados por vírgulas
+                                $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+                                $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; // Usa uma imagem padrão se não houver imagens
+                            ?>
 
-                                <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
-                                <?php 
-                                    // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
-                                ?>
-                                    <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
-                                <?php 
-                                    endif;
+                            <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
+                            <?php 
+                                // Exibe o ícone de frete grátis, se o produto tiver frete grátis
+                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            ?>
+                                <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
+                            <?php 
+                                endif;
 
-                                    // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
-                                ?>
-                                    <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                                <?php 
-                                    endif;
+                                // Exibe o ícone de promoção, se o produto estiver em promoção
+                                if ($produto['promocao'] === 'sim'): 
+                            ?>
+                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                            <?php 
+                                endif;
 
-                                    $dataCadastro = new DateTime($produto['data']); // Data do produto
-                                    $dataAtual = new DateTime(); // Data atual
-                                    $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
-                                    $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
-                                
-                                    if ($diasDesdeCadastro <= 30):
-                                ?>
-                                    <span class="icone-novidades" title="Novidades">🆕</span>
-                                <?php
-                                    endif;
-                                ?>
-                                                     
-                                <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
-                                <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
+                                $dataCadastro = new DateTime($produto['data']); // Data do produto
+                                $dataAtual = new DateTime(); // Data atual
+                                $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
+                                $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
+                            
+                                if ($diasDesdeCadastro <= 30):
+                            ?>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
+                            <?php
+                                endif;
+                            ?>
+                                                    
+                            <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
+                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
-                                <!-- Verifica se o usuário está logado para permitir a compra -->
-                                <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                    <a href="#" class="btn" onclick="abrirPopup(
-                                    '<?php echo $produto['id_produto']; ?>',
-                                    '<?php echo $produto['nome_produto']; ?>', 
-                                    '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a> 
-                                <?php else: ?>
-                                    <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
-                                <?php endif; ?>
-                            </div>
-                        <?php endwhile; ?>
-                        
-                    <?php else: ?>
-                        <p>Não há produtos no momento.</p>
-                    <?php endif; ?>
-                    <!-- Mensagem de produto não encontrado -->
-                    <p id="mensagemNaoEncontradoNovidades" style="display: none;">Produto não encontrado.</p>
-                </div>
+                            <!-- Verifica se o usuário está logado para permitir a compra -->
+                            <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                                <a href="#" class="btn" onclick="abrirPopup(
+                                '<?php echo $produto['id_produto']; ?>',
+                                '<?php echo $produto['nome_produto']; ?>', 
+                                '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho</a> 
+                            <?php else: ?>
+                                <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
+                    <script>exibirCampoPesquisaNovidades(false);</script>
+                    <p>Não há produtos no momento.</p>
+                <?php else: ?>
+                    
+                <?php endif; ?>
+                <!-- Mensagem de produto não encontrado -->
+                <p id="mensagemNaoEncontradoNovidades" style="display: none;">Produto não encontrado.</p>
             </div>
         </div>
     </main>
