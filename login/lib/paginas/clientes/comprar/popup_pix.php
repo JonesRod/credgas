@@ -68,7 +68,12 @@
         $validade = isset($_POST['validade']) ? $_POST['validade'] : (isset($_POST['validade_selecionado']) ? $_POST['validade_selecionado'] : '');
         $cod_seguranca = isset($_POST['cod_seguranca']) ? $_POST['cod_seguranca'] : (isset($_POST['cod_seguranca_selecionado']) ? $_POST['cod_seguranca_selecionado'] : '');
         $tipo_cartao = isset($_POST['tipo_cartao']) && strtolower($_POST['tipo_cartao']) === 'débito' ? 'debito' : 'credito'; // Usar o valor enviado pelo input tipo_cartao
-        $data_hora = date('Y-m-d H:i:s'); // Data e hora do pedido
+        
+        // Definir o fuso horário da minha região
+        $data_hora = isset($_POST['data_hora']) ? $_POST['data_hora'] : 
+        $hr_detalhes_cartao = isset($_POST['hr_detalhes_cartao']) ? $_POST['hr_detalhes_cartao'] :
+        $hr_detalhes_cartao_debito = isset($_POST['hr_detalhes_cartao_debito']) ? $_POST['hr_detalhes_cartao_debito'] :
+        $hr_popup_novo_cartao = isset($_POST['hr_popup_novo_cartao']) ? $_POST['hr_popup_novo_cartao'] : '';
 
         $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : (isset($_POST['detalhes_produtos_dc']) ? $_POST['detalhes_produtos_dc'] : ''); // Detalhes dos produtos
         
@@ -140,8 +145,8 @@
         // Salvar o pedido no banco de dados
         $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, qt_parcelas, status_cliente, status_parceiro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
-            $status_cliente = 'analise';
-            $status_parceiro = 'pendente';
+            $status_cliente = '0';
+            $status_parceiro = '0';
             $stmt->bind_param("siissssssssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, $qt_parcelas, $status_cliente, $status_parceiro);
             $stmt->execute();
             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
@@ -365,6 +370,7 @@
         }
     </style>
     <script>
+
         function formatarMoeda(input) {
             let value = input.value.replace(/\D/g, '');
             value = (value / 100).toFixed(2) + '';
@@ -882,6 +888,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             verificarCartaoSelecionado();
         });
+
+        function obterHorarioLocal() {
+            const agora = new Date();
+            
+            // Obtém os componentes da data e hora
+            const ano = agora.getFullYear();
+            const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const hora = String(agora.getHours()).padStart(2, '0');
+            const minuto = String(agora.getMinutes()).padStart(2, '0');
+            const segundo = String(agora.getSeconds()).padStart(2, '0');
+
+            // Formata a data e hora como YYYY-MM-DD HH:MM:SS
+            const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+
+            console.log("Horário do dispositivo:", dataFormatada);
+            document.getElementById('data_hora').value = dataFormatada;
+            document.getElementById('hr_detalhes_cartao').value = dataFormatada;
+            document.getElementById('hr_detalhes_cartao_debito').value = dataFormatada;
+            document.getElementById('hr_popup_novo_cartao').value = dataFormatada;
+        }
+
+        // Chama a função ao carregar a página
+        window.onload = obterHorarioLocal;
+
     </script>
 </head>
 <body>
@@ -907,6 +938,7 @@
     <form id="form_voltar" action="forma_entrega.php" method="get" style="display: none;">
         <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
         <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+        <input type="hidden" id="data_hora" name="data_hora">
     </form>
 
     <div id="popup_segunda_forma" class="popup">
@@ -963,6 +995,7 @@
                 <br>
                 <div id="detalhes_cartao">
                     <!-- precisara enviar esse valor para o backend -->
+                    <input type="hidden" id="hr_detalhes_cartao" name="hr_detalhes_cartao">
                     <input type="hidden" id="detalhes_produtos_dc" name="detalhes_produtos_dc" value="<?php echo $produtos; ?>">
                     <input type="hidden" id="id_parceiro_dc" name="id_parceiro_dc" value="<?php echo $id_parceiro; ?>">
                     <input type="hidden" id="valor_total_dc" name="valor_total_dc" value="<?php echo number_format($total, 2, ',', '.'); ?>">
@@ -1010,6 +1043,7 @@
                 <br>
                 <div id="detalhes_cartao_debito">
                     <!-- precisara enviar esse valor para o backend -->
+                    <input type="hidden" id="hr_detalhes_cartao_debito" name="hr_detalhes_cartao_debito">
                     <input type="hidden" id="detalhes_produtos_dc_debito" name="detalhes_produtos_dc_debito" value="<?php echo $produtos; ?>">
                     <input type="hidden" id="id_parceiro_dc_debito" name="id_parceiro_dc_debito" value="<?php echo $id_parceiro; ?>">
                     <input type="hidden" id="valor_total_dc_debito" name="valor_total_dc_debito" value="<?php echo number_format($total, 2, ',', '.'); ?>">
@@ -1039,6 +1073,7 @@
                 <p style="color: red;"><?php echo $mensagem_erro; ?></p>
             <?php endif; ?>
             <form id="form_novo_cartao" method="post">
+                <input type="hidden" id="hr_popup_novo_cartao" name="hr_popup_novo_cartao">
                 <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
                 <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
                 <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
