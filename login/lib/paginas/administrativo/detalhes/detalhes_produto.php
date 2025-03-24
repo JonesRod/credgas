@@ -82,10 +82,10 @@
 
         }elseif (isset($_POST['bloquear'])) {
             // Atualiza o produto com segurança
-            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, produto_aprovado = 'nao', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = 'nao', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
 
-            $stmt->bind_param("sssi", $taxa_padrao, $vende_crediario, $parcelas, $id_produto);
+            $stmt->bind_param("ssssi", $taxa_padrao, $valor_venda_vista, $vende_crediario, $parcelas, $id_produto);
 
             if ($stmt->execute()) {
 
@@ -432,8 +432,8 @@
                     taxaPadrao = Math.round(taxaPadrao * 100) / 100;
 
                     const valorVendaVista = valorProduto + (valorProduto * taxaPadrao / 100);
-                    precoVendaVistaInput.value = valorVendaVista.toFixed(2).replace('.', ',');
-
+                    precoVendaVistaInput.value = valorVendaVista.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    
                     // Atualizar o valor do input com 2 casas decimais
                     input.value = taxaPadrao.toFixed(2).replace('.', ',');
                 }
@@ -450,8 +450,10 @@
 
                     input.value = taxa;  // Atualiza o valor no campo
 
-                    const valorVendaVista = valorProduto + (valorProduto * parseFloat(taxa.replace(',', '.')) / 100);
-                    document.getElementById('preco_venda_vista').value = valorVendaVista.toFixed(2).replace('.', ',');
+                    // Remover pontos de milhar para o cálculo
+                    let taxaParaCalculo = taxa.replace(/\./g, '').replace(',', '.');
+                    const valorVendaVista = valorProduto + (valorProduto * parseFloat(taxaParaCalculo) / 100);
+                    document.getElementById('preco_venda_vista').value = valorVendaVista.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 }
             </script>
 

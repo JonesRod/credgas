@@ -974,7 +974,7 @@ if (isset($_SESSION['id'])) {
         <h2>Detalhes do Produto</h2>
         <form id="formCarrinho" action="comprar/carrinho.php">
             <aside id="info">
-                <input type="hidden" id="id_cli" name="id_cli" value="<?php echo htmlspecialchars( $id); ?>">
+                <input type="hidden" id="id_cliente" name="id_cliente" value="<?php echo htmlspecialchars( $id); ?>">
                 <input type="hidden" id="id_produto_carrinho" name="id_produto_carrinho">
                 <input type="text" id="produtoNome" name="produtoNome" readonly>
                 

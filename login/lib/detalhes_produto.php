@@ -325,6 +325,9 @@
             background-color: #c82333;
         }
 
+        a {
+            text-decoration: none; /* Ocultar sublinhado dos links */
+        }
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
             h2 {

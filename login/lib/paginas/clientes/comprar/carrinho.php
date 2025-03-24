@@ -4,7 +4,7 @@ include('../../../conexao.php');
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_cliente = $_POST['id_cli'] ?? '';
+    $id_cliente = $_POST['id_cliente'] ?? '';
     $id_produto = $_POST['id_produto_carrinho'] ?? '';
     $qt = $_POST['quantidade'] ?? '1';
 

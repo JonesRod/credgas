@@ -36,6 +36,7 @@
         if ($result->num_rows > 0) {
             $produto = $result->fetch_assoc();
             $nome_produto = $produto['nome_produto'];
+            $id_parceiro = $produto['id_parceiro'];
             $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
         } else {
             $error_msg = "Produto não encontrado ou indisponível.";
@@ -319,13 +320,13 @@
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background-color: #28a745;
             color: white;
             border: none;
         }
 
         .btn-danger:hover {
-            background-color: #c82333;
+            background-color: #218838;
         }
         .descricao-box {
             min-height: 100px;
@@ -446,6 +447,9 @@
             display: none;    /* Inicialmente escondido */
         }
 
+        a {
+            text-decoration: none; /* Ocultar sublinhado dos links */
+        }
 
         /* Responsividade para telas menores */
         @media (max-width: 768px) {
@@ -529,7 +533,7 @@
 
             <div class="buttons-container">
                 
-                <form method="POST" action="">
+                <form id="formCompra" action="comprar/carrinho.php">
                     <!-- Preço do produto -->
                     <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
@@ -539,10 +543,20 @@
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
                     ?>
 
-                    <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
+                    <?php if (isset($usuario) && $usuario): ?>
                         <!-- Botões para usuários logados -->
-                        <button type="submit" name="adicionar" class="btn btn-success">Adicionar ao Carrinho</button>
-                        <button type="submit" name="comprar" class="btn btn-danger">Comprar</button>
+                        <a href="cliente_home.php" class="btn btn-success">Voltar</a>
+                        <button type="button" name="adicionar" class="btn btn-success" 
+                            onclick="abrirPopup(
+                            '<?php echo $produto['id_produto']; ?>',
+                            '<?php echo $produto['nome_produto']; ?>', 
+                            '<?php echo $valor_produto; ?>')">Adicionar ao Carrinho
+                        </button>
+                        <input type="hidden" name="id_cliente" value="<?= htmlspecialchars($id_cliente); ?>" hidden>
+                        <input type="hidden" name="id_produto_carrinho" value="<?= htmlspecialchars($id_produto); ?>" hidden>
+                        <button type="submit" class="btn btn-danger" 
+                            >Comprar
+                        </button>
                     <?php else: ?>
                         <!-- Botões que redirecionam para a página de login -->
                         <a href="cliente_home.php" class="btn btn-success">Voltar</a>
@@ -553,7 +567,7 @@
                             '<?php echo $valor_produto; ?>')
                         ">Adicionar ao Carrinho</a>
 
-                        <a href="" class="btn btn-success">Comprar</a>
+                        <a href="login.php" class="btn btn-success">Comprar</a>
                     <?php endif; ?>
 
                 </form>
@@ -564,7 +578,7 @@
         <h2>Detalhes do Produto</h2>
         <form id="formCarrinho" action="comprar/carrinho.php">
             <aside id="info">
-                <input type="hidden" id="id_cli" name="id_cli" value="<?php echo htmlspecialchars( $id_cliente); ?>">
+                <input type="hidden" id="id_cliente" name="id_cliente" value="<?php echo htmlspecialchars( $id_cliente); ?>">
                 <input type="hidden" id="id_produto_carrinho" name="id_produto_carrinho">
                 <input type="text" id="produtoNome" name="produtoNome" readonly>
                 
@@ -681,6 +695,37 @@
             })
             .catch(error => {
                 console.error("Erro:", error);
+            });
+        });
+
+        document.getElementById("formCompra").addEventListener("submit", function(event) {
+            event.preventDefault(); // Evita o envio tradicional do formulário
+
+            let formData = new FormData(this);
+
+            fetch("comprar/carrinho.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())  // Recebe a resposta como texto
+            .then(data => {
+                //console.log("Resposta recebida:", data);  // Verifique o conteúdo da resposta
+                try {
+                    let jsonResponse = JSON.parse(data);  // Tente fazer o parse
+                    let mensagem = document.getElementById("mensagem");
+                    mensagem.innerText = jsonResponse.message;
+                    mensagem.style.color = jsonResponse.status === "success" ? "green" : "red";
+                    if (jsonResponse.status === "success") {
+                        const id_cliente = formData.get('id_cliente');
+                        const id_parceiro = '<?php echo $id_parceiro; ?>';
+                        window.location.href = `comprar/forma_entrega.php?id_cliente=${id_cliente}&id_parceiro=${id_parceiro}`;
+                    }
+                } catch (e) {
+                    console.error('Erro ao interpretar JSON:', e);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
             });
         });
 
