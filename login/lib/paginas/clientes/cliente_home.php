@@ -369,7 +369,7 @@ if (isset($_SESSION['id'])) {
 
             <!-- Item crediario-->
             <li>
-                <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                <a href="perfil_crediario.php?id=<?php echo urlencode($id); ?>" title="Perfil no Crediário">
                     <i class="fas fa-user"></i>
                     <span >Perfil Crediario</span>
                 </a>
@@ -377,9 +377,17 @@ if (isset($_SESSION['id'])) {
 
             <!-- Item crediario-->
             <li>
-                <a href="meu_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediario">
+                <a href="meu_crediario.php?id=<?php echo urlencode($id); ?>" title="Crediário">
                     <i class="fas fa-handshake"></i>
                     <span >Meu Crediario</span>
+                </a>
+            </li>
+            
+            <!-- Item Meus pedidos-->
+            <li>
+                <a href="comprar/meus_pedidos.php?id=<?php echo urlencode($id); ?>" title="Meus Pedidos">
+                    <i class="fas fa-box"></i> <!-- Ícone de pedido -->
+                    <span >Meus Pedidos</span>
                 </a>
             </li>
 
@@ -1108,6 +1116,11 @@ if (isset($_SESSION['id'])) {
                 <?php else: ?>
                     <span id="carrinho-count-rodape" class="carrinho-count-rodape" style="display: none;"></span>
                 <?php endif; ?>             
+            </li>
+            <li>
+                <a href="comprar/meus_pedidos.php?id=<?php echo urlencode($id); ?>" title="Meus Pedidos">
+                    <i class="fas fa-box"></i> <!-- Ícone de pedido -->
+                </a>
             </li>
             <li><a href="configuracoes.php?id_cliente=<?php echo urlencode($id); ?>" title="Configurações"><i class="fas fa-cog"></i></a></li>
             <li><a href="cliente_logout.php" title="Sair"><i class="fas fa-sign-out-alt"></i></a></li>

@@ -351,6 +351,18 @@
         button.usar-outro-cartao:hover {
             background-color: #1976D2; /* Cor azul mais escura ao passar o mouse */
         }
+
+        /*Adicionar estilo para escurecer o fundo*/
+        .popup-background {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
     </style>
     <script>
         function formatarMoeda(input) {
@@ -410,6 +422,7 @@
             if (valorRestante > 0) {
                 document.getElementById('valor_restante').innerText = valorRestante.toFixed(2).replace('.', ',');
                 document.getElementById('popup_segunda_forma').style.display = 'block';
+                document.getElementById('popup-background').style.display = 'block';
 
                 // Carregar o valor selecionado em parcelas_cartaoCred_segunda para input_parcela_cartao
                 const parcelasSelect = document.getElementById('parcelas_cartaoCred_segunda');
@@ -426,6 +439,7 @@
 
         function fecharPopup(popupId) {
             document.getElementById(popupId).style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
         }
 
         function abrirPopupNovoCartao() {
@@ -439,6 +453,7 @@
                 document.getElementById('parcelas_cartaoCred_segunda_novo').value = ''; // Limpar o campo
             }
             document.getElementById('popup_novo_cartao').style.display = 'block';
+            document.getElementById('popup-background').style.display = 'block';
         }
 
         function mostrarParcelasCartaoCred(restante) {
@@ -660,6 +675,7 @@
             if (validarCartao()) {
                 definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
                 document.getElementById('popup_confirmacao_salvar_usar').style.display = 'block';
+                document.getElementById('popup-background').style.display = 'block';
             }
         }
 
@@ -694,12 +710,14 @@
 
         function cancelarSalvarUsar() {
             document.getElementById('popup_confirmacao_salvar_usar').style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
         }
 
         function usarCartaoUmaVez() {
             if (validarCartao()) {
                 definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
                 document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'block';
+                document.getElementById('popup-background').style.display = 'block';
             }
         }
 
@@ -748,11 +766,13 @@
 
         function cancelarUsarUmaVez() {
             document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
         }
 
         function finalizarPagamento() {
             definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
             document.getElementById('popup_confirmacao_pagamento').style.display = 'block';
+            document.getElementById('popup-background').style.display = 'block';
         }
 
         function confirmarPagamento() {
@@ -865,6 +885,7 @@
     </script>
 </head>
 <body>
+    <div id="popup-background" class="popup-background"></div>
     <div id="popup-content" class="popup-content">
         <span class="close" onclick="window.history.back()">&times;</span>
         <h3>Pagar com PIX</h3>
@@ -928,7 +949,9 @@
                             <?php foreach ($cartoes as $cartao): ?>
                                 <?php if ($cartao['tipo'] === 'credito'): ?>
                                     <tr>
-                                        <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" data-nome-cartao="<?php echo $cartao['nome']; ?>" onchange="verificarCartaoSelecionado()"></td>
+                                        <td><input type="checkbox" name="cartao_selecionado" value="<?php echo $cartao['id']; ?>" 
+                                        data-num-cartao="<?php echo $cartao['num_cartao']; ?>" data-validade="<?php echo $cartao['validade']; ?>" 
+                                        data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" data-nome-cartao="<?php echo $cartao['nome']; ?>" onchange="verificarCartaoSelecionado()"></td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
                                         <td><button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button></td>
                                     </tr>
@@ -1002,9 +1025,9 @@
             </div>
             <br>
             
-            <button type="button" class="cancelar" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
             <button type="button" id="segunada_forma_gerarQRCode" onclick="mostrarQRCodeSegundaForma()" style="display: none;">Gerar QR Code</button>
             <button type="button" id="btn_finalizar" onclick="finalizarPagamento()" style="display: none;">Finalizar</button>
+            <button type="button" class="cancelar" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
         </form>
     </div>
 
