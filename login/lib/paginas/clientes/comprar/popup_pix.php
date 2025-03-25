@@ -17,7 +17,9 @@
     $bairro = isset($_POST['bairro']) ? $_POST['bairro'] : '';
     $numero = isset($_POST['numero']) ? $_POST['numero'] : '';
     $contato = isset($_POST['contato']) ? $_POST['contato'] : '';
-var_dump($_POST);
+    $comentario = isset($_POST['comentario']) ? $_POST['comentario'] : '';
+
+    var_dump($_POST);
     // Verificar se a conexão foi estabelecida
     if (!$mysqli) {
         die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
@@ -169,6 +171,10 @@ var_dump($_POST);
             $contato = isset($_POST['contato_dc']) ? $_POST['contato_dc'] : 
             (isset($_POST['contato_dcd']) ? $_POST['contato_dcd'] :
             (isset($_POST['contato_nc']) ? $_POST['contato_nc'] : ''));
+
+            $comentario = isset($_POST['comentario_dc']) ? $_POST['comentario_dc'] :
+            (isset($_POST['comentario_dcd']) ? $_POST['comentario_dcd'] :
+            (isset($_POST['comentario_nc']) ? $_POST['comentario_nc'] : ''));
         }elseif ($entrega === 'buscar') {
 
             $rua = '';
@@ -177,6 +183,10 @@ var_dump($_POST);
             $contato = isset($_POST['contato_dc']) ? $_POST['contato_dc'] : 
             (isset($_POST['contato_dcd']) ? $_POST['contato_dcd'] :
             (isset($_POST['contato_nc']) ? $_POST['contato_nc'] : ''));
+
+            $comentario = isset($_POST['comentario_dc']) ? $_POST['comentario_dc'] :
+            (isset($_POST['comentario_dcd']) ? $_POST['comentario_dcd'] :
+            (isset($_POST['comentario_nc']) ? $_POST['comentario_nc'] : ''));
         } else {
             // Verificar se o endereço de entrega foi preenchido
             if (empty($rua) || empty($bairro) || empty($numero) || empty($contato)) {
@@ -188,15 +198,15 @@ var_dump($_POST);
         $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, 
         forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, 
         qt_parcelas, tipo_entrega, endereco_entrega, num_entrega, bairro_entrega, 
-        contato_recebedor, status_cliente, status_parceiro) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        contato_recebedor, comentario, status_cliente, status_parceiro) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
             $status_cliente = '0';
             $status_parceiro = '0';
-            $stmt->bind_param("siisssssssssssssii", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, 
+            $stmt->bind_param("siissssssssssssssii", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, 
             $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, 
             $qt_parcelas, $entrega, $rua, $numero, $bairro, 
-            $contato, $status_cliente, $status_parceiro);
+            $contato, $comentario, $status_cliente, $status_parceiro);
             $stmt->execute();
             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
             $stmt->close();
@@ -1066,6 +1076,7 @@ var_dump($_POST);
                     <input type="hidden" id="numero_dc" name="numero_dc" value="<?php echo $numero; ?>">
                     <input type="hidden" id="bairro_dc" name="bairro_dc" value="<?php echo $bairro; ?>">
                     <input type="hidden" id="contato_dc" name="contato_dc" value="<?php echo $contato; ?>">
+                    <input type="hidden" id="comentario_dc" name="comentario_dc" value="<?php echo $comentario; ?>">
 
                 </div>
                 <br>
@@ -1120,6 +1131,7 @@ var_dump($_POST);
                     <input type="hidden" id="numero_dcd" name="numero_dcd" value="<?php echo $numero; ?>">
                     <input type="hidden" id="bairro_dcd" name="bairro_dcd" value="<?php echo $bairro; ?>">
                     <input type="hidden" id="contato_dcd" name="contato_dcd" value="<?php echo $contato; ?>">
+                    <input type="hidden" id="comentario_dcd" name="comentario_dcd" value="<?php echo $comentario; ?>">
                 </div>
                 <br>
                 <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
@@ -1155,6 +1167,7 @@ var_dump($_POST);
                 <input type="hidden" id="numero_nc" name="numero_nc" value="<?php echo $numero; ?>">
                 <input type="hidden" id="bairro_nc" name="bairro_nc" value="<?php echo $bairro; ?>">
                 <input type="hidden" id="contato_nc" name="contato_nc" value="<?php echo $contato; ?>">
+                <input type="hidden" id="comentario_nc" name="comentario_nc" value="<?php echo $comentario; ?>">
 
                 <label for="tipo_cartao">Tipo de Cartão:</label>
                 <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php echo isset($_POST['tipo_cartao']) ? ucfirst($_POST['tipo_cartao']) : 'Crédito'; ?>" readonly>

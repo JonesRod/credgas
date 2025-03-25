@@ -9,7 +9,7 @@
     }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    var_dump($_POST);
+    //var_dump($_POST);
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bairro = $_POST['bairro'];
     $numero = $_POST['numero'];
     $contato = $_POST['contato']; // Adicionar esta linha
-    
+
     //echo $detalhes_produtos;
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
@@ -108,6 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
+    <div>
+        <label for="comentario">Comentário (opcional):</label>
+        <textarea id="comentario" name="comentario" rows="4" cols="50"></textarea>
+    </div>
     
     <form method="POST" action="processar_pagamento.php">
         <h3>Escolha o momento do pagamento</h3>
@@ -661,6 +665,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             contatoInput.name = 'contato';
             contatoInput.value = '<?php echo $contato; ?>';
             form.appendChild(contatoInput);
+
+            const comentarioInput = document.createElement('input'); // Adicionar esta linha
+            comentarioInput.type = 'hidden';
+            comentarioInput.name = 'comentario';
+            comentarioInput.value = document.getElementById('comentario').value;
+            form.appendChild(comentarioInput);
 
             document.body.appendChild(form);
             form.submit();
