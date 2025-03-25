@@ -12,7 +12,12 @@
     $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
     $id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
     $total = isset($_POST['valor_total']) ? floatval($_POST['valor_total']) : 0.0;
-
+    $entrega = isset($_POST['entrega']) ? $_POST['entrega'] : ''; // Modificar esta linha
+    $rua = isset($_POST['rua']) ? $_POST['rua'] : '';
+    $bairro = isset($_POST['bairro']) ? $_POST['bairro'] : '';
+    $numero = isset($_POST['numero']) ? $_POST['numero'] : '';
+    $contato = isset($_POST['contato']) ? $_POST['contato'] : '';
+var_dump($_POST);
     // Verificar se a conexão foi estabelecida
     if (!$mysqli) {
         die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
@@ -141,13 +146,57 @@
                 die("Erro na preparação da consulta: " . $mysqli->error);
             }
         }
+        //var_dump($_POST);
+
+        $entrega = isset($_POST['entrega_dc']) ? $_POST['entrega_dc'] :
+        (isset($_POST['entrega_dcd']) ? $_POST['entrega_dcd'] :
+        (isset($_POST['entrega_nc']) ? $_POST['entrega_nc'] : '')); // Modificar esta linha
+
+        // Verificar se o tipo de entrega foi selecionado
+        if ($entrega === 'entregar') {
+            $rua = isset($_POST['rua_dc']) ? $_POST['rua_dc'] : 
+            (isset($_POST['rua_dcd']) ? $_POST['rua_dcd'] : 
+            (isset($_POST['rua_nc']) ? $_POST['rua_nc'] : ''));
+    
+            $bairro = isset($_POST['bairro_dc']) ? $_POST['bairro_dc'] :
+            (isset($_POST['bairro_dcd']) ? $_POST['bairro_dcd'] :
+            (isset($_POST['bairro_nc']) ? $_POST['bairro_nc'] : '')); 
+    
+            $numero = isset($_POST['numero_dc']) ? $_POST['numero_dc'] :
+            (isset($_POST['numero_dcd']) ? $_POST['numero_dcd'] :
+            (isset($_POST['numero_nc']) ? $_POST['numero_nc'] : ''));
+    
+            $contato = isset($_POST['contato_dc']) ? $_POST['contato_dc'] : 
+            (isset($_POST['contato_dcd']) ? $_POST['contato_dcd'] :
+            (isset($_POST['contato_nc']) ? $_POST['contato_nc'] : ''));
+        }elseif ($entrega === 'buscar') {
+
+            $rua = '';
+            $bairro = '';
+            $numero = '';
+            $contato = isset($_POST['contato_dc']) ? $_POST['contato_dc'] : 
+            (isset($_POST['contato_dcd']) ? $_POST['contato_dcd'] :
+            (isset($_POST['contato_nc']) ? $_POST['contato_nc'] : ''));
+        } else {
+            // Verificar se o endereço de entrega foi preenchido
+            if (empty($rua) || empty($bairro) || empty($numero) || empty($contato)) {
+                $mensagem_erro = "Por favor, preencha todos os campos de endereço.";
+            }
+        }
 
         // Salvar o pedido no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, qt_parcelas, status_cliente, status_parceiro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, 
+        forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, 
+        qt_parcelas, tipo_entrega, endereco_entrega, num_entrega, bairro_entrega, 
+        contato_recebedor, status_cliente, status_parceiro) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
             $status_cliente = '0';
             $status_parceiro = '0';
-            $stmt->bind_param("siissssssssss", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, $qt_parcelas, $status_cliente, $status_parceiro);
+            $stmt->bind_param("siisssssssssssssii", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, 
+            $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, 
+            $qt_parcelas, $entrega, $rua, $numero, $bairro, 
+            $contato, $status_cliente, $status_parceiro);
             $stmt->execute();
             $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
             $stmt->close();
@@ -903,7 +952,7 @@
             // Formata a data e hora como YYYY-MM-DD HH:MM:SS
             const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
 
-            console.log("Horário do dispositivo:", dataFormatada);
+            //console.log("Horário do dispositivo:", dataFormatada);
             document.getElementById('data_hora').value = dataFormatada;
             document.getElementById('hr_detalhes_cartao').value = dataFormatada;
             document.getElementById('hr_detalhes_cartao_debito').value = dataFormatada;
@@ -912,6 +961,11 @@
 
         // Chama a função ao carregar a página
         window.onload = obterHorarioLocal;
+
+        function cancelarConfirmacao() {
+            document.getElementById('popup_confirmacao_pagamento').style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
+        }
 
     </script>
 </head>
@@ -1006,6 +1060,13 @@
                     <input type="hidden" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
                     <input type="hidden" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
                     <input type="hidden" id="input_parcela_cartao" name="input_parcela_cartao">
+
+                    <input type="hidden" id="entrega_dc" name="entrega_dc" value="<?php echo $entrega; ?>">
+                    <input type="hidden" id="rua_dc" name="rua_dc" value="<?php echo $rua; ?>">
+                    <input type="hidden" id="numero_dc" name="numero_dc" value="<?php echo $numero; ?>">
+                    <input type="hidden" id="bairro_dc" name="bairro_dc" value="<?php echo $bairro; ?>">
+                    <input type="hidden" id="contato_dc" name="contato_dc" value="<?php echo $contato; ?>">
+
                 </div>
                 <br>
                 <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
@@ -1048,10 +1109,17 @@
                     <input type="hidden" id="id_parceiro_dc_debito" name="id_parceiro_dc_debito" value="<?php echo $id_parceiro; ?>">
                     <input type="hidden" id="valor_total_dc_debito" name="valor_total_dc_debito" value="<?php echo number_format($total, 2, ',', '.'); ?>">
                     <input type="hidden" id="valor_pix_entrada_dc_debito" name="valor_pix_entrada_dc_debito">
+
                     <input type="hidden" id="num_cartao_selecionado_debito" name="num_cartao_selecionado_debito" readonly>
                     <input type="hidden" id="nome_cartao_selecionado_debito" name="nome_cartao_selecionado_debito" readonly>
                     <input type="hidden" id="validade_selecionado_debito" name="validade_selecionado_debito" readonly>
                     <input type="hidden" id="cod_seguranca_selecionado_debito" name="cod_seguranca_selecionado_debito" readonly>
+
+                    <input type="hidden" id="entrega_dcd" name="entrega_dcd" value="<?php echo $entrega; ?>">
+                    <input type="hidden" id="rua_dcd" name="rua_dcd" value="<?php echo $rua; ?>">
+                    <input type="hidden" id="numero_dcd" name="numero_dcd" value="<?php echo $numero; ?>">
+                    <input type="hidden" id="bairro_dcd" name="bairro_dcd" value="<?php echo $bairro; ?>">
+                    <input type="hidden" id="contato_dcd" name="contato_dcd" value="<?php echo $contato; ?>">
                 </div>
                 <br>
                 <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
@@ -1078,9 +1146,16 @@
                 <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
                 <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
                 <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">
+
                 <input type="hidden" id="input_segunda_forma_pagamento" name="input_segunda_forma_pagamento">
                 <input type="hidden" id="parcelas_cartaoCred_segunda_novo" name="parcelas_cartaoCred_segunda_novo">
                 
+                <input type="hidden" id="entrega_nc" name="entrega_nc" value="<?php echo $entrega; ?>">
+                <input type="hidden" id="rua_nc" name="rua_nc" value="<?php echo $rua; ?>">
+                <input type="hidden" id="numero_nc" name="numero_nc" value="<?php echo $numero; ?>">
+                <input type="hidden" id="bairro_nc" name="bairro_nc" value="<?php echo $bairro; ?>">
+                <input type="hidden" id="contato_nc" name="contato_nc" value="<?php echo $contato; ?>">
+
                 <label for="tipo_cartao">Tipo de Cartão:</label>
                 <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php echo isset($_POST['tipo_cartao']) ? ucfirst($_POST['tipo_cartao']) : 'Crédito'; ?>" readonly>
                 <br>

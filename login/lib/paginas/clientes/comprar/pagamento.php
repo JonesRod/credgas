@@ -9,11 +9,18 @@
     }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    //var_dump($_POST);
+    var_dump($_POST);
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
     $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
+
+    $entrega = $_POST['entrega'];
+    $rua = $_POST['rua'];
+    $bairro = $_POST['bairro'];
+    $numero = $_POST['numero'];
+    $contato = $_POST['contato']; // Adicionar esta linha
+    
     //echo $detalhes_produtos;
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
@@ -248,6 +255,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
             </div>
+            <h3>Endereço de Entrega</h3>
+            <div>
+                <label for="rua">Rua:</label>
+                <input type="text" id="rua" name="rua" required>
+            </div>
+            <div>
+                <label for="bairro">Bairro:</label>
+                <input type="text" id="bairro" name="bairro" required>
+            </div>
+            <div>
+                <label for="numero">Número:</label>
+                <input type="text" id="numero" name="numero" required>
+            </div>
         </div>
 
         <div id="pg_crediario" style="display: none; margin-top: 10px;">
@@ -269,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
         </div>
-        
+
         <button type="button" onclick="window.history.back();">Voltar</button>
         
     </form>
@@ -611,6 +631,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             detalhesProdutosInput.name = 'detalhes_produtos';
             detalhesProdutosInput.value = '<?php echo $detalhes_produtos; ?>';
             form.appendChild(detalhesProdutosInput);
+
+            const entregaInput = document.createElement('input');
+            entregaInput.type = 'hidden';
+            entregaInput.name = 'entrega';
+            entregaInput.value = '<?php echo $entrega; ?>';
+            form.appendChild(entregaInput);
+
+            const ruaInput = document.createElement('input');
+            ruaInput.type = 'hidden';
+            ruaInput.name = 'rua';
+            ruaInput.value = '<?php echo $rua; ?>';
+            form.appendChild(ruaInput);
+
+            const bairroInput = document.createElement('input');
+            bairroInput.type = 'hidden';
+            bairroInput.name = 'bairro';
+            bairroInput.value = '<?php echo $bairro; ?>';
+            form.appendChild(bairroInput);
+
+            const numeroInput = document.createElement('input');
+            numeroInput.type = 'hidden';
+            numeroInput.name = 'numero';
+            numeroInput.value = '<?php echo $numero; ?>';
+            form.appendChild(numeroInput);
+
+            const contatoInput = document.createElement('input'); // Adicionar esta linha
+            contatoInput.type = 'hidden';
+            contatoInput.name = 'contato';
+            contatoInput.value = '<?php echo $contato; ?>';
+            form.appendChild(contatoInput);
 
             document.body.appendChild(form);
             form.submit();

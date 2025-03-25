@@ -150,8 +150,31 @@ function formatDateTimeJS($dateString) {
         }
     </style>
     <script>
-        function redirectToDetails(num_pedido) {
-            window.location.href = 'detalhes_pedido.php?num_pedido=' + num_pedido;
+        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'detalhes_pedido.php';
+
+            const fields = {
+                num_pedido: num_pedido,
+                id_parceiro: id_parceiro,
+                status_cliente: status_cliente,
+                data: data,
+                valor: valor
+            };
+
+            for (const key in fields) {
+                if (fields.hasOwnProperty(key)) {
+                    const hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = key;
+                    hiddenField.value = fields[key];
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form);
+            form.submit();
         }
 
         function refreshPage() {
@@ -201,7 +224,7 @@ function formatDateTimeJS($dateString) {
     </div>
     <div class="cards-container">
         <?php while ($row = $result->fetch_assoc()): ?>
-            <div class="card" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>')">
+            <div class="card" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                 <?php
                     // Fetch partner details from the database
