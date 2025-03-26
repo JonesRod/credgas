@@ -69,6 +69,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processar Pagamento</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            text-align: center; /* Centraliza o conteúdo */
+        }
+
+        h2, h3 {
+            text-align: center; /* Centraliza os títulos */
+            margin: 10px 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         .popup {
             position: fixed;
             top: 0;
@@ -79,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
 
         .popup-content {
@@ -87,6 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 5px;
             text-align: center;
             position: relative;
+            width: 90%;
+            max-width: 400px;
         }
 
         .close {
@@ -96,208 +147,335 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 20px;
             cursor: pointer;
         }
+        #momento_pagamento {
+            background-color: #fff;
+            margin-top: 20px;
+            
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: row; /* Mantém os elementos lado a lado */
+            justify-content: space-between; /* Distribui os espaços entre as divs */
+        }
+
+        #momento_pagamento div {
+            padding-top: 8px;
+            flex: 1; /* Cada div ocupa o mesmo espaço */
+            display: flex;
+            align-items: center; /* Alinha os elementos verticalmente */
+            justify-content: center; /* Centraliza o conteúdo */
+            gap: 8px; /* Espaço entre o radio e o texto */
+        }
+
+        #momento_pagamento div:hover {
+            border-top: 8px;
+            background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
+            cursor: pointer; /* Muda o cursor para indicar que é clicável */
+        }
+
+        #momento_pagamento input[type="radio"] {
+            text-align: center;
+            position: relative;
+            top: -5px; /* Ajusta levemente para cima */
+            transform: scale(1.2); /* Aumenta um pouco o tamanho do radio */
+        }
+
+        /* Estilização geral do contêiner */
+        #formas_pagamento {
+            background-color: #fff;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Espaço entre os itens */
+            width: 100%; /* Define um tamanho máximo para evitar expansão excessiva */
+        }
+
+        /* Estilização dos checkboxes e rótulos */
+        #formas_pagamento div {
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Espaço entre o checkbox e o texto */
+            padding: 6px;
+            padding-left: 15%;
+            transition: background-color 0.3s;
+        }
+
+        /* Efeito hover para destacar a opção selecionável */
+        #formas_pagamento div:hover {
+            background-color: #f4f4f4;
+        }
+
+        /* Ajuste no tamanho dos checkboxes */
+        #formas_pagamento input[type="checkbox"] {
+            transform: scale(1.2); /* Aumenta um pouco o tamanho */
+            cursor: pointer;
+        }
+
+        /* Estilização dos spans (bandeiras aceitas) */
+        #formas_pagamento span {
+            font-size: 12px;
+            color: #555;
+            display: block;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                border: none;
+                border-radius: 0;
+            }
+
+            #momento_pagamento {
+                flex-direction: column; /* Alinha os elementos verticalmente */
+            }
+
+            #momento_pagamento div {
+                flex: none; /* Remove o tamanho igual entre as divs */
+                width: 100%; /* Cada div ocupa toda a largura */
+            }
+
+            #formas_pagamento div {
+                padding-left: 10%; /* Ajusta o espaçamento para telas menores */
+            }
+
+            .popup-content {
+                width: 95%; /* Ajusta a largura do popup para telas menores */
+            }
+
+            button {
+                padding: 8px; /* Reduz o padding dos botões */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2, h3 {
+                font-size: 18px; /* Reduz o tamanho das fontes dos títulos */
+            }
+
+            label {
+                font-size: 14px; /* Reduz o tamanho da fonte dos rótulos */
+            }
+
+            select, textarea, button {
+                font-size: 14px; /* Ajusta o tamanho da fonte dos inputs */
+            }
+
+            #momento_pagamento div {
+                gap: 5px; /* Reduz o espaço entre os elementos */
+            }
+
+            #formas_pagamento div {
+                padding-left: 5%; /* Ajusta o espaçamento para telas muito pequenas */
+            }
+        }
     </style>
 </head>
 <body>
-
-    <h2>Finalizar Compra</h2>
-    
-    <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
-        <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
-            <h3>Limite disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
-    <div>
-        <label for="comentario">Comentário (opcional):</label>
-        <textarea id="comentario" name="comentario" rows="4" cols="50"></textarea>
-    </div>
-    
-    <form method="POST" action="processar_pagamento.php">
-        <h3>Escolha o momento do pagamento</h3>
-        <div>
-            <!-- ...existing form fields... -->
-            <label>
-                <input type="radio" name="momento_pagamento" value="online" required checked onclick="mostrarDiv('pg_online')"> Pagar Online
-            </label>
-            <label>
-                <input type="radio" name="momento_pagamento" value="entrega" required onclick="mostrarDiv('pg_entrega')"> Pagar na Entrega
-            </label>   
-            <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
-                <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
-                    <label>
-                        <input type="radio" name="momento_pagamento" value="crediario" required onclick="mostrarDiv('pg_crediario')"> Crediario
-                    </label>
-                <?php endif; ?>
-            <?php endif; ?>          
-        </div>
-
-        <div id="pg_online" style="display: block; margin-top: 10px;">
-            <h3>Escolha até 2 formas de pagamento</h3>
-            <div>
-                <label>Escolha a 1ª forma de pagamento ou Entrada:</label>
-                <select id="formas_pagamento_online" name="forma_pagamento[]" onchange="limitarSelect(this)">
-                    <option value="selecionar">Selecionar</option>    
-                    <option value="pix">PIX</option>
-                    <?php if ($admin_cartoes_credito): ?>
-                        <option value="cartaoCred">Cartão de Crédito</option>
-                    <?php endif; ?>
-                    <?php if ($admin_cartoes_debito): ?>
-                        <option value="cartaoDeb">Cartão de Débito</option>
-                    <?php endif; ?>
-                </select>
-
-                <div id="bandeiras_aceitas" style="margin-top: 10px;">
-                    <p id="bandeiras_credito" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
-                    <p id="bandeiras_debito" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
-                </div>
-                
-                <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
-                <button id="btn_cartaoCred_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Crédito', 'primeira')">Pagar com Cartão de Crédito</button>
-                <button id="btn_cartaoDeb_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Débito', 'primeira')">Pagar com Cartão de Débito</button>
-            </div>
-        </div>
-
-        <div id="popup_cartaoCred" class="popup" style="display: none;">
-            <div class="popup-content">
-                <span class="close" onclick="fecharPopup('popup_cartaoCred')">&times;</span>
-                <h3>Pagar com Cartão de Crédito</h3>
-                <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
-                <p>Insira os dados do seu cartão de crédito para efetuar o pagamento.</p>
-                <!-- Adicione aqui o formulário para pagamento com cartão de crédito -->
-                <label for="valor_cartaoCred">Valor a ser pago: R$ </label>
-                <input type="text" id="valor_cartaoCred" name="valor_cartaoCred" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoCred()">
-                <br>
-                <label for="parcelas_cartaoCred">Quantidade de parcelas:</label>
-                <select id="parcelas_cartaoCred" name="parcelas_cartaoCred">
-                    <option value="1">1x de R$ <?php echo number_format($total, 2, ',', '.'); ?> sem juros</option>
-                    <option value="2">2x de R$ <?php echo number_format($total / 2, 2, ',', '.'); ?> sem juros</option>
-                    <option value="3">3x de R$ <?php echo number_format($total / 3, 2, ',', '.'); ?> sem juros</option>
-                    <?php for ($i = 4; $i <= 12; $i++): 
-                        $valorParcela = ($total * pow(1 + 0.0299, $i)) / $i; ?>
-                        <option value="<?php echo $i; ?>"><?php echo $i; ?>x de R$ <?php echo number_format($valorParcela, 2, ',', '.'); ?> com 2,99% a.m.</option>
-                    <?php endfor; ?>
-                </select>
-                <br>
-                <button type="button" onclick="fecharPopup('popup_cartaoCred')">Cancelar</button>
-                <button type="button" onclick="continuarPagamento('Cartão de Crédito')">Continuar</button>
-            </div>
-        </div>
-
-        <div id="popup_cartaoDeb" class="popup" style="display: none;">
-            <div class="popup-content">
-                <span class="close" onclick="fecharPopup('popup_cartaoDeb')">&times;</span>
-                <h3>Pagar com Cartão de Débito</h3>
-                <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
-                <p>Insira os dados do seu cartão de débito para efetuar o pagamento.</p>
-                <!-- Adicione aqui o formulário para pagamento com cartão de débito -->
-                <label for="valor_cartaoDeb">Valor a ser pago: R$ </label>
-                <input type="text" id="valor_cartaoDeb" name="valor_cartaoDeb" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoDeb()">
-                <br>
-                <button type="button" onclick="fecharPopup('popup_cartaoDeb')">Cancelar</button>
-                <button type="button" onclick="continuarPagamento('Cartão de Débito')">Continuar</button>
-            </div>
-        </div>
-
-        <div id="popup_segunda_forma" class="popup" style="display: none;">
-            <div class="popup-content">
-                <span class="close" onclick="fecharPopup('popup_segunda_forma')">&times;</span>
-                <h3>Escolha a 2ª forma de pagamento</h3>
-                <h3>Valor restante: R$ <span id="valor_restante"></span></h3>
-                <label>Escolha a 2ª forma de pagamento:</label>
-                <select id="segunda_forma_pagamento" name="segunda_forma_pagamento">
-                    <option value="selecionar">Selecionar</option>    
-                    <option value="pix">PIX</option>
-                    <?php if ($admin_cartoes_credito): ?>
-                        <option value="cartaoCred">Cartão de Crédito</option>
-                    <?php endif; ?>
-                    <?php if ($admin_cartoes_debito): ?>
-                        <option value="cartaoDeb">Cartão de Débito</option>
-                    <?php endif; ?>
-                </select>
-                <br>
-                <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
-                <button type="button" onclick="abrirSegundaForma()">Continuar</button>
-            </div>
-        </div>
-
-        <div id="pg_entrega" style="display: none; margin-top: 10px;">
-            <h3>Selecione até 3 formas de pagamento:</h3>
-            <div>
-                <div>
-                    <label>
-                        <input type="checkbox" name="forma_pagamento_entrega[]" value="pix" onchange="limitarCheckboxes(this, 3)"> PIX
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input type="checkbox" name="forma_pagamento_entrega[]" value="dinheiro" onchange="limitarCheckboxes(this, 3)"> Dinheiro
-                    </label>
-                </div>
-                <?php if ($cartao_credito_ativo): ?>
-                    <div>
-                        <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoCred" onchange="limitarCheckboxes(this, 3)"> Cartão de Crédito
-                        </label>
-                        <span id="bandeiras_credito_entrega" style="display: none;">Cartões de Crédito aceitos: <?php echo $parceiro['cartao_credito']; ?></span>
-                    </div>
-                <?php endif; ?>
-                <?php if ($cartao_debito_ativo): ?>
-                    <div>
-                        <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoDeb" onchange="limitarCheckboxes(this, 3)"> Cartão de Débito
-                        </label>
-                        <span id="bandeiras_debito_entrega" style="display: none;">Cartões de Débito aceitos: <?php echo $parceiro['cartao_debito']; ?></span>
-                    </div>
-                <?php endif; ?>
-                <?php if ($outros): ?>
-                    <div>
-                        <label>
-                            <input type="checkbox" name="forma_pagamento_entrega[]" value="outros" onchange="limitarCheckboxes(this, 3)"> Outros
-                        </label>
-                        <span id="bandeiras_outros_entrega" style="display: none;">Outras formas aceitas: <?php echo $parceiro['outras_formas']; ?></span>
-                    </div>
-                <?php endif; ?>
-            </div>
-            <h3>Endereço de Entrega</h3>
-            <div>
-                <label for="rua">Rua:</label>
-                <input type="text" id="rua" name="rua" required>
-            </div>
-            <div>
-                <label for="bairro">Bairro:</label>
-                <input type="text" id="bairro" name="bairro" required>
-            </div>
-            <div>
-                <label for="numero">Número:</label>
-                <input type="text" id="numero" name="numero" required>
-            </div>
-        </div>
-
-        <div id="pg_crediario" style="display: none; margin-top: 10px;">
-            <div>
-                <label>Dar entrada: R$ </label>
-                <input type="text" id="entradaInput" name="entrada" value="0,00" oninput="formatarMoeda(this); atualizarRestante(); verificarEntradaMinima()">
-                <select id="formas_pagamento_crediario" name="forma_pagamento[]" onchange="mostrarBandeirasCriterio(this); limitarSelect(this);">
-                    <option value="pix">PIX</option>
-                    <?php if ($admin_cartoes_credito): ?>
-                        <option value="cartaoCred">Cartão de Crédito</option>
-                    <?php endif; ?>
-                    <?php if ($admin_cartoes_debito): ?>
-                        <option value="cartaoDeb">Cartão de Débito</option>
-                    <?php endif; ?>
-                </select>
-                <div id="bandeiras_crediario" style="margin-top: 10px;">
-                    <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
-                    <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
-                </div>
-            </div>
-        </div>
-
-        <button type="button" onclick="window.history.back();">Voltar</button>
+    <div class="container">
+        <h2>Formas de Pagamento</h2>
         
-    </form>
+        <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+            <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
+                <h3>Limite disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
+        <div>
+            <label for="comentario">Comentário (opcional):</label>
+            <textarea id="comentario" name="comentario" rows="4" cols="50"></textarea>
+        </div>
+        
+        <form method="POST" action="processar_pagamento.php">
+            <h3>Escolha o momento do pagamento</h3>
+            <div id="momento_pagamento" class="form-group">
+                <div>
+                    <input type="radio" id="pag_online" name="momento_pagamento" value="online" required checked onclick="mostrarDiv('pg_online')" title="Clique para pagar online">
+                    <label for="pag_online">Pagar Online</label>                    
+                </div>
+                <div>
+                    <input type="radio" id="pag_entrega" name="momento_pagamento" value="entrega" required onclick="mostrarDiv('pg_entrega')" title="Clique para pagar na entrega">
+                    <label for="pag_entrega">Pagar na Entrega</label>
+                </div>   
+                <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+                    <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
+                        <div>
+                            <input type="radio" id="pag_crediario" name="momento_pagamento" value="crediario" required onclick="mostrarDiv('pg_crediario')" title="Clique para pagar no crediário">
+                            <label for="pag_crediario">Crediário</label>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>          
+            </div>
+
+            <div id="pg_online" style="display: block; margin-top: 10px;">
+                <h3>Escolha até 2 formas de pagamento</h3>
+                <div>
+                    <label>Escolha a 1ª forma de pagamento ou Entrada:</label>
+                    <select id="formas_pagamento_online" name="forma_pagamento[]" onchange="limitarSelect(this)">
+                        <option value="selecionar">Selecionar</option>    
+                        <option value="pix">PIX</option>
+                        <?php if ($admin_cartoes_credito): ?>
+                            <option value="cartaoCred">Cartão de Crédito</option>
+                        <?php endif; ?>
+                        <?php if ($admin_cartoes_debito): ?>
+                            <option value="cartaoDeb">Cartão de Débito</option>
+                        <?php endif; ?>
+                    </select>
+
+                    <div id="bandeiras_aceitas" style="margin-top: 10px;">
+                        <p id="bandeiras_credito" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
+                        <p id="bandeiras_debito" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
+                    </div>
+                    
+                    <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
+                    <button id="btn_cartaoCred_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Crédito', 'primeira')">Pagar com Cartão de Crédito</button>
+                    <button id="btn_cartaoDeb_online" type="button" style="display: none;" onclick="abrirPopup('Cartão de Débito', 'primeira')">Pagar com Cartão de Débito</button>
+                </div>
+            </div>
+
+            <div id="popup_cartaoCred" class="popup" style="display: none;">
+                <div class="popup-content">
+                    <span class="close" onclick="fecharPopup('popup_cartaoCred')">&times;</span>
+                    <h3>Pagar com Cartão de Crédito</h3>
+                    <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
+                    <p>Insira os dados do seu cartão de crédito para efetuar o pagamento.</p>
+                    <!-- Adicione aqui o formulário para pagamento com cartão de crédito -->
+                    <label for="valor_cartaoCred">Valor a ser pago: R$ </label>
+                    <input type="text" id="valor_cartaoCred" name="valor_cartaoCred" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoCred()">
+                    <br>
+                    <label for="parcelas_cartaoCred">Quantidade de parcelas:</label>
+                    <select id="parcelas_cartaoCred" name="parcelas_cartaoCred">
+                        <option value="1">1x de R$ <?php echo number_format($total, 2, ',', '.'); ?> sem juros</option>
+                        <option value="2">2x de R$ <?php echo number_format($total / 2, 2, ',', '.'); ?> sem juros</option>
+                        <option value="3">3x de R$ <?php echo number_format($total / 3, 2, ',', '.'); ?> sem juros</option>
+                        <?php for ($i = 4; $i <= 12; $i++): 
+                            $valorParcela = ($total * pow(1 + 0.0299, $i)) / $i; ?>
+                            <option value="<?php echo $i; ?>"><?php echo $i; ?>x de R$ <?php echo number_format($valorParcela, 2, ',', '.'); ?> com 2,99% a.m.</option>
+                        <?php endfor; ?>
+                    </select>
+                    <br>
+                    <button type="button" onclick="fecharPopup('popup_cartaoCred')">Cancelar</button>
+                    <button type="button" onclick="continuarPagamento('Cartão de Crédito')">Continuar</button>
+                </div>
+            </div>
+
+            <div id="popup_cartaoDeb" class="popup" style="display: none;">
+                <div class="popup-content">
+                    <span class="close" onclick="fecharPopup('popup_cartaoDeb')">&times;</span>
+                    <h3>Pagar com Cartão de Débito</h3>
+                    <h3>Valor da minha compra: <?php echo 'R$ ' . number_format($total, 2, ',', '.'); ?></h3>
+                    <p>Insira os dados do seu cartão de débito para efetuar o pagamento.</p>
+                    <!-- Adicione aqui o formulário para pagamento com cartão de débito -->
+                    <label for="valor_cartaoDeb">Valor a ser pago: R$ </label>
+                    <input type="text" id="valor_cartaoDeb" name="valor_cartaoDeb" value="<?php echo number_format('0', 2, ',', '.'); ?>" oninput="formatarMoeda(this); verificarValorCartaoDeb()">
+                    <br>
+                    <button type="button" onclick="fecharPopup('popup_cartaoDeb')">Cancelar</button>
+                    <button type="button" onclick="continuarPagamento('Cartão de Débito')">Continuar</button>
+                </div>
+            </div>
+
+            <div id="popup_segunda_forma" class="popup" style="display: none;">
+                <div class="popup-content">
+                    <span class="close" onclick="fecharPopup('popup_segunda_forma')">&times;</span>
+                    <h3>Escolha a 2ª forma de pagamento</h3>
+                    <h3>Valor restante: R$ <span id="valor_restante"></span></h3>
+                    <label>Escolha a 2ª forma de pagamento:</label>
+                    <select id="segunda_forma_pagamento" name="segunda_forma_pagamento">
+                        <option value="selecionar">Selecionar</option>    
+                        <option value="pix">PIX</option>
+                        <?php if ($admin_cartoes_credito): ?>
+                            <option value="cartaoCred">Cartão de Crédito</option>
+                        <?php endif; ?>
+                        <?php if ($admin_cartoes_debito): ?>
+                            <option value="cartaoDeb">Cartão de Débito</option>
+                        <?php endif; ?>
+                    </select>
+                    <br>
+                    <button type="button" onclick="fecharPopup('popup_segunda_forma')">Cancelar</button>
+                    <button type="button" onclick="abrirSegundaForma()">Continuar</button>
+                </div>
+            </div>
+
+            <div id="pg_entrega" style="display: none; margin-top: 10px;">
+                <h3>Selecione até 3 formas de pagamento:</h3>
+                <div id="formas_pagamento">
+                    <div>
+                        <label>
+                            <input type="checkbox" name="forma_pagamento_entrega[]" value="pix" onchange="limitarCheckboxes(this, 3)"> PIX
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="checkbox" name="forma_pagamento_entrega[]" value="dinheiro" onchange="limitarCheckboxes(this, 3)"> Dinheiro
+                        </label>
+                    </div>
+                    <?php if ($cartao_credito_ativo): ?>
+                        <div>
+                            <label>
+                                <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoCred" onchange="limitarCheckboxes(this, 3)"> Cartão de Crédito
+                                <span id="bandeiras_credito_entrega" style="display: none;">Cartões de Crédito aceitos: <?php echo $parceiro['cartao_credito']; ?></span>
+                            </label>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($cartao_debito_ativo): ?>
+                        <div>
+                            <label>
+                                <input type="checkbox" name="forma_pagamento_entrega[]" value="cartaoDeb" onchange="limitarCheckboxes(this, 3)"> Cartão de Débito
+                                <span id="bandeiras_debito_entrega" style="display: none;">Cartões de Débito aceitos: <?php echo $parceiro['cartao_debito']; ?></span>
+                            </label>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($outros): ?>
+                        <div>
+                            <label>
+                                <input type="checkbox" name="forma_pagamento_entrega[]" value="outros" onchange="limitarCheckboxes(this, 3)"> Outros
+                                <span id="bandeiras_outros_entrega" style="display: none;">Outras formas aceitas: <?php echo $parceiro['outras_formas']; ?></span>
+                            </label>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <!--<h3>Endereço de Entrega</h3>
+                <div>
+                    <label for="rua">Rua:</label>
+                    <input type="text" id="rua" name="rua" required>
+                </div>
+                <div>
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" id="bairro" name="bairro" required>
+                </div>
+                <div>
+                    <label for="numero">Número:</label>
+                    <input type="text" id="numero" name="numero" required>
+                </div>-->
+            </div>
+
+            <div id="pg_crediario" style="display: none; margin-top: 10px;">
+                <div>
+                    <label>Dar entrada: R$ </label>
+                    <input type="text" id="entradaInput" name="entrada" value="0,00" oninput="formatarMoeda(this); atualizarRestante(); verificarEntradaMinima()">
+                    <select id="formas_pagamento_crediario" name="forma_pagamento[]" onchange="mostrarBandeirasCriterio(this); limitarSelect(this);">
+                        <option value="pix">PIX</option>
+                        <?php if ($admin_cartoes_credito): ?>
+                            <option value="cartaoCred">Cartão de Crédito</option>
+                        <?php endif; ?>
+                        <?php if ($admin_cartoes_debito): ?>
+                            <option value="cartaoDeb">Cartão de Débito</option>
+                        <?php endif; ?>
+                    </select>
+                    <div id="bandeiras_crediario" style="margin-top: 10px;">
+                        <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
+                        <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="window.history.back();">Voltar</button>
+            
+        </form>
+    </div>
 
     <script>
         function mostrarDiv(divId) {
@@ -330,6 +508,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (checkedCheckboxes.length > max) {
                 checkbox.checked = false;
                 alert('Você pode selecionar no máximo ' + max + ' formas de pagamento.');
+                exit;
             }
 
             // Mostrar ou esconder as bandeiras conforme a seleção

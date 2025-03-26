@@ -168,6 +168,15 @@ if ($result_cliente->num_rows > 0) {
             }
         ?>
     </p>
+    <p>CIDADE/UF: 
+        <?php 
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['bairro_entrega'] != '' ? $cliente['cidade'].'/'.$cliente['uf'].', CEP: '. $cliente['cep'] : $cliente['cidade'].'/'.$cliente['uf'] . ', CEP: ' . $cliente['cep'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $parceiro['cidade'].'/'.$parceiro['estado'].', CEP: '. $parceiro['cep'];
+            }
+        ?>
+    </p>
     <p>CONTATO: 
         <?php 
             if ($pedido['tipo_entrega'] == 'entregar') {
@@ -177,7 +186,11 @@ if ($result_cliente->num_rows > 0) {
             }
         ?>
     </p>
-    <p>COMENTÁRIO: <?php echo $pedido['comentario']; ?></p>
+    <p>COMENTÁRIO: </p>
+    <textarea name="" id="">
+        <?php echo $pedido['comentario']; ?>
+    </textarea>
+    
 
     <h3>Voltar</h3>
     <p><a href="javascript:history.back()">Voltar para a página anterior</a></p>
