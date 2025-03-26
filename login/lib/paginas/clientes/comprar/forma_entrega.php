@@ -449,6 +449,7 @@
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
             <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
             <input type="hidden" name="valor_total" value="<?php echo $totalComFrete; ?>">
+            <input type="hidden" name="valor_frete" id="valor_frete" value="<?php echo ($maiorFrete > 0) ? $maiorFrete : 0; ?>">
             
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
             <input type="hidden" name="detalhes_produtos" id="detalhes_produtos" >
@@ -515,6 +516,9 @@
             let freteElement = document.getElementById('frete');
             freteElement.innerText = freteTexto;
 
+            // Atualizar o valor do frete no campo oculto
+            document.getElementById('valor_frete').value = (cobrarFrete && maiorFrete > 0) ? freteComTaxa : 0;
+
             // Alterar a cor do texto "Entrega Grátis" para verde
             if (!cobrarFrete || maiorFrete === 0) {
                 freteElement.style.color = 'green';
@@ -525,7 +529,6 @@
             // Atualizar o valor total
             let totalComFrete = totalBase + (cobrarFrete ? freteComTaxa : 0);
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
-
         }
 
         // Chamar a função para definir a cor inicial do frete

@@ -11,6 +11,7 @@
     $id_cliente = $_SESSION['id'];
     $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : ''; // Detalhes dos produtos
     $id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
+    $valor_frete = isset($_POST['valor_frete']) ? floatval($_POST['valor_frete']) : 0.0;
     $total = isset($_POST['valor_total']) ? floatval($_POST['valor_total']) : 0.0;
     $entrega = isset($_POST['entrega']) ? $_POST['entrega'] : ''; // Modificar esta linha
     $rua = isset($_POST['rua']) ? $_POST['rua'] : '';
@@ -84,6 +85,11 @@
 
         $produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : (isset($_POST['detalhes_produtos_dc']) ? $_POST['detalhes_produtos_dc'] : ''); // Detalhes dos produtos
         
+        $valor_frete = isset($_POST['valor_frete_dc']) ? str_replace(',', '.', str_replace('.', '', $_POST['valor_frete_dc'])) : 
+            (isset($_POST['valor_frete_dc_debito']) ? str_replace(',', '.', str_replace('.', '', $_POST['valor_frete_dc_debito'])) :
+            (isset($_POST['valor_frete_nc']) ? str_replace(',', '.', str_replace('.', '', $_POST['valor_frete_nc'])) : 0.0)); // Valor do frete
+            
+
         $entrada = isset($_POST['valor_pix_entrada']) && floatval($_POST['valor_pix_entrada']) < $total 
             ? floatval($_POST['valor_pix_entrada']) 
             : (isset($_POST['valor_pix_entrada_dc']) && is_numeric($_POST['valor_pix_entrada_dc']) 
@@ -195,15 +201,15 @@
         }
 
         // Salvar o pedido no banco de dados
-        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor, 
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor_frete, valor, 
         forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, 
         qt_parcelas, tipo_entrega, endereco_entrega, num_entrega, bairro_entrega, 
         contato_recebedor, comentario, status_cliente, status_parceiro) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt) {
             $status_cliente = '0';
             $status_parceiro = '0';
-            $stmt->bind_param("siissssssssssssssii", $data_hora, $id_cliente, $id_parceiro, $produtos, $total, 
+            $stmt->bind_param("siisssssssssssssssii", $data_hora, $id_cliente, $id_parceiro, $produtos, $valor_frete, $total, 
             $forma_pagamento, $entrada, $forma_pagamento_entrada, $valor_restante, $forma_pagamento_restante, 
             $qt_parcelas, $entrega, $rua, $numero, $bairro, 
             $contato, $comentario, $status_cliente, $status_parceiro);
@@ -1062,6 +1068,7 @@
                     <input type="hidden" id="hr_detalhes_cartao" name="hr_detalhes_cartao">
                     <input type="hidden" id="detalhes_produtos_dc" name="detalhes_produtos_dc" value="<?php echo $produtos; ?>">
                     <input type="hidden" id="id_parceiro_dc" name="id_parceiro_dc" value="<?php echo $id_parceiro; ?>">
+                    <input type="hidden" id="valor_frete_dc" name="valor_frete_dc" value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>">
                     <input type="hidden" id="valor_total_dc" name="valor_total_dc" value="<?php echo number_format($total, 2, ',', '.'); ?>">
                     <input type="hidden" id="valor_pix_entrada_dc" name="valor_pix_entrada_dc">
 
@@ -1118,6 +1125,7 @@
                     <input type="hidden" id="hr_detalhes_cartao_debito" name="hr_detalhes_cartao_debito">
                     <input type="hidden" id="detalhes_produtos_dc_debito" name="detalhes_produtos_dc_debito" value="<?php echo $produtos; ?>">
                     <input type="hidden" id="id_parceiro_dc_debito" name="id_parceiro_dc_debito" value="<?php echo $id_parceiro; ?>">
+                    <input type="hidden" id="valor_frete_dc_debito" name="valor_frete_dc_debito" value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>">
                     <input type="hidden" id="valor_total_dc_debito" name="valor_total_dc_debito" value="<?php echo number_format($total, 2, ',', '.'); ?>">
                     <input type="hidden" id="valor_pix_entrada_dc_debito" name="valor_pix_entrada_dc_debito">
 
@@ -1156,6 +1164,7 @@
                 <input type="hidden" id="hr_popup_novo_cartao" name="hr_popup_novo_cartao">
                 <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
                 <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+                <input type="hidden" id="valor_frete_nc" name="valor_frete_nc" value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>">
                 <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
                 <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">
 

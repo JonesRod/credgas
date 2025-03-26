@@ -9,10 +9,11 @@
     }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    //var_dump($_POST);
+    var_dump($_POST);
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
+    $valor_frete = floatval($_POST['valor_frete']);
     $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
 
     $entrega = $_POST['entrega'];
@@ -623,6 +624,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             idParceiroInput.name = 'id_parceiro';
             idParceiroInput.value = '<?php echo $id_parceiro; ?>';
             form.appendChild(idParceiroInput);
+
+            const freteInput = document.createElement('input');
+            freteInput.type = 'hidden';
+            freteInput.name = 'valor_frete';
+            freteInput.value = '<?php echo $valor_frete; ?>';
+            form.appendChild(freteInput);
 
             const totalInput = document.createElement('input');
             totalInput.type = 'hidden';
