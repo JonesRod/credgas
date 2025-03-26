@@ -35,7 +35,31 @@ if ($result->num_rows > 0) {
     exit;
 }
 
-
+$id_parceiro = $pedido['id_parceiro'];
+// Consulta para buscar os dados do parceiro
+$query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
+$stmt_parceiro = $mysqli->prepare($query_parceiro);
+$stmt_parceiro->bind_param("i", $id_parceiro);
+$stmt_parceiro->execute();
+$result_parceiro = $stmt_parceiro->get_result();
+if ($result_parceiro->num_rows > 0) {
+    $parceiro = $result_parceiro->fetch_assoc();
+} else {
+    echo "Parceiro não encontrado.";
+    exit;
+}
+// Consulta para buscar os dados do cliente
+$query_cliente = "SELECT * FROM meus_clientes WHERE id = ?";
+$stmt_cliente = $mysqli->prepare($query_cliente);
+$stmt_cliente->bind_param("i", $id_cliente);
+$stmt_cliente->execute();
+$result_cliente = $stmt_cliente->get_result();
+if ($result_cliente->num_rows > 0) {
+    $cliente = $result_cliente->fetch_assoc();
+} else {
+    echo "Cliente não encontrado.";
+    exit;
+}
 
 ?>
 <!DOCTYPE html>
@@ -92,8 +116,60 @@ if ($result->num_rows > 0) {
             ?>
         </tbody>
     </table>
-    <h3>Endereço de Entrega</h3>
-    <p><?php echo $pedido['endereco_entrega']; ?>, <?php echo $pedido['num_entrega']; ?> - <?php echo $pedido['bairro_entrega']; ?></p>
+    <h3>Forma de Entrega</h3>
+
+    <input type="hidden" id="tipo_entrega" name="tipo_entrega" 
+        value="<?php             
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo "Entregar em casa.";
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo "Retirar no local.";
+            } else {
+                echo "Retirar na loja.";
+            }?>" 
+        readonly>
+
+    <p><strong>Tipo de Entrega:</strong>
+        <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo "Entregar em casa.";
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo "Retirar no local.";
+            } else {
+                echo "Retirar na loja.";
+            }
+        ?>
+    </p>
+
+    <p>AV/RUA: 
+        <?php 
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['endereco_entrega'] != '' ? $pedido['endereco_entrega'] : $cliente['endereco'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $parceiro['endereco'];
+            }
+        ?>
+    </p>
+    <p>Nº: 
+        <?php 
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['num_entrega'] != '' ? $pedido['num_entrega'] : $cliente['numero'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $parceiro['numero'];
+            }
+        ?>
+    </p>
+    <p>BAIRRO: 
+        <?php 
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['bairro_entrega'] != '' ? $pedido['bairro_entrega'] : $cliente['bairro'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $parceiro['bairro'];
+            }
+        ?>
+     </p>
+    <p>COMENTÁRIO: <?php echo $pedido['comentario']; ?></p>
+
     <h3>Voltar</h3>
     <p><a href="javascript:history.back()">Voltar para a página anterior</a></p>
 </body>
