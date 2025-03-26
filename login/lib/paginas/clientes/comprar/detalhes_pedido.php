@@ -167,7 +167,16 @@ if ($result_cliente->num_rows > 0) {
                 echo $parceiro['bairro'];
             }
         ?>
-     </p>
+    </p>
+    <p>CONTATO: 
+        <?php 
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['contato_recebedor'] != '' ? $pedido['contato_recebedor'] : $cliente['celular1'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $parceiro['telefoneComercial'];
+            }
+        ?>
+    </p>
     <p>COMENTÁRIO: <?php echo $pedido['comentario']; ?></p>
 
     <h3>Voltar</h3>
