@@ -196,6 +196,24 @@
             background-color: #45a049;
         }
 
+        #enderecoCadastrado button[onclick="mostrarCamposEndereco()"] {
+            background-color: blue;
+            color: white;
+        }
+
+        #enderecoCadastrado button[onclick="mostrarCamposEndereco()"]:hover {
+            background-color:rgb(70, 70, 238)
+        }
+
+        #novoEndereco button[onclick="usarEnderecoCadastrado()"] {
+            background-color: blue;
+            color: white;
+        }
+
+        #novoEndereco button[onclick="usarEnderecoCadastrado()"]:hover {
+            background-color:rgb(70, 70, 238)
+        }
+
         .voltar {
             display: block;
             text-align: center;
