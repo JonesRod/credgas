@@ -322,7 +322,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="comentario">Comentário (opcional):</label>
             <textarea id="comentario" name="comentario" rows="4" cols="50"></textarea>
         </div>
-        
         <form method="POST" action="">
             <h3>Escolha o momento do pagamento</h3>
             <div id="momento_pagamento" class="form-group">
@@ -439,15 +438,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
                             <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                         </div>
+                        <input type="text" id="valor_total_crediario">
+                        <input type="hidden" name="tipo_entrada_crediario" id="tipo_entrada_crediario">
                     </div>
                 <button id="bt_comprar_crediario" type="button" style="display: block;" onclick="verificarEntradaMinima()">Continuar</button>
             </div>
-
             <button type="button" onclick="window.history.back();">Voltar</button> 
         </form>
     </div>
-
-    <script>
+    
+    <script> 
         function mostrarDiv(divId) {
             document.getElementById('pg_online').style.display = 'none';
             document.getElementById('pg_entrega').style.display = 'none';
@@ -824,6 +824,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             input.value = valor;
         }
 
+        
         function carregarEntradaMinima() {
             const total = parseFloat('<?php echo $total; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
@@ -847,6 +848,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById('restanteInput').value = 'R$ ' + restante.toFixed(2).replace('.', ',');
                 console.log('Valor total maior que o limite de crediário');
             }
+            document.getElementById('tipo_entrada_crediario').value = 'Pix';
+            document.getElementById('valor_total_crediario').value = valorTotal.toFixed(2).replace('.', ',');  
         }
         
         function verificarEntradaMinima() {
@@ -878,11 +881,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             restanteInput.value = restante.toFixed(2).replace('.', ',');
             enviarDadosCrediario();
         }
-
+        
         function mostrarBandeirasCriterio(select) {
             const selectedOptions = Array.from(select.selectedOptions);
-            document.getElementById('bandeiras_credito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
-            document.getElementById('bandeiras_debito_crediario').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
+            const selectedValues = selectedOptions.map(option => option.value);
+
+            // Atualiza o campo de seleção com os valores escolhidos
+            document.getElementById('pag_selecionados').value = selectedValues;
+
+            // Mostra ou esconde as bandeiras de acordo com a seleção
+            const bandeirasCredito = document.getElementById('bandeiras_credito_crediario');
+            const bandeirasDebito = document.getElementById('bandeiras_debito_crediario');
+
+            if (selectedValues.includes('pix')) {
+                //bandeirasCredito.style.display = 'none';
+                document.getElementById('tipo_entrada_crediario').value = 'Pix';            
+            } else {
+                //bandeirasCredito.style.display = 'none';
+            }
+
+            if (selectedValues.includes('cartaoCred')) {
+                bandeirasCredito.style.display = 'block';
+                bandeirasCredito.innerText = 'Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?>';
+                document.getElementById('tipo_entrada_crediario').value = 'Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?>';            
+            } else {
+                bandeirasCredito.style.display = 'none';
+            }
+
+            if (selectedValues.includes('cartaoDeb')) {
+                bandeirasDebito.style.display = 'block';
+                bandeirasDebito.innerText = 'Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?>';
+                document.getElementById('tipo_entrada_crediario').value = 'Cartões de Débito aceitos: <?php echo $admin_cartoes_credito; ?>';
+            } else {
+                bandeirasDebito.style.display = 'none';
+            }
+
+
+
+            console.log(selectedValues);
         }
 
         function recalcularValor() {
@@ -926,10 +962,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             freteInput.value = '<?php echo $valor_frete; ?>';
             form.appendChild(freteInput);
 
-            const totalInput = document.createElement('input');
+            const totalInput = document.createElement('input'); // Adicionar esta linha
             totalInput.type = 'hidden';
-            totalInput.name = 'valor_total';
-            totalInput.value = '<?php echo $total; ?>';
+            totalInput.name = 'valor_total_crediario';
+            totalInput.value = document.getElementById('valor_total_crediario').value;
             form.appendChild(totalInput);
 
             const detalhesProdutosInput = document.createElement('input');
@@ -967,6 +1003,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             contatoInput.name = 'contato';
             contatoInput.value = '<?php echo $contato; ?>';
             form.appendChild(contatoInput);
+
+            const entradaInput = document.createElement('input'); // Adicionar esta linha
+            entradaInput.type = 'hidden';
+            entradaInput.name = 'entrada';
+            entradaInput.value = document.getElementById('entradaInput').value;
+            form.appendChild(entradaInput);
+
+            const restanteInput = document.createElement('input'); // Adicionar esta linha
+            restanteInput.type = 'hidden';
+            restanteInput.name = 'restante';
+            restanteInput.value = document.getElementById('restanteInput').value;
+            form.appendChild(restanteInput);
+
+            const entradaCrediarioInput = document.createElement('input'); // Adicionar esta linha
+            entradaCrediarioInput.type = 'hidden';
+            entradaCrediarioInput.name = 'tipo_entrada_crediario';
+            entradaCrediarioInput.value = document.getElementById('tipo_entrada_crediario').value;
+            form.appendChild(entradaCrediarioInput);
 
             const comentarioInput = document.createElement('input'); // Adicionar esta linha
             comentarioInput.type = 'hidden';
