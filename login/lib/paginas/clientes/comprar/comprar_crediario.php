@@ -61,10 +61,33 @@
         <p>Restante: R$ <?php echo $restante; ?></p>
         <div>
             <h3>Forma de Pagamento da entrada</h3>
-            <p>Tipo de Entrada: <?php echo $tipo_entrada_crediario; ?></p>
+            <p>Tipo de Entrada: 
+                <?php 
+                    if ($tipo_entrada_crediario == '1') {
+                        echo 'PIX';
+                    } elseif ($tipo_entrada_crediario == '2') {
+                        echo 'Cartão de Crédito';
+                    } elseif ($tipo_entrada_crediario == '3') {
+                        echo 'Cartão de Débito';
+                    } else {
+                        echo 'Outro';
+                    }
+                ?>
+            </p>
             <p><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
             <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
             <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" readonly>
+        
+            <div id="popup-content" class="popup-content">
+                <h3>Pagar com PIX</h3>
+                <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
+
+                <img id="qr_code_pix" src="qr_code_pix.png" alt="QR Code PIX" style="display: none;">
+                <br>
+                <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
+                <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
+                <button type="button" id="btn_continuar" onclick="continuarPagamento('PIX')" style="display: none;">Continuar</button>
+            </div>
         </div>
         
     </form>
