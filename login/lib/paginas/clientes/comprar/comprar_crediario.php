@@ -61,7 +61,8 @@
         <p>Restante: R$ <?php echo $restante; ?></p>
         <div>
             <h3>Forma de Pagamento da entrada</h3>
-            <label for="tipo_entrada_crediario">Tipo de Entrada:</label>
+            <p>Tipo de Entrada: <?php echo $tipo_entrada_crediario; ?></p>
+            <p><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
             <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
             <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" readonly>
         </div>
