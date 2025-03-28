@@ -438,8 +438,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
                             <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                         </div>
-                        <input type="text" id="valor_total_crediario">
+                        <input type="hidden" id="valor_total_crediario">
                         <input type="hidden" name="tipo_entrada_crediario" id="tipo_entrada_crediario">
+                        <input type="hidden" name="bandeiras_aceita" id="bandeiras_aceita">
                     </div>
                 <button id="bt_comprar_crediario" type="button" style="display: block;" onclick="verificarEntradaMinima()">Continuar</button>
             </div>
@@ -466,7 +467,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('btn_pix_online').style.display = selectedOptions.some(option => option.value === 'pix') ? 'block' : 'none';
             document.getElementById('btn_cartaoCred_online').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
             document.getElementById('btn_cartaoDeb_online').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
-
             // Mostrar ou esconder as bandeiras conforme a seleção
             document.getElementById('bandeiras_credito').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
             document.getElementById('bandeiras_debito').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
@@ -824,7 +824,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             input.value = valor;
         }
 
-        
         function carregarEntradaMinima() {
             const total = parseFloat('<?php echo $total; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
@@ -832,7 +831,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const entradaInput = document.getElementById('entradaInput');
             //const entrada = parseFloat(entradaInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorTotal = total + ( total * taxaCrediario) / 100;
-            const entrada = valorTotal - limiteCred;
+            const entrada = valorTotal - limiteCred + 1;
             const restante = valorTotal - entrada;
 
             entradaInput.value = entrada.toFixed(2).replace('.', ',');
@@ -841,14 +840,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (valorTotal < limiteCred) {
                 formas_pagamento_crediario.style.display = 'none';
-                document.getElementById('restanteInput').value = 'R$ ' + restante.toFixed(2).replace('.', ',');
+                document.getElementById('restanteInput').value = restante.toFixed(2).replace('.', ',');
                 console.log('Valor total menor que o limite de crediário');
             } else {
                 formas_pagamento_crediario.style.display = 'block';
-                document.getElementById('restanteInput').value = 'R$ ' + restante.toFixed(2).replace('.', ',');
+                document.getElementById('restanteInput').value = restante.toFixed(2).replace('.', ',');
                 console.log('Valor total maior que o limite de crediário');
             }
             document.getElementById('tipo_entrada_crediario').value = 'Pix';
+            document.getElementById('bandeiras_aceitas').value = '';
             document.getElementById('valor_total_crediario').value = valorTotal.toFixed(2).replace('.', ',');  
         }
         
@@ -866,15 +866,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (entrada < diferenca) {
                 alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
-                entradaInput.value = diferenca.toFixed(2).replace('.', ',');
-                restanteInput.value = (valorTotal - diferenca).toFixed(2).replace('.', ',');
+                entradaInput.value = (diferenca + 1).toFixed(2).replace('.', ',');
+                restanteInput.value = (valorTotal - diferenca - 1).toFixed(2).replace('.', ',');
                 return;
             }
 
             if (entrada > valorTotal) {
                 alert('A entrada não pode ser maior que o valor da compra.');
-                entradaInput.value = valorTotal.toFixed(2).replace('.', ',');
-                restanteInput.value = (valorTotal - diferenca).toFixed(2).replace('.', ',');
+                entradaInput.value = (diferenca + 1).toFixed(2).replace('.', ',');
+                restanteInput.value = (valorTotal - diferenca - 1).toFixed(2).replace('.', ',');
                 return;
             }
 
@@ -895,7 +895,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (selectedValues.includes('pix')) {
                 //bandeirasCredito.style.display = 'none';
-                document.getElementById('tipo_entrada_crediario').value = 'Pix';            
+                document.getElementById('tipo_entrada_crediario').value = '1';
+                document.getElementById('bandeiras_aceita').value = '';            
             } else {
                 //bandeirasCredito.style.display = 'none';
             }
@@ -903,7 +904,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (selectedValues.includes('cartaoCred')) {
                 bandeirasCredito.style.display = 'block';
                 bandeirasCredito.innerText = 'Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?>';
-                document.getElementById('tipo_entrada_crediario').value = 'Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?>';            
+                document.getElementById('tipo_entrada_crediario').value = '2'; 
+                document.getElementById('bandeiras_aceita').value = '<?php echo $admin_cartoes_credito; ?>';      
             } else {
                 bandeirasCredito.style.display = 'none';
             }
@@ -911,13 +913,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (selectedValues.includes('cartaoDeb')) {
                 bandeirasDebito.style.display = 'block';
                 bandeirasDebito.innerText = 'Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?>';
-                document.getElementById('tipo_entrada_crediario').value = 'Cartões de Débito aceitos: <?php echo $admin_cartoes_credito; ?>';
+                document.getElementById('tipo_entrada_crediario').value = '3';
+                document.getElementById('bandeiras_aceita').value = '<?php echo $admin_cartoes_debito; ?>';
             } else {
                 bandeirasDebito.style.display = 'none';
             }
-
-
-
             console.log(selectedValues);
         }
 
@@ -1021,6 +1021,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             entradaCrediarioInput.name = 'tipo_entrada_crediario';
             entradaCrediarioInput.value = document.getElementById('tipo_entrada_crediario').value;
             form.appendChild(entradaCrediarioInput);
+
+            const bandeirasAceitaInput = document.createElement('input'); // Adicionar esta linha
+            bandeirasAceitaInput.type = 'hidden';
+            bandeirasAceitaInput.name = 'bandeiras_aceita';
+            bandeirasAceitaInput.value = document.getElementById('bandeiras_aceita').value;
+            form.appendChild(bandeirasAceitaInput);
 
             const comentarioInput = document.createElement('input'); // Adicionar esta linha
             comentarioInput.type = 'hidden';
