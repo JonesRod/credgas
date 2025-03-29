@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     if (freteGratisSelect && freteGroup && valorFrete) {
         freteGratisSelect.addEventListener('change', function() {
-            if (this.value === 'sim') {
+            if (this.value == 1) {
                 freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
                 valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
             } else {
@@ -24,11 +24,13 @@ document.addEventListener("DOMContentLoaded", function() {
     
     if (freteGratisSelect && freteGroup && valorFrete) {
         freteGratisSelect.addEventListener('change', function() {
-            if (this.value === 'sim') {
+            if (this.value == 1) {
                 freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
                 valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
+                //console.log('oii1');
             } else {
                 freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
+                //console.log('oii2');
             }
         });
     }
@@ -137,7 +139,7 @@ function formatarValorFretePromocao() {
     valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");  // Adiciona os pontos para separar os milhares
 
     document.getElementById('valor_frete_promocao').value = valor;                        // Atualiza o valor no campo
-    console.log('oii');
+    //console.log('oii');
 }
 
 

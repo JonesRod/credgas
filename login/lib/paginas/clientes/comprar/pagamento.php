@@ -847,7 +847,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 document.getElementById('restanteInput').value = restante.toFixed(2).replace('.', ',');
                 console.log('Valor total maior que o limite de crediário');
             }
-            document.getElementById('tipo_entrada_crediario').value = 'Pix';
+            document.getElementById('tipo_entrada_crediario').value = '1';
             document.getElementById('bandeiras_aceitas').value = '';
             document.getElementById('valor_total_crediario').value = valorTotal.toFixed(2).replace('.', ',');  
         }

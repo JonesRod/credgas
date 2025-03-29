@@ -151,19 +151,6 @@
             required oninput="formatarValor(this)">
         </div>
 
-        <!-- Valor do produto com taxa da plataforma -->
-        <?php
-            // Consulta para buscar as categorias
-            /*$taxa_padrao = $mysqli->query("SELECT * FROM config_admin 
-            WHERE taxa_padrao != '' ORDER BY data_alteracao DESC 
-            LIMIT 1") or die($mysqli->error);
-
-            $taxa = $taxa_padrao->fetch_assoc();
-            $taxa_padrao->close();*/
-
-
-        ?>
-
         <div class="form-group">
             <label for="valor_produto_taxa">Valor do Produto + Taxa da Plataforma (%): R$ </label>
             <input type="hidden" id="taxa" name="taxa" value="<?php echo $produto['taxa_padrao'];?>">           
@@ -175,13 +162,13 @@
         <div class="form-group">
             <label for="frete_gratis">Frete Grátis:</label>
             <select id="frete_gratis" name="frete_gratis" ><!--onchange="toggleFreteValor(this)"-->
-                <option value="nao" <?php echo ($produto['frete_gratis'] == 'nao') ? 'selected' : ''; ?>>Não</option>
-                <option value="sim" <?php echo ($produto['frete_gratis'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+                <option value="0" <?php echo ($produto['frete_gratis'] == 0) ? 'selected' : ''; ?>>Não</option>
+                <option value="1" <?php echo ($produto['frete_gratis'] == 1) ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
         <!-- Valor do Frete -->
-        <div class="form-group" id="frete-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+        <div class="form-group" id="frete-group" style="<?php echo ($produto['frete_gratis'] == 1) ? 'display:none;' : 'display:block;'; ?>">
             <?php
                 $valor_frete = str_replace(',', '.', $produto['valor_frete']);
                 $valor_frete = floatval($valor_frete);
@@ -225,8 +212,8 @@
         <div class="form-group">
             <label for="ocultar">Ocultar:</label>
             <select id="ocultar" name="ocultar" >
-                <option value="nao" <?php echo ($produto['oculto'] == 'nao') ? 'selected' : ''; ?>>Não</option>
-                <option value="sim" <?php echo ($produto['oculto'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+                <option value="0" <?php echo ($produto['oculto'] == 0) ? 'selected' : ''; ?>>Não</option>
+                <option value="1" <?php echo ($produto['oculto'] == 1) ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
@@ -237,13 +224,13 @@
         <div class="form-group">
             <label for="promocao">Colocar em Promoção:</label>
             <select id="promocao" name="promocao" onchange="togglePromocaoFields()">
-                <option value="nao" <?php echo ($produto['promocao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
-                <option value="sim" <?php echo ($produto['promocao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+                <option value="0" <?php echo ($produto['promocao'] == 0) ? 'selected' : ''; ?>>Não</option>
+                <option value="1" <?php echo ($produto['promocao'] == 1) ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
         <!-- Valor do Produto na Promoção -->
-        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 1) ? 'display:block;' : 'display:none;'; ?>">
             <label for="valor_promocao">Valor do Produto na Promoção (R$):</label>
             <input type="text" id="valor_promocao" name="valor_promocao" 
             value="<?php echo number_format($produto['valor_promocao'], 2, ',', '.'); ?>" 
@@ -251,23 +238,23 @@
         </div>
 
         <!-- Valor com Taxa na Promoção -->
-        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 1) ? 'display:block;' : 'display:none;'; ?>">
             <label for="valor_promocao_taxa">Valor com Taxa (R$):</label>
             <input type="text" id="valor_promocao_taxa" name="valor_promocao_taxa" 
             value="<?php echo number_format($produto['taxa_padrao'], 2, ',', '.'); ?>" readonly>
         </div>
 
         <!-- Frete Grátis na Promoção -->
-        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 1) ? 'display:block;' : 'display:none;'; ?>">
             <label for="frete_gratis_promocao">Frete Grátis na Promoção:</label>
             <select id="frete_gratis_promocao" name="frete_gratis_promocao">
-                <option value="nao" <?php echo ($produto['frete_gratis_promocao'] == 'nao') ? 'selected' : ''; ?>>Não</option>
-                <option value="sim" <?php echo ($produto['frete_gratis_promocao'] == 'sim') ? 'selected' : ''; ?>>Sim</option>
+                <option value="0" <?php echo ($produto['frete_gratis_promocao'] == 0) ? 'selected' : ''; ?>>Não</option>
+                <option value="1" <?php echo ($produto['frete_gratis_promocao'] == 1) ? 'selected' : ''; ?>>Sim</option>
             </select>
         </div>
 
         <!-- Valor do Frete -->
-        <div class="form-group promocao-field" id="frete-gratis-group" style="<?php echo ($produto['valor_frete'] == 'sim') ? 'display:none;' : 'display:block;'; ?>">
+        <div class="form-group" id="frete-gratis-group" style="<?php echo ($produto['frete_gratis_promocao'] == 1) ? 'display:none;' : 'display:block;'; ?>">
             <?php
                 $valor_frete_promocao = str_replace(',', '.', $produto['valor_frete_promocao']);
                 $valor_frete_promocao = floatval($valor_frete_promocao);
@@ -286,7 +273,7 @@
         </div>
 
         <!-- Data Final da Promoção -->
-        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 'sim') ? 'display:block;' : 'display:none;'; ?>">
+        <div class="form-group promocao-field" style="<?php echo ($produto['promocao'] == 1) ? 'display:block;' : 'display:none;'; ?>">
             <label for="fim_promocao">Data Final da Promoção:</label>
             <input type="date" id="fim_promocao" name="fim_promocao" required
             value="<?php echo !empty($produto['fim_promocao']) ? $produto['fim_promocao'] : date('Y-m-d'); ?>">
@@ -298,7 +285,6 @@
             <button type="submit" class="btn btn-primary" onclick="checkPromocao()">Salvar Alterações</button>
         </div>
 
-        <script src="editar_produto.js"></script>
         <script>
             // Função para remover imagem
             function removerImagem(imagem, index) {
@@ -372,21 +358,19 @@
                 const valorFretePromocao = document.getElementById('valor_frete_promocao').value.replace(',', '.');
 
                 // Verificação de imagem
-                if (previewImages.length === 0) {
+                if (previewImages.length == 0) {
                     event.preventDefault(); // Impede o envio do formulário
                     alert('É necessário adicionar pelo menos uma imagem do produto.');
                     return;
                 }
 
                 // Verificação de valor de frete quando o frete grátis não está ativado
-                if (freteGratisPromocao === 'nao' && (valorFretePromocao === '' || parseFloat(valorFretePromocao) === 0)) {
+                if (freteGratisPromocao == 0 && (valorFretePromocao == '' || parseFloat(valorFretePromocao) == 0)) {
                     event.preventDefault(); // Impede o envio do formulário
                     alert('O valor do frete promocional deve ser maior que 0.');
                     return;
                 }
             });
-
-
 
             // Exibe ou oculta os campos da promoção com base na seleção
             function togglePromocaoFields() {
@@ -394,11 +378,11 @@
                 const promocaoFields = document.querySelectorAll('.promocao-field');
                 
                 promocaoFields.forEach(field => {
-                    field.style.display = promocaoSelect === 'sim' ? 'block' : 'none';
+                    field.style.display = promocaoSelect == 1 ? 'block' : 'none';
                 });
                 
                 // Calcula o valor com a taxa da promoção
-                if (promocaoSelect === 'sim') formatarValorPromocao();
+                if (promocaoSelect == 1) formatarValorPromocao();
             }
 
             // Carrega os campos corretamente ao carregar a página
@@ -414,20 +398,22 @@
                 // Exibir ou ocultar o campo de frete com base no valor de frete grátis ao carregar a página
                 if (freteGratisSelect && freteGroup && valorFrete) {
                     // Verifica o valor do campo frete grátis na promoção e ajusta a exibição
-                    if (freteGratisSelect.value === 'sim') {
+                    if (freteGratisSelect.value == 1) {
                         freteGroup.style.display = 'none'; // Oculta o campo de frete
                         valorFrete.value = '0,00'; // Define o valor do frete como 0,00
+                        console.log(freteGratisSelect.value);
                     } else {
                         freteGroup.style.display = 'block'; // Exibe o campo de frete
                     }
 
                     // Adiciona evento de mudança para atualizar conforme o usuário altera o frete grátis na promoção
                     freteGratisSelect.addEventListener('change', function() {
-                        if (this.value === 'sim') {
+                        if (this.value == 1) {
                             freteGroup.style.display = 'none'; // Oculta o campo de frete quando for frete grátis
                             valorFrete.value = '0,00'; // Define o valor do frete como 0,00 se for frete grátis
                         } else {
                             freteGroup.style.display = 'block'; // Mostra o campo de frete quando não for frete grátis
+                            console.log('Página carregada com sucesso2');
                         }
                     });
                 }
@@ -435,12 +421,13 @@
 
             function checkPromocao() {
                 const promocao = document.getElementById('promocao').value;
-                if (promocao === 'nao') {
+                if (promocao == 0) {
                     document.getElementById('valor_promocao').value = '';
                     document.getElementById('valor_promocao_taxa').value = '';
-                    document.getElementById('frete_gratis_promocao').value = 'sim';
+                    document.getElementById('frete_gratis_promocao').value = 1;
                     document.getElementById('ini_promocao').value = new Date().toISOString().split('T')[0];
                     document.getElementById('fim_promocao').value = new Date().toISOString().split('T')[0];
+                    //console.log('Promoção desativada');
                 }
             }
 

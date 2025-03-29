@@ -48,6 +48,8 @@
         while ($categoria = $result_categorias->fetch_assoc()) {
             
             $categoriasArray[] = $categoria['categoria']; // Adiciona as categorias no array
+
+
             
         }
 
@@ -66,27 +68,21 @@
     // Consulta para buscar produtos do catálogo
     $catalogo = $mysqli->query(query: "SELECT * FROM produtos 
     WHERE id_parceiro = '$id'
-    AND categoria = '$categoriaSelecionada'  
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim'") or die($mysqli->error);
+    AND categoria = '$categoriaSelecionada'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
     $promocoes =  $mysqli->query("SELECT * FROM produtos 
     WHERE id_parceiro = '$id' 
     AND categoria = '$categoriaSelecionada' 
-    AND promocao = 'sim' 
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim'") or die($mysqli->error);
+    AND promocao = '1'") or die($mysqli->error);
 
     // Consulta SQL corrigida
     $queryFreteGratis = "SELECT * FROM produtos 
     WHERE id_parceiro = '$id'
     AND categoria = '$categoriaSelecionada'
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim' 
-    AND frete_gratis = 'sim' 
-    OR (promocao = 'sim' 
-    AND frete_gratis_promocao = 'sim')";
+    AND frete_gratis = '1'
+    OR (promocao = '1' 
+    AND frete_gratis_promocao = '1')";
 
     // Executa a consulta e verifica erros
     $frete_gratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
@@ -121,12 +117,11 @@
     echo "Erro na consulta!";
     }
 
-
     //Consulta para buscar produtos ocultos do catálogo
     $produtos_ocultos = $mysqli->query("SELECT * FROM produtos 
     WHERE id_parceiro = '$id' 
     AND categoria = '$categoriaSelecionada' 
-    AND oculto = 'sim'") or die($mysqli->error);
+    AND oculto = '1'") or die($mysqli->error);
     //echo "<p>Produtos ocultos encontrados: " . $produtos_ocultos->num_rows . "</p>";
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
@@ -140,8 +135,6 @@
         FROM produtos 
         WHERE id_parceiro = '$id' 
         AND categoria = '$categoriaSelecionada'  
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'
         AND DATEDIFF(NOW(), data) <= 30
     ") or die("Erro na consulta: " . $mysqli->error);
 
@@ -152,15 +145,15 @@
         $data_fim = $produtos_encontrados['fim_promocao'];
 
         // Verifica se a promoção deve estar ativa ou inativa
-        if ($promocao === 'sim' && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
+        if ($promocao === 1 && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
             // A promoção deve continuar como "sim"
             continue;
         } elseif ($data_fim < $data_atual) {
             // A promoção terminou; atualize para "não"
-            $mysqli->query("UPDATE produtos SET promocao = 'não' WHERE id_produto = '$id_produto'");
+            $mysqli->query("UPDATE produtos SET promocao = '0' WHERE id_produto = '$id_produto'");
         } elseif ($data_inicio > $data_atual) {
             // A promoção ainda não começou; continue com "sim" se for o caso
-            $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
+            $mysqli->query("UPDATE produtos SET promocao = '1' WHERE id_produto = '$id_produto'");
         }
     }
 
@@ -247,8 +240,6 @@
         </ul>
     </aside>
 
-
-
     <!-- Menu lateral que aparece abaixo do ícone de menu -->
     <aside id="menu-lateral" >
         <ul>
@@ -261,7 +252,7 @@
     <div class="categorias">
         <?php 
             // Consulta para buscar parceiros pelo CEP
-            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $id AND status = 'ATIVO'";
+            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $id AND status = '1'";
             $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
             if ($result_parceiros->num_rows > 0): 
@@ -364,6 +355,9 @@
         <div id="conteudo-catalogo" class="conteudo-aba" style="display: none;">
             <?php 
                 if ($catalogo->num_rows > 0): 
+            // Exibe o número de produtos encontrados
+            $numProdutos = $catalogo->num_rows;
+            echo "<p style='margin-top: 30px;'>$numProdutos produto(s) encontrado(s).</p>";
             ?>            
             <div class="container">
                 <input id="inputPesquisaCatalogo" class="input" type="text" placeholder="Pesquisar Produto.">
@@ -389,11 +383,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] = '1'): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != '1'): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -404,11 +398,11 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] = 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
-                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
                                 endif; 
@@ -432,7 +426,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] = 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -440,7 +434,9 @@
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -485,11 +481,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != 1): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -500,11 +496,11 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] == 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
-                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
                                 endif; 
@@ -528,7 +524,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] == 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -536,7 +532,9 @@
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -573,11 +571,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != 1): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -588,11 +586,11 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] == 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
-                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
                                 endif; 
@@ -616,7 +614,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] == 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -624,7 +622,9 @@
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -661,11 +661,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != 1): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -676,11 +676,11 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] == 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
-                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
                                 endif; 
@@ -704,7 +704,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] == 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -712,7 +712,9 @@
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -750,11 +752,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] === 'sim'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] !== 'sim'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != 1): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -765,11 +767,11 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] === 'sim'): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] == 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
-                            <?php if (!empty($produto['promocao']) && $produto['promocao'] === 'sim'): ?>
+                            <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
                                 endif; 
@@ -793,7 +795,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] == 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -801,7 +803,9 @@
                         <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
-                        <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
+                            <a href="produtos/editar_produto.php?id_produto=<?php echo htmlspecialchars($produto['id_produto'], ENT_QUOTES, 'UTF-8'); ?>" class="button-editar">Editar</a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endwhile; ?>
@@ -867,6 +871,126 @@
                     enviar(); // Envia o formulário
                 });
             });
+
+            const inputPesquisaCatalogo = document.getElementById('inputPesquisaCatalogo');
+            if (inputPesquisaCatalogo) {
+                inputPesquisaCatalogo.addEventListener('input', function () {
+                    const termoPesquisa = this.value.toLowerCase();
+                    const produtos = document.querySelectorAll('.produto-item');
+                    let produtoEncontrado = false;
+
+                    produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
+                    if (mensagemNaoEncontrado) {
+                        mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
+
+            const inputPesquisaPromocao = document.getElementById('inputPesquisaPromocao');
+            if (inputPesquisaPromocao) {
+                inputPesquisaPromocao.addEventListener('input', function () {
+                    const termoPesquisa = this.value.toLowerCase();
+                    const produtos = document.querySelectorAll('.produto-item');
+                    let produtoEncontrado = false;
+
+                    produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+                    if (mensagemNaoEncontrado) {
+                        mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
+
+            const inputPesquisaFreteGratis = document.getElementById('inputPesquisaFreteGratis');
+            if (inputPesquisaFreteGratis) {
+                inputPesquisaFreteGratis.addEventListener('input', function () {
+                    const termoPesquisa = this.value.toLowerCase();
+                    const produtos = document.querySelectorAll('.produto-item');
+                    let produtoEncontrado = false;
+
+                    produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+                    if (mensagemNaoEncontrado) {
+                        mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
+
+            const inputPesquisaNovidades = document.getElementById('inputPesquisaNovidades');
+            if (inputPesquisaNovidades) {
+                inputPesquisaNovidades.addEventListener('input', function () {
+                    const termoPesquisa = this.value.toLowerCase();
+                    const produtos = document.querySelectorAll('.produto-item');
+                    let produtoEncontrado = false;
+
+                    produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+                    if (mensagemNaoEncontrado) {
+                        mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
+
+            const inputPesquisaProdutosOcultos = document.getElementById('inputPesquisaProdutosOcultos');
+            if (inputPesquisaProdutosOcultos) {
+                inputPesquisaProdutosOcultos.addEventListener('input', function () {
+                    const termoPesquisa = this.value.toLowerCase();
+                    const produtos = document.querySelectorAll('.produto-item');
+                    let produtoEncontrado = false;
+
+                    produtos.forEach(produto => {
+                        const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
+                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
+                            produto.style.display = 'block';
+                            produtoEncontrado = true;
+                        } else {
+                            produto.style.display = 'none';
+                        }
+                    });
+
+                    const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
+                    if (mensagemNaoEncontrado) {
+                        mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+                    }
+                });
+            }
         });
 
         function enviar() {
@@ -956,186 +1080,6 @@
         // Executa a busca inicial e define o intervalo para atualizar a cada 3 segundos
         fetchNotifications(sessionId);
         setInterval(() => fetchNotifications(sessionId), 3000);
-
-
-        ///pesquizador de produto no catalogo
-        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaPromocao').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-        
-        ///pesquizador de produto com frete gratis
-        document.getElementById('inputPesquisaFreteGratis').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaProdutosNovidades').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        ///pesquizador de produto na promoção
-        document.getElementById('inputPesquisaProdutosOcultos').addEventListener('input', function() {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.produto-item');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('.produto-nome').textContent.toLowerCase();
-                
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontrado');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            // Referencia todos os campos de pesquisa
-            const camposPesquisa = [
-                document.getElementById('inputPesquisaCatalogo'),
-                document.getElementById('inputPesquisaPromocao'),
-                document.getElementById('inputPesquisaFreteGratis'),
-                document.getElementById('inputPesquisaNovidades')
-            ].filter(Boolean); // Remove campos que não existem
-
-            // Função que sincroniza os valores dos campos e executa a pesquisa por categoria
-            function sincronizarPesquisa(origem) {
-                const termoPesquisa = origem.value.toLowerCase();
-
-                // Atualiza todos os campos de pesquisa com o mesmo valor
-                camposPesquisa.forEach(campo => {
-                    if (campo !== origem) {
-                        campo.value = origem.value;
-                    }
-                });
-
-                // Configura as categorias para busca
-                const categorias = [
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.catalogo'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoCatalogo') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.promocao'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoPromocao') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.freteGratis'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoFreteGratis') 
-                    },
-                    { 
-                        produtos: document.querySelectorAll('.produto-item.novidades'), 
-                        mensagem: document.getElementById('mensagemNaoEncontradoNovidades') 
-                    }
-                ];
-
-                categorias.forEach(categoria => {
-                    let produtoEncontrado = false;
-
-                    categoria.produtos.forEach(produto => {
-                        const nomeProduto = produto.querySelector('.produto-detalhes')?.textContent.toLowerCase() || '';
-
-                        if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                            produto.style.display = 'block';
-                            produtoEncontrado = true;
-                        } else {
-                            produto.style.display = 'none';
-                        }
-                    });
-
-                    // Exibe ou oculta a mensagem de "Produto não encontrado"
-                    if (categoria.mensagem) {
-                        categoria.mensagem.style.display = produtoEncontrado ? 'none' : 'block';
-                    }
-                });
-            }
-
-            // Adiciona o evento de entrada para todos os campos
-            camposPesquisa.forEach(campo => {
-                campo.addEventListener('input', function () {
-                    sincronizarPesquisa(this);
-                });
-            });
-        });
 
     </script>
 

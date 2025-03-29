@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoria = mysqli_real_escape_string($mysqli, $_POST['categoria']);
     $valor_produto = floatval(str_replace(',', '.', $_POST['valor_produto']));
     $taxa = floatval(str_replace(',', '.', $_POST['taxa']));
-    $frete_gratis = $_POST['frete_gratis'] === 'sim' ? 'sim' : 'não';
+    $frete_gratis = $_POST['frete_gratis'] === '1' ? '1' : '0';
     $valor_frete = $frete_gratis === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete']));
 
     $imagens_existentes = isset($_POST['imagens_salvas']) ? explode(',', $_POST['imagens_salvas']) : [];
@@ -67,11 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifique o conteúdo e o tamanho de $imagens_string
     //echo "<pre>Tamanho de \$imagens_string: " . strlen($imagens_string) . " bytes</pre>";
     //echo "<pre>Conteúdo de \$imagens_string: $imagens_string</pre>";
-    $ocultar = $_POST['ocultar'] === 'sim' ? 'sim' : 'não';
-    $promocao = $_POST['promocao'] === 'sim' ? 'sim' : 'não';
+    $ocultar = $_POST['ocultar'] === '1' ? '1' : '0';
+    $promocao = $_POST['promocao'] === '1' ? '1' : '0';
     $valor_promocao = floatval(str_replace(',', '.', $_POST['valor_promocao']));
-    $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === 'sim' ? 'sim' : 'não';  
-    $valor_frete_promocao = $frete_gratis_promocao === 'sim' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete_promocao']));
+    $frete_gratis_promocao = $_POST['frete_gratis_promocao'] === '1' ? '1' : '0';  
+    $valor_frete_promocao = $frete_gratis_promocao === '1' ? 0.00 : floatval(str_replace(',', '.', $_POST['valor_frete_promocao']));
 
     // Converte as datas para o formato esperado
     $ini_promocao = $_POST['ini_promocao'];
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ini_promocao = '$ini',
         fim_promocao = '$fim',
         oculto = '$ocultar',
-        produto_aprovado = 'nao'
+        produto_aprovado = '0'
         WHERE id_produto = $id_produto";
 
     if ($mysqli->query($sql)) {

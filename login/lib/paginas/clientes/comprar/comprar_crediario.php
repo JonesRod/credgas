@@ -28,6 +28,10 @@
     $bandeiras_aceitas = $_POST['bandeiras_aceita'];
     $comentario = $_POST['comentario'];
 
+    // Formatação para moeda
+    $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, ',', '.');
+    $entrada_formatado = number_format($entrada, 2, ',', '.');
+    $restante_formatado = number_format($restante, 2, ',', '.');
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -56,37 +60,42 @@
         <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
 
         <h1>Compra no Crediário</h1>
-        <p>Valor da Compra: R$ <?php echo $valor_total_crediario; ?></p>
-        <p>Entrada: R$ <?php echo $entrada; ?></p>
-        <p>Restante: R$ <?php echo $restante; ?></p>
+        <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
+        <p>Entrada: R$ <?php echo $entrada_formatado; ?></p>
+        <p>Restante: R$ <?php echo $restante_formatado; ?></p>
         <div>
-            <h3>Forma de Pagamento da entrada</h3>
-            <p>Tipo de Entrada: 
-                <?php 
-                    if ($tipo_entrada_crediario == '1') {
-                        echo 'PIX';
-                    } elseif ($tipo_entrada_crediario == '2') {
-                        echo 'Cartão de Crédito';
-                    } elseif ($tipo_entrada_crediario == '3') {
-                        echo 'Cartão de Débito';
-                    } else {
-                        echo 'Outro';
-                    }
-                ?>
-            </p>
-            <p><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
-            <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
-            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" readonly>
+            <p style="display: none;"><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
+            <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" style="display: none;" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
+            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" style="display: none;" value="<?php echo $bandeiras_aceitas; ?>" readonly>
         
-            <div id="popup-content" class="popup-content">
-                <h3>Pagar com PIX</h3>
+            <div id="popup-pix" class="popup-content" style="display: none;">
+                <h3>Pagar entrada com PIX</h3>
+                <p>Valor da Entrada: R$ <?php echo $entrada_formatado; ?></p>
                 <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
 
                 <img id="qr_code_pix" src="qr_code_pix.png" alt="QR Code PIX" style="display: none;">
                 <br>
                 <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
                 <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
-                <button type="button" id="btn_continuar" onclick="continuarPagamento('PIX')" style="display: none;">Continuar</button>
+                <button type="button" id="btn_continuar" onclick="" style="display: none;">Continuar</button>
+            
+            </div>
+
+            <div id="popup-restante" class="popup-content" style="display: none;">
+                <h3>Pagamento do Restante</h3>
+                <p>Valor Restante: R$ <?php echo $restante_formatado; ?></p>
+                <label for="parcelas">Selecione o número de parcelas:</label>
+                <select id="parcelas" onchange="calcularParcelas()">
+                    <option value="1">1x (sem juros)</option>
+                    <option value="2">2x</option>
+                    <option value="3">3x</option>
+                    <option value="4">4x</option>
+                    <option value="5">5x</option>
+                    <option value="6">6x</option>
+                </select>
+                <p id="valor_parcela"></p>
+                <button type="button" id="btn_voltar" onclick="voltarParaPix()">Voltar</button>
+                <button type="button" id="btn_finalizar" onclick="finalizarPagamento()">Finalizar</button>
             </div>
         </div>
         
@@ -105,5 +114,70 @@
         <input type="hidden" name="contato" value="<?php echo $contato; ?>">
         <button type="submit">Voltar</button>
     </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tipoEntrada = "<?php echo $tipo_entrada_crediario; ?>";
+            const popupPix = document.getElementById("popup-pix");
+            const popupRestante = document.getElementById("popup-restante");
+            const qrCodePix = document.getElementById("qr_code_pix");
+            const linkPix = document.getElementById("link_pix");
+            const btnContinuar = document.getElementById("btn_continuar");
+
+            // Mostrar o popup PIX se tipo_entrada_crediario for 1
+            if (tipoEntrada === "1") {
+                popupPix.style.display = "block";
+            }
+
+            // Função para gerar o QR Code
+            window.gerarQRCode = function () {
+                qrCodePix.style.display = "block";
+                linkPix.style.display = "block";
+                btnContinuar.style.display = "inline-block";
+            };
+
+            // Função para abrir o popup do restante sobre a página
+            btnContinuar.onclick = function () {
+                popupPix.style.display = "none";
+                popupRestante.style.display = "block";
+                popupRestante.style.position = "fixed";
+                popupRestante.style.top = "50%";
+                popupRestante.style.left = "50%";
+                popupRestante.style.transform = "translate(-50%, -50%)";
+                popupRestante.style.zIndex = "1000";
+                popupRestante.style.backgroundColor = "#fff";
+                popupRestante.style.padding = "20px";
+                popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+            };
+
+            // Função para voltar ao popup PIX
+            window.voltarParaPix = function () {
+                popupRestante.style.display = "none";
+                popupPix.style.display = "block";
+            };
+
+            // Função para finalizar o pagamento
+            window.finalizarPagamento = function () {
+                alert("Pagamento finalizado com sucesso!");
+                // Aqui você pode adicionar a lógica para finalizar o pagamento
+            };
+        });
+
+        function calcularParcelas() {
+            const restante = <?php echo $restante; ?>;
+            const parcelas = document.getElementById("parcelas").value;
+            const taxa = 0.0299; // 2,99% ao mês
+            let valorParcela;
+
+            if (parcelas == 1) {
+                valorParcela = restante;
+            } else {
+                valorParcela = restante * Math.pow(1 + taxa, parcelas) / parcelas;
+            }
+
+            document.getElementById("valor_parcela").innerText = 
+                `Valor de cada parcela: R$ ${valorParcela.toFixed(2).replace('.', ',')}`;
+        }
+    </script>
 </body>
 </html>
