@@ -260,6 +260,7 @@ if (isset($_SESSION['id'])) {
                 //console.log("Exibir campo de pesquisa: " + exibir);
             }
         }
+        
         function exibirCampoPesquisaNovidades(exibir) {
             var inputPesquisaParceiro = document.getElementById("inputPesquisaParceiroNovidades");
             var inputPesquisaProduto = document.getElementById("inputPesquisaNovidades");
@@ -1119,9 +1120,7 @@ if (isset($_SESSION['id'])) {
         });
 
         function mostrarConteudo(aba, element) {
-
             // Oculta todos os conteúdos das abas
-            //console.log('eee');
             var conteudos = document.querySelectorAll('.conteudo-aba');
             conteudos.forEach(function(conteudo) {
                 conteudo.style.display = 'none';
@@ -1152,6 +1151,12 @@ if (isset($_SESSION['id'])) {
             const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
             let parceiroEncontrado = false;
 
+            // Limpa os campos de pesquisa de outros parceiros
+            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
+
             // Itera sobre os parceiros
             parceiros.forEach(parceiro => {
                 const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
@@ -1175,6 +1180,11 @@ if (isset($_SESSION['id'])) {
             const produtos = document.querySelectorAll('.products .product-card');
             let produtoEncontrado = false;
 
+            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
+
             produtos.forEach(produto => {
                 const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
 
@@ -1195,6 +1205,12 @@ if (isset($_SESSION['id'])) {
             const termoPesquisa = this.value.toLowerCase();
             const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
             let parceiroEncontrado = false;
+
+            // Limpa os campos de pesquisa de outros parceiros
+            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
 
             // Itera sobre os parceiros
             parceiros.forEach(parceiro => {
@@ -1219,6 +1235,11 @@ if (isset($_SESSION['id'])) {
             const produtos = document.querySelectorAll('.products .product-card');
             let produtoEncontrado = false;
 
+            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
+
             produtos.forEach(produto => {
                 const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
 
@@ -1239,6 +1260,12 @@ if (isset($_SESSION['id'])) {
             const termoPesquisa = this.value.toLowerCase();
             const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
             let parceiroEncontrado = false;
+
+            // Limpa os campos de pesquisa de outros parceiros
+            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
 
             // Itera sobre os parceiros
             parceiros.forEach(parceiro => {
@@ -1263,6 +1290,11 @@ if (isset($_SESSION['id'])) {
             const produtos = document.querySelectorAll('.products .product-card');
             let produtoEncontrado = false;
 
+            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
+
             produtos.forEach(produto => {
                 const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
 
@@ -1283,6 +1315,12 @@ if (isset($_SESSION['id'])) {
             const termoPesquisa = this.value.toLowerCase();
             const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
             let parceiroEncontrado = false;
+
+            // Limpa os campos de pesquisa de outros parceiros
+            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
 
             // Itera sobre os parceiros
             parceiros.forEach(parceiro => {
@@ -1306,6 +1344,11 @@ if (isset($_SESSION['id'])) {
             const termoPesquisa = this.value.toLowerCase();
             const produtos = document.querySelectorAll('.products .product-card');
             let produtoEncontrado = false;
+
+            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
+            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
+            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
+            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
 
             produtos.forEach(produto => {
                 const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
