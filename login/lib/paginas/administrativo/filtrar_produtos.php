@@ -19,31 +19,31 @@ $statusConditions = [];
 if (!empty($status)) {
     // Filtra por status "ativo" ou "inativo"
     if (in_array("ativoPro", $status)) {
-        $statusConditions[] = "produto_aprovado = 'sim'";
+        $statusConditions[] = "produto_aprovado = '1'";
     }
     if (in_array("inativo", $status)) {
-        $statusConditions[] = "produto_aprovado = 'nao'";
+        $statusConditions[] = "produto_aprovado = '0'";
     }
     if (in_array("crediarioVende", $status)) {
-        $statusConditions[] = "vende_crediario = 'sim'";
+        $statusConditions[] = "vende_crediario = '1'";
     }
     if (in_array("oculto", $status)) {
-        $statusConditions[] = "oculto = 'sim'";
+        $statusConditions[] = "oculto = '1'";
     }
 
     // Filtra por novidades (últimos 30 dias)
     if (in_array("novidades", $status)) {
-        $statusConditions[] = "data >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND produto_aprovado = 'sim'";
+        $statusConditions[] = "data >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND produto_aprovado = '1'";
     }
 
     // Filtra por promoção
     if (in_array("promocao", $status)) {
-        $statusConditions[] = "promocao = 'sim'";
+        $statusConditions[] = "promocao = '1'";
     }
 
     // Filtra por frete grátis
     if (in_array("frete-gratis", $status)) {
-        $statusConditions[] = "frete_gratis = 'sim' OR (promocao = 'sim' AND frete_gratis_promocao = 'sim')";
+        $statusConditions[] = "frete_gratis = '1' OR (promocao = '1' AND frete_gratis_promocao = '1')";
     }
 
     // Filtra por mais vendidos

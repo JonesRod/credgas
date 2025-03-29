@@ -341,7 +341,9 @@ $cor_status = ($status === "Aberto") ? "green" : "red";
         <img id="img" src="<?php echo '../../parceiros/arquivos/'.htmlspecialchars($parceiro['logo']); ?>" alt="sem imagem">
     </div>
     <ul>
-        <li><strong>Status:</strong> <?php echo htmlspecialchars($parceiro['status']); ?></li>
+        <li><strong>Status:</strong> 
+            <?php echo ($parceiro['status'] == '1') ? 'Ativo' : 'Inativo'; ?>
+        </li>
         <li><strong>Status de Funcionamento: </strong>
             <span id="status" name="status" style="color: <?= $cor_status ?>;">
                 <?= htmlspecialchars($status) ?>

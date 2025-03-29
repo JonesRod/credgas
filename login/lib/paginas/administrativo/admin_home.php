@@ -446,13 +446,14 @@
                         <select name="categoriaPareceiro" id="categoriaPareceiro">
                             <option value="">Todas as Categorias</option>
                             <?php
-                            $queryCategorias = "SELECT DISTINCT id, categoria FROM meus_parceiros ORDER BY categoria ASC";
+                            // Atualize a consulta para garantir que as categorias sejam únicas
+                            $queryCategorias = "SELECT DISTINCT categoria FROM meus_parceiros WHERE categoria IS NOT NULL AND categoria != '' ORDER BY categoria ASC";
                             $resultCategorias = $mysqli->query($queryCategorias);
 
                             if ($resultCategorias->num_rows > 0) {
                                 while ($categoria = $resultCategorias->fetch_assoc()) {
                                     echo "<option value='" . htmlspecialchars($categoria['categoria']) . "'>" . htmlspecialchars($categoria['categoria']) . "</option>";
-                                }                                
+                                }
                             } else {
                                 echo "<option value=''>Nenhuma categoria encontrada</option>";
                             }

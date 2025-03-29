@@ -53,21 +53,21 @@
         $taxa_padrao = str_replace('.', '', $taxa_padrao); // Remove pontos (separadores de milhar)
         $taxa_padrao = str_replace(',', '.', $taxa_padrao); // Troca a vírgula por ponto
         $valor_venda_vista = $produto['valor_produto'] + ($produto['valor_produto'] * $taxa_padrao ) /100;
-        $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] === 'sim' ? 'sim' : 'nao';
+        $vende_crediario = isset($_POST['vende_crediario']) && $_POST['vende_crediario'] == '1' ? '1' : '0';
         $parcelas = isset($_POST['parcelas']) ? intval($_POST['parcelas']) : 0;
         
         //echo ($id_produto);
-        //echo ($vende_crediario);
+        echo ($vende_crediario);
         //echo ($parcelas);
         //echo $valor_venda_vista;
         //die();
 
         if (isset($_POST['salvar'])) {
             // Atualiza o produto com segurança
-            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = 'sim', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = '1', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
 
-            $stmt->bind_param("ssssi", $taxa_padrao, $valor_venda_vista ,$vende_crediario, $parcelas, $id_produto);
+            $stmt->bind_param("ssiii", $taxa_padrao, $valor_venda_vista ,$vende_crediario, $parcelas, $id_produto);
 
             if ($stmt->execute()) {
             
@@ -82,7 +82,7 @@
 
         }elseif (isset($_POST['bloquear'])) {
             // Atualiza o produto com segurança
-            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = 'nao', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
+            $sql_aprovar = "UPDATE produtos SET taxa_padrao = ?, valor_venda_vista = ?, produto_aprovado = '0', vende_crediario = ?, qt_parcelas = ? WHERE id_produto = ?";
             $stmt = $mysqli->prepare($sql_aprovar);
 
             $stmt->bind_param("ssssi", $taxa_padrao, $valor_venda_vista, $vende_crediario, $parcelas, $id_produto);
@@ -341,14 +341,14 @@
 
             
             <p><strong>Parceiro:</strong> <?= htmlspecialchars($parceiro['nomeFantasia']); ?></p>
-            <p><strong>Status:</strong> <?= ($produto['produto_aprovado'] == 'sim') ? 'Ativo' : 'Inativo'; ?></p>
+            <p><strong>Status:</strong> <?= ($produto['produto_aprovado'] == '1') ? 'Ativo' : 'Inativo'; ?></p>
             <p><strong>Categoria:</strong> <?= htmlspecialchars($produto['categoria']); ?></p>
             <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
             <p><strong>Qt vendido:</strong> <?= htmlspecialchars($produto['qt_vendido']); ?></p>
             <p><strong>Descrição:</strong></p>
             <div class="descricao-box"><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></div>
             <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
-            <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] === 'sim' ? 'SIM' : 'NÃO'); ?></p>
+            <p><strong>Frete Grátis:</strong> <?= htmlspecialchars($produto['frete_gratis'] == '1' ? 'SIM' : 'NÃO'); ?></p>
             <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
 
             <form method="POST" action="">
@@ -378,22 +378,22 @@
                 <div class="crediario">
                     <label>
                         <?php
-                            $vender_crediario = $produto['vende_crediario'] ?? 'nao'; // Valor salvo no banco, padrão "não"
+                            $vender_crediario = $produto['vende_crediario'] ?? '0'; // Valor salvo no banco, padrão "não"
                             $parcelas_selecionadas = $produto['qt_parcelas'] ?? 1; // Número de parcelas salvo no banco, padrão 1
                         ?>
-                        <input type="radio" name="vende_crediario" value="sim" 
-                        <?= $vender_crediario === 'sim' ? 'checked' : ''; ?> 
+                        <input type="radio" name="vende_crediario" value="1" 
+                        <?= $vender_crediario == '1' ? 'checked' : ''; ?> 
                         onclick="toggleParcelas(true)"> Sim
                     </label>
                     <label>
-                        <input type="radio" name="vende_crediario" value="nao" 
-                        <?= $vender_crediario === 'nao' || $vender_crediario === '' ? 'checked' : ''; ?> 
+                        <input type="radio" name="vende_crediario" value="0" 
+                        <?= $vender_crediario == '0' || $vender_crediario == '' ? 'checked' : ''; ?> 
                         onclick="toggleParcelas(false)"> Não
                     </label>                        
                 </div>
 
                 <!-- Select de Parcelas -->
-                <div class="crediario" id="parcelas-container" style="display: <?= $vender_crediario === 'sim' ? 'block' : 'none'; ?>; margin-top: 10px;">
+                <div class="crediario" id="parcelas-container" style="display: <?= $vender_crediario == '1' ? 'block' : 'none'; ?>; margin-top: 10px;">
                     <label for="parcelas"><strong>Quantidade de Parcelas:</strong></label>
                     <select name="parcelas" id="parcelas">
                         <?php for ($i = 1; $i <= 12; $i++): ?>

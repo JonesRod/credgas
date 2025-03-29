@@ -29,10 +29,10 @@ if (!empty($categoria)) {
 $statusConditions = [];
 if (!empty($status)) {
     if (in_array("ativo", $status)) {
-        $statusConditions[] = "status = 'ATIVO'";
+        $statusConditions[] = "status = '1'";
     }
     if (in_array("inativo", $status)) {
-        $statusConditions[] = "status = 'INATIVO'";
+        $statusConditions[] = "status = '0'";
     }
 }
 if (!empty($statusConditions)) {

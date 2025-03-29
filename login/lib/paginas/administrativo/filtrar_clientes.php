@@ -23,13 +23,13 @@ if (!empty($uf)) {
 $statusConditions = [];
 if (!empty($status)) {
     if (in_array("ativo", $status)) {
-        $statusConditions[] = "status = 'ATIVO'";
+        $statusConditions[] = "status = '1'";
     }
     if (in_array("inativo", $status)) {
-        $statusConditions[] = "status = 'INATIVO'";
+        $statusConditions[] = "status = '0'";
     }
     if (in_array("crediario", $status)) {
-        $statusConditions[] = "status_crediario = 'Aprovado'";
+        $statusConditions[] = "status_crediario = '1'";
     }
 }
 if (!empty($statusConditions)) {

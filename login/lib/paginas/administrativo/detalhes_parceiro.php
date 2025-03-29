@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $notificacao->close();
 
 
-        $sql_update = "UPDATE meus_parceiros SET analize_aprovacao = 'APROVADO' WHERE id = ?";
+        $sql_update = "UPDATE meus_parceiros SET analize_aprovacao = '1' WHERE id = ?";
 
         // Preparar para enviar e-mail
         $stmt = $mysqli->prepare($sql_update);
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $notificacao->close();
 
         
-        $sql_update = "UPDATE meus_parceiros SET analize_aprovacao = 'REPROVADO' WHERE id = ?";
+        $sql_update = "UPDATE meus_parceiros SET analize_aprovacao = '2' WHERE id = ?";
 
         // Preparar para enviar e-mail
         $stmt = $mysqli->prepare($sql_update);
