@@ -383,11 +383,11 @@
                     
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
-                        <?php if (isset($produto['oculto']) && $produto['oculto'] = '1'): ?>
+                        <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
                             <span class="icone-oculto" title="Produto oculto">👁️‍🗨️</span>
                         <?php endif; ?>
                         
-                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != '1'): ?>
+                        <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] != 1): ?>
                             <i class="fas fa-clock" title="Em análise"></i>
                         <?php endif; ?>
                     </div>
@@ -398,7 +398,7 @@
                     <div class="produto-detalhes">
                         <p>
                             <!-- Ícones de promoção e frete grátis -->
-                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] = 1): ?>
+                            <?php if (!empty($produto['frete_gratis']) && $produto['frete_gratis'] == 1): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
                             
@@ -426,7 +426,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] = 1 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] == 1 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -1038,7 +1038,7 @@
             fetch(`get_notifications.php?id=${id}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Dados recebidos:", data); // Debug no console
+                    //console.log("Dados recebidos:", data); // Debug no console
 
                     // Atualiza a contagem no ícone 🔔
                     const notificationCount = document.getElementById('notificacao-count');

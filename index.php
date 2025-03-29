@@ -102,7 +102,7 @@
             <?php
 
                 // Consulta para buscar parceiros pelo CEP
-                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
+                $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = '1'";
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                 if ($result_parceiros->num_rows > 0) {
@@ -111,7 +111,7 @@
                         $id_parceiro = $parceiro['id'];
                         
                         // Consulta para carregar produtos do parceiro
-                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != 'sim' AND produto_aprovado = 'sim'";
+                        $sql_produtos = "SELECT * FROM produtos WHERE id_parceiro = $id_parceiro AND oculto != '1' AND produto_aprovado = '1'";
                         $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
                     }
                 } else {
@@ -127,7 +127,7 @@
                 <?php 
                     
                     // Consulta para buscar parceiros ativos e abertos
-                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = 'ATIVO'";
+                    $sql_parceiros = "SELECT * FROM meus_parceiros WHERE status = '1'";
                     $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
                     if ($result_parceiros->num_rows > 0): 
@@ -177,14 +177,14 @@
                         <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                         <?php 
                             // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                            if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                            if ($produto['frete_gratis'] == '1' || ($produto['promocao'] == '1' && $produto['frete_gratis_promocao'] == '1')): 
                         ?>
                         <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                         <?php 
                             endif;
 
                             // Exibe o ícone de promoção, se o produto estiver em promoção
-                            if ($produto['promocao'] === 'sim'): 
+                            if ($produto['promocao'] == '1'): 
                         ?>
                             <span class="icone-promocao" title="Produto em promoção">🔥</span>
                         <?php 
@@ -206,7 +206,7 @@
                         <!-- Preço do produto -->
                         <?php
                             $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] == '1' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
                             $valor_produto = $produto['valor_venda_vista'] ?? 0;
@@ -241,65 +241,51 @@
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
+
                 <?php 
-                    // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
-                    $sql_parceiros = "
-                        SELECT DISTINCT mp.* 
-                        FROM meus_parceiros mp
-                        JOIN produtos p ON mp.id = p.id_parceiro
-                        WHERE mp.status = 'ATIVO'";
+                // Consulta para buscar parceiros que têm produtos com frete gratis, visíveis e aprovados
+                $sql_parceiros = "
+                    SELECT DISTINCT mp.* 
+                    FROM meus_parceiros mp
+                    JOIN produtos p ON mp.id = p.id_parceiro
+                    WHERE mp.status = '1'";
+    
+                $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
-                    $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
-
-                    // Variável para rastrear se algum parceiro será exibido
-                    $parceiro_exibido = false;
-
-                    if ($result_parceiros->num_rows > 0): 
-                        while ($parceiro = $result_parceiros->fetch_assoc()): 
-                            $id_parceiro = (int)$parceiro['id'];
-                            
-                            // Consulta para verificar se o parceiro possui produtos em promoção
-                            $sql_produtos = "
-                                SELECT COUNT(*) AS total 
-                                FROM produtos 
-                                WHERE id_parceiro = $id_parceiro 
-                                    AND oculto != 'sim' 
-                                    AND produto_aprovado = 'sim' 
-                                    AND promocao = 'sim'
+                if ($result_parceiros->num_rows > 0): 
+                    while ($parceiro = $result_parceiros->fetch_assoc()): 
+                        // Exibe cada parceiro no carrossel
+                        $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; 
+                        $id_parceiro = $parceiro['id'];
+                        
+                        // Consulta para carregar produtos do parceiro
+                        $sql_produtos = "
+                            SELECT * FROM produtos 
+                            WHERE id_parceiro = $id_parceiro 
+                                AND oculto != '1' 
+                                AND produto_aprovado = '1' 
+                                AND promocao = '1'
                             ";
-                            $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
-                            $produto_data = $result_produtos->fetch_assoc();
+                            
+                        $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
+                ?>
+                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
+                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" 
+                    alt="Loja não encontrada">
+                    <h3>
+                        <?php
+                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
+                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 100 caracteres com "..."
+                        ?>
+                    </h3>
+                    <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                </div>
+                <?php endwhile; ?>
+                <?php else: ?>
+                    <p>Nenhum parceiro com promoção no momento.</p>
+                <?php endif; ?>
 
-                            // Se o parceiro tiver ao menos um produto em promoção
-                            if ($produto_data['total'] > 0): 
-                                $parceiro_exibido = true; // Marca que pelo menos um parceiro foi exibido
-                                $logoParceiro = !empty($parceiro['logo']) ? htmlspecialchars($parceiro['logo']) : 'placeholder.jpg';
-                                ?>
-                                <div class="parceiro-card" onclick="window.location.href='login/lib/paginas/loja_parceiro/loja_parceiro.php?id=<?php echo $id_parceiro; ?>'">
-                                    <img src="login/lib/paginas/parceiros/arquivos/<?php echo $logoParceiro; ?>" 
-                                        alt="Loja não encontrada">
-                                    <h3>
-                                        <?php
-                                            $nomeFantasia = htmlspecialchars($parceiro['nomeFantasia'] ?? '');
-                                            echo mb_strimwidth($nomeFantasia, 0, 18, '...'); // Limita a 18 caracteres com "..."
-                                        ?>
-                                    </h3>
-                                    <p><?php echo htmlspecialchars($parceiro['categoria'] ?? 'Categoria não informada'); ?></p>
-                                </div>
-                            <?php endif; ?>
-                        <?php endwhile; ?>
-
-                        <?php 
-                        // Caso nenhum parceiro tenha produtos em promoção
-                        if (!$parceiro_exibido): ?>
-                            <p>Não há Lojas com promoção no momento.</p>
-                        <?php endif; ?>
-
-                    <?php else: ?>
-                        <p>Nenhum parceiro ativo no momento.</p>
-                    <?php endif; ?>
             </div>
-
 
             <!-- Mensagem de Parceiro Não Encontrado -->
             <p id="mensagemParNaoEncontradoPromocao" style="display: none;">Parceiro não encontrado.</p> 
@@ -307,10 +293,8 @@
             <!-- Produtos -->
             <h2>Produtos</h2>
             <div class="container">
-
                 <!-- Pesquisa de Produtos -->
                 <input id="inputPesquisaPromocao" class="input" type="text" placeholder="Pesquisar Produto."></div>
-
                 <div class="products">
                     <?php if (isset($result_produtos) && $result_produtos->num_rows > 0): ?>
                         <?php while ($produto = $result_produtos->fetch_assoc()): ?>
@@ -324,14 +308,14 @@
                                 <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
                                     endif;
 
                                     // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
+                                    if ($produto['promocao'] === '1' ): 
                                 ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
@@ -344,11 +328,10 @@
                                 
                                     if ($diasDesdeCadastro <= 30):
                                 ?>
-                                        <span class="icone-novidades" title="Novidades">🆕</span>
+                                <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php
                                     endif;
-                                ?>                      
-                                
+                                ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
                                 <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
@@ -361,8 +344,8 @@
                                 <?php endif; ?>
                             </div>
                         <?php endwhile; ?>
-                    
-                        <p>Não há produtos na promoção no momento.</p>
+                    <?php else: ?>
+                        <p>Não há produtos na promocão no momento.</p>
                     <?php endif; ?>
                     <!-- Mensagem de produto não encontrado -->
                     <p id="mensagemNaoEncontradoPromocao" style="display: none;">Produto não encontrado.</p>
@@ -381,12 +364,12 @@
             <div class="parceiros-carousel owl-carousel">
 
                 <?php 
-                // Consulta para buscar parceiros que têm produtos em promoção, visíveis e aprovados
+                // Consulta para buscar parceiros que têm produtos com frete gratis, visíveis e aprovados
                 $sql_parceiros = "
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE mp.status = 'ATIVO'";
+                    WHERE mp.status = '1'";
     
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -400,11 +383,11 @@
                         $sql_produtos = "
                             SELECT * FROM produtos 
                             WHERE id_parceiro = $id_parceiro 
-                            AND oculto != 'sim' 
-                            AND produto_aprovado = 'sim' 
+                            AND oculto != '1' 
+                            AND produto_aprovado = '1' 
                             AND (
-                                frete_gratis = 'sim' 
-                                OR (promocao = 'sim' AND frete_gratis_promocao = 'sim')
+                                frete_gratis = '1' 
+                                OR (promocao = '1' AND frete_gratis_promocao = '1')
                             )
                         ";
                         $result_produtos = $mysqli->query($sql_produtos) or die($mysqli->error);
@@ -448,14 +431,14 @@
                                 <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
                                     endif;
 
                                     // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim' ): 
+                                    if ($produto['promocao'] === '1' ): 
                                 ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
@@ -509,7 +492,7 @@
                     SELECT DISTINCT mp.* 
                     FROM meus_parceiros mp
                     JOIN produtos p ON mp.id = p.id_parceiro
-                    WHERE mp.status = 'ATIVO'";
+                    WHERE mp.status = '1'";
 
                 $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
@@ -523,8 +506,8 @@
                         SELECT * 
                         FROM produtos 
                         WHERE id_parceiro = $id_parceiro 
-                        AND oculto != 'sim' 
-                        AND produto_aprovado = 'sim'
+                        AND oculto != '1' 
+                        AND produto_aprovado = '1'
                         AND DATEDIFF(NOW(), data) <= 30
                     ";
                     
@@ -568,14 +551,14 @@
                                 <img src="login/lib/paginas/parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
                                     endif;
 
                                     // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
+                                    if ($produto['promocao'] === '1'): 
                                 ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
@@ -850,7 +833,7 @@
         <p>&copy; 2024 <?php echo htmlspecialchars($dadosEscolhido['nomeFantasia']); ?> - Todos os direitos reservados</p>
         <div class="contato">
             <p><strong>Contato:</strong></p>
-            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | WhatsApp: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?></p>
+            <p>Email: <?php echo htmlspecialchars($dadosEscolhido['email_suporte']); ?> | WhatsApp: <?php echo htmlspecialchars($dadosEscolhido['telefoneComercial']); ?>.</p>
         </div>
     </footer>
 </html>
