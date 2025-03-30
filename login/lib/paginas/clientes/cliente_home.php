@@ -1146,224 +1146,85 @@ if (isset($_SESSION['id'])) {
             mostrarConteudo('catalogo', document.querySelector('.tab.active'));
         };
 
-        document.getElementById('inputPesquisaParceiroCatalogo').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
+        // Adiciona o evento de clique a cada aba
+        document.addEventListener("DOMContentLoaded", function() {
+            function configurarPesquisa(inputId, itemSelector, mensagemId, abaId) {
+                const inputPesquisa = document.getElementById(inputId);
+                const itens = document.querySelectorAll(`#${abaId} ${itemSelector}`);
+                const mensagem = document.getElementById(mensagemId);
 
-            // Limpa os campos de pesquisa de outros parceiros
-            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
+                inputPesquisa.addEventListener("input", function() {
+                    const termo = inputPesquisa.value.toLowerCase();
+                    let encontrou = false;
 
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
+                    itens.forEach(item => {
+                        const textoItem = item.textContent.toLowerCase();
+                        if (textoItem.includes(termo)) {
+                            item.style.display = "block";
+                            encontrou = true;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
 
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
+                    mensagem.style.display = encontrou ? "none" : "block";
+                });
+            }
+            // configurar pesquisa para aba "Catálogo"
+            configurarPesquisa(
+                "inputPesquisaParceiroCatalogo",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoCatalogo",
+                "conteudo-catalogo"
+            );
+            configurarPesquisa(
+                "inputPesquisaCatalogo",
+                ".product-card",
+                "mensagemNaoEncontradoCatalogo",
+                "conteudo-catalogo"
+            );
 
-        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
+            // Configurar pesquisa para aba "Promoções"
+            configurarPesquisa(
+                "inputPesquisaParceiroPromocao",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoPromocao",
+                "conteudo-promocoes"
+            );
+            configurarPesquisa(
+                "inputPesquisaPromocao",
+                ".product-card",
+                "mensagemNaoEncontradoPromocao",
+                "conteudo-promocoes"
+            );
 
-            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
+            // Configurar pesquisa para aba "Frete Grátis"
+            configurarPesquisa(
+                "inputPesquisaParceiroFrete_gratis",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoFrete_gratis",
+                "conteudo-frete_gratis"
+            );
+            configurarPesquisa(
+                "inputPesquisaFrete_gratis",
+                ".product-card",
+                "mensagemNaoEncontradoFrete_gratis",
+                "conteudo-frete_gratis"
+            );
 
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaParceiroPromocao').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Limpa os campos de pesquisa de outros parceiros
-            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoPromocao');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaPromocao').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoPromocao');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });      
-
-        document.getElementById('inputPesquisaParceiroFrete_gratis').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Limpa os campos de pesquisa de outros parceiros
-            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoFrete_gratis');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaFrete_gratis').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoFrete_gratis');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaParceiroNovidades').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Limpa os campos de pesquisa de outros parceiros
-            document.getElementById('inputPesquisaParceiroCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaParceiroNovidades').value = termoPesquisa;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoNovidades');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaNovidades').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            document.getElementById('inputPesquisaCatalogo').value = termoPesquisa;
-            document.getElementById('inputPesquisaPromocao').value = termoPesquisa;
-            document.getElementById('inputPesquisaFrete_gratis').value = termoPesquisa;
-            document.getElementById('inputPesquisaNovidades').value = termoPesquisa;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoNovidades');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+            // Configurar pesquisa para aba "Novidades"
+            configurarPesquisa(
+                "inputPesquisaParceiroNovidades",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoNovidades",
+                "conteudo-novidades"
+            );
+            configurarPesquisa(
+                "inputPesquisaNovidades",
+                ".product-card",
+                "mensagemNaoEncontradoNovidades",
+                "conteudo-novidades"
+            );
         });
     </script>
 
