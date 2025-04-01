@@ -16,9 +16,10 @@
     $stmt_delete->close();
 
     // Buscar os produtos do carrinho
-    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.qt_parcelas, c.frete FROM carrinho c 
-                            JOIN produtos p ON c.id_produto = p.id_produto 
-                            WHERE c.id_cliente = ? AND p.id_parceiro = ?");
+    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.vende_crediario, p.qt_parcelas, c.frete 
+                              FROM carrinho c 
+                              JOIN produtos p ON c.id_produto = p.id_produto 
+                              WHERE c.id_cliente = ? AND p.id_parceiro = ?");
 
     $stmt->bind_param("ii", $id_cliente, $id_parceiro);
     $stmt->execute();
@@ -26,6 +27,7 @@
     $produtos = $result->fetch_all(MYSQLI_ASSOC);
 
     $taxa_padrao = !empty($produtos) ? $produtos[0]['taxa_padrao'] : 0;
+    $vendeCrediario = !empty($produtos) ? $produtos[0]['vende_crediario'] : 0;
 
     // Buscar se o parceiro aceita cartão de crédito
     $stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
@@ -62,6 +64,7 @@
     $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
     $celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
 
+    var_dump($produtos);
 ?>
 
 <!DOCTYPE html>
@@ -317,6 +320,10 @@
     }
 }
 
+        th:nth-child(1), td:nth-child(1), /* Oculta a coluna ID Produto */
+        th:nth-child(6), td:nth-child(6) { /* Oculta a coluna Vende Crediário */
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -326,24 +333,26 @@
         <form action="pagamento.php" method="post">        
             <table border="1">
                 <tr>
+                    <th>ID Produto</th>
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
                     <th>Total</th>
+                    <th>Vende Crediário</th>
                 </tr>
                 <?php 
                     if (!empty($produtos) && is_array($produtos)) {
-                        $totalGeral = 0; // MOVIDO PARA FORA DO LOOP
+                        $totalGeral = 0;
                         $maiorFrete = 0;
                         $maiorQtPar = 0;
 
                         foreach ($produtos as $produto): 
                             $qtParcelas = $produto['qt_parcelas'];
 
-                            $valorProComTaxa = ($produto['valor_produto'] * $taxa_padrao) / 100 + $produto['valor_produto'];
+                            $valorProComTaxa = ($produto['valor_produto'] * $produto['taxa_padrao']) / 100 + $produto['valor_produto'];
                             $total = $valorProComTaxa * $produto['qt'];
                             
-                            $totalGeral += $total; // Agora ele soma corretamente a cada loop
+                            $totalGeral += $total;
 
                             // Verifica o maior frete no carrinho
                             if ($produto['frete'] > $maiorFrete) {
@@ -356,10 +365,12 @@
                             }
                 ?>
                 <tr>
+                    <td><?php echo $produto['id_produto']; ?></td>
                     <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
                     <td style="text-align: center;"><?php echo $produto['qt']; ?></td>
                     <td>R$ <?php echo number_format($valorProComTaxa, 2, ',', '.'); ?></td>
                     <td>R$ <?php echo number_format($total, 2, ',', '.'); ?></td>
+                    <td><?php echo $produto['vende_crediario'] ? '1' : '0'; ?></td>
                 </tr>
                 <?php endforeach; 
                     
@@ -367,10 +378,17 @@
                     $totalComFrete = $totalGeral + $maiorFrete;
                     $totalCrediario = $limite_cred - $totalComFrete;
                 } else {
-                    echo '<tr><td colspan="4">Nenhum produto no carrinho.</td></tr>';
+                    echo '<tr><td colspan="6">Nenhum produto no carrinho.</td></tr>';
                 }
                 ?>
             </table>
+
+            <input type="hidden" name="produtos" id="produtos" value="">
+            <script>
+                // Preenche o campo oculto com os dados dos produtos
+                const produtos = <?php echo json_encode($produtos); ?>;
+                document.getElementById('produtos').value = JSON.stringify(produtos);
+            </script>
 
             <div class="entrega">
                 <h3>Escolha a forma de entrega.</h3>

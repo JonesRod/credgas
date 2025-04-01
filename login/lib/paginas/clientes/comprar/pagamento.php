@@ -9,7 +9,9 @@
     }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     var_dump($_POST);
+    
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
@@ -22,7 +24,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $numero = $_POST['numero'];
     $contato = $_POST['contato']; // Adicionar esta linha
 
-    //echo $detalhes_produtos;
+    $produtos = isset($_POST['produtos']) ? json_decode($_POST['produtos'], true) : [];
+
+    $total_vende_crediario = 0;
+    $total_nao_vende_crediario = 0;
+    $maior_parcelas = 0;
+    $maior_frete = 0;
+    $produto_maior_frete_vende_crediario = false;
+
+    // Calcula os valores separados e encontra o maior frete e maior quantidade de parcelas
+    foreach ($produtos as $produto) {
+        if ($produto['vende_crediario'] == 1) {
+            $total_vende_crediario += $produto['valor_produto'] * $produto['qt'];
+        } else {
+            $total_nao_vende_crediario += $produto['valor_produto'] * $produto['qt'];
+        }
+
+        // Verifica a maior quantidade de parcelas
+        if ($produto['qt_parcelas'] > $maior_parcelas) {
+            $maior_parcelas = $produto['qt_parcelas'];
+        }
+
+        // Verifica o maior frete
+        if ($produto['frete'] > $maior_frete) {
+            $maior_frete = $produto['frete'];
+            $produto_maior_frete_vende_crediario = $produto['vende_crediario'] == 1;
+        }
+    }
+
+    // Exibe os valores calculados
+    echo "<h3>Resumo dos Produtos:</h3>";
+    echo "<p><strong>Total de produtos vendidos no crediário:</strong> R$ " . number_format($total_vende_crediario, 2, ',', '.') . "</p>";
+    echo "<p><strong>Total de produtos que não são vendidos no crediário (entrada obrigatória):</strong> R$ " . number_format($total_nao_vende_crediario, 2, ',', '.') . "</p>";
+    echo "<p><strong>Maior quantidade de parcelas:</strong> $maior_parcelas</p>";
+    echo "<p><strong>Maior frete:</strong> R$ " . number_format($maior_frete, 2, ',', '.') . "</p>";
+    echo "<p><strong>O produto com o maior frete é vendido no crediário?</strong> " . ($produto_maior_frete_vende_crediario ? 'Sim' : 'Não') . "</p>";
+
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
     $stmt->bind_param("i", $id_cliente);
@@ -33,6 +70,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $limite_cred = !empty($cliente['limite_cred']) ? $cliente['limite_cred'] : 0;
     $status_crediario = $cliente['status_crediario'];
     $situacao_crediario = $cliente['situacao_crediario'];
+
+    // Verifica se o cliente tem crediário ativo e limite de crédito
+    /*if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])) {
+        if (!empty($limite_cred) && $limite_cred > 0) {
+            echo "<h3>Limite disponível no crediário: R$ " . number_format($limite_cred, 2, ',', '.') . "</h3>";
+
+            // Verifica se o limite de crédito cobre o total de produtos vendidos no crediário
+            if ($total_vende_crediario > $limite_cred) {
+                echo "<p style='color: red;'>O valor dos produtos vendidos no crediário excede o limite disponível.</p>";
+            } else {
+                echo "<p style='color: green;'>O valor dos produtos vendidos no crediário está dentro do limite disponível.</p>";
+            }
+        }
+    }*/
+
+    // Calcula o valor total a pagar
+   $valor_total_a_pagar = $total_nao_vende_crediario + $total_vende_crediario;
+    //echo "<h3>Valor total da compra: R$ " . number_format($valor_total_a_pagar, 2, ',', '.') . "</h3>";
 
     // Buscar se o parceiro aceita cartão de crédito
     $stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
@@ -311,7 +366,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h2>Formas de Pagamento</h2>
         
-        <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+        <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
             <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
                 <h3>Limite disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
             <?php endif; ?>
@@ -333,7 +388,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="radio" id="pag_entrega" name="momento_pagamento" value="entrega" required onclick="mostrarDiv('pg_entrega')" title="Clique para pagar na entrega">
                     <label for="pag_entrega">Pagar na Entrega</label>
                 </div>   
-                <?php if ($status_crediario === 'Aprovado' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+                <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
                     <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
                         <div>
                             <input type="radio" id="pag_crediario" name="momento_pagamento" value="crediario" required onclick="mostrarDiv('pg_crediario'), carregarEntradaMinima()" title="Clique para pagar no crediário">
@@ -438,7 +493,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
                             <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                         </div>
-                        <input type="hidden" id="valor_total_crediario">
+                        <input type="text" id="valor_total_crediario">
                         <input type="hidden" name="tipo_entrada_crediario" id="tipo_entrada_crediario">
                         <input type="hidden" name="bandeiras_aceita" id="bandeiras_aceita">
                     </div>
@@ -825,14 +880,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function carregarEntradaMinima() {
-            const total = parseFloat('<?php echo $total; ?>');
+            const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
+            const total_vende_crediario = parseFloat('<?php echo $total_vende_crediario; ?>');
+            const total = total_vende_crediario;
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
             const entradaInput = document.getElementById('entradaInput');
-            //const entrada = parseFloat(entradaInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorTotal = total + ( total * taxaCrediario) / 100;
-            const entrada = valorTotal - limiteCred + 1;
-            const restante = valorTotal - entrada;
+            const entrada = valorTotal - limiteCred + total_nao_vende_crediario + 1;
+            const restante = valorTotal - entrada + total_nao_vende_crediario;
 
             entradaInput.value = entrada.toFixed(2).replace('.', ',');
 
@@ -848,11 +904,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 console.log('Valor total maior que o limite de crediário');
             }
             document.getElementById('tipo_entrada_crediario').value = '1';
-            document.getElementById('bandeiras_aceitas').value = '';
+            document.getElementById('bandeiras_aceita').value = '';
             document.getElementById('valor_total_crediario').value = valorTotal.toFixed(2).replace('.', ',');  
         }
         
-        function verificarEntradaMinima() {
+        /*function verificarEntradaMinima() {
             const total = parseFloat('<?php echo $total; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
@@ -880,7 +936,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             restanteInput.value = restante.toFixed(2).replace('.', ',');
             enviarDadosCrediario();
-        }
+        }*/
         
         function mostrarBandeirasCriterio(select) {
             const selectedOptions = Array.from(select.selectedOptions);
@@ -922,22 +978,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function recalcularValor() {
-            const totalBase = parseFloat('<?php echo $total; ?>');
+            //$valor_total_a_pagar = $total_nao_vende_crediario + $total_vende_crediario;
+            const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
+            const total_vende_crediario = parseFloat('<?php echo $total_vende_crediario; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
+            const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
+            const entradaInput = document.getElementById('entradaInput');
+            const restanteInput = document.getElementById('restanteInput');
+            const valorTotal = total_vende_crediario + (total_vende_crediario * taxaCrediario) / 100;
+            const entrada = parseFloat(entradaInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const diferenca = valorTotal - limiteCred;
+            const restante = valorTotal - entrada ;
+
+            console.log('Restante:', restante);
+            console.log('Taxa de crediário:', taxaCrediario);
+            //console.log('Valor total:', valorTotal);
+            console.log('Limite de crediário:', limiteCred);
+            console.log('Total não vende a prazo:', total_nao_vende_crediario);
+            console.log('Total vende a prazo:', total_vende_crediario);
+            console.log('Diferença:', diferenca);
+
+            const totalBase = total_vende_crediario;
+            //const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const momentoPagamento = document.querySelector('input[name="momento_pagamento"]:checked').value;
 
             let valorFinal = totalBase;
+            console.log('valorFinal:', valorFinal);
 
             if (momentoPagamento === 'crediario') {
-                valorFinal += (totalBase * taxaCrediario) / 100; // Adiciona a taxa de crediário
+                valorFinal += (totalBase * taxaCrediario) / 100 + total_nao_vende_crediario; // Adiciona a taxa de crediário
+            }else{
+                valorFinal = total_nao_vende_crediario + totalBase; // Adiciona o valor total não a prazo
             }
 
             document.getElementById('valor_a_pagar').innerText = 'R$ ' + valorFinal.toFixed(2).replace('.', ',');
         }
 
-        document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
+       /* document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
             radio.addEventListener('change', recalcularValor);
-        });
+        });*/
 
         function enviarDadosCrediario() {
             const form = document.createElement('form');
