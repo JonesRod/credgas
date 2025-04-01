@@ -978,32 +978,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function recalcularValor() {
-            //$valor_total_a_pagar = $total_nao_vende_crediario + $total_vende_crediario;
+            const produto_maior_frete_vende_crediario = parseFloat('<?php echo $produto_maior_frete_vende_crediario; ?>');
+            const valor_frete = parseFloat('<?php echo $valor_frete; ?>');
             const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
             const total_vende_crediario = parseFloat('<?php echo $total_vende_crediario; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
             const entradaInput = document.getElementById('entradaInput');
             const restanteInput = document.getElementById('restanteInput');
-            const valorTotal = total_vende_crediario + (total_vende_crediario * taxaCrediario) / 100;
             const entrada = parseFloat(entradaInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const diferenca = valorTotal - limiteCred;
             const restante = valorTotal - entrada ;
+            //const momentoPagamento = document.querySelector('input[name="momento_pagamento"]:checked').value;
+
+            let valorFinal = totalBase;
 
             console.log('Restante:', restante);
-            console.log('Taxa de crediário:', taxaCrediario);
-            //console.log('Valor total:', valorTotal);
+            console.log('Entrada:', entrada);
+            console.log('Valor total:', valorTotal);
             console.log('Limite de crediário:', limiteCred);
             console.log('Total não vende a prazo:', total_nao_vende_crediario);
             console.log('Total vende a prazo:', total_vende_crediario);
             console.log('Diferença:', diferenca);
+            console.log('Valor total:', valorTotal);
+            console.log('Valor base:', totalBase);
+            console.log('Taxa de crediário:', taxaCrediario);
+            console.log('Momento de pagamento:', momentoPagamento);
+            console.log('Valor final:', valorFinal);
+            console.log('Valor total não a prazo:', total_nao_vende_crediario);
+            console.log('Valor total a prazo:', total_vende_crediario);
+            console.log('Valor total:', valorTotal);
 
-            const totalBase = total_vende_crediario;
-            //const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
-            const momentoPagamento = document.querySelector('input[name="momento_pagamento"]:checked').value;
+            if (produto_maior_frete_vende_crediario === 1) {
+                const valorTotal = total_vende_crediario + valor_frete((total_vende_crediario + valor_frete) * taxaCrediario) / 100;
+                let valorFinal = valorTotal;
+            } else {
+                valorFinal += total_nao_vende_crediario; // Adiciona o valor total não a prazo
+                const valorTotal = total_vende_crediario + valor_frete((total_vende_crediario + valor_frete) * taxaCrediario) / 100;
+                let valorFinal = valorTotal;
+            }
+            
+            if (entrada < diferenca) {
+                alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
+                entradaInput.value = (diferenca + 1).toFixed(2).replace('.', ',');
+                restanteInput.value = (valorTotal - diferenca - 1).toFixed(2).replace('.', ',');
+                return;
+            }
+            if (entrada > valorTotal) {
+                alert('A entrada não pode ser maior que o valor da compra.');
+                entradaInput.value = (diferenca + 1).toFixed(2).replace('.', ',');
+                restanteInput.value = (valorTotal - diferenca - 1).toFixed(2).replace('.', ',');
+                return;
+            }
+            restanteInput.value = restante.toFixed(2).replace('.', ',');
 
-            let valorFinal = totalBase;
-            console.log('valorFinal:', valorFinal);
 
             if (momentoPagamento === 'crediario') {
                 valorFinal += (totalBase * taxaCrediario) / 100 + total_nao_vende_crediario; // Adiciona a taxa de crediário
@@ -1014,9 +1042,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('valor_a_pagar').innerText = 'R$ ' + valorFinal.toFixed(2).replace('.', ',');
         }
 
-       /* document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
+        document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
             radio.addEventListener('change', recalcularValor);
-        });*/
+        });
 
         function enviarDadosCrediario() {
             const form = document.createElement('form');
