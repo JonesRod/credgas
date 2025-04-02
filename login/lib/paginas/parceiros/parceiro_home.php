@@ -84,7 +84,7 @@
     ") or die("Erro na consulta de frete grátis: " . $mysqli->error);
 
     // Debug para verificar os resultados
-    if ($frete_gratis->num_rows > 0) {
+    /*if ($frete_gratis->num_rows > 0) {
         echo "Categoria selecionada: " . htmlspecialchars($categoriaSelecionada) . "<br>";
         echo "Número de produtos com frete grátis: " . $frete_gratis->num_rows . "<br>";
 
@@ -93,7 +93,7 @@
         }
     } else {
         echo "Nenhum produto com frete grátis encontrado para a categoria: " . htmlspecialchars($categoriaSelecionada) . "<br>";
-    }
+    }*/
     
     // Consulta para buscar novidades
     $novidades = $mysqli->query("
@@ -400,8 +400,18 @@
                     $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
                     $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
                     $isNovo = $diasDesdeCadastro <= 30;
+
+                    // Determinar o preço do produto
+                    if (!empty($produto['promocao']) && $produto['promocao'] == 1) {
+                        $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                    } else {
+                        $valorProduto = $produto['valor_venda_vista'];
+                    }
                     ?>
                     
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
                         <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
@@ -417,18 +427,19 @@
                         <?php elseif (!empty($produto['promocao']) && $produto['promocao'] == 1 && !empty($produto['frete_gratis_promocao']) && $produto['frete_gratis_promocao'] == 1): ?>
                             <span class="icone-frete-gratis" title="Frete grátis (promoção)">🚚</span>
                         <?php endif; ?>
+
+                        <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php endif; ?>
                     </div>
                     
-                    <!-- Imagem do produto -->
-                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
-
                     <div class="produto-detalhes">
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
                         </h3>
 
                         <!-- Preço do produto -->
-                        <p class="produto-preco">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                        <p class="produto-preco">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
                         <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
@@ -484,8 +495,18 @@
                     $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
                     $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
                     $isNovo = $diasDesdeCadastro <= 30;
+
+                    // Determinar o preço do produto
+                    if (!empty($produto['promocao']) && $produto['promocao'] == 1) {
+                        $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                    } else {
+                        $valorProduto = $produto['valor_venda_vista'];
+                    }
                     ?>
                     
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
                         <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
@@ -501,18 +522,19 @@
                         <?php elseif (!empty($produto['promocao']) && $produto['promocao'] == 1 && !empty($produto['frete_gratis_promocao']) && $produto['frete_gratis_promocao'] == 1): ?>
                             <span class="icone-frete-gratis" title="Frete grátis (promoção)">🚚</span>
                         <?php endif; ?>
+
+                        <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php endif; ?>
                     </div>
                     
-                    <!-- Imagem do produto -->
-                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
-
                     <div class="produto-detalhes">
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
                         </h3>
 
                         <!-- Preço do produto -->
-                        <p class="produto-preco">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                        <p class="produto-preco">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
                         <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
@@ -536,7 +558,7 @@
         <div id="conteudo-frete_gratis" class="conteudo-aba" style="display: none;">
             <?php 
                 if ($frete_gratis->num_rows > 0): 
-                    echo "<p style='margin-top: 30px;'>".$frete_gratis->num_rows." produto(s) encontrado(s) com frete grátis.</p>";
+                    //echo "<p style='margin-top: 30px;'>".$frete_gratis->num_rows." produto(s) encontrado(s) com frete grátis.</p>";
             ?>            
             <div class="container">
                 <input id="inputPesquisaFreteGratis" class="input" type="text" placeholder="Pesquisar Produto.">
@@ -564,8 +586,18 @@
                     $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
                     $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
                     $isNovo = $diasDesdeCadastro <= 30;
+
+                    // Determinar o preço do produto
+                    if (!empty($produto['promocao']) && $produto['promocao'] == 1) {
+                        $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                    } else {
+                        $valorProduto = $produto['valor_venda_vista'];
+                    }
                     ?>
                     
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
                         <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
@@ -581,18 +613,19 @@
                         <?php elseif (!empty($produto['promocao']) && $produto['promocao'] == 1 && !empty($produto['frete_gratis_promocao']) && $produto['frete_gratis_promocao'] == 1): ?>
                             <span class="icone-frete-gratis" title="Frete grátis (promoção)">🚚</span>
                         <?php endif; ?>
+
+                        <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php endif; ?>
                     </div>
                     
-                    <!-- Imagem do produto -->
-                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
-
                     <div class="produto-detalhes">
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
                         </h3>
 
                         <!-- Preço do produto -->
-                        <p class="produto-preco">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                        <p class="produto-preco">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
                         <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
@@ -637,8 +670,18 @@
                     $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
                     $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
                     $isNovo = $diasDesdeCadastro <= 30;
+
+                    // Determinar o preço do produto
+                    if (!empty($produto['promocao']) && $produto['promocao'] == 1) {
+                        $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                    } else {
+                        $valorProduto = $produto['valor_venda_vista'];
+                    }
                     ?>
                     
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
                         <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
@@ -654,18 +697,19 @@
                         <?php elseif (!empty($produto['promocao']) && $produto['promocao'] == 1 && !empty($produto['frete_gratis_promocao']) && $produto['frete_gratis_promocao'] == 1): ?>
                             <span class="icone-frete-gratis" title="Frete grátis (promoção)">🚚</span>
                         <?php endif; ?>
+
+                        <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php endif; ?>
                     </div>
                     
-                    <!-- Imagem do produto -->
-                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
-
                     <div class="produto-detalhes">
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
                         </h3>
 
                         <!-- Preço do produto -->
-                        <p class="produto-preco">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                        <p class="produto-preco">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
                         <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
@@ -711,8 +755,18 @@
                     $intervalo = $dataCadastro->diff($dataAtual); // Calcula a diferença entre as datas
                     $diasDesdeCadastro = $intervalo->days; // Número de dias de diferença
                     $isNovo = $diasDesdeCadastro <= 30;
+
+                    // Determinar o preço do produto
+                    if (!empty($produto['promocao']) && $produto['promocao'] == 1) {
+                        $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                    } else {
+                        $valorProduto = $produto['valor_venda_vista'];
+                    }
                     ?>
                     
+                    <!-- Imagem do produto -->
+                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
+
                     <!-- Ícones de status do produto -->
                     <div class="produto-status">
                         <?php if (isset($produto['oculto']) && $produto['oculto'] == 1): ?>
@@ -728,18 +782,19 @@
                         <?php elseif (!empty($produto['promocao']) && $produto['promocao'] == 1 && !empty($produto['frete_gratis_promocao']) && $produto['frete_gratis_promocao'] == 1): ?>
                             <span class="icone-frete-gratis" title="Frete grátis (promoção)">🚚</span>
                         <?php endif; ?>
+
+                        <?php if (!empty($produto['promocao']) && $produto['promocao'] == 1): ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
+                        <?php endif; ?>
                     </div>
                     
-                    <!-- Imagem do produto -->
-                    <img src="<?php echo htmlspecialchars($primeiraImagem, ENT_QUOTES, 'UTF-8'); ?>" alt="Imagem do Produto" class="produto-imagem">
-
                     <div class="produto-detalhes">
                         <h3 class="produto-nome">
                             <?php echo htmlspecialchars($produto['nome_produto'] ?? 'Produto não especificado', ENT_QUOTES, 'UTF-8'); ?>
                         </h3>
 
                         <!-- Preço do produto -->
-                        <p class="produto-preco">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                        <p class="produto-preco">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
 
                         <!-- Botão de edição -->
                         <?php if (isset($produto['produto_aprovado']) && $produto['produto_aprovado'] == 1): ?>
