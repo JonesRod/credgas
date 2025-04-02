@@ -163,6 +163,19 @@
         }
         
     }
+
+    // Calcular o valor do produto considerando a promoção
+    $valor_base = isset($produto['promocao']) && $produto['promocao'] == '1' 
+        ? floatval($produto['valor_promocao'] ?? 0) 
+        : floatval($produto['valor_produto'] ?? 0);
+
+    // Adicionar a taxa padrão como porcentagem ao valor base
+    $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
+    $valor_produto = $valor_base + ($valor_base * ($taxa_padrao / 100));
+
+    // Verificar se o frete é grátis
+    $frete_gratis = $produto['frete_gratis'] == '1' || 
+                    ($produto['promocao'] == '1' && $produto['frete_gratis_promocao'] == '1');
 ?>
 
 <!DOCTYPE html>
@@ -524,8 +537,8 @@
             <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
             <p><strong>Descrição:</strong></p>
             <textarea class="descricao-box" readonly><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></textarea>
-            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_venda_vista'] ?? 0, 2, ',', '.'); ?></p>
-            <?php if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): ?>
+            <p><strong>Preço:</strong> R$ <?= number_format($valor_produto, 2, ',', '.'); ?></p>
+            <?php if ($frete_gratis): ?>
                 <p><strong style="color: green;">Frete Grátis</strong></p>
             <?php else: ?>
                 <p><strong style="color: red;">Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>

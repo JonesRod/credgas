@@ -182,36 +182,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="parceiro_home.css">
     <script src="parceiro_home.js"></script> 
-    <style>
-        .conteudo-secao {
-            display: none;
-        }
-
-        .conteudo-secao.ativo {
-            display: block;
-        }
-        .categorias-parceiro {
-            display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
-            height: 100%; /* Garante que o elemento ocupe o espaço necessário */
-        }
-        .tab {
-            cursor: pointer;
-            padding: 10px;
-            display: inline-block;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        .tab.active {
-            background-color: #eaeaea;
-            border-bottom: 2px solid #000;
-        }
-
-    </style>
 </head>
 <body>
     <form id="formCategoria" method="POST" action="">
@@ -724,7 +694,7 @@
             <p id="mensagemNaoEncontrado" style="display: none;">Produto não encontrado.</p>
             
             <?php else: ?>
-                <p style="margin-top: 30px;">Nenhuma promoção disponível.</p>
+                <p style="margin-top: 30px;">Nenhuma novidade no momento.</p>
             <?php endif; ?>
         </div>
 
@@ -827,6 +797,62 @@
 
     <script src="parceiro_home.js"></script> 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const categorias = document.querySelectorAll('.categoria-item'); // Todas as categorias
+            const inputCategoria = document.querySelector('input[name="categoria_selecionada"]'); // Campo hidden
+            const formCategoria = document.querySelector('#formCategoria'); // Formulário
+            const inputAbaAtual = document.createElement('input'); // Campo hidden para aba atual
+            inputAbaAtual.type = 'hidden';
+            inputAbaAtual.name = 'aba_atual';
+            formCategoria.appendChild(inputAbaAtual);
+
+            // Recupera a aba atual do localStorage ou define como 'catalogo' por padrão
+            let abaAtual = localStorage.getItem('abaAtual') || 'catalogo';
+            inputAbaAtual.value = abaAtual;
+
+            // Define a aba ativa com base no localStorage
+            mostrarConteudo(abaAtual, document.querySelector(`.tab[onclick="mostrarConteudo('${abaAtual}',this)"]`));
+
+            // Configurar evento de clique para as categorias
+            categorias.forEach(categoria => {
+                categoria.addEventListener('click', () => {
+                    categorias.forEach(cat => cat.classList.remove('selected')); // Remove a classe 'selected' de todas
+                    categoria.classList.add('selected'); // Adiciona a classe 'selected' à categoria clicada
+                    inputCategoria.value = categoria.querySelector('p').textContent.trim(); // Atualiza o valor no campo hidden
+                    enviar(); // Envia o formulário
+                });
+            });
+
+            // Atualiza o localStorage ao mudar de aba
+            const abas = document.querySelectorAll('.tab');
+            abas.forEach(aba => {
+                aba.addEventListener('click', () => {
+                    abaAtual = aba.getAttribute('onclick').match(/mostrarConteudo\('(.+?)'/)[1];
+                    localStorage.setItem('abaAtual', abaAtual);
+                    inputAbaAtual.value = abaAtual;
+                });
+            });
+
+            function enviar() {
+                // Simula o clique no botão "Enviar"
+                const botaoEnviar = document.getElementById('carregar_categoria');
+                botaoEnviar.click();
+            }
+        });
+
+        function mostrarConteudo(aba, elemento) {
+            const conteudos = document.querySelectorAll('.conteudo-aba');
+            const abas = document.querySelectorAll('.tab');
+
+            // Esconde todos os conteúdos e remove a classe 'active' de todas as abas
+            conteudos.forEach(conteudo => conteudo.style.display = 'none');
+            abas.forEach(tab => tab.classList.remove('active'));
+
+            // Mostra o conteúdo da aba selecionada e adiciona a classe 'active' à aba
+            document.getElementById(`conteudo-${aba}`).style.display = 'block';
+            elemento.classList.add('active');
+        }
+
         // Obtém o ID da sessão do PHP
         var sessionId = <?php echo json_encode($id); ?>;
         var id_produto = <?php echo json_encode($id_produto); ?>;
