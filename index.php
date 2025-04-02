@@ -136,6 +136,18 @@
                 <div class="container">
                     <div class="products">
                         <?php while ($produto = $result_produtos->fetch_assoc()): 
+                            // Determinar o valor do produto
+                            if ($produto['promocao'] === '1') {
+                                $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                            } else {
+                                $valorProduto = $produto['valor_venda_vista'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
+                                ? $produto['valor_frete_promocao'] 
+                                : $produto['valor_frete'];
+
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; ?>
                             <div class="product-card">
@@ -154,7 +166,7 @@
                                     <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php endif; ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                                     <a href="#" class="btn">Comprar</a>
@@ -162,7 +174,7 @@
                                     <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                                 <?php endif; ?>
                             </div>
-                                <?php endwhile; ?>
+                        <?php endwhile; ?>
                     </div>
                         <?php else: ?>
                             <p>Não há produtos no momento.</p>
@@ -220,6 +232,18 @@
                 <div class="container">
                     <div class="products">
                         <?php while ($produto = $result_produtos->fetch_assoc()): 
+                            // Determinar o valor do produto
+                            if ($produto['promocao'] === '1') {
+                                $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                            } else {
+                                $valorProduto = $produto['valor_venda_vista'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
+                                ? $produto['valor_frete_promocao'] 
+                                : $produto['valor_frete'];
+
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; ?>
                             <div class="product-card">
@@ -238,7 +262,7 @@
                                     <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php endif; ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                                     <a href="#" class="btn">Comprar</a>
@@ -307,6 +331,18 @@
                 <div class="container">
                     <div class="products">
                         <?php while ($produto = $result_produtos->fetch_assoc()): 
+                            // Determinar o valor do produto
+                            if ($produto['promocao'] === '1') {
+                                $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                            } else {
+                                $valorProduto = $produto['valor_venda_vista'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
+                                ? $produto['valor_frete_promocao'] 
+                                : $produto['valor_frete'];
+
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; ?>
                             <div class="product-card">
@@ -325,7 +361,7 @@
                                     <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php endif; ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                                     <a href="#" class="btn">Comprar</a>
@@ -394,6 +430,18 @@
                 <div class="container">
                     <div class="products">
                         <?php while ($produto = $result_produtos->fetch_assoc()): 
+                            // Determinar o valor do produto
+                            if ($produto['promocao'] === '1') {
+                                $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                            } else {
+                                $valorProduto = $produto['valor_venda_vista'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
+                                ? $produto['valor_frete_promocao'] 
+                                : $produto['valor_frete'];
+
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg'; ?>
                             <div class="product-card">
@@ -412,7 +460,7 @@
                                     <span class="icone-novidades" title="Novidades">🆕</span>
                                 <?php endif; ?>
                                 <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                                <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'], 2, ',', '.'); ?></p>
+                                <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                                 <a href="login/lib/detalhes_produto.php?id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
                                 <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
                                     <a href="#" class="btn">Comprar</a>
@@ -480,180 +528,85 @@
             mostrarConteudo('catalogo', document.querySelector('.tab.active'));
         };
 
-        document.getElementById('inputPesquisaParceiroCatalogo').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
+        document.addEventListener("DOMContentLoaded", function() {
+            function configurarPesquisa(inputId, itemSelector, mensagemId, abaId) {
+                const inputPesquisa = document.getElementById(inputId);
+                const itens = document.querySelectorAll(`#${abaId} ${itemSelector}`);
+                const mensagem = document.getElementById(mensagemId);
 
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
+                inputPesquisa.addEventListener("input", function() {
+                    const termo = inputPesquisa.value.toLowerCase();
+                    let encontrou = false;
 
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
+                    itens.forEach(item => {
+                        const textoItem = item.textContent.toLowerCase();
+                        if (textoItem.includes(termo)) {
+                            item.style.display = "block";
+                            encontrou = true;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
 
-        document.getElementById('inputPesquisaCatalogo').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
+                    mensagem.style.display = encontrou ? "none" : "block";
+                });
+            }
 
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
+            // Configurar pesquisa para aba "Catálogo"
+            configurarPesquisa(
+                "inputPesquisaParceiroCatalogo",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoCatalogo",
+                "conteudo-catalogo"
+            );
+            configurarPesquisa(
+                "inputPesquisaCatalogo",
+                ".product-card",
+                "mensagemNaoEncontradoCatalogo",
+                "conteudo-catalogo"
+            );
 
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
+            // Configurar pesquisa para aba "Promoções"
+            configurarPesquisa(
+                "inputPesquisaParceiroPromocao",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoPromocao",
+                "conteudo-promocoes"
+            );
+            configurarPesquisa(
+                "inputPesquisaPromocao",
+                ".product-card",
+                "mensagemNaoEncontradoPromocao",
+                "conteudo-promocoes"
+            );
 
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoCatalogo');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
+            // Configurar pesquisa para aba "Frete Grátis"
+            configurarPesquisa(
+                "inputPesquisaParceiroFrete_gratis",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoFrete_gratis",
+                "conteudo-frete_gratis"
+            );
+            configurarPesquisa(
+                "inputPesquisaFrete_gratis",
+                ".product-card",
+                "mensagemNaoEncontradoFrete_gratis",
+                "conteudo-frete_gratis"
+            );
 
-        document.getElementById('inputPesquisaParceiroPromocao').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoPromocao');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaPromocao').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoPromocao');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });      
-
-        document.getElementById('inputPesquisaParceiroFrete_gratis').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoFrete_gratis');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaFrete_gratis').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoFrete_gratis');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaParceiroNovidades').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const parceiros = document.querySelectorAll('.parceiros-carousel .parceiro-card');
-            let parceiroEncontrado = false;
-
-            // Itera sobre os parceiros
-            parceiros.forEach(parceiro => {
-                const nomeParceiro = parceiro.querySelector('h3').textContent.toLowerCase();
-                
-                // Verifica se o termo de pesquisa corresponde ao nome do parceiro
-                if (nomeParceiro.includes(termoPesquisa) || termoPesquisa === '') {
-                    parceiro.style.display = 'block'; // Mostra o parceiro
-                    parceiroEncontrado = true;
-                } else {
-                    parceiro.style.display = 'none'; // Esconde o parceiro
-                }
-            });
-
-            // Exibe ou oculta a mensagem de "Parceiro não encontrado"
-            const mensagemNaoEncontrado = document.getElementById('mensagemParNaoEncontradoNovidades');
-            mensagemNaoEncontrado.style.display = parceiroEncontrado ? 'none' : 'block';
-        });
-
-        document.getElementById('inputPesquisaNovidades').addEventListener('input', function () {
-            const termoPesquisa = this.value.toLowerCase();
-            const produtos = document.querySelectorAll('.products .product-card');
-            let produtoEncontrado = false;
-
-            produtos.forEach(produto => {
-                const nomeProduto = produto.querySelector('h3').textContent.toLowerCase();
-
-                if (nomeProduto.includes(termoPesquisa) || termoPesquisa === '') {
-                    produto.style.display = 'block';
-                    produtoEncontrado = true;
-                } else {
-                    produto.style.display = 'none';
-                }
-            });
-
-            // Exibe mensagem de "Produto não encontrado" se nenhum produto for exibido
-            const mensagemNaoEncontrado = document.getElementById('mensagemNaoEncontradoNovidades');
-            mensagemNaoEncontrado.style.display = produtoEncontrado ? 'none' : 'block';
+            // Configurar pesquisa para aba "Novidades"
+            configurarPesquisa(
+                "inputPesquisaParceiroNovidades",
+                ".parceiro-card",
+                "mensagemParNaoEncontradoNovidades",
+                "conteudo-novidades"
+            );
+            configurarPesquisa(
+                "inputPesquisaNovidades",
+                ".product-card",
+                "mensagemNaoEncontradoNovidades",
+                "conteudo-novidades"
+            );
         });
     </script>
     </body>

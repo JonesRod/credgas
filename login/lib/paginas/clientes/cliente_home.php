@@ -504,6 +504,18 @@ if (isset($_SESSION['id'])) {
                             <?php
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg';
+
+                            // Determinar o valor do produto
+                            if ($produto['promocao'] === '1') {
+                                $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+                            } else {
+                                $valorProduto = $produto['valor_venda_vista'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
+                                ? $produto['valor_frete_promocao'] 
+                                : $produto['valor_frete'];
                             ?>
                             <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
 
@@ -525,11 +537,11 @@ if (isset($_SESSION['id'])) {
                             <?php endif; ?>
 
                             <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                            <p class="moeda">R$ <?php echo number_format($produto['valor_venda_vista'] ?? 0, 2, ',', '.'); ?></p>
+                            <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                             <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                             <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $produto['valor_venda_vista']; ?>')">Adicionar ao Carrinho</a>
+                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>')">Adicionar ao Carrinho</a>
                             <?php else: ?>
                                 <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                             <?php endif; ?>

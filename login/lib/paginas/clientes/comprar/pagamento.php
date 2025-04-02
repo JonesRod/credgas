@@ -49,17 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($produto['frete'] > $maior_frete) {
             $maior_frete = $produto['frete'];
             $produto_maior_frete_vende_crediario = $produto['vende_crediario'] == 1;
+            /*echo "Frete: R$ " . number_format($produto['frete'], 2, ',', '.') . "<br>";
+            echo $produto_maior_frete_vende_crediario;*/
         }
     }
 
     // Exibe os valores calculados
-    echo "<h3>Resumo dos Produtos:</h3>";
+   /* echo "<h3>Resumo dos Produtos:</h3>";
     echo "<p><strong>Total de produtos vendidos no crediário:</strong> R$ " . number_format($total_vende_crediario, 2, ',', '.') . "</p>";
     echo "<p><strong>Total de produtos que não são vendidos no crediário (entrada obrigatória):</strong> R$ " . number_format($total_nao_vende_crediario, 2, ',', '.') . "</p>";
     echo "<p><strong>Maior quantidade de parcelas:</strong> $maior_parcelas</p>";
     echo "<p><strong>Maior frete:</strong> R$ " . number_format($maior_frete, 2, ',', '.') . "</p>";
     echo "<p><strong>O produto com o maior frete é vendido no crediário?</strong> " . ($produto_maior_frete_vende_crediario ? 'Sim' : 'Não') . "</p>";
-
+*/
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
     $stmt->bind_param("i", $id_cliente);
@@ -499,6 +501,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <button id="bt_comprar_crediario" type="button" style="display: block;" onclick="verificarEntradaMinima()">Continuar</button>
             </div>
+            <input type="text" id="maior_frete" name="maior_frete" value="<?php echo $maior_frete; ?>" style="display: block;">
+            <input type="text" id="maior_parcelas" accept="" name="maior_parcelas" value="<?php echo $maior_parcelas; ?>" style="display: block;">
+            <input type="text" id="maior_frete_vende_crediario" name="maior_frete_vende_crediario"  value="<?php echo $produto_maior_frete_vende_crediario ? '1' : '0'; ?>" style="display: block;">
             <button type="button" onclick="window.history.back();">Voltar</button> 
         </form>
     </div>
@@ -880,6 +885,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function carregarEntradaMinima() {
+            const maior_frete_vende_crediario = document.getElementById('maior_frete_vende_crediario').value;
+            const valor_frete = parseFloat('<?php echo $valor_frete; ?>');
             const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
             const total_vende_crediario = parseFloat('<?php echo $total_vende_crediario; ?>');
             const total = total_vende_crediario;
@@ -894,6 +901,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             const formas_pagamento_crediario = document.getElementById('formas_pagamento_crediario');
 
+
+            console.log('Vende no crediario:', maior_frete_vende_crediario);
+            
             if (valorTotal < limiteCred) {
                 formas_pagamento_crediario.style.display = 'none';
                 document.getElementById('restanteInput').value = restante.toFixed(2).replace('.', ',');
@@ -1017,7 +1027,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const valorTotal = total_vende_crediario + valor_frete((total_vende_crediario + valor_frete) * taxaCrediario) / 100;
                 let valorFinal = valorTotal;
             }
-            
+
             if (entrada < diferenca) {
                 alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
                 entradaInput.value = (diferenca + 1).toFixed(2).replace('.', ',');
@@ -1042,9 +1052,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('valor_a_pagar').innerText = 'R$ ' + valorFinal.toFixed(2).replace('.', ',');
         }
 
-        document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
+       /* document.querySelectorAll('input[name="momento_pagamento"]').forEach(radio => {
             radio.addEventListener('change', recalcularValor);
-        });
+        });*/
 
         function enviarDadosCrediario() {
             const form = document.createElement('form');
