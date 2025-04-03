@@ -885,24 +885,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function carregarEntradaMinima() {
+            const valor_a_pagar = document.getElementById('valor_a_pagar').innerText.replace('R$ ', '').replace('.', '').replace(',', '.');
             const maior_frete_vende_crediario = document.getElementById('maior_frete_vende_crediario').value;
-            const valor_frete = parseFloat('<?php echo $valor_frete; ?>');
+
+            const maior_frete = parseFloat('<?php echo $maior_frete; ?>');
             const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
-            const total_vende_crediario = parseFloat('<?php echo $total_vende_crediario; ?>');
+            const total_vende_crediario = maior_frete + parseFloat('<?php echo $total_vende_crediario; ?>');
             const total = total_vende_crediario;
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
             const entradaInput = document.getElementById('entradaInput');
-            const valorTotal = total + ( total * taxaCrediario) / 100;
+            const valorTotal = total + ( total * taxaCrediario) / 100 + total_nao_vende_crediario;
             const entrada = valorTotal - limiteCred + total_nao_vende_crediario + 1;
             const restante = valorTotal - entrada + total_nao_vende_crediario;
+            const formas_pagamento_crediario = document.getElementById('formas_pagamento_crediario');
 
             entradaInput.value = entrada.toFixed(2).replace('.', ',');
 
-            const formas_pagamento_crediario = document.getElementById('formas_pagamento_crediario');
+           //total_vende_crediario = total_vende_crediario + maior_frete;
+           /*if ()*/
 
-
+            console.log('Valor total:', valorTotal);
+            console.log('Entrada mínima:', entrada);
+            console.log('Restante:', restante);
+            console.log('Valor a pagar:', valor_a_pagar);
+            console.log('Valor frete:', maior_frete);
+            console.log('Total não vende crediário:', total_nao_vende_crediario);
+            console.log('Total vende crediário:', total_vende_crediario);
+            console.log('Taxa crediário:', taxaCrediario);
+            console.log('Limite crediário:', limiteCred);
+            console.log('Entrada:', entrada);
+            console.log('Restante:', restante);
             console.log('Vende no crediario:', maior_frete_vende_crediario);
+
+            
             
             if (valorTotal < limiteCred) {
                 formas_pagamento_crediario.style.display = 'none';
@@ -988,6 +1004,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function recalcularValor() {
+            /*const valor_a_pagar = document.getElementById('valor_a_pagar').innerText.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const maior_frete_vende_crediario = document.getElementById('maior_frete_vende_crediario').value;
+
+            const maior_frete = parseFloat('<?php echo $maior_frete; ?>');
+            const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
+            const total_vende_crediario = maior_frete + parseFloat('<?php echo $total_vende_crediario; ?>');
+            const total = total_vende_crediario;
+            const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
+            const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
+            const entradaInput = document.getElementById('entradaInput');
+            const valorTotal = total + ( total * taxaCrediario) / 100 + total_nao_vende_crediario;
+            const entrada = valorTotal - limiteCred + total_nao_vende_crediario + 1;
+            const restante = valorTotal - entrada + total_nao_vende_crediario;
+            const formas_pagamento_crediario = document.getElementById('formas_pagamento_crediario');
+
+            entradaInput.value = entrada.toFixed(2).replace('.', ',');
+
+           //total_vende_crediario = total_vende_crediario + maior_frete;
+
+            console.log('Valor total:', valorTotal);
+            console.log('Entrada mínima:', entrada);
+            console.log('Restante:', restante);
+            console.log('Valor a pagar:', valor_a_pagar);
+            console.log('Valor frete:', maior_frete);
+            console.log('Total não vende crediário:', total_nao_vende_crediario);
+            console.log('Total vende crediário:', total_vende_crediario);
+            console.log('Taxa crediário:', taxaCrediario);
+            console.log('Limite crediário:', limiteCred);
+            console.log('Entrada:', entrada);
+            console.log('Restante:', restante);
+            console.log('Vende no crediario:', maior_frete_vende_crediario);
+            */
             const produto_maior_frete_vende_crediario = parseFloat('<?php echo $produto_maior_frete_vende_crediario; ?>');
             const valor_frete = parseFloat('<?php echo $valor_frete; ?>');
             const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>');
@@ -1003,7 +1051,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             let valorFinal = totalBase;
 
-            console.log('Restante:', restante);
+            /*console.log('Restante:', restante);
             console.log('Entrada:', entrada);
             console.log('Valor total:', valorTotal);
             console.log('Limite de crediário:', limiteCred);
@@ -1017,7 +1065,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             console.log('Valor final:', valorFinal);
             console.log('Valor total não a prazo:', total_nao_vende_crediario);
             console.log('Valor total a prazo:', total_vende_crediario);
-            console.log('Valor total:', valorTotal);
+            console.log('Valor total:', valorTotal);*/
 
             if (produto_maior_frete_vende_crediario === 1) {
                 const valorTotal = total_vende_crediario + valor_frete((total_vende_crediario + valor_frete) * taxaCrediario) / 100;

@@ -115,12 +115,12 @@ if (isset($_SESSION['id'])) {
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px;
+            padding: 10px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             width: 280px;
-            height: 320px;
+            height: 355px;
             text-align: center;
         }
         .popup #info {
@@ -153,6 +153,7 @@ if (isset($_SESSION['id'])) {
             text-align: left;
             margin: 5px;
             width: 80px;
+            font-size: 16px;
         }
 
         .popup input:focus {
@@ -513,9 +514,15 @@ if (isset($_SESSION['id'])) {
                             }
 
                             // Determinar o valor do frete
-                            $valorFrete = ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') 
-                                ? $produto['valor_frete_promocao'] 
-                                : $produto['valor_frete'];
+                            if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') {
+                                $valorFrete = 0 ;
+                            } else if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '0') {
+                                $valorFrete = $produto['valor_frete_promocao'];
+                            } else if ($produto['frete_gratis'] === '1') {
+                                $valorFrete = 0 ;
+                            } else {
+                                $valorFrete = $produto['valor_frete'];
+                            }
                             ?>
                             <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
 
@@ -541,7 +548,7 @@ if (isset($_SESSION['id'])) {
                             <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                             <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>')">Adicionar ao Carrinho</a>
+                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>', '<?php echo $valorFrete; ?>')">Adicionar ao Carrinho</a>
                             <?php else: ?>
                                 <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                             <?php endif; ?>
@@ -623,32 +630,35 @@ if (isset($_SESSION['id'])) {
                             <?php
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg';
+
+                            // Determinar o valor do produto
+                            $valorProduto = $produto['valor_promocao'] + ($produto['valor_promocao'] * ($taxa['taxa_padrao'] / 100));
+
+                            // Determinar o valor do frete
+                            if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') {
+                                $valorFrete = 0 ;
+                            } else if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '0') {
+                                $valorFrete = $produto['valor_frete_promocao'];
+                            } else if ($produto['frete_gratis'] === '1') {
+                                $valorFrete = 0 ;
+                            } else {
+                                $valorFrete = $produto['valor_frete'];
+                            }
                             ?>
                             <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
 
-                            <?php if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): ?>
+                            <?php if ($produto['frete_gratis_promocao'] === '1'): ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php endif; ?>
 
-                            <?php if ($produto['promocao'] === '1'): ?>
-                                <span class="icone-promocao" title="Produto em promoção">🔥</span>
-                            <?php endif; ?>
-
-                            <?php
-                            $dataCadastro = new DateTime($produto['data']);
-                            $dataAtual = new DateTime();
-                            $diasDesdeCadastro = $dataCadastro->diff($dataAtual)->days;
-
-                            if ($diasDesdeCadastro <= 30): ?>
-                                <span class="icone-novidades" title="Novidades">🆕</span>
-                            <?php endif; ?>
+                            <span class="icone-promocao" title="Produto em promoção">🔥</span>
 
                             <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                             <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                             <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $produto['valor_produto']; ?>')">Adicionar ao Carrinho</a>
+                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>', '<?php echo $valorFrete; ?>')">Adicionar ao Carrinho</a>
                             <?php else: ?>
                                 <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                             <?php endif; ?>
@@ -734,6 +744,20 @@ if (isset($_SESSION['id'])) {
                             <?php
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg';
+
+                            // Determinar o valor do frete
+                            if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') {
+                                $valorFrete = 0 ;
+                            } else if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '0') {
+                                $valorFrete = $produto['valor_frete_promocao'];
+                            } else if ($produto['frete_gratis'] === '1') {
+                                $valorFrete = 0 ;
+                            } else {
+                                $valorFrete = $produto['valor_frete'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')) ? 0 : $produto['valor_frete'];
                             ?>
                             <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
 
@@ -755,11 +779,11 @@ if (isset($_SESSION['id'])) {
                             <?php endif; ?>
 
                             <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                             <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                             <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $produto['valor_produto']; ?>')">Adicionar ao Carrinho</a>
+                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>', '<?php echo $valorFrete; ?>')">Adicionar ao Carrinho</a>
                             <?php else: ?>
                                 <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                             <?php endif; ?>
@@ -841,6 +865,20 @@ if (isset($_SESSION['id'])) {
                             <?php
                             $imagens = !empty($produto['imagens']) ? explode(',', $produto['imagens']) : [];
                             $primeira_imagem = $imagens[0] ?? 'placeholder.jpg';
+
+                            // Determinar o valor do frete
+                            if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1') {
+                                $valorFrete = 0 ;
+                            } else if ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '0') {
+                                $valorFrete = $produto['valor_frete_promocao'];
+                            } else if ($produto['frete_gratis'] === '1') {
+                                $valorFrete = 0 ;
+                            } else {
+                                $valorFrete = $produto['valor_frete'];
+                            }
+
+                            // Determinar o valor do frete
+                            $valorFrete = ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')) ? 0 : $produto['valor_frete'];
                             ?>
                             <img src="../parceiros/produtos/img_produtos/<?php echo htmlspecialchars($primeira_imagem); ?>" alt="<?php echo htmlspecialchars($produto['nome_produto']); ?>">
 
@@ -862,11 +900,11 @@ if (isset($_SESSION['id'])) {
                             <?php endif; ?>
 
                             <h3><?php echo htmlspecialchars($produto['nome_produto']); ?></h3>
-                            <p class="moeda">R$ <?php echo number_format($produto['valor_produto'], 2, ',', '.'); ?></p>
+                            <p class="moeda">R$ <?php echo number_format($valorProduto, 2, ',', '.'); ?></p>
                             <a href="detalhes_produto.php?id_cliente=<?php echo $id; ?>&id_produto=<?php echo $produto['id_produto']; ?>" class="btn">Detalhes</a>
 
                             <?php if (isset($usuarioLogado) && $usuarioLogado): ?>
-                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $produto['valor_produto']; ?>')">Adicionar ao Carrinho</a>
+                                <a href="#" class="btn" onclick="abrirPopup('<?php echo $produto['id_produto']; ?>', '<?php echo $produto['nome_produto']; ?>', '<?php echo $valorProduto; ?>', '<?php echo $valorFrete; ?>')">Adicionar ao Carrinho</a>
                             <?php else: ?>
                                 <a href="login/lib/login.php" class="btn">Faça login para comprar</a>
                             <?php endif; ?>
@@ -897,8 +935,12 @@ if (isset($_SESSION['id'])) {
                     <input type="number" id="quantidade" name="quantidade" value="1" min="1" oninput="calcularTotal()">
                 </p>
                 
-                <p>Valor Total R$: 
+                <p>Valor Total: R$ 
                     <input type="text" id="total" name="total" readonly>
+                </p>
+
+                <p>Valor Frete: 
+                    <span id="frete"></span>
                 </p>
                 
             </aside>   
@@ -918,18 +960,22 @@ if (isset($_SESSION['id'])) {
     <script>
         let precoProduto = 0; // Variável global para armazenar o preço do produto
 
-        function abrirPopup(id, produto, preco) {
+        function abrirPopup(id, produto, preco, frete) {
             // Converte para float e garante apenas 2 casas decimais
             precoProduto = parseFloat(preco).toFixed(2);
 
             // Formata corretamente no padrão brasileiro
             let precoFormatado = Number(precoProduto).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            let freteFormatado = frete == 0 
+                ? "<span style='color: green; font-weight: bold;'>Frete Grátis</span>" 
+                : `R$ ${Number(frete).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
             // Define os valores nos inputs
             document.getElementById('id_produto_carrinho').value = id;
             document.getElementById('produtoNome').value = produto;
             document.getElementById('produtoPreco').value = precoFormatado;
             document.getElementById('total').value = precoFormatado;
+            document.getElementById('frete').innerHTML = freteFormatado;
 
             // Exibe o popup
             document.getElementById('popup').style.display = 'block';

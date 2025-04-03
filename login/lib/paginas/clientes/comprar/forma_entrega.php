@@ -16,7 +16,7 @@
     $stmt_delete->close();
 
     // Buscar os produtos do carrinho
-    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.vende_crediario, p.qt_parcelas, c.frete 
+    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, c.valor_produto, p.taxa_padrao, p.vende_crediario, p.qt_parcelas, c.frete 
                               FROM carrinho c 
                               JOIN produtos p ON c.id_produto = p.id_produto 
                               WHERE c.id_cliente = ? AND p.id_parceiro = ?");
@@ -349,7 +349,7 @@
                         foreach ($produtos as $produto): 
                             $qtParcelas = $produto['qt_parcelas'];
 
-                            $valorProComTaxa = ($produto['valor_produto'] * $produto['taxa_padrao']) / 100 + $produto['valor_produto'];
+                            $valorProComTaxa = $produto['valor_produto'];
                             $total = $valorProComTaxa * $produto['qt'];
                             
                             $totalGeral += $total;

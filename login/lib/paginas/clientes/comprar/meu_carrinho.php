@@ -15,7 +15,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     $stmt_delete->execute();
     $stmt_delete->close();
 
-    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, pa.nomeFantasia 
+    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.promocao, p.valor_promocao, pa.nomeFantasia, c.frete 
                                     FROM carrinho c
                                     INNER JOIN produtos p ON c.id_produto = p.id_produto
                                     INNER JOIN meus_parceiros pa ON c.id_parceiro = pa.id
@@ -29,13 +29,18 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         if (!isset($carrinho[$id_parceiro])) {
             $carrinho[$id_parceiro] = [
                 'nomeFantasia' => $produto['nomeFantasia'],
+                'frete' => $produto['frete'], // Adiciona o frete do parceiro
                 'produtos' => [],
                 'total' => 0
             ];
         }
 
+        // Verifica se o produto está em promoção
+        $valor_produto = $produto['promocao'] ? $produto['valor_promocao'] : $produto['valor_produto'];
+        $preco_com_taxa = (($valor_produto * $produto['taxa_padrao']) / 100) + $valor_produto;
+
         $carrinho[$id_parceiro]['produtos'][] = $produto;
-        $carrinho[$id_parceiro]['total'] += (($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']) * $produto['qt'];
+        $carrinho[$id_parceiro]['total'] += $preco_com_taxa * $produto['qt'];
     }
 }
 ?>
@@ -218,9 +223,10 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                             <tr title="Detalhes" class="produto" data-id-produto="<?php echo $produto['id_produto']; ?>" data-id-cliente="<?php echo $id_cliente; ?>">
                                 <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
                                 <td class="preco-produto" data-valor="
-                                    <?php $preco=(($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']);
-                                        echo $preco;
-                                    ?>">R$ <?php echo number_format($preco, 2, ',', '.'); ?></td>
+                                    <?php $preco = $produto['promocao'] ? $produto['valor_promocao'] : $produto['valor_produto'];
+                                        $preco_com_taxa = (($preco * $produto['taxa_padrao']) / 100) + $preco;
+                                        echo $preco_com_taxa;
+                                    ?>">R$ <?php echo number_format($preco_com_taxa, 2, ',', '.'); ?></td>
                                 <td>
                                     <input type="number" 
                                         style="width: 40px; border: none;" 
@@ -233,7 +239,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                                 </td>
 
                                 <td class="total-produto" id="total-produto-<?php echo $produto['id_produto']; ?>">
-                                    R$ <?php $precoTotal=(($produto['valor_produto']*$produto['taxa_padrao'])/100 + $produto['valor_produto']) * $produto['qt'];
+                                    R$ <?php $precoTotal = $preco_com_taxa * $produto['qt'];
                                         echo number_format($precoTotal, 2, ',', '.'); ?>
                                 </td>
                                 <td>
@@ -249,7 +255,8 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                 </table>
                 <div class="total">Total: R$ 
                     <?php 
-                        echo number_format($dados['total'], 2, ',','.');
+                        $total_com_frete = $dados['total'] + $dados['frete']; // Soma o frete ao total
+                        echo number_format($total_com_frete, 2, ',', '.');
                     ?><button class="comprar" data-id-cliente="<?php echo $id_cliente; ?>">Comprar</button>
                 </div>
             </div>

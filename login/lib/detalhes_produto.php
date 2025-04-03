@@ -34,12 +34,31 @@
             $produto = $result->fetch_assoc();
             $nome_produto = $produto['nome_produto'];
             $imagens = isset($produto['imagens']) ? explode(',', $produto['imagens']) : [];
+            $taxa_padrao = $produto['taxa_padrao'] ?? 0; // % padrão
         } else {
             $error_msg = "Produto não encontrado ou indisponível.";
         }
         $stmt->close();
     } else {
         $error_msg = "ID do parceiro ou produto inválido.";
+    }
+
+
+    // Calcular o preço com base na promoção e taxa padrão
+    if ($produto['promocao'] == '1') {
+        $preco_final = $produto['valor_promocao'] + ($produto['valor_promocao'] * $taxa_padrao) / 100;
+        if ($produto['frete_gratis_promocao'] == '1') {
+            $valor_frete_promocao = 0;
+        } else {
+            $valor_frete_promocao = $produto['valor_frete'] ?? 0;
+        }
+    } else {
+        $preco_final = ($produto['valor_produto'] + ($produto['valor_produto'] * $taxa_padrao) / 100);
+        if ($produto['frete_gratis'] == '1') {
+            $valor_frete = 0;
+        } else {
+            $valor_frete = $produto['valor_frete'] ?? 0;
+        }
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -382,14 +401,14 @@
             <?php endif; ?>
             <?php 
                 // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                if ($produto['frete_gratis'] == '1' || ($produto['promocao'] == '1' && $produto['frete_gratis_promocao'] == '1')): 
             ?>
                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
             <?php 
                 endif;
 
                 // Exibe o ícone de promoção, se o produto estiver em promoção
-                if ($produto['promocao'] === 'sim'): 
+                if ($produto['promocao'] == '1'): 
             ?>
                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
             <?php 
@@ -398,12 +417,14 @@
             <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome_produto'] ?? 'Produto sem nome'); ?></p>
             <p><strong>Descrição:</strong></p>
             <textarea class="descricao-box" readonly><?= nl2br(htmlspecialchars($produto['descricao_produto'] ?? 'Sem descrição disponível')); ?></textarea>
-            <p><strong>Preço:</strong> R$ <?= number_format($produto['valor_produto'] ?? 0, 2, ',', '.'); ?></p>
-            <?php if ($produto['frete_gratis'] === 'sim'): ?>
-                <p><strong>Frete Grátis:</strong> SIM</p>
+            <p><strong>Preço:</strong> R$ <?= number_format($preco_final, 2, ',', '.'); ?></p>
+            <?php if ($produto['promocao'] == '1' && $produto['frete_gratis_promocao'] == '1'): ?>
+                <p><strong>Frete:</strong> <span style="color: green;">Frete Grátis</span></p>
+            <?php elseif ($produto['frete_gratis'] == '1'): ?>
+                <p><strong>Frete:</strong> <span style="color: green;">Frete Grátis</span></p>
+            <?php else: ?>
+                <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             <?php endif; ?>
-
-            <p><strong>Frete:</strong> R$ <?= number_format($produto['valor_frete'] ?? 0, 2, ',', '.'); ?></p>
             
             <div class="buttons-container">
                 
