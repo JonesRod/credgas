@@ -15,6 +15,7 @@
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $valor_frete = floatval(str_replace(',', '.', $_POST['valor_frete']));
+    $valor_total_sem_crediario = floatval(str_replace(',', '.', $_POST['valor_total_sem_crediario']));
     $valor_total_crediario = floatval(str_replace(',', '.', $_POST['valor_total_crediario']));
     $detalhes_produtos = $_POST['detalhes_produtos']; // Certifique-se de validar este campo
     $entrega = $_POST['entrega'];
@@ -27,11 +28,14 @@
     $tipo_entrada_crediario = $_POST['tipo_entrada_crediario'];
     $bandeiras_aceitas = $_POST['bandeiras_aceita'];
     $comentario = $_POST['comentario'];
+    $maior_parcelas = intval($_POST['maiorParcelas']);
 
     // Formatação para moeda
     $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, ',', '.');
     $entrada_formatado = number_format($entrada, 2, ',', '.');
-    $restante_formatado = number_format($restante, 2, ',', '.');
+    $restante_formatado = number_format($restante, 2, ',', '.');  
+    
+    
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -45,6 +49,7 @@
         <input type="text" id="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
         <input type="text" id="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
         <input type="text" id="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
+        <input type="text" id="valor_total_sem_crediario" value="<?php echo $valor_total_sem_crediario; ?>" hidden>
         <input type="text" id="valor_total_crediario" value="<?php echo $valor_total_crediario; ?>" hidden>
         <input type="text" id="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
         <input type="text" id="entrega" value="<?php echo $entrega; ?>" hidden>
@@ -86,12 +91,9 @@
                 <p>Valor Restante: R$ <?php echo $restante_formatado; ?></p>
                 <label for="parcelas">Selecione o número de parcelas:</label>
                 <select id="parcelas" onchange="calcularParcelas()">
-                    <option value="1">1x (sem juros)</option>
-                    <option value="2">2x</option>
-                    <option value="3">3x</option>
-                    <option value="4">4x</option>
-                    <option value="5">5x</option>
-                    <option value="6">6x</option>
+                    <?php for ($i = 1; $i <= $maior_parcelas; $i++): ?>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
+                    <?php endfor; ?>
                 </select>
                 <p id="valor_parcela"></p>
                 <button type="button" id="btn_voltar" onclick="voltarParaPix()">Voltar</button>
@@ -101,10 +103,10 @@
         
     </form>
 
-    <form action="pagamento.php" method="POST">
+    <form action="forma_entrega.php" method="GET">
         <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
         <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-        <input type="hidden" name="valor_total" value="<?php echo $valor_total_crediario; ?>">
+        <input type="hidden" name="valor_total" value="<?php echo $valor_total_sem_crediario; ?>">
         <input type="hidden" name="valor_frete" value="<?php echo $valor_frete; ?>">
         <input type="hidden" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
         <input type="hidden" name="entrega" value="<?php echo $entrega; ?>">
@@ -158,8 +160,57 @@
 
             // Função para finalizar o pagamento
             window.finalizarPagamento = function () {
-                alert("Pagamento finalizado com sucesso!");
-                // Aqui você pode adicionar a lógica para finalizar o pagamento
+                const confirmar = confirm("Deseja confirmar a compra?");
+                if (confirmar) {
+                    const formData = new FormData();
+                    formData.append("id_cliente", "<?php echo $id_cliente; ?>");
+                    formData.append("id_parceiro", "<?php echo $id_parceiro; ?>");
+                    formData.append("valor_frete", "<?php echo $valor_frete; ?>");
+                    formData.append("valor_total", "<?php echo $valor_total_crediario; ?>");
+                    formData.append("detalhes_produtos", "<?php echo $detalhes_produtos; ?>");
+                    formData.append("entrega", "<?php echo $entrega; ?>");
+                    formData.append("rua", "<?php echo $rua; ?>");
+                    formData.append("bairro", "<?php echo $bairro; ?>");
+                    formData.append("numero", "<?php echo $numero; ?>");
+                    formData.append("contato", "<?php echo $contato; ?>");
+                    formData.append("comentario", "<?php echo $comentario; ?>");
+                    formData.append("entrada", "<?php echo $entrada; ?>");
+                    formData.append("restante", "<?php echo $restante; ?>");
+                    formData.append("tipo_entrada_crediario", "<?php echo $tipo_entrada_crediario; ?>");
+                    formData.append("qt_parcelas", document.getElementById("parcelas").value); // Adicionado qt_parcelas
+
+                    fetch("", { // Enviar para a própria página
+                        method: "POST",
+                        body: formData,
+                    })
+                    .then((response) => {
+                        console.log("Resposta do servidor:", response); // Log da resposta completa
+                        if (!response.ok) {
+                            throw new Error("Erro na resposta do servidor");
+                        }
+                        return response.text(); // Alterado para text() para verificar o conteúdo
+                    })
+                    .then((text) => {
+                        try {
+                            const data = JSON.parse(text); // Tenta analisar como JSON
+                            console.log("Dados retornados:", data); // Log dos dados retornados
+                            if (data.sucesso) {
+                                alert("Pedido finalizado com sucesso!");
+                                window.location.href = "meus_pedidos.php";
+                            } else {
+                                alert("Erro ao finalizar o pedido: " + data.erro);
+                                console.error("Erro ao finalizar o pedido:", data.erro);
+                            }
+                        } catch (error) {
+                            console.error("Erro ao analisar JSON:", error, "Resposta recebida:", text);
+                            alert("Erro ao salvar o pedido. Resposta inesperada do servidor.");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Erro ao salvar o pedido:", error);
+                        alert("Erro ao salvar o pedido. Verifique o console para mais detalhes.");
+                    });
+                }
             };
         });
 
