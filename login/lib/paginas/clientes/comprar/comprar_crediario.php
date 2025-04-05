@@ -9,7 +9,7 @@
     }
 
     $id_session = $_SESSION['id'];
-    //var_dump($_POST);
+    var_dump($_POST);
     //echo 'crediario';
 
     // Verificação e sanitização dos dados recebidos
@@ -33,9 +33,9 @@
     $maior_parcelas = isset($_POST['maiorParcelas']) ? intval($_POST['maiorParcelas']) : 1;
 
     // Formatação para moeda
-    $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, ',', '.');
-    $entrada_formatado = number_format($entrada, 2, ',', '.');
-    $restante_formatado = number_format($restante, 2, ',', '.'); 
+    $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, '.', '');
+    $entrada_formatado = number_format($entrada, 2, '.', '');
+    $restante_formatado = number_format($restante, 2, '.', ''); 
 
     $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session") or die($mysqli->error);
     $dados = $bd_cliente->fetch_assoc();
@@ -74,6 +74,7 @@
         <input type="text" id="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" hidden>
         <input type="text" id="comentario" value="<?php echo $comentario; ?>" hidden>
         <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
+        <input type="text" id="data_hora" name="data_hora" accept="" hidden>
 
         <h1>Compra no Crediário</h1>
         <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
@@ -105,7 +106,9 @@
                     <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
                     <?php endfor; ?>
                 </select>
+
                 <p id="valor_parcela"></p>
+                <input type="text" id="input_parcela" style="display: none;">
 
                 <button type="button" id="btn_voltar" onclick="voltarParaPix()">Voltar</button>
                 <button type="button" id="btn_continuar_pg">Continuar</button>
@@ -121,7 +124,7 @@
                 <p>Digite a senha do cliente para continuar com o pagamento.</p>
                 <p>Após a confirmação, o pedido será finalizado e o restante do valor será cobrado.</p>
                 <button type="button" id="btn_cancelar">Cancelar</button>
-                <button type="submit" id="btn_finalizar">Finalizar</button>
+                <button type="button" id="btn_finalizar">Finalizar</button>
             </div>
         </div>  
     </form>
@@ -153,6 +156,7 @@
             const btnCancelar = document.getElementById("btn_cancelar");
             const senhaInput = document.getElementById("senha_cliente");
             const toggleSenha = document.getElementById("toggle_senha");
+            
             let senhaVisivelTimeout;
 
             // Mostrar o popup PIX se tipo_entrada_crediario for 1
@@ -222,6 +226,117 @@
                     toggleSenha.textContent = "👁️"; // Ícone para visualizar
                     clearTimeout(senhaVisivelTimeout);
                 }
+            });
+
+            // Função para calcular parcelas
+            function calcularParcelas() {
+                const restante = <?php echo $restante; ?>;
+                const parcelas = document.getElementById("parcelas").value;
+                const taxa = 0.0299; // 2,99% ao mês
+                let valorParcela;
+
+                if (parcelas == 1) {
+                    valorParcela = restante;
+                } else {
+                    valorParcela = restante * Math.pow(1 + taxa, parcelas) / parcelas;
+                }
+
+                // Formatar o valor com ponto de milhar e vírgula para centavos
+                const valorFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                document.getElementById("valor_parcela").innerText = 
+                    `Valor de cada parcela: R$ ${valorFormatado}`;
+                document.getElementById("input_parcela").value = valorParcela.toFixed(2);
+            }
+
+            // Calcular parcelas ao carregar a página
+            calcularParcelas();
+
+            // Recalcular parcelas ao selecionar uma nova parcela
+            document.getElementById("parcelas").addEventListener("change", calcularParcelas);
+
+            function obterHorarioLocal() {
+                const agora = new Date();
+                
+                // Obtém os componentes da data e hora
+                const ano = agora.getFullYear();
+                const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
+                const dia = String(agora.getDate()).padStart(2, '0');
+                const hora = String(agora.getHours()).padStart(2, '0');
+                const minuto = String(agora.getMinutes()).padStart(2, '0');
+                const segundo = String(agora.getSeconds()).padStart(2, '0');
+
+                // Formata a data e hora como YYYY-MM-DD HH:MM:SS
+                const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+
+                //console.log("Horário do dispositivo:", dataFormatada);
+                /*document.getElementById('data_hora').value = dataFormatada;
+                document.getElementById('hr_detalhes_cartao').value = dataFormatada;
+                document.getElementById('hr_detalhes_cartao_debito').value = dataFormatada;
+                document.getElementById('hr_popup_novo_cartao').value = dataFormatada;*/
+            }
+
+            // Função para enviar os dados via JavaScript em formato JSON
+            document.getElementById("btn_finalizar").addEventListener("click", function () {
+                    const agora = new Date();
+                
+                    // Obtém os componentes da data e hora
+                    const ano = agora.getFullYear();
+                    const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
+                    const dia = String(agora.getDate()).padStart(2, '0');
+                    const hora = String(agora.getHours()).padStart(2, '0');
+                    const minuto = String(agora.getMinutes()).padStart(2, '0');
+                    const segundo = String(agora.getSeconds()).padStart(2, '0');
+
+                    // Formata a data e hora como YYYY-MM-DD HH:MM:SS
+                    const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+                    
+                    const formData = {
+                    senha_compra: document.getElementById("senha_compra").value,
+                    tipo_compra: document.getElementById("tipo_compra").value,
+                    id_cliente: document.getElementById("id_cliente").value,
+                    id_parceiro: document.getElementById("id_parceiro").value,
+                    valor_frete: document.getElementById("valor_frete").value,
+                    valor_total_sem_crediario: document.getElementById("valor_total_sem_crediario").value,
+                    valor_total_crediario: document.getElementById("valor_total_crediario").value,
+                    detalhes_produtos: document.getElementById("detalhes_produtos").value,
+                    entrega: document.getElementById("entrega").value,
+                    rua: document.getElementById("rua").value,
+                    bairro: document.getElementById("bairro").value,
+                    numero: document.getElementById("numero").value,
+                    contato: document.getElementById("contato").value,
+                    entrada: document.getElementById("entrada").value,
+                    restante: document.getElementById("restante").value,
+                    tipo_entrada_crediario: document.getElementById("tipo_entrada_crediario").value,
+                    bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
+                    comentario: document.getElementById("comentario").value,
+                    parcelas: document.getElementById("parcelas").value,
+                    valor_parcela: document.getElementById("input_parcela").value,
+                    senha_cliente: document.getElementById("senha_cliente").value,
+                    data_hora: dataFormatada
+                };
+
+                fetch("finalizar_compra_crediario.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Compra finalizada com sucesso!");
+                        window.location.href = "sucesso.php"; // Redirecionar para página de sucesso
+                    } else {
+                        document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
+                        document.getElementById("msg_erro").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
+                    document.getElementById("msg_erro").style.display = "block";
+                });
             });
         });
     </script>
