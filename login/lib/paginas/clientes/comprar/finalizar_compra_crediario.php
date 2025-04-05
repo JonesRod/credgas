@@ -86,28 +86,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         comentario, 
         status_cliente, 
         status_parceiro) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("iissddiss", 
-        $id_cliente, 
-        $id_parceiro, 
-        $detalhes_produtos,
-        $valor_frete, 
-        $total_compra,
-        $tipo_compra, 
-        $entrada, 
-        $tipo_entrada_crediario, 
-        $restante, 
-        $tipo_compra, 
-        $parcelas, 
-        $valor_parcela,
-        $tipo_entrega,
-        $endereco_entrega,
-        $num_entrega,
-        $bairro_entrega,
-        $contato_recebedor,
-        $comentario, 
-        $status_cliente, 
-        $status_parceiro);
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        $stmt->bind_param(
+            "siiiddsddsissssssiii", // Tipos de dados: s = string, i = inteiro, d = double
+            $dataFormatada,         // s: data
+            $id_cliente,            // i: id_cliente
+            $id_parceiro,           // i: id_parceiro
+            $detalhes_produtos,     // s: produtos
+            $valor_frete,           // d: valor_frete
+            $tota_compra,           // d: valor
+            $tipo_compra,           // s: tipo_compra
+            $entrada,               // d: entrada
+            $tipo_entrada_crediario,// s: forma_pg_entrada
+            $restante,              // d: valor_restante
+            $tipo_compra,           // s: forma_pg_restante
+            $parcelas,              // i: qt_parcelas
+            $valor_parcela,         // d: valor_parcela
+            $entrega,               // s: tipo_entrega
+            $rua,                   // s: endereco_entrega
+            $numero,                // s: num_entrega
+            $bairro,                // s: bairro_entrega
+            $contato,               // s: contato_recebedor
+            $comentario,            // s: comentario
+            $status_cliente,        // i: status_cliente
+            $status_parceiro        // i: status_parceiro
+        );
 
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
