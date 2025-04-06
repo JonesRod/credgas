@@ -81,20 +81,53 @@
             color: #555;
         }
 
+        /* Botões gerais */
         button {
             display: inline-block;
             padding: 10px 20px;
             margin: 10px 0;
             border: none;
             border-radius: 5px;
-            background-color: #007bff;
-            color: #fff;
             font-size: 16px;
             cursor: pointer;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        /* Botões de ação positiva (Continuar, Finalizar) */
+        button#btn_continuar,
+        button#btn_continuar_pg,
+        button#btn_finalizar {
+            background-color: #28a745; /* Verde */
+            color: #fff;
+        }
+
+        button#btn_continuar:hover,
+        button#btn_continuar_pg:hover,
+        button#btn_finalizar:hover {
+            background-color: #218838; /* Verde mais escuro */
+        }
+
+        /* Botão de ação negativa (Cancelar) */
+        button#btn_cancelar {
+            background-color: #dc3545; /* Vermelho */
+            color: #fff;
+        }
+
+        button#btn_cancelar:hover {
+            background-color: #c82333; /* Vermelho mais escuro */
+        }
+
+        /* Botões de ação neutra (Voltar, Gerar QR Code) */
+        button#btn_voltar,
+        button[onclick="gerarQRCode()"],
+        button[type="submit"] {
+            background-color: #007bff; /* Azul */
+            color: #fff;
+        }
+
+        button#btn_voltar:hover,
+        button[onclick="gerarQRCode()"]:hover,
+        button[type="submit"]:hover {
+            background-color: #0056b3; /* Azul mais escuro */
         }
 
         .popup-content {
@@ -212,9 +245,14 @@
                 <p>Valor Restante: R$ <?php echo $restante_formatado; ?></p>
                 <label for="parcelas">Selecione o número de parcelas:</label>
                 <select id="parcelas" name="parcelas">
-                    <?php for ($i = 1; $i <= $maior_parcelas; $i++): ?>
-                    <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
-                    <?php endfor; ?>
+                    <?php 
+                    if ($maior_parcelas > 0): 
+                        for ($i = 1; $i <= $maior_parcelas; $i++): ?>
+                            <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
+                        <?php endfor; 
+                    else: ?>
+                        <option value="1">1x (sem juros)</option>
+                    <?php endif; ?>
                 </select>
 
                 <p id="valor_parcela"></p>
@@ -396,6 +434,19 @@
                 document.getElementById('data_hora').value = dataFormatada;
             }
 
+            // Criar o overlay escuro
+            const overlay = document.createElement("div");
+            overlay.id = "overlay";
+            overlay.style.position = "fixed";
+            overlay.style.top = "0";
+            overlay.style.left = "0";
+            overlay.style.width = "100%";
+            overlay.style.height = "100%";
+            overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+            overlay.style.zIndex = "999";
+            overlay.style.display = "none";
+            document.body.appendChild(overlay);
+
             // Criar o popup de sucesso
             const popupSucesso = document.createElement("div");
             popupSucesso.id = "popup-sucesso";
@@ -407,6 +458,7 @@
             popupSucesso.style.zIndex = "1000";
             popupSucesso.style.backgroundColor = "#fff";
             popupSucesso.style.padding = "20px";
+            popupSucesso.style.borderRadius = "8px";
             popupSucesso.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
             popupSucesso.innerHTML = `
                 <h3>Compra Finalizada</h3>
@@ -414,6 +466,20 @@
                 <p>Você será redirecionado em <span id="contador">5</span> segundos...</p>
             `;
             document.body.appendChild(popupSucesso);
+
+            // Mostrar o popup de sucesso e o overlay
+            function mostrarPopupSucesso() {
+                overlay.style.display = "block";
+                popupSucesso.style.display = "block";
+                document.body.style.overflow = "hidden"; // Travar a rolagem da tela
+            }
+
+            // Ocultar o popup de sucesso e o overlay
+            function ocultarPopupSucesso() {
+                overlay.style.display = "none";
+                popupSucesso.style.display = "none";
+                document.body.style.overflow = "auto"; // Liberar a rolagem da tela
+            }
 
             // Função para enviar os dados via JavaScript em formato JSON
             document.getElementById("btn_finalizar").addEventListener("click", function () {
@@ -470,13 +536,14 @@
                     if (data.success) {
                         const popupSenha = document.getElementById("popup-senha");
                         popupSenha.style.display = "none"; // Ocultar o popup de senha
-                        popupSucesso.style.display = "block"; // Mostrar o popup de sucesso
+                        mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
                         let contador = 5;
                         const intervalo = setInterval(() => {
                             contador--;
                             document.getElementById("contador").textContent = contador;
                             if (contador === 0) {
                                 clearInterval(intervalo);
+                                ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
                                 window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
                             }
                         }, 1000);
