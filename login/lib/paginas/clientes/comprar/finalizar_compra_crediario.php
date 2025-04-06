@@ -13,115 +13,162 @@ if (!isset($_SESSION['id'])) {
 
 $id_session = $_SESSION['id'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Receber os dados JSON
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Receber os dados JSON
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
 
-    if (isset($data['senha_cliente']) && isset($data['senha_compra'])) {
-        // Buscar a senha do cliente no banco
-        $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session") or die(json_encode(['success' => false, 'message' => 'Erro ao buscar dados do cliente.']));
-        $dados = $bd_cliente->fetch_assoc();
-        $senha_compra = $dados['senha_login'];
+        if (isset($data['senha_cliente']) && isset($data['senha_compra'])) {
+            // Buscar a senha do cliente no banco
+            $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session");
+            if (!$bd_cliente) {
+                throw new Exception('Erro ao buscar dados do cliente.');
+            }
+            $dados = $bd_cliente->fetch_assoc();
+            $senha_compra = $dados['senha_login'];
 
-        // Verificar e sanitizar os dados recebidos
-        $tipo_compra = 'crediario';
-        $id_cliente = isset($data['id_cliente']) ? intval($data['id_cliente']) : 0;
-        $id_parceiro = isset($data['id_parceiro']) ? intval($data['id_parceiro']) : 0;
-        $valor_frete = isset($data['valor_frete']) ? floatval($data['valor_frete']) : 0.0;
-        $valor_total_sem_crediario = isset($data['valor_total_sem_crediario']) ? floatval($data['valor_total_sem_crediario']) : 0.0;
-        $valor_total_crediario = isset($data['valor_total_crediario']) ? floatval($data['valor_total_crediario']) : 0.0;
-        $detalhes_produtos = isset($data['detalhes_produtos']) ? $data['detalhes_produtos'] : '';
-        $entrega = isset($data['entrega']) ? $data['entrega'] : '';
-        $rua = isset($data['rua']) ? $data['rua'] : '';
-        $bairro = isset($data['bairro']) ? $data['bairro'] : '';
-        $numero = isset($data['numero']) ? $data['numero'] : '';
-        $contato = isset($data['contato']) ? $data['contato'] : '';
-        $entrada = isset($data['entrada']) ? floatval($data['entrada']) : 0.0;
-        $restante = isset($data['restante']) ? floatval($data['restante']) : 0.0;
-        $tipo_entrada_crediario = isset($data['tipo_entrada_crediario']) ? $data['tipo_entrada_crediario'] : '';
-        $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
-        $comentario = isset($data['comentario']) ? $data['comentario'] : '';
-        $parcelas = isset($data['parcelas']) ? intval($data['parcelas']) : 1;
-        $valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
-        $senha_cliente = $data['senha_cliente'];
+            // Verificar e sanitizar os dados recebidos
+            $tipo_compra = 'crediario';
+            $id_cliente = isset($data['id_cliente']) ? intval($data['id_cliente']) : 0;
+            $id_parceiro = isset($data['id_parceiro']) ? intval($data['id_parceiro']) : 0;
+            $valor_frete = isset($data['valor_frete']) ? floatval($data['valor_frete']) : 0.0;
+            $valor_total_sem_crediario = isset($data['valor_total_sem_crediario']) ? floatval($data['valor_total_sem_crediario']) : 0.0;
+            $valor_total_crediario = isset($data['valor_total_crediario']) ? floatval($data['valor_total_crediario']) : 0.0;
+            $detalhes_produtos = isset($data['detalhes_produtos']) ? $data['detalhes_produtos'] : '';
+            $entrega = isset($data['entrega']) ? $data['entrega'] : '';
+            $rua = isset($data['rua']) ? $data['rua'] : '';
+            $bairro = isset($data['bairro']) ? $data['bairro'] : '';
+            $numero = isset($data['numero']) ? $data['numero'] : '';
+            $contato = isset($data['contato']) ? $data['contato'] : '';
+            $entrada = isset($data['entrada']) ? floatval($data['entrada']) : 0.0;
+            $restante = isset($data['restante']) ? floatval($data['restante']) : 0.0;
+            $tipo_entrada_crediario = isset($data['tipo_entrada_crediario']) ? $data['tipo_entrada_crediario'] : '';
+            if ($tipo_entrada_crediario === '1') {
+                $tipo_entrada_crediario = 'pix';
+            } else if ($tipo_entrada_crediario === '2') {
+                $tipo_entrada_crediario = 'credito';
+            } else {
+                $tipo_entrada_crediario = 'debito';
+            }
+            $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
+            $comentario = isset($data['comentario']) ? $data['comentario'] : '';
+            $parcelas = isset($data['parcelas']) ? intval($data['parcelas']) : 1;
+            $valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
+            $senha_cliente = $data['senha_cliente'];
+            
+            $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
+            $tota_compra = $valor_total_crediario + $valor_frete + $valor_total_sem_crediario;
 
-        $tota_compra = $valor_total_crediario + $valor_frete + $valor_total_sem_crediario;
-        $status_cliente = 0; // Status do cliente
-        $status_parceiro = 0; // Status do parceiro
-        $dataFormatada = $data['dataFormatada'] ?? date('Y-m-d H:i:s');
+            // Verifique se o valor foi calculado corretamente
+            if ($tota_compra === null || $tota_compra === 0) {
+                echo json_encode(['success' => false, 'message' => 'Erro: O valor total da compra não foi calculado corretamente.']);
+                exit;
+            }
 
-        // Verifica se a senha foi preenchida
-        if (empty($senha_cliente)) {
-            echo json_encode(['success' => false, 'message' => 'Senha não informada.']);
-            exit;
-        }
+            $status_cliente = 0; // Status do cliente
+            $status_parceiro = 0; // Status do parceiro
+            
+            // Verifica se a senha foi preenchida
+            if (empty($senha_cliente)) {
+                echo json_encode(['success' => false, 'message' => 'Senha não informada.']);
+                exit;
+            }
 
-        // Verifica se a senha está correta usando password_verify
-        if (!password_verify($senha_cliente, $senha_compra)) {
-            echo json_encode(['success' => false, 'message' => 'Senha incorreta.']);
-            exit;
-        }
+            // Verifica se a senha está correta usando password_verify
+            if (!password_verify($senha_cliente, $senha_compra)) {
+                echo json_encode(['success' => false, 'message' => 'Senha incorreta.']);
+                exit;
+            }
 
-        // Processar a compra (exemplo de inserção no banco de dados)
-        $stmt = $mysqli->prepare("INSERT INTO pedidos (
-        data,
-        id_cliente, 
-        id_parceiro, 
-        produtos, 
-        valor_frete,
-        valor,
-        tipo_compra, 
-        entrada, 
-        forma_pg_entrada, 
-        valor_restante, 
-        forma_pg_restante, 
-        qt_parcelas, 
-        valor_parcela,
-        tipo_entrega, 
-        endereco_entrega,
-        num_entrega,
-        bairro_entrega,
-        contato_recebedor,
-        comentario, 
-        status_cliente, 
-        status_parceiro) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            // Processar a compra (exemplo de inserção no banco de dados)
+            $stmt = $mysqli->prepare("INSERT INTO pedidos (
+                data,
+                id_cliente, 
+                id_parceiro, 
+                produtos, 
+                valor_frete,
+                valor,
+                formato_compra,
+                entrada,
+                forma_pg_entrada,
+                valor_restante,
+                forma_pg_restante,
+                qt_parcelas,
+                valor_parcela,
+                tipo_entrega,
+                endereco_entrega,
+                num_entrega,
+                bairro_entrega,
+                contato_recebedor,
+                comentario,
+                status_cliente,
+                status_parceiro) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        $stmt->bind_param(
-            "siiiddsddsissssssiii", // Tipos de dados: s = string, i = inteiro, d = double
-            $dataFormatada,         // s: data
-            $id_cliente,            // i: id_cliente
-            $id_parceiro,           // i: id_parceiro
-            $detalhes_produtos,     // s: produtos
-            $valor_frete,           // d: valor_frete
-            $tota_compra,           // d: valor
-            $tipo_compra,           // s: tipo_compra
-            $entrada,               // d: entrada
-            $tipo_entrada_crediario,// s: forma_pg_entrada
-            $restante,              // d: valor_restante
-            $tipo_compra,           // s: forma_pg_restante
-            $parcelas,              // i: qt_parcelas
-            $valor_parcela,         // d: valor_parcela
-            $entrega,               // s: tipo_entrega
-            $rua,                   // s: endereco_entrega
-            $numero,                // s: num_entrega
-            $bairro,                // s: bairro_entrega
-            $contato,               // s: contato_recebedor
-            $comentario,            // s: comentario
-            $status_cliente,        // i: status_cliente
-            $status_parceiro        // i: status_parceiro
-        );
+            if (!$stmt) {
+                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+            }
 
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
+            $stmt->bind_param(
+                "siissssssssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
+                $data_hora,         // s: data
+                $id_cliente,        // i: id_cliente
+                $id_parceiro,       // i: id_parceiro
+                $detalhes_produtos, // s: produtos
+                $valor_frete,       // d: valor_frete
+                $tota_compra,       // d: valor
+                $tipo_compra,       // s: tipo_compra
+                $entrada,           // d: entrada
+                $tipo_entrada_crediario, // s: forma_pg_entrada
+                $restante,          // d: valor_restante
+                $tipo_compra,       // s: forma_pg_restante
+                $parcelas,          // i: qt_parcelas
+                $valor_parcela,     // d: valor_parcela
+                $entrega,           // s: tipo_entrega
+                $rua,               // s: endereco_entrega
+                $numero,            // s: num_entrega
+                $bairro,            // s: bairro_entrega
+                $contato,           // s: contato_recebedor
+                $comentario,        // s: comentario
+                $status_cliente,    // i: status_cliente
+                $status_parceiro    // i: status_parceiro
+            );
+
+            if ($stmt->execute()) {
+                $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
+                $stmt->close();
+
+                // Salvar notificação na tabela contador_notificacoes_cliente
+                $msg = "Pedido #$num_pedido em Análise.";
+                $stmt_notificacao = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, 'pedido', 1)");
+                if ($stmt_notificacao) {
+                    $stmt_notificacao->bind_param("sis", $data_hora, $id_cliente, $msg);
+                    $stmt_notificacao->execute();
+                    $stmt_notificacao->close();
+                } else {
+                    throw new Exception("Erro ao salvar a notificação: " . $mysqli->error);
+                }
+
+                // Excluir o pedido do carrinho
+                $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+                if ($stmt_carrinho) {
+                    $stmt_carrinho->bind_param("ii", $id_cliente, $id_parceiro);
+                    $stmt_carrinho->execute();
+                    $stmt_carrinho->close();
+                } else {
+                    throw new Exception("Erro ao excluir do carrinho: " . $mysqli->error);
+                }
+
+                echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
+            } else {
+                throw new Exception('Erro ao executar a consulta: ' . $stmt->error);
+            }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Erro ao finalizar a compra.']);
+            echo json_encode(['success' => false, 'message' => 'Dados incompletos.']);
         }
-
-        $stmt->close();
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Dados incompletos.']);
     }
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

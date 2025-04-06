@@ -202,7 +202,7 @@
 
         // Salvar o pedido no banco de dados
         $stmt = $mysqli->prepare("INSERT INTO pedidos (data, id_cliente, id_parceiro, produtos, valor_frete, valor, 
-        forma_pagamento, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, 
+        formato_compra, entrada, forma_pg_entrada, valor_restante, forma_pg_restante, 
         qt_parcelas, tipo_entrega, endereco_entrega, num_entrega, bairro_entrega, 
         contato_recebedor, comentario, status_cliente, status_parceiro) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

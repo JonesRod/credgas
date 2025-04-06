@@ -9,7 +9,7 @@
     }
 
     $id_session = $_SESSION['id'];
-    var_dump($_POST);
+    //var_dump($_POST);
     //echo 'crediario';
 
     // Verificação e sanitização dos dados recebidos
@@ -32,10 +32,10 @@
     $comentario = isset($_POST['comentario']) ? $_POST['comentario'] : '';
     $maior_parcelas = isset($_POST['maiorParcelas']) ? intval($_POST['maiorParcelas']) : 1;
 
-    // Formatação para moeda
-    $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, '.', '');
-    $entrada_formatado = number_format($entrada, 2, '.', '');
-    $restante_formatado = number_format($restante, 2, '.', ''); 
+    // Formatação para moeda com ponto de milhar e vírgula nos centavos
+    $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, ',', '.');
+    $entrada_formatado = number_format($entrada, 2, ',', '.');
+    $restante_formatado = number_format($restante, 2, ',', '.');
 
     $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session") or die($mysqli->error);
     $dados = $bd_cliente->fetch_assoc();
@@ -48,44 +48,187 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" width="device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compra no Crediário</title>
+    <style>
+        /* Estilos gerais */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #popup-pix {
+            text-align: center
+        }
+
+        p {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        /* Botões gerais */
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Botões de ação positiva (Continuar, Finalizar) */
+        button#btn_continuar,
+        button#btn_continuar_pg,
+        button#btn_finalizar {
+            background-color: #28a745; /* Verde */
+            color: #fff;
+        }
+
+        button#btn_continuar:hover,
+        button#btn_continuar_pg:hover,
+        button#btn_finalizar:hover {
+            background-color: #218838; /* Verde mais escuro */
+        }
+
+        /* Botão de ação negativa (Cancelar) */
+        button#btn_cancelar {
+            background-color: #dc3545; /* Vermelho */
+            color: #fff;
+        }
+
+        button#btn_cancelar:hover {
+            background-color: #c82333; /* Vermelho mais escuro */
+        }
+
+        /* Botões de ação neutra (Voltar, Gerar QR Code) */
+        button#btn_voltar,
+        button[onclick="gerarQRCode()"],
+        button[type="submit"] {
+            background-color: #007bff; /* Azul */
+            color: #fff;
+        }
+
+        button#btn_voltar:hover,
+        button[onclick="gerarQRCode()"]:hover,
+        button[type="submit"]:hover {
+            background-color: #0056b3; /* Azul mais escuro */
+        }
+
+        .popup-content {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 90%;
+        }
+
+        .popup-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .popup-content button {
+            width: 100%;
+        }
+
+        /* Estilos responsivos */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            .popup-content {
+                max-width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .popup-content {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="form-container">
+        <form id="form_crediario" method="POST" action="finalizar_compra_crediario.php">
+            <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
+            <input type="text" id="tipo_compra" name="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
+            <input type="text" id="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
+            <input type="text" id="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
+            <input type="text" id="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
+            <input type="text" id="valor_total_sem_crediario" value="<?php echo $valor_total_sem_crediario; ?>" hidden>
+            <input type="text" id="valor_total_crediario" value="<?php echo $valor_total_crediario; ?>" hidden>
+            <input type="text" id="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
+            <input type="text" id="entrega" value="<?php echo $entrega; ?>" hidden>
+            <input type="text" id="rua" value="<?php echo $rua; ?>" hidden>
+            <input type="text" id="bairro" value="<?php echo $bairro; ?>" hidden>
+            <input type="text" id="numero" value="<?php echo $numero; ?>" hidden>
+            <input type="text" id="contato" value="<?php echo $contato; ?>" hidden>
+            <input type="text" id="entrada" value="<?php echo $entrada; ?>" hidden>
+            <input type="text" id="restante" value="<?php echo $restante; ?>" hidden>
+            <input type="text" id="tipo_entrada_crediario" value="<?php echo $tipo_entrada_crediario; ?>" hidden>
+            <input type="text" id="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" hidden>
+            <input type="text" id="comentario" value="<?php echo $comentario; ?>" hidden>
+            <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
+            <input type="text" id="data_hora" name="data_hora" accept="" hidden>
 
-
-    <form id="form_crediario" method="POST" action="finalizar_compra_crediario.php">
-        <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
-        <input type="text" id="tipo_compra" name="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
-        <input type="text" id="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
-        <input type="text" id="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
-        <input type="text" id="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
-        <input type="text" id="valor_total_sem_crediario" value="<?php echo $valor_total_sem_crediario; ?>" hidden>
-        <input type="text" id="valor_total_crediario" value="<?php echo $valor_total_crediario; ?>" hidden>
-        <input type="text" id="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
-        <input type="text" id="entrega" value="<?php echo $entrega; ?>" hidden>
-        <input type="text" id="rua" value="<?php echo $rua; ?>" hidden>
-        <input type="text" id="bairro" value="<?php echo $bairro; ?>" hidden>
-        <input type="text" id="numero" value="<?php echo $numero; ?>" hidden>
-        <input type="text" id="contato" value="<?php echo $contato; ?>" hidden>
-        <input type="text" id="entrada" value="<?php echo $entrada; ?>" hidden>
-        <input type="text" id="restante" value="<?php echo $restante; ?>" hidden>
-        <input type="text" id="tipo_entrada_crediario" value="<?php echo $tipo_entrada_crediario; ?>" hidden>
-        <input type="text" id="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" hidden>
-        <input type="text" id="comentario" value="<?php echo $comentario; ?>" hidden>
-        <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
-        <input type="text" id="data_hora" name="data_hora" accept="" hidden>
-
-        <h1>Compra no Crediário</h1>
-        <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
-        <p>Entrada: R$ <?php echo $entrada_formatado; ?></p>
-        <p>Restante: R$ <?php echo $restante_formatado; ?></p>
-        <div>
+            <h1>Compra no Crediário</h1>
+            <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
+            <p>Entrada: R$ <?php echo $entrada_formatado; ?></p>
+            <p>Restante: R$ <?php echo $restante_formatado; ?></p>
+            
             <p style="display: none;"><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
             <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" style="display: none;" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
             <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" style="display: none;" value="<?php echo $bandeiras_aceitas; ?>" readonly>
         
-            <div id="popup-pix" class="popup-content" style="display: none;">
+            <hr style="border: 1px solid #ccc; margin: 10px 0;">
+
+            <div id="popup-pix">
                 <h3>Pagar entrada com PIX</h3>
                 <p>Valor da Entrada: R$ <?php echo $entrada_formatado; ?></p>
                 <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
@@ -101,10 +244,15 @@
                 <h3>Pagamento do Restante</h3>
                 <p>Valor Restante: R$ <?php echo $restante_formatado; ?></p>
                 <label for="parcelas">Selecione o número de parcelas:</label>
-                <select id="parcelas" name="parcelas" onchange="calcularParcelas()">
-                    <?php for ($i = 1; $i <= $maior_parcelas; $i++): ?>
-                    <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
-                    <?php endfor; ?>
+                <select id="parcelas" name="parcelas">
+                    <?php 
+                    if ($maior_parcelas > 0): 
+                        for ($i = 1; $i <= $maior_parcelas; $i++): ?>
+                            <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
+                        <?php endfor; 
+                    else: ?>
+                        <option value="1">1x (sem juros)</option>
+                    <?php endif; ?>
                 </select>
 
                 <p id="valor_parcela"></p>
@@ -125,24 +273,24 @@
                 <p>Após a confirmação, o pedido será finalizado e o restante do valor será cobrado.</p>
                 <button type="button" id="btn_cancelar">Cancelar</button>
                 <button type="button" id="btn_finalizar">Finalizar</button>
-            </div>
-        </div>  
-    </form>
+            </div>    
+        </form>
 
-    <form action="forma_entrega.php" method="GET">
-        <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
-        <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-        <input type="hidden" name="valor_total" value="<?php echo $valor_total_sem_crediario; ?>">
-        <input type="hidden" name="valor_frete" value="<?php echo $valor_frete; ?>">
-        <input type="hidden" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
-        <input type="hidden" name="entrega" value="<?php echo $entrega; ?>">
-        <input type="hidden" name="rua" value="<?php echo $rua; ?>">
-        <input type="hidden" name="bairro" value="<?php echo $bairro; ?>">
-        <input type="hidden" name="numero" value="<?php echo $numero; ?>">
-        <input type="hidden" name="contato" value="<?php echo $contato; ?>">
-        <button type="submit">Voltar</button>
-    </form>
-
+        <form id="form-voltar" action="forma_entrega.php" method="GET">
+            <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
+            <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+            <input type="hidden" name="valor_total" value="<?php echo $valor_total_sem_crediario; ?>">
+            <input type="hidden" name="valor_frete" value="<?php echo $valor_frete; ?>">
+            <input type="hidden" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
+            <input type="hidden" name="entrega" value="<?php echo $entrega; ?>">
+            <input type="hidden" name="rua" value="<?php echo $rua; ?>">
+            <input type="hidden" name="bairro" value="<?php echo $bairro; ?>">
+            <input type="hidden" name="numero" value="<?php echo $numero; ?>">
+            <input type="hidden" name="contato" value="<?php echo $contato; ?>">
+            <button type="submit">Voltar</button>
+        </form>        
+    </div>
+</body>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const tipoEntrada = "<?php echo $tipo_entrada_crediario; ?>";
@@ -156,6 +304,8 @@
             const btnCancelar = document.getElementById("btn_cancelar");
             const senhaInput = document.getElementById("senha_cliente");
             const toggleSenha = document.getElementById("toggle_senha");
+            const parcelasSelect = document.getElementById("parcelas");
+            const btnVoltar = document.getElementById("btn_voltar");
             
             let senhaVisivelTimeout;
 
@@ -173,7 +323,7 @@
 
             // Função para abrir o popup do restante sobre a página
             btnContinuar.onclick = function () {
-                popupPix.style.display = "none";
+                //popupPix.style.display = "none";
                 popupRestante.style.display = "block";
                 popupRestante.style.position = "fixed";
                 popupRestante.style.top = "50%";
@@ -183,6 +333,9 @@
                 popupRestante.style.backgroundColor = "#fff";
                 popupRestante.style.padding = "20px";
                 popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+
+                // Obter o horário local
+                obterHorarioLocal();
             };
 
             // Função para voltar ao popup PIX
@@ -205,9 +358,18 @@
                 popupSenha.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
             };
 
-            // Função para fechar o popup de senha ao clicar em "Cancelar"
+            // Função para fechar o popup de senha e reabrir o popup do restante
             btnCancelar.addEventListener("click", function () {
                 popupSenha.style.display = "none";
+                popupRestante.style.display = "block";
+                popupRestante.style.position = "fixed";
+                popupRestante.style.top = "50%";
+                popupRestante.style.left = "50%";
+                popupRestante.style.transform = "translate(-50%, -50%)";
+                popupRestante.style.zIndex = "1000";
+                popupRestante.style.backgroundColor = "#fff";
+                popupRestante.style.padding = "20px";
+                popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
             });
 
             // Função para alternar visibilidade da senha
@@ -231,7 +393,7 @@
             // Função para calcular parcelas
             function calcularParcelas() {
                 const restante = <?php echo $restante; ?>;
-                const parcelas = document.getElementById("parcelas").value;
+                const parcelas = parcelasSelect.value;
                 const taxa = 0.0299; // 2,99% ao mês
                 let valorParcela;
 
@@ -252,7 +414,7 @@
             calcularParcelas();
 
             // Recalcular parcelas ao selecionar uma nova parcela
-            document.getElementById("parcelas").addEventListener("change", calcularParcelas);
+            parcelasSelect.addEventListener("change", calcularParcelas);
 
             function obterHorarioLocal() {
                 const agora = new Date();
@@ -269,35 +431,82 @@
                 const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
 
                 //console.log("Horário do dispositivo:", dataFormatada);
-                /*document.getElementById('data_hora').value = dataFormatada;
-                document.getElementById('hr_detalhes_cartao').value = dataFormatada;
-                document.getElementById('hr_detalhes_cartao_debito').value = dataFormatada;
-                document.getElementById('hr_popup_novo_cartao').value = dataFormatada;*/
+                document.getElementById('data_hora').value = dataFormatada;
+            }
+
+            // Criar o overlay escuro
+            const overlay = document.createElement("div");
+            overlay.id = "overlay";
+            overlay.style.position = "fixed";
+            overlay.style.top = "0";
+            overlay.style.left = "0";
+            overlay.style.width = "100%";
+            overlay.style.height = "100%";
+            overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+            overlay.style.zIndex = "999";
+            overlay.style.display = "none";
+            document.body.appendChild(overlay);
+
+            // Criar o popup de sucesso
+            const popupSucesso = document.createElement("div");
+            popupSucesso.id = "popup-sucesso";
+            popupSucesso.style.display = "none";
+            popupSucesso.style.position = "fixed";
+            popupSucesso.style.top = "50%";
+            popupSucesso.style.left = "50%";
+            popupSucesso.style.transform = "translate(-50%, -50%)";
+            popupSucesso.style.zIndex = "1000";
+            popupSucesso.style.backgroundColor = "#fff";
+            popupSucesso.style.padding = "20px";
+            popupSucesso.style.borderRadius = "8px";
+            popupSucesso.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+            popupSucesso.innerHTML = `
+                <h3>Compra Finalizada</h3>
+                <p>Sua compra foi finalizada com sucesso!</p>
+                <p>Você será redirecionado em <span id="contador">5</span> segundos...</p>
+            `;
+            document.body.appendChild(popupSucesso);
+
+            // Mostrar o popup de sucesso e o overlay
+            function mostrarPopupSucesso() {
+                overlay.style.display = "block";
+                popupSucesso.style.display = "block";
+                document.body.style.overflow = "hidden"; // Travar a rolagem da tela
+            }
+
+            // Ocultar o popup de sucesso e o overlay
+            function ocultarPopupSucesso() {
+                overlay.style.display = "none";
+                popupSucesso.style.display = "none";
+                document.body.style.overflow = "auto"; // Liberar a rolagem da tela
             }
 
             // Função para enviar os dados via JavaScript em formato JSON
             document.getElementById("btn_finalizar").addEventListener("click", function () {
-                    const agora = new Date();
-                
-                    // Obtém os componentes da data e hora
-                    const ano = agora.getFullYear();
-                    const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
-                    const dia = String(agora.getDate()).padStart(2, '0');
-                    const hora = String(agora.getHours()).padStart(2, '0');
-                    const minuto = String(agora.getMinutes()).padStart(2, '0');
-                    const segundo = String(agora.getSeconds()).padStart(2, '0');
+                const dataFormatada = document.getElementById('data_hora').value;
 
-                    // Formata a data e hora como YYYY-MM-DD HH:MM:SS
-                    const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-                    
-                    const formData = {
+                // Calcular o valor total da compra no cliente (se necessário)
+                const valorTotalCrediario = parseFloat(document.getElementById("valor_total_crediario").value) || 0;
+                const valorFrete = parseFloat(document.getElementById("valor_frete").value) || 0;
+                const valorTotalSemCrediario = parseFloat(document.getElementById("valor_total_sem_crediario").value) || 0;
+                const totalCompra = valorTotalCrediario + valorFrete + valorTotalSemCrediario;
+
+                if (totalCompra === 0) {
+                    console.error("Erro: O valor total da compra não foi calculado corretamente.");
+                    document.getElementById("msg_erro").textContent = "Erro ao calcular o valor total da compra.";
+                    document.getElementById("msg_erro").style.display = "block";
+                    return;
+                }
+
+                const formData = {
                     senha_compra: document.getElementById("senha_compra").value,
                     tipo_compra: document.getElementById("tipo_compra").value,
                     id_cliente: document.getElementById("id_cliente").value,
                     id_parceiro: document.getElementById("id_parceiro").value,
-                    valor_frete: document.getElementById("valor_frete").value,
-                    valor_total_sem_crediario: document.getElementById("valor_total_sem_crediario").value,
-                    valor_total_crediario: document.getElementById("valor_total_crediario").value,
+                    valor_frete: valorFrete,
+                    valor_total_sem_crediario: valorTotalSemCrediario,
+                    valor_total_crediario: valorTotalCrediario,
+                    total_compra: totalCompra, // Enviar o valor total calculado
                     detalhes_produtos: document.getElementById("detalhes_produtos").value,
                     entrega: document.getElementById("entrega").value,
                     rua: document.getElementById("rua").value,
@@ -309,7 +518,7 @@
                     tipo_entrada_crediario: document.getElementById("tipo_entrada_crediario").value,
                     bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
                     comentario: document.getElementById("comentario").value,
-                    parcelas: document.getElementById("parcelas").value,
+                    parcelas: parcelasSelect.value,
                     valor_parcela: document.getElementById("input_parcela").value,
                     senha_cliente: document.getElementById("senha_cliente").value,
                     data_hora: dataFormatada
@@ -325,8 +534,19 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert("Compra finalizada com sucesso!");
-                        window.location.href = "sucesso.php"; // Redirecionar para página de sucesso
+                        const popupSenha = document.getElementById("popup-senha");
+                        popupSenha.style.display = "none"; // Ocultar o popup de senha
+                        mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
+                        let contador = 5;
+                        const intervalo = setInterval(() => {
+                            contador--;
+                            document.getElementById("contador").textContent = contador;
+                            if (contador === 0) {
+                                clearInterval(intervalo);
+                                ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
+                                window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
+                            }
+                        }, 1000);
                     } else {
                         document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
                         document.getElementById("msg_erro").style.display = "block";
@@ -340,5 +560,4 @@
             });
         });
     </script>
-</body>
 </html>
