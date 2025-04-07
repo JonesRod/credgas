@@ -506,6 +506,7 @@
                     <p style="color: red;"><?php echo $mensagem_erro; ?></p>
                 <?php endif; ?>
                 <h3>Valor da entrada: R$ <?php echo $entrada_formatado; ?></h3>
+                <p>Bandeiras aceitas: <?php echo $bandeiras_aceitas; ?>.</p>
 
                 <div id="dados_cartao">
                     <div>

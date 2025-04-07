@@ -66,6 +66,14 @@ try {
                 exit;
             }
 
+            $num_cartao = isset($data['num_cartao']) ? $data['num_cartao'] : '';
+            $nome_cartao = isset($data['nome_cartao']) ? $data['nome_cartao'] : '';
+            $validade = isset($data['validade']) ? $data['validade'] : '';
+            $cod_seguranca = isset($data['cod_seguranca']) ? $data['cod_seguranca'] : '';
+            $qt_parcelas_entrada = isset($data['qt_parcelas_entrada']) ? intval($data['qt_parcelas_entrada']) : 1;
+            $valorParcela_entrada = isset($data['valorParcela_entrada']) ? floatval($data['valorParcela_entrada']) : 0.0;
+            $salvar_cartao = isset($data['salvar_cartao']) ? intval($data['salvar_cartao']) : 0;
+
             $status_cliente = 0; // Status do cliente
             $status_parceiro = 0; // Status do parceiro
             
@@ -92,6 +100,8 @@ try {
                 formato_compra,
                 entrada,
                 forma_pg_entrada,
+                qt_parcelas_entrada,
+                valor_parcela_entrada,
                 valor_restante,
                 forma_pg_restante,
                 qt_parcelas,
@@ -104,14 +114,14 @@ try {
                 comentario,
                 status_cliente,
                 status_parceiro) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             if (!$stmt) {
                 throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
             }
 
             $stmt->bind_param(
-                "siissssssssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
+                "siissssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
                 $data_hora,         // s: data
                 $id_cliente,        // i: id_cliente
                 $id_parceiro,       // i: id_parceiro
@@ -121,6 +131,8 @@ try {
                 $tipo_compra,       // s: tipo_compra
                 $entrada,           // d: entrada
                 $tipo_entrada_crediario, // s: forma_pg_entrada
+                $qt_parcelas_entrada, // i: qt_parcelas_entrada
+                $valorParcela_entrada, // d: valor_parcela_entrada
                 $restante,          // d: valor_restante
                 $tipo_compra,       // s: forma_pg_restante
                 $parcelas,          // i: qt_parcelas
@@ -138,6 +150,44 @@ try {
             if ($stmt->execute()) {
                 $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
                 $stmt->close();
+
+                // salvar o cartão de crédito ou débito se necessário
+                if ($salvar_cartao == 1) {
+                    // Criptografar o código de segurança
+                    $cod_seguranca_criptografado = password_hash($cod_seguranca, PASSWORD_DEFAULT);
+        
+                    // Verificar se o cartão já está cadastrado
+                    $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ? AND tipo = ?");
+                    if ($stmt) {
+                        $stmt->bind_param("iss", $id_cliente, $num_cartao, $tipo_cartao);
+                        $stmt->execute();
+                        $stmt->store_result();
+        
+                        if ($stmt->num_rows > 0) {
+                            $stmt->close();
+                            //$mensagem_erro = "Este cartão já está cadastrado.";
+                        } else {
+                            $stmt->close();
+        
+                            // Verificar se o limite de cartões foi atingido
+                            if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
+                                //$mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
+                            } else {
+                                // Salvar o novo cartão no banco de dados
+                                $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo, nome) VALUES (?, ?, ?, ?, ?, ?)");
+                                if ($stmt) {
+                                    $stmt->bind_param("isssss", $id_cliente, $num_cartao, $validade, $cod_seguranca_criptografado, $tipo_cartao, $nome_cartao);
+                                    $stmt->execute();
+                                    $stmt->close();
+                                } else {
+                                    die("Erro ao salvar o cartão: " . $mysqli->error);
+                                }
+                            }
+                        }
+                    } else {
+                        die("Erro na preparação da consulta: " . $mysqli->error);
+                    }
+                }
 
                 // Salvar notificação na tabela contador_notificacoes_cliente
                 $msg = "Pedido #$num_pedido em Análise.";
