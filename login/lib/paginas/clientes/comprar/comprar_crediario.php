@@ -561,7 +561,7 @@
                 <p id="valor_parcela"></p>
                 <input type="text" id="input_parcela" style="display: none;">
 
-                <button type="button" id="btn_voltar" onclick="voltarParaPix()">Voltar</button>
+                <button type="button" id="btn_voltar" onclick="voltarParaEntrada()">Voltar</button>
                 <button type="button" id="btn_continuar_pg">Continuar</button>
             </div>
 
@@ -615,9 +615,10 @@
 
         function abrirPopupRestante() {
             const popupRestante = document.getElementById("popup-restante");
-
+            document.getElementById('popup_novo_cartao').style.display = 'none';
+            //document.getElementById('popup-background').style.display = 'block';
             document.getElementById('popup-background').style.display = "block";
-            
+
             popupRestante.style.display = "block";
             popupRestante.style.position = "fixed";
             popupRestante.style.top = "50%";
@@ -632,6 +633,15 @@
 
         function abrirPopupNovoCartao() {
             const popupNovoCartao = document.getElementById('popup_novo_cartao');
+            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
+
+            // Desmarcar todos os outros cartões
+            checkboxes.forEach((cb) => {
+                cb.checked = false;
+                //console.log('Desmarcando cartão:', cb);
+                limparDetalhesCartao();
+            });
+
             if (popupNovoCartao) {
                 popupNovoCartao.style.display = 'block'; // Exibir o popup
                 popupNovoCartao.style.position = 'fixed'; // Garantir que o popup seja exibido sobre a página
@@ -642,9 +652,9 @@
 
                 document.getElementById('popup-background').style.display = 'block';
 
-                console.log('Popup de novo cartão aberto.');
+                //console.log('Popup de novo cartão aberto.');
             } else {
-                console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
+                //console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
             }
         }
 
@@ -795,8 +805,7 @@
 
         function adicionarNovoCartao(salvar) {
             if (validarCartao()) {
-                document.getElementById('popup-background').style.display = 'block';
-
+            
                 // Corrigido: usar o valor passado no parâmetro
                 if (salvar === true) {
                     document.getElementById('salvar_cartao').value = '1';
@@ -812,15 +821,41 @@
                 document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
                 document.getElementById('valor_parcela_cartao_selecionado').value = document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent;
 
-                console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
-                document.getElementById('popup_novo_cartao').style.display = 'block';
+                //console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
+                //document.getElementById('popup_novo_cartao').style.display = 'block';
+                //document.getElementById('popup-background').style.display = 'block';
+
                 abrirPopupRestante();
             }
 
         }
 
+        // Função para voltar ao popup entrada
+        function voltarParaEntrada() {
+            const tipo_entrada_crediario = document.getElementById('tipo_entrada_crediario').value;
+            const popupRestante = document.getElementById("popup-restante");
+            const popup_background = document.getElementById('popup-background');
+            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
 
+            // Desmarcar todos os outros cartões
+            checkboxes.forEach((cb) => {
+                cb.checked = false;
+                //console.log('Desmarcando cartão:', cb);
+                limparDetalhesCartao();
+            });
 
+            popup_background.style.display = "none";
+            popupRestante.style.display = "none";
+
+            if (tipo_entrada_crediario == 1) {
+                document.getElementById('popup-pix').style.display = "block";
+            } else if (tipo_entrada_crediario == 2) {
+                document.getElementById('popup_cartaoCred').style.display = "block";
+            } else {
+                document.getElementById('popup_cartaoDeb').style.display = "block";
+            }
+            limparDetalhesCartao();
+        };
 
         function cancelarSalvarUsar() {
             document.getElementById('popup_confirmacao_salvar_usar').style.display = 'none';
@@ -912,11 +947,11 @@
             btnContinuar.onclick = abrirPopupRestante;
 
 
-            // Função para voltar ao popup PIX
-            window.voltarParaPix = function () {
+            // Função para voltar ao popup entrada
+            /*window.voltarParaEntrada = function () {
                 popupRestante.style.display = "none";
                 popupPix.style.display = "block";
-            };
+            };*/
 
             // Função para abrir o popup de senha ao clicar em "Continuar"
             btnContinuarPg.onclick = function () {
@@ -1070,6 +1105,15 @@
                     numero: document.getElementById("numero").value,
                     contato: document.getElementById("contato").value,
                     entrada: document.getElementById("entrada").value,
+
+                    num_cartao: document.getElementById("num_cartao_selecionado").value,
+                    nome_cartao: document.getElementById("nome_cartao_selecionado").value,
+                    validade: document.getElementById("validade_selecionado").value,
+                    cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
+                    qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
+                    valorParcela_entrada: document.getElementById("valor_parcela_cartao_selecionado").textContent.replace('R$ ', '').replace('.', '').replace(',', '.'),
+                    salvar_cartao: document.getElementById("salvar_cartao").value,
+
                     restante: document.getElementById("restante").value,
                     tipo_entrada_crediario: document.getElementById("tipo_entrada_crediario").value,
                     bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
