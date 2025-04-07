@@ -34,20 +34,28 @@ if ($result->num_rows > 0) {
     echo "Pedido não encontrado.";
     exit;
 }
+$formato_compra = $pedido['formato_compra'];
+//echo $formato_compra;
 
+// Fetch partner details from the database
 $id_parceiro = $pedido['id_parceiro'];
-// Consulta para buscar os dados do parceiro
-$query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
+
+$query_parceiro = "SELECT logo, nomeFantasia FROM meus_parceiros WHERE id = ?";
 $stmt_parceiro = $mysqli->prepare($query_parceiro);
 $stmt_parceiro->bind_param("i", $id_parceiro);
 $stmt_parceiro->execute();
 $result_parceiro = $stmt_parceiro->get_result();
-if ($result_parceiro->num_rows > 0) {
-    $parceiro = $result_parceiro->fetch_assoc();
-} else {
-    echo "Parceiro não encontrado.";
-    exit;
-}
+$loja = $result_parceiro->fetch_assoc();
+$logo = $loja['logo'];
+$nomeFantasia = $loja['nomeFantasia'];
+$stmt_parceiro->close();
+
+// Calculate end time for countdown
+$pedido_time = new DateTime($row['data']);
+$pedido_time->modify('+15 minutes');
+$end_time = $pedido_time->format('Y-m-d H:i:s');
+
+
 // Consulta para buscar os dados do cliente
 $query_cliente = "SELECT * FROM meus_clientes WHERE id = ?";
 $stmt_cliente = $mysqli->prepare($query_cliente);
@@ -61,6 +69,18 @@ if ($result_cliente->num_rows > 0) {
     exit;
 }
 
+function formatDateTimeJS($dateString) {
+    if (empty($dateString)) {
+        return "Data não disponível";
+    }
+    try {
+        $date = new DateTime($dateString);
+        return $date->format('d/m/Y H:i');
+    } catch (Exception $e) {
+        return "Erro na data";
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -71,9 +91,10 @@ if ($result_cliente->num_rows > 0) {
 </head>
 <body>
     <h1>Detalhes do Pedido</h1>
+    <hr>
     <h2>Pedido #<?php echo $num_pedido; ?></h2>
-    <p><strong>Data do Pedido:</strong> <?php echo date('d/m/Y', strtotime($pedido['data'])); ?></p>
-    <p><strong>Status:</strong> 
+    <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
+    <p><strong>Status do Pedido:</strong> 
         <?php 
             if ($pedido['status_cliente'] == 0) {
                 echo "Aguardando Confirmação.";
@@ -89,6 +110,7 @@ if ($result_cliente->num_rows > 0) {
         ?>
     </p>
     <p><strong>Total:</strong> R$ <?php echo number_format($pedido['valor'], 2, ',', '.'); ?></p>
+    <hr>
     <h3>Produtos</h3>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -116,19 +138,21 @@ if ($result_cliente->num_rows > 0) {
             ?>
         </tbody>
     </table>
+
+    <hr>
+    <h3>Status de Pagamento</h3>
+    <p>
+        <?php  if ($formato_compra == 'crediario') {
+            echo "Pagamento realizado Online.";
+        } elseif ($formato_compra == 'online') {
+            echo "Pagamento realizado Online.";
+        } elseif ($formato_compra == 'retirar') {
+            echo "receber na hora da entrega.";
+        }?>
+    </p>
+
+    <hr>
     <h3>Forma de Entrega</h3>
-
-    <input type="hidden" id="tipo_entrega" name="tipo_entrega" 
-        value="<?php             
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo "Entregar em casa.";
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo "Retirar no local.";
-            } else {
-                echo "Retirar na loja.";
-            }?>" 
-        readonly>
-
     <p><strong>Tipo de Entrega:</strong>
         <?php
             if ($pedido['tipo_entrega'] == 'entregar') {
@@ -190,11 +214,39 @@ if ($result_cliente->num_rows > 0) {
     <textarea name="" id="">
         <?php echo $pedido['comentario']; ?>
     </textarea>
-    
+    <hr>
+    <p class="cancel-timer" style="color: red;"><strong>Tempo para cancelar:</strong> <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span></p>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const countdownElements = document.querySelectorAll('.countdown');
+            countdownElements.forEach(function (element) {
+                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
 
-    <h3>Voltar</h3>
-    <p><a href="javascript:history.back()">Voltar para a página anterior</a></p>
+                function updateCountdown() {
+                    const now = new Date().getTime();
+                    const timeLeft = endTime - now;
+
+                    if (timeLeft <= 0) {
+                        element.textContent = "Tempo expirado.";
+                        clearInterval(interval);
+                    } else {
+                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        element.textContent = `${hours}h ${minutes}m ${seconds}s`;
+                    }
+                }
+
+                updateCountdown();
+                const interval = setInterval(updateCountdown, 1000);
+            });
+        });
+    </script>
+    <p>
+        <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
+    </p>
 </body>
+
 </html>
 <?php
 

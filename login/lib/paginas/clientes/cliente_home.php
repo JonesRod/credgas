@@ -586,16 +586,16 @@ if (isset($_SESSION['id'])) {
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
-                <?php if ($result_parceiros->num_rows > 0): ?>
-                    <?php while ($parceiro = $result_parceiros->fetch_assoc()): ?>
-                        <?php $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; ?>
-                        <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
-                            <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
-                            <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
-                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
+                <?php if ($result_parceiros->num_rows > 0):
+                        while ($parceiro = $result_parceiros->fetch_assoc()):
+                            $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg';
+                    ?>
+                            <div class="parceiro-card" onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>&id_cliente=<?php echo $usuario['id']; ?>'">
+                                <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
+                                <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
+                                <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                            </div>
+                    <?php endwhile; else: ?>
                     <p>Nenhum parceiro com promoção no momento.</p>
                 <?php endif; ?>
             </div>
@@ -697,16 +697,16 @@ if (isset($_SESSION['id'])) {
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
-                <?php if ($result_parceiros->num_rows > 0): ?>
-                    <?php while ($parceiro = $result_parceiros->fetch_assoc()): ?>
-                        <?php $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; ?>
-                        <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
-                            <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
-                            <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
-                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
+                <?php if ($result_parceiros->num_rows > 0):
+                        while ($parceiro = $result_parceiros->fetch_assoc()):
+                            $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg';
+                    ?>
+                            <div class="parceiro-card" onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>&id_cliente=<?php echo $usuario['id']; ?>'">
+                                <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
+                                <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
+                                <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                            </div>
+                    <?php endwhile; else: ?>
                     <p>Nenhum parceiro com frete grátis no momento.</p>
                 <?php endif; ?>
             </div>
@@ -821,16 +821,16 @@ if (isset($_SESSION['id'])) {
 
             <!-- Carrossel de Parceiros -->
             <div class="parceiros-carousel owl-carousel">
-                <?php if ($result_parceiros->num_rows > 0): ?>
-                    <?php while ($parceiro = $result_parceiros->fetch_assoc()): ?>
-                        <?php $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; ?>
-                        <div class="parceiro-card" onclick="window.location.href='../loja_parceiro/loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
-                            <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
-                            <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
-                            <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
+                <?php if ($result_parceiros->num_rows > 0):
+                        while ($parceiro = $result_parceiros->fetch_assoc()):
+                            $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg';
+                    ?>
+                            <div class="parceiro-card" onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>&id_cliente=<?php echo $usuario['id']; ?>'">
+                                <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>" alt="Loja não encontrada">
+                                <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?></h3>
+                                <p><?php echo htmlspecialchars($parceiro['categoria']); ?></p>
+                            </div>
+                    <?php endwhile; else: ?>
                     <p>Nenhum parceiro com novidades no momento.</p>
                 <?php endif; ?>
             </div>
@@ -1050,7 +1050,6 @@ if (isset($_SESSION['id'])) {
                 document.getElementById('resposra-carrinho').style.display = 'none';
             }, 3000);
         }
-
 
     </script>
 
