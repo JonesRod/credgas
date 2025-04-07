@@ -176,6 +176,107 @@
         .popup-content button {
             width: 100%;
         }
+        .popup-content-cartoes {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 50%;
+            max-width: 90%;
+            border: 1px solid #888;
+            text-align: center;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .mensagem-sucesso {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mensagem-sucesso .content-content {
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+            text-align: center;
+            background-color: #fff;
+        }
+                /*Adicionar estilo para escurecer o fundo*/
+        .popup-background {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        #dados_cartao {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #dados_cartao div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #dados_cartao label {
+            flex: 1;
+            text-align: left;
+        }
+
+        #dados_cartao input {
+            flex: 2;
+            padding: 5px;
+        }
+
+        .popup-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .popup-buttons button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-buttons button.cancelar {
+            background-color: #dc3545;
+        }
+
+        .popup-buttons button:hover {
+            opacity: 0.9;
+        }
 
         /* Estilos responsivos */
         @media (max-width: 768px) {
@@ -194,6 +295,19 @@
 
             .popup-content {
                 max-width: 95%;
+            }
+
+            #dados_cartao div {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            #dados_cartao label {
+                margin-bottom: 5px;
+            }
+
+            #dados_cartao input {
+                width: 100%;
             }
         }
 
@@ -214,10 +328,25 @@
             .popup-content {
                 padding: 15px;
             }
+
+            #dados_cartao div {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            #dados_cartao label {
+                margin-bottom: 5px;
+            }
+
+            #dados_cartao input {
+                width: 100%;
+            }
         }
+
     </style>
 </head>
 <body>
+    <div id="popup-background" class="popup-background"></div>
     <div class="form-container">
         <form id="form_crediario" method="POST" action="finalizar_compra_crediario.php">
             <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
@@ -241,12 +370,6 @@
             <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
             <input type="text" id="data_hora" name="data_hora" hidden>
 
-            <input type="hidden" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
-            <input type="hidden" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
-            <input type="hidden" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
-            <input type="hidden" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
-            <input type="hidden" id="input_parcela_cartao" name="input_parcela_cartao">
-
             <h1>Compra no Crediário</h1>
             <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
             <p>Entrada: R$ <?php echo $entrada_formatado; ?></p>
@@ -267,7 +390,57 @@
                 <br>
                 <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
                 <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
-                <button type="button" id="btn_continuar" onclick="" style="display: none;">Continuar</button>
+                <button type="button" id="btn_continuar" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
+            </div>
+
+            <div id="popup_cartaoCred" style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
+                <h3>Selecione o cartão de Crédito a ser usado</h3>
+                <table id="cartoes_debito_cadastrados">
+                    <thead>
+                        <tr>
+                            <th>Selecionar</th>
+                            <th>Número do Cartão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($cartoes) || count(array_filter($cartoes, fn($cartao) => $cartao['tipo'] === 'debito')) === 0): ?>
+                            <tr>
+                                <td colspan="3" id="mensagem_sem_cartao_debito">Nenhum cartão salvo!</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($cartoes as $cartao): ?>
+                                <?php if ($cartao['tipo'] === 'credito'): ?>
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="cartao_debito_selecionado" value="<?php echo $cartao['id']; ?>" 
+                                            data-num-cartao="<?php echo $cartao['num_cartao']; ?>" 
+                                            data-validade="<?php echo $cartao['validade']; ?>" 
+                                            data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" 
+                                            data-nome-cartao="<?php echo $cartao['nome']; ?>" 
+                                            onchange="verificarCartaoSelecionado()">
+                                        </td>
+                                        <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
+                                        <td>
+                                            <button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+
+                <div>
+                    <label for="parcelas_cartaoCred_entrada">Quantidade de parcelas:</label>
+                    <input id="parcelas_cartaoCred_entrada" name="parcelas_cartaoCred_entrada" type="number" min="1"  value="1" onchange="calcularValorParcela()">
+                </div>
+                <div>
+                    <p>Valor da Parcela: R$ <span id="valor_parcela_cartaoCred_entrada"><?php echo $entrada_formatado; ?></span></p>
+                </div>
+                <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
+                <button type="button" id="btn_continuar_cartaoCred" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
+                <br>
             </div>
 
             <div id="popup_cartaoDeb" style="<?php if ($tipo_entrada_crediario == 3) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
@@ -290,11 +463,13 @@
                                 <?php if ($cartao['tipo'] === 'debito'): ?>
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="cartao_debito_selecionado" value="<?php echo $cartao['id']; ?>" 
+                                            <input type="checkbox" name="cartao_credito_selecionado" value="<?php echo $cartao['id']; ?>" 
                                             data-num-cartao="<?php echo $cartao['num_cartao']; ?>" 
                                             data-validade="<?php echo $cartao['validade']; ?>" 
                                             data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" 
-                                            data-nome-cartao="<?php echo $cartao['nome']; ?>" 
+                                            data-nome-cartao="<?php echo $cartao['nome']; ?>"
+                                            data-valor-entreda="<?php echo $entrada; ?>"
+                                            data-valor-parcela=""
                                             onchange="verificarCartaoSelecionado()">
                                         </td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
@@ -308,61 +483,63 @@
                     </tbody>
                 </table>
                 <br>
-                <div id="detalhes_cartao_debito">
-                    <input type="hidden" id="num_cartao_selecionado_debito" name="num_cartao_selecionado_debito" readonly>
-                    <input type="hidden" id="nome_cartao_selecionado_debito" name="nome_cartao_selecionado_debito" readonly>
-                    <input type="hidden" id="validade_selecionado_debito" name="validade_selecionado_debito" readonly>
-                    <input type="hidden" id="cod_seguranca_selecionado_debito" name="cod_seguranca_selecionado_debito" readonly>
-                </div>
+
                 <br>
                 <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
                 <br>
             </div>
+            
+            <div id="detalhes_cartao">
+                <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
+                <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
+                <input type="text" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
+                <input type="text" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
+                <input type="text" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado" readonly>
+                <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
+                <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
+            </div>
+            
+            <div id="popup_novo_cartao" class="popup-content-cartoes" style="display: none;">
+                <span class="close" onclick="fecharPopup('popup_novo_cartao')">&times;</span>
+                <h3>Adicionar Novo Cartão</h3>
+                <?php if (isset($mensagem_erro)): ?>
+                    <p style="color: red;"><?php echo $mensagem_erro; ?></p>
+                <?php endif; ?>
+                <h3>Valor da entrada: R$ <?php echo $entrada_formatado; ?></h3>
 
-            <div id="popup_novo_cartao" class="popup" style="display: <?php echo isset($mensagem_erro) ? 'block' : 'none'; ?>;">
-                <div class="popup-content">
-                    <span class="close" onclick="fecharPopup('popup_novo_cartao')">&times;</span>
-                    <h3>Adicionar Novo Cartão</h3>
-                    <?php if (isset($mensagem_erro)): ?>
-                        <p style="color: red;"><?php echo $mensagem_erro; ?></p>
-                    <?php endif; ?>
-                    <form id="form_novo_cartao" method="post">
-                        <input type="hidden" id="hr_popup_novo_cartao" name="hr_popup_novo_cartao">
-                        <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $produtos; ?>">
-                        <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-                        <input type="hidden" id="valor_frete_nc" name="valor_frete_nc" value="<?php echo number_format($valor_frete, 2, ',', '.'); ?>">
-                        <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $total; ?>">
-                        <input type="hidden" id="valor_pix_entrada" name="valor_pix_entrada">
-
-                        <input type="hidden" id="input_segunda_forma_pagamento" name="input_segunda_forma_pagamento">
-                        <input type="hidden" id="parcelas_cartaoCred_segunda_novo" name="parcelas_cartaoCred_segunda_novo">
-                        
-                        <input type="hidden" id="entrega_nc" name="entrega_nc" value="<?php echo $entrega; ?>">
-                        <input type="hidden" id="rua_nc" name="rua_nc" value="<?php echo $rua; ?>">
-                        <input type="hidden" id="numero_nc" name="numero_nc" value="<?php echo $numero; ?>">
-                        <input type="hidden" id="bairro_nc" name="bairro_nc" value="<?php echo $bairro; ?>">
-                        <input type="hidden" id="contato_nc" name="contato_nc" value="<?php echo $contato; ?>">
-                        <input type="hidden" id="comentario_nc" name="comentario_nc" value="<?php echo $comentario; ?>">
-
+                <div id="dados_cartao">
+                    <div>
                         <label for="tipo_cartao">Tipo de Cartão:</label>
-                        <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php echo isset($_POST['tipo_cartao']) ? ucfirst($_POST['tipo_cartao']) : 'Crédito'; ?>" readonly>
-                        <br>
+                        <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php if ($tipo_entrada_crediario == 2) { echo 'Crédito'; } else { echo 'Débito'; } ?>" readonly>
+                    </div>
+                    <div>
                         <label for="nome_cartao">Nome descrito Cartão:</label>
                         <input type="text" id="nome_cartao" name="nome_cartao" required value="<?php echo isset($nome_cartao) ? $nome_cartao : ''; ?>">
-                        <br>
+                    </div>
+                    <div>
                         <label for="num_cartao">Número do Cartão:</label>
                         <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)" value="<?php echo isset($num_cartao) ? $num_cartao : ''; ?>">
-                        <br>
+                    </div>
+                    <div>
                         <label for="validade">Validade:</label>
                         <input type="text" id="validade" name="validade" required oninput="formatarValidadeCartao(this)" value="<?php echo isset($validade) ? $validade : ''; ?>">
-                        <br>
+                    </div>
+                    <div>
                         <label for="cod_seguranca">Código de Segurança:</label>
                         <input type="text" id="cod_seguranca" name="cod_seguranca" required oninput="formatarCodSeguranca(this)" value="<?php echo isset($cod_seguranca) ? $cod_seguranca : ''; ?>">
-                        <br>
-                        <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
-                        <button type="button" onclick="adicionarNovoCartao()">Salvar e Usar</button>
-                        <button type="button" onclick="usarCartaoUmaVez()">Usar só dessa vez</button>
-                    </form>
+                    </div>
+                    <div style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
+                        <label for="parcelas_cartaoCred_entrada_novo">Quantidade de parcelas:</label>
+                        <input id="parcelas_cartaoCred_entrada_novo" name="parcelas_cartaoCred_entrada_novo" type="number" min="1"  value="1" onchange="calcularValorParcelaNovo()">
+                    </div>
+                    <div style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
+                        <p>Valor da Parcela: R$ <span id="valor_parcela_cartaoCred_entrada_novo"><?php echo $entrada_formatado; ?></span></p>
+                    </div>
+                </div>
+                <div class="popup-buttons">
+                    <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
+                    <button type="button" onclick="adicionarNovoCartao(true)">Salvar e Usar</button>
+                    <button type="button" onclick="adicionarNovoCartao(false)">Usar só dessa vez</button>
                 </div>
             </div>
 
@@ -418,18 +595,74 @@
     </div>
 </body>
     <script>
+        function obterHorarioLocal() {
+            const agora = new Date();
+            
+            // Obtém os componentes da data e hora
+            const ano = agora.getFullYear();
+            const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const hora = String(agora.getHours()).padStart(2, '0');
+            const minuto = String(agora.getMinutes()).padStart(2, '0');
+            const segundo = String(agora.getSeconds()).padStart(2, '0');
+
+            // Formata a data e hora como YYYY-MM-DD HH:MM:SS
+            const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+
+            //console.log("Horário do dispositivo:", dataFormatada);
+            document.getElementById('data_hora').value = dataFormatada;
+        }
+
+        function abrirPopupRestante() {
+            const popupRestante = document.getElementById("popup-restante");
+
+            document.getElementById('popup-background').style.display = "block";
+            
+            popupRestante.style.display = "block";
+            popupRestante.style.position = "fixed";
+            popupRestante.style.top = "50%";
+            popupRestante.style.left = "50%";
+            popupRestante.style.transform = "translate(-50%, -50%)";
+            popupRestante.style.zIndex = "1000";
+            popupRestante.style.backgroundColor = "#fff";
+            popupRestante.style.padding = "20px";
+            popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+            obterHorarioLocal();
+        }
+
         function abrirPopupNovoCartao() {
-            const parcelas = document.getElementById('parcelas_cartaoCred_segunda');
-            const segundaFormaPagamento = document.getElementById('segunda_forma_pagamento').value;
-            if (segundaFormaPagamento === 'cartaoCred' && parcelas.options.length > 0) {
-                const parcelaSelecionada = parcelas.options[parcelas.selectedIndex].text;
-                document.getElementById('input_segunda_forma_pagamento').value = `Cartão de Crédito: ${parcelaSelecionada}`;
-                document.getElementById('parcelas_cartaoCred_segunda_novo').value = parcelaSelecionada; // Carregar o valor selecionado
+            const popupNovoCartao = document.getElementById('popup_novo_cartao');
+            if (popupNovoCartao) {
+                popupNovoCartao.style.display = 'block'; // Exibir o popup
+                popupNovoCartao.style.position = 'fixed'; // Garantir que o popup seja exibido sobre a página
+                popupNovoCartao.style.top = '50%';
+                popupNovoCartao.style.left = '50%';
+                popupNovoCartao.style.transform = 'translate(-50%, -50%)';
+                popupNovoCartao.style.zIndex = '1000'; // Garantir que o popup esteja acima de outros elementos
+
+                document.getElementById('popup-background').style.display = 'block';
+
+                console.log('Popup de novo cartão aberto.');
             } else {
-                document.getElementById('parcelas_cartaoCred_segunda_novo').value = ''; // Limpar o campo
+                console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
             }
-            document.getElementById('popup_novo_cartao').style.display = 'block';
-            document.getElementById('popup-background').style.display = 'block';
+        }
+
+        function fecharPopup(popupId) {
+            document.getElementById(popupId).style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
+        }
+
+        function formatarNumeroCartao(input) {
+            input.value = input.value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').slice(0, 19);
+        }
+
+        function formatarValidadeCartao(input) {
+            input.value = input.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
+        }
+
+        function formatarCodSeguranca(input) {
+            input.value = input.value.replace(/\D/g, '').slice(0, 3);
         }
 
         function mostrarParcelasCartaoCred(restante) {
@@ -465,59 +698,69 @@
         }
 
         function verificarCartaoSelecionado() {
-            const checkboxes = document.querySelectorAll('input[name="cartao_selecionado"], input[name="cartao_debito_selecionado"]');
+            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
+            
             checkboxes.forEach((checkbox) => {
-                checkbox.addEventListener('change', function() {
+                checkbox.addEventListener('change', function () {
                     if (this.checked) {
+                        // Desmarcar todos os outros cartões
                         checkboxes.forEach((cb) => {
                             if (cb !== this) cb.checked = false;
+                            limparDetalhesCartao();
                         });
-                        // Exibir detalhes do cartão selecionado em inputs
-                        const numCartao = this.dataset.numCartao;
-                        const validade = this.dataset.validade;
-                        const codSeguranca = this.dataset.codSeguranca;
-                        const nomeCartao = this.dataset.nomeCartao;
-                        document.getElementById('num_cartao_selecionado').value = numCartao;
-                        document.getElementById('validade_selecionado').value = validade;
-                        document.getElementById('cod_seguranca_selecionado').value = codSeguranca;
-                        document.getElementById('nome_cartao_selecionado').value = nomeCartao;
 
-                        // Atualizar input_parcela_cartao com o valor selecionado em parcelas_cartaoCred_segunda
-                        const parcelasSelect = document.getElementById('parcelas_cartaoCred_segunda');
-                        if (parcelasSelect && parcelasSelect.options.length > 0) {
-                            const parcelaSelecionada = parcelasSelect.options[parcelasSelect.selectedIndex].text;
-                            document.getElementById('input_parcela_cartao').value = parcelaSelecionada;
-                        }
-
-                        // Exibir detalhes do cartão de débito selecionado em inputs
-                        document.getElementById('num_cartao_selecionado_debito').value = numCartao;
-                        document.getElementById('validade_selecionado_debito').value = validade;
-                        document.getElementById('cod_seguranca_selecionado_debito').value = codSeguranca;
-                        document.getElementById('nome_cartao_selecionado_debito').value = nomeCartao;
-
+                        // Preencher os detalhes do cartão selecionado
+                        carregarDetalhesCartao(this);
                     } else {
-                        // Limpar os inputs se o cartão for desmarcado
-                        document.getElementById('num_cartao_selecionado').value = '';
-                        document.getElementById('validade_selecionado').value = '';
-                        document.getElementById('cod_seguranca_selecionado').value = '';
-                        document.getElementById('nome_cartao_selecionado').value = '';
-                        document.getElementById('input_parcela_cartao').value = '';
-
-                        // Limpar os inputs do cartão de débito se o cartão for desmarcado
-                        document.getElementById('num_cartao_selecionado_debito').value = '';
-                        document.getElementById('validade_selecionado_debito').value = '';
-                        document.getElementById('cod_seguranca_selecionado_debito').value = '';
-                        document.getElementById('nome_cartao_selecionado_debito').value = '';
+                        // Limpar os detalhes do cartão se nenhum for selecionado
+                        limparDetalhesCartao();
                     }
                 });
             });
 
-            const btnFinalizar = document.getElementById('btn_finalizar');
-            if (document.querySelector('input[name="cartao_selecionado"]:checked') || document.querySelector('input[name="cartao_debito_selecionado"]:checked')) {
-                btnFinalizar.style.display = 'inline-block';
-            } else {
-                btnFinalizar.style.display = 'none';
+            // Verificar se algum cartão já está selecionado ao carregar a página
+            const selecionado = Array.from(checkboxes).find(cb => cb.checked);
+            if (selecionado) {
+                carregarDetalhesCartao(selecionado);
             }
+        }
+
+        function carregarDetalhesCartao(cartao) {
+            const numCartao = cartao.dataset.numCartao;
+            const validade = cartao.dataset.validade;
+            const codSeguranca = cartao.dataset.codSeguranca;
+            const nomeCartao = cartao.dataset.nomeCartao;
+
+            document.getElementById('num_cartao_selecionado').value = numCartao;
+            document.getElementById('validade_selecionado').value = validade;
+            document.getElementById('cod_seguranca_selecionado').value = codSeguranca;
+            document.getElementById('nome_cartao_selecionado').value = nomeCartao;
+
+            // Atualizar o valor da parcela, se aplicável
+            const parcelasInput = document.getElementById('parcelas_cartaoCred_entrada');
+            if (parcelasInput) {
+                const parcelaSelecionada = parcelasInput.value || 1;
+                document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = parcelaSelecionada;
+            }
+            const valorParcela = document.getElementById('valor_parcela_cartaoCred_entrada');
+            if (valorParcela) {
+                const valor = parseFloat(valorParcela.textContent.replace('R$ ', '').replace('.', '').replace(',', '.'));
+                document.getElementById('valor_parcela_cartao_selecionado').value = valor;
+            }
+            // Exibir o botão de continuar
+            document.getElementById('btn_continuar_cartaoCred').style.display = 'block'; 
+        }
+
+        function limparDetalhesCartao() {
+            //console.log('Limpar detalhes do cartão');
+            document.getElementById('num_cartao_selecionado').value = '';
+            document.getElementById('validade_selecionado').value = '';
+            document.getElementById('cod_seguranca_selecionado').value = '';
+            document.getElementById('nome_cartao_selecionado').value = '';
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = '1'; // Resetar para 1 parcela
+            document.getElementById('valor_parcela_cartao_selecionado').value = '';
+            // Esconder o botão de continuar
+            document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
         }
 
         function validarCartao() {
@@ -540,159 +783,99 @@
                 return false;
             }
 
+            // Verificar se o nome do cartão não está vazio
+            const nomeCartao = document.getElementById('nome_cartao').value;
+            if ((nomeCartao.trim() === '') || nomeCartao.length < 5) {
+                alert('O nome do cartão precisa ser preenchido corretamente.');
+                return false;
+            }
+
             return true;
         }
 
-        function adicionarNovoCartao() {
+        function adicionarNovoCartao(salvar) {
             if (validarCartao()) {
-                //definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
-                document.getElementById('popup_confirmacao_salvar_usar').style.display = 'block';
                 document.getElementById('popup-background').style.display = 'block';
+
+                // Corrigido: usar o valor passado no parâmetro
+                if (salvar === true) {
+                    document.getElementById('salvar_cartao').value = '1';
+                } else {
+                    document.getElementById('salvar_cartao').value = '0';
+                }
+
+                // Preencher os detalhes do cartão selecionado
+                document.getElementById('num_cartao_selecionado').value = document.getElementById('num_cartao').value.replace(/\s/g, '');
+                document.getElementById('validade_selecionado').value = document.getElementById('validade').value;
+                document.getElementById('cod_seguranca_selecionado').value = document.getElementById('cod_seguranca').value;
+                document.getElementById('nome_cartao_selecionado').value = document.getElementById('nome_cartao').value;
+                document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
+                document.getElementById('valor_parcela_cartao_selecionado').value = document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent;
+
+                console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
+                document.getElementById('popup_novo_cartao').style.display = 'block';
+                abrirPopupRestante();
             }
+
         }
 
-        function confirmarSalvarUsar() {
-            const form = document.getElementById('form_novo_cartao');
-            form.action = 'popup_pix.php'; // Defina a ação correta aqui
-            form.method = 'POST';
 
-            // Adicionar campo hidden para salvar o cartão
-            const salvarCartaoInput = document.createElement('input');
-            salvarCartaoInput.type = 'hidden';
-            salvarCartaoInput.name = 'salvar_cartao';
-            salvarCartaoInput.value = 'true';
-            form.appendChild(salvarCartaoInput);
 
-            // Adicionar campo hidden para redirecionar após salvar
-            const redirectInput = document.createElement('input');
-            redirectInput.type = 'hidden';
-            redirectInput.name = 'redirect';
-            redirectInput.value = 'meus_pedidos.php';
-            form.appendChild(redirectInput);
-
-            // Adicionar campo hidden para quantidade de parcelas
-            const qtParcelasInput = document.createElement('input');
-            qtParcelasInput.type = 'hidden';
-            qtParcelasInput.name = 'parcelas_cartaoCred_segunda_novo';
-            qtParcelasInput.value = document.getElementById('parcelas_cartaoCred_segunda_novo').value;
-            form.appendChild(qtParcelasInput);
-
-            form.submit();
-        }
 
         function cancelarSalvarUsar() {
             document.getElementById('popup_confirmacao_salvar_usar').style.display = 'none';
             document.getElementById('popup-background').style.display = 'none';
         }
 
-        function usarCartaoUmaVez() {
-            if (validarCartao()) {
-                //definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
-                document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'block';
-                document.getElementById('popup-background').style.display = 'block';
+        function calcularValorParcela() {
+            const valorTotal = parseFloat(document.getElementById('entrada').value) || 0;
+            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada').value) || 1;
+
+            if (numParcelas <= 0) {
+                alert('O número de parcelas deve ser maior que zero.');
+                return;
             }
+
+            let valorParcela;
+            if (numParcelas > 3) {
+                const taxaJuros = 0.0299; // 2.99% ao mês
+                valorParcela = (valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
+            } else {
+                valorParcela = valorTotal / numParcelas; // Sem juros para até 3 parcelas
+            }
+
+            const valorParcelaFormatado = valorParcela.toFixed(2).replace('.', ',');
+            document.getElementById('valor_parcela_cartaoCred_entrada').textContent = valorParcelaFormatado;
+            document.getElementById('valor_parcela_cartao_selecionado').value = parseFloat(valorParcelaFormatado.replace('R$ ', '').replace('.', '').replace(',', '.')); // Atualiza o valor da parcela no campo oculto
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = numParcelas;
         }
 
-        function confirmarUsarUmaVez() {
-            const form = document.getElementById('form_novo_cartao'); // Corrigir o formulário
-            /*form.action = 'popup_pix.php'; // Defina a ação correta aqui
-            form.method = 'POST';
+        function calcularValorParcelaNovo() {valor_parcela_cartaoCred_entrada_novo
+            const valorTotal = parseFloat(document.getElementById('entrada').value) || 0;
+            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada_novo').value) || 1;
 
-            // Adicionar campo hidden para não salvar o cartão
-            const salvarCartaoInput = document.createElement('input');
-            salvarCartaoInput.type = 'hidden';
-            salvarCartaoInput.name = 'salvar_cartao';
-            salvarCartaoInput.value = 'false';
-            form.appendChild(salvarCartaoInput);
+            if (numParcelas <= 0) {
+                alert('O número de parcelas deve ser maior que zero.');
+                return;
+            }
 
-            // Adicionar campo hidden para redirecionar após salvar
-            const redirectInput = document.createElement('input');
-            redirectInput.type = 'hidden';
-            redirectInput.name = 'redirect';
-            redirectInput.value = 'meus_pedidos.php';
-            form.appendChild(redirectInput);
+            let valorParcela;
+            if (numParcelas > 3) {
+                const taxaJuros = 0.0299; // 2.99% ao mês
+                valorParcela = (valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
+            } else {
+                valorParcela = valorTotal / numParcelas; // Sem juros para até 3 parcelas
+            }
 
-            // Adicionar campos hidden para id_parceiro e valor_total
-            const idParceiroInput = document.createElement('input');
-            idParceiroInput.type = 'hidden';
-            idParceiroInput.name = 'id_parceiro';
-            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
-            form.appendChild(idParceiroInput);
-
-            const valorTotalInput = document.createElement('input');
-            valorTotalInput.type = 'hidden';
-            valorTotalInput.name = 'valor_total';
-            valorTotalInput.value = '<?php echo $total; ?>';
-            form.appendChild(valorTotalInput);
-
-            // Adicionar campo hidden para quantidade de parcelas
-            const qtParcelasInput = document.createElement('input');
-            qtParcelasInput.type = 'hidden';
-            qtParcelasInput.name = 'parcelas_cartaoCred_segunda_novo';
-            qtParcelasInput.value = document.getElementById('parcelas_cartaoCred_segunda_novo').value;
-            form.appendChild(qtParcelasInput);*/
-
-            // Garantir que o formulário seja enviado corretamente
-            form.submit();
+            const valorParcelaFormatado = valorParcela.toFixed(2).replace('.', ',');
+            document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
         }
 
-        function cancelarUsarUmaVez() {
-            document.getElementById('popup_confirmacao_usar_uma_vez').style.display = 'none';
-            document.getElementById('popup-background').style.display = 'none';
-        }
-
-        function finalizarPagamento() {
-            //definirValorPixEntrada(); // Definir o valor de valor_pix_entrada
-            document.getElementById('popup_confirmacao_pagamento').style.display = 'block';
-            document.getElementById('popup-background').style.display = 'block';
-        }
-
-        function confirmarPagamento() {
-            const form = document.getElementById('segunda_forma'); // Corrigir o formulário
-            /*form.action = 'popup_pix.php'; // Defina a ação correta aqui
-            form.method = 'POST';
-
-            // Adicionar campo hidden para não salvar o cartão
-            const salvarCartaoInput = document.createElement('input');
-            salvarCartaoInput.type = 'hidden';
-            salvarCartaoInput.name = 'salvar_cartao';
-            salvarCartaoInput.value = 'false';
-            form.appendChild(salvarCartaoInput);
-
-            // Adicionar campo hidden para redirecionar após salvar
-            const redirectInput = document.createElement('input');
-            redirectInput.type = 'hidden';
-            redirectInput.name = 'redirect';
-            redirectInput.value = 'meus_pedidos.php';
-            form.appendChild(redirectInput);
-
-            // Adicionar campos hidden para id_parceiro e valor_total
-            const idParceiroInput = document.createElement('input');
-            idParceiroInput.type = 'hidden';
-            idParceiroInput.name = 'id_parceiro';
-            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
-            form.appendChild(idParceiroInput);
-
-            const valorTotalInput = document.createElement('input');
-            valorTotalInput.type = 'hidden';
-            valorTotalInput.name = 'valor_total';
-            valorTotalInput.value = '<?php echo $total; ?>';
-            form.appendChild(valorTotalInput);
-
-            // Esconder a div #popup-content
-            document.getElementById('popup-content').style.display = 'none';
-
-
-            // Garantir que o formulário seja enviado corretamente
-            form.submit();*/
-        }
-
-
-
-       
         document.addEventListener("DOMContentLoaded", function () {
             const tipoEntrada = "<?php echo $tipo_entrada_crediario; ?>";
             const popupPix = document.getElementById("popup-pix");
+            const popupCartaoDeb = document.getElementById("popup_cartaoDeb");
+            const popupCartaoCred = document.getElementById("popup_cartaoCred");
             const popupRestante = document.getElementById("popup-restante");
             const popupSenha = document.getElementById("popup-senha");
             const qrCodePix = document.getElementById("qr_code_pix");
@@ -710,6 +893,12 @@
             // Mostrar o popup PIX se tipo_entrada_crediario for 1
             if (tipoEntrada === "1") {
                 popupPix.style.display = "block";
+            } else if (tipoEntrada === "2") {
+                // Mostrar o popup de cartão de débito
+                popupCartaoCred.style.display = "block";
+            } else {
+                // Mostrar o popup de cartão de crédito
+                popupCartaoDeb.style.display = "block";
             }
 
             // Função para gerar o QR Code
@@ -719,22 +908,9 @@
                 btnContinuar.style.display = "inline-block";
             };
 
-            // Função para abrir o popup do restante sobre a página
-            btnContinuar.onclick = function () {
-                //popupPix.style.display = "none";
-                popupRestante.style.display = "block";
-                popupRestante.style.position = "fixed";
-                popupRestante.style.top = "50%";
-                popupRestante.style.left = "50%";
-                popupRestante.style.transform = "translate(-50%, -50%)";
-                popupRestante.style.zIndex = "1000";
-                popupRestante.style.backgroundColor = "#fff";
-                popupRestante.style.padding = "20px";
-                popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+            // Executar só quando o botão for clicado:
+            btnContinuar.onclick = abrirPopupRestante;
 
-                // Obter o horário local
-                obterHorarioLocal();
-            };
 
             // Função para voltar ao popup PIX
             window.voltarParaPix = function () {
@@ -813,24 +989,6 @@
 
             // Recalcular parcelas ao selecionar uma nova parcela
             parcelasSelect.addEventListener("change", calcularParcelas);
-
-            function obterHorarioLocal() {
-                const agora = new Date();
-                
-                // Obtém os componentes da data e hora
-                const ano = agora.getFullYear();
-                const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
-                const dia = String(agora.getDate()).padStart(2, '0');
-                const hora = String(agora.getHours()).padStart(2, '0');
-                const minuto = String(agora.getMinutes()).padStart(2, '0');
-                const segundo = String(agora.getSeconds()).padStart(2, '0');
-
-                // Formata a data e hora como YYYY-MM-DD HH:MM:SS
-                const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-
-                //console.log("Horário do dispositivo:", dataFormatada);
-                document.getElementById('data_hora').value = dataFormatada;
-            }
 
             // Criar o overlay escuro
             const overlay = document.createElement("div");
