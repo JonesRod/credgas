@@ -51,6 +51,7 @@ try {
             } else {
                 $tipo_entrada_crediario = 'debito';
             }
+            $tipo_cartao = $tipo_entrada_crediario;
             $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
             $comentario = isset($data['comentario']) ? $data['comentario'] : '';
             $parcelas = isset($data['parcelas']) ? intval($data['parcelas']) : 1;
@@ -100,7 +101,7 @@ try {
                 formato_compra,
                 entrada,
                 forma_pg_entrada,
-                qt_parcelas_entrada,
+                qt_parcela_entrada,
                 valor_parcela_entrada,
                 valor_restante,
                 forma_pg_restante,
@@ -151,6 +152,30 @@ try {
                 $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
                 $stmt->close();
 
+                // Buscar cartões do cliente usando prepared statements
+                $stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
+                if ($stmt) {
+                    $stmt->bind_param("i", $id_cliente);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    $cartoes = array();
+                    $cartoes_credito = 0;
+                    $cartoes_debito = 0;
+                    while ($row = $result->fetch_assoc()) {
+                        $cartoes[] = $row;
+                        if ($row['tipo'] === 'credito') {
+                            $cartoes_credito++;
+                        } elseif ($row['tipo'] === 'debito') {
+                            $cartoes_debito++;
+                        }
+                    }
+
+                    $stmt->close();
+                } else {
+                    die("Erro na preparação da consulta: " . $mysqli->error);
+                }
+
                 // salvar o cartão de crédito ou débito se necessário
                 if ($salvar_cartao == 1) {
                     // Criptografar o código de segurança
@@ -158,6 +183,7 @@ try {
         
                     // Verificar se o cartão já está cadastrado
                     $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ? AND tipo = ?");
+
                     if ($stmt) {
                         $stmt->bind_param("iss", $id_cliente, $num_cartao, $tipo_cartao);
                         $stmt->execute();

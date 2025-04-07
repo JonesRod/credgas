@@ -10,7 +10,7 @@
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    var_dump($_POST);
+    //var_dump($_POST);
     
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $limite_cred = !empty($cliente['limite_cred']) ? $cliente['limite_cred'] : 0;
     $status_crediario = $cliente['status_crediario'];
     $situacao_crediario = $cliente['situacao_crediario'];
-
+    //echo "<h3>Status do crediário: $status_crediario</h3>";
     // Verifica se o cliente tem crediário ativo e limite de crédito
     /*if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])) {
         if (!empty($limite_cred) && $limite_cred > 0) {
@@ -368,7 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h2>Formas de Pagamento</h2>
         
-        <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+        <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise']) && $total_vende_crediario > 0): ?>
             <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
                 <h3>Limite disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
             <?php endif; ?>
@@ -390,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="radio" id="pag_entrega" name="momento_pagamento" value="entrega" required onclick="mostrarDiv('pg_entrega')" title="Clique para pagar na entrega">
                     <label for="pag_entrega">Pagar na Entrega</label>
                 </div>   
-                <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise'])): ?>
+                <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise']) && $total_vende_crediario > 0): ?>
                     <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
                         <div>
                             <input type="radio" id="pag_crediario" name="momento_pagamento" value="crediario" required onclick="mostrarDiv('pg_crediario'), carregarEntradaMinima()" title="Clique para pagar no crediário">
@@ -495,16 +495,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos: <?php echo $admin_cartoes_credito; ?></p>
                         <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                     </div>
-                    <input type="text" id="valor_total_crediario">
-                    <input type="text" name="tipo_entrada_crediario" id="tipo_entrada_crediario">
-                    <input type="text" name="bandeiras_aceita" id="bandeiras_aceita">
+                    <input type="hidden" id="valor_total_crediario">
+                    <input type="hidden" name="tipo_entrada_crediario" id="tipo_entrada_crediario">
+                    <input type="hidden" name="bandeiras_aceita" id="bandeiras_aceita">
                 </div>
                 <button id="bt_comprar_crediario" type="button" style="display: block;" onclick="enviarDadosCrediario()">Continuar</button>
             </div>
-            <input type="text" id="valor_total_sem_crediario" name="valor_total_sem_crediario" value="<?php echo $total_nao_vende_crediario; ?>" style="display: block;">
-            <input type="text" id="maior_frete" name="maior_frete" value="<?php echo $maior_frete; ?>" style="display: block;">
-            <input type="text" id="maior_parcelas" accept="" name="maior_parcelas" value="<?php echo $maior_parcelas; ?>" style="display: block;">
-            <input type="text" id="maior_frete_vende_crediario" name="maior_frete_vende_crediario"  value="<?php echo $produto_maior_frete_vende_crediario ? '1' : '0'; ?>" style="display: block;">
+            <input type="text" id="valor_total_sem_crediario" name="valor_total_sem_crediario" value="<?php echo $total_nao_vende_crediario; ?>" style="display: none;">
+            <input type="text" id="maior_frete" name="maior_frete" value="<?php echo $maior_frete; ?>" style="display: none;">
+            <input type="text" id="maior_parcelas" accept="" name="maior_parcelas" value="<?php echo $maior_parcelas; ?>" style="display: none;">
+            <input type="text" id="maior_frete_vende_crediario" name="maior_frete_vende_crediario"  value="<?php echo $produto_maior_frete_vende_crediario ? '1' : '0'; ?>" style="display: none;">
             <button type="button" onclick="window.history.back();">Voltar</button> 
         </form>
     </div>
@@ -521,7 +521,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const total = parseFloat('<?php echo $total; ?>');
                 const valorAPagarSpan = document.getElementById('valor_a_pagar');
                 valorAPagarSpan.innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-                console.log('Valor atualizado para pagamento sem crediário:', valorAPagarSpan.innerText);
+                //console.log('Valor atualizado para pagamento sem crediário:', valorAPagarSpan.innerText);
             }
         }
 

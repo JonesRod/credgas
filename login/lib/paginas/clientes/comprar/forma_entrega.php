@@ -64,7 +64,7 @@
     $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
     $celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
 
-    var_dump($produtos);
+    //var_dump($produtos);
 ?>
 
 <!DOCTYPE html>

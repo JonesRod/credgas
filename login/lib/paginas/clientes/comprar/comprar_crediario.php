@@ -9,7 +9,7 @@
     }
 
     $id_session = $_SESSION['id'];
-    var_dump($_POST);
+    //var_dump($_POST);
     //echo 'crediario';
 
     // Verificação e sanitização dos dados recebidos
@@ -484,12 +484,12 @@
                 </table>
                 <br>
 
-                <br>
-                <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
+                <button type="button" class="usar-outro-cartao-debito" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
+                <button type="button" id="btn_continuar_cartaoDeb" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
                 <br>
             </div>
             
-            <div id="detalhes_cartao">
+            <div id="detalhes_cartao" style="display: none;">
                 <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
                 <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
                 <input type="text" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
@@ -662,6 +662,7 @@
         function fecharPopup(popupId) {
             document.getElementById(popupId).style.display = 'none';
             document.getElementById('popup-background').style.display = 'none';
+            document.getElementById('salvar_cartao').value = '0';
         }
 
         function formatarNumeroCartao(input) {
@@ -759,7 +760,8 @@
                 document.getElementById('valor_parcela_cartao_selecionado').value = valor;
             }
             // Exibir o botão de continuar
-            document.getElementById('btn_continuar_cartaoCred').style.display = 'block'; 
+            document.getElementById('btn_continuar_cartaoCred').style.display = 'block';
+            document.getElementById('btn_continuar_cartaoDeb').style.display = 'block'; 
         }
 
         function limparDetalhesCartao() {
@@ -820,7 +822,7 @@
                 document.getElementById('cod_seguranca_selecionado').value = document.getElementById('cod_seguranca').value;
                 document.getElementById('nome_cartao_selecionado').value = document.getElementById('nome_cartao').value;
                 document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
-                document.getElementById('valor_parcela_cartao_selecionado').value = document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent;
+                document.getElementById('valor_parcela_cartao_selecionado').value = parseFloat(document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent.replace('.', '').replace(',', '.'));
 
                 //console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
                 //document.getElementById('popup_novo_cartao').style.display = 'block';
@@ -946,13 +948,6 @@
 
             // Executar só quando o botão for clicado:
             btnContinuar.onclick = abrirPopupRestante;
-
-
-            // Função para voltar ao popup entrada
-            /*window.voltarParaEntrada = function () {
-                popupRestante.style.display = "none";
-                popupPix.style.display = "block";
-            };*/
 
             // Função para abrir o popup de senha ao clicar em "Continuar"
             btnContinuarPg.onclick = function () {
@@ -1112,7 +1107,7 @@
                     validade: document.getElementById("validade_selecionado").value,
                     cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
                     qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
-                    valorParcela_entrada: document.getElementById("valor_parcela_cartao_selecionado").textContent.replace('R$ ', '').replace('.', '').replace(',', '.'),
+                    valorParcela_entrada: document.getElementById("valor_parcela_cartao_selecionado").value,
                     salvar_cartao: document.getElementById("salvar_cartao").value,
 
                     restante: document.getElementById("restante").value,
