@@ -31,6 +31,11 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $pedido = $result->fetch_assoc();
     $status_parceiro = $pedido['status_parceiro'];
+    $valor_a_vista = $pedido['valor'];
+    $taxa_crediario = $pedido['taxa_crediario'];
+    $frete = $pedido['valor_frete'];
+    $total = $valor_a_vista + $frete + $taxa_crediario;
+    $tipo_entrega = $pedido['tipo_entrega'];
     //echo $status_parceiro;
 } else {
     echo "Pedido não encontrado.";
@@ -106,6 +111,11 @@ function formatDateTimeJS($dateString) {
             text-align: center;
             margin: 10px 0;
         }
+        .end-parceiro {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+        }
 
         img {
             display: block;
@@ -153,13 +163,29 @@ function formatDateTimeJS($dateString) {
             background-color: #0056b3;
         }
 
+        #bt_cancelar_pedido {
+            display: block;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #dc3545; /* Cor vermelha */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #bt_cancelar_pedido:hover {
+            background-color: #c82333; /* Vermelho mais escuro ao passar o mouse */
+        }
+
         .cancel-timer {
             text-align: center;
             margin: 20px 0;
         }
 
         textarea {
-            width: 100%;
+            width: 97.5%;
             height: 100px;
             padding: 10px;
             border: 1px solid #ddd;
@@ -167,11 +193,19 @@ function formatDateTimeJS($dateString) {
             resize: none;
         }
 
-        #total {
+        .valores {
             text-align: right;
+            margin-right: 30px;
             font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Espaçamento entre os botões */
+            margin-top: 20px;
         }
 
         @media (max-width: 600px) {
@@ -201,14 +235,19 @@ function formatDateTimeJS($dateString) {
         <hr>
         <img src="<?php echo '../../parceiros/arquivos/'.$logo; ?>" alt="Logo" style="width: 100px; height: auto;">
         <h2><?php echo $nomeFantasia; ?></h2>
-        <p>
+        <p class="end-parceiro">
             <?php echo $loja['endereco'] != '' ? $loja['endereco'] : 'Endereço não disponível'; ?>, 
             <?php echo $loja['numero'] != '' ? $loja['numero'] : 'Número não disponível'; ?>,
             <?php echo $loja['bairro'] != '' ? $loja['bairro'] : 'Bairro não disponível'; ?>.
         </p>
-        <p>Contato: <?php echo $loja['telefoneComercial'] != '' ? $loja['telefoneComercial'] : 'Contato não disponível'; ?>.</p>
+        <p class="end-parceiro">Contato: <?php echo $loja['telefoneComercial'] != '' ? $loja['telefoneComercial'] : 'Contato não disponível'; ?>.</p>
         <hr>
         <h2>Pedido #<?php echo $num_pedido; ?></h2>
+        <p style="color:darkgreen;">
+            <strong>
+                Cód. para Retirada: <?php echo htmlspecialchars($pedido['codigo_retirada']); ?>
+            </strong>
+        </p>
         <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
         <p><strong>Status do Pedido:</strong> 
             <?php 
@@ -251,7 +290,22 @@ function formatDateTimeJS($dateString) {
                 ?>
             </tbody>
         </table>
-        <p id="total"><strong>Total:</strong> R$ <?php echo number_format($pedido['valor'], 2, ',', '.'); ?></p>
+        <p id="valor_vista" class="valores"><strong>Total:</strong> R$ <?php echo number_format($valor_a_vista, 2, ',', '.'); ?></p>
+        <?php
+            if ($frete != 0 && $tipo_entrega == 'entregar') {
+                echo "<p id='frete' class='valores'><strong>Frete:</strong> R$ " . number_format($frete, 2, ',', '.') . "</p>";
+            }else {
+                echo "<p id='frete' class='valores'><strong></strong>Frete Grátis</p>";
+            }
+        ?>
+        <?php
+            if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
+                echo "<p id='taxa_crediario' class='valores'><strong>Taxa do Crediario:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+            } else {
+                echo "<p id='taxa_crediario' class='valores'><strong></strong>Taxa do Crediario: Grátis</p>";
+            }
+        ?>
+        <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
         <hr>
         <h3>Status de Pagamento</h3>
         <p>
@@ -324,22 +378,35 @@ function formatDateTimeJS($dateString) {
             ?>
         </p>
         <p>COMENTÁRIO: </p>
-        <textarea name="" id=""><?php echo $pedido['comentario']; ?></textarea>
+        <textarea name="comentario" id="comentario"><?php echo $pedido['comentario']; ?></textarea>
         <hr>
-        <p id="tempo-cancelar" class="cancel-timer" style="color: red;">
+        <p id="tempo-cancelar" class="cancel-timer" style="color: red; display: none;">
             <strong>Tempo para cancelar:</strong> 
             <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span>
         </p>
         <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
             <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
         </p>
-        <div>
+        <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
-            <button id="bt_cancelar_pedido" style="display: block;" onclick="">Cancelar pedido</button>
+            <button id="bt_cancelar_pedido" style="display: none;" onclick="">Cancelar pedido</button>
         </div>
     </div>
 </body>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Seleciona todos os elementos com a classe 'countdown'.
+            const countdownElements = document.querySelectorAll('.countdown');
+            countdownElements.forEach(function (element) {
+                const endTime = new Date(element.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
+                startCountdown(element, endTime); // Inicia a contagem regressiva.
+            });
+
+            // Garante que os elementos estejam inicialmente ocultos.
+            document.getElementById('text-cancelar').style.display = "none";
+            //document.getElementById('bt_cancelar_pedido').style.display = "block"; // Mostra o botão de cancelar.
+            //document.getElementById('tempo-cancelar').style.display = "block"; // Mostra o "Tempo para cancelar" inicialmente.
+        });
         /**
          * Inicia a contagem regressiva para o tempo de cancelamento.
          * @param {HTMLElement} element - O elemento onde a contagem será exibida.
@@ -360,6 +427,7 @@ function formatDateTimeJS($dateString) {
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                     element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
+                    document.getElementById('tempo-cancelar').style.display = "block"; // Mostra o "Tempo para cancelar".
                 } else {
                     // Quando o tempo expira, para o intervalo e ajusta a exibição.
                     clearInterval(interval);
@@ -372,17 +440,21 @@ function formatDateTimeJS($dateString) {
                         return;
                     }
 
-                    // Calcula o timestamp correto baseado no tempo de entrega.
-                    const tempoEntregaTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime() + tempoEntrega;
-                    const tempoEntregaMais15Min = tempoEntregaTimestamp + 15 * 60 * 1000; // Soma 15 minutos ao tempo de entrega.
+                    // Calcula os timestamps para as condições.
+                    const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
+                    const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
+                    const tempoEntregaMais15Min = pedidoTimestamp + tempoEntrega + 15 * 60 * 1000; // 15 minutos + estimativa de entrega.
+
                     const statusParceiro = <?php echo $status_parceiro; ?>; // Status do parceiro.
 
-                    // Calcula o tempo que já passou desde o término.
-                    const timePassed = now - tempoEntregaMais15Min;
-                    //console.log(`Tempo que já passou desde o término: ${Math.floor(timePassed / 1000)} segundos`);
-
-                    // Verifica se o tempo de entrega + 15 minutos passou e o status do parceiro é 0.
-                    if (now > tempoEntregaMais15Min && statusParceiro === 0) {
+                    // Verifica as condições para exibir ou ocultar o botão.
+                    console.log("Status do parceiro:", now);
+                    console.log("Timestamp atual:", now);
+                    console.log("Timestamp de 15 minutos após o pedido:", quinzeMinutos);
+                    if (now <= quinzeMinutos) {
+                        document.getElementById('bt_cancelar_pedido').style.display = "none"; // Oculta o botão de cancelar.
+                        document.getElementById('text-cancelar').style.display = "none"; // Oculta o texto de cancelamento.
+                    } else if (now > tempoEntregaMais15Min && statusParceiro === 0) {
                         document.getElementById('bt_cancelar_pedido').style.display = "block"; // Mostra o botão de cancelar.
                         document.getElementById('text-cancelar').style.display = "block"; // Mostra o texto de cancelamento.
                     } else {
@@ -396,18 +468,6 @@ function formatDateTimeJS($dateString) {
             interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona todos os elementos com a classe 'countdown'.
-            const countdownElements = document.querySelectorAll('.countdown');
-            countdownElements.forEach(function (element) {
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
-                startCountdown(element, endTime); // Inicia a contagem regressiva.
-            });
-
-            // Garante que os elementos estejam inicialmente ocultos.
-            document.getElementById('text-cancelar').style.display = "none";
-            document.getElementById('bt_cancelar_pedido').style.display = "none";
-        });
     </script>
 </html>
 <?php

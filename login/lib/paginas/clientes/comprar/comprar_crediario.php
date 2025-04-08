@@ -1076,8 +1076,10 @@
                 const valorTotalCrediario = parseFloat(document.getElementById("valor_total_crediario").value) || 0;
                 const valorFrete = parseFloat(document.getElementById("valor_frete").value) || 0;
                 const valorTotalSemCrediario = parseFloat(document.getElementById("valor_total_sem_crediario").value) || 0;
-                const totalCompra = valorTotalCrediario + valorFrete + valorTotalSemCrediario;
+                const totalCompra = valorTotalSemCrediario;
 
+                console.log("Valor total da compra:", totalCompra);
+                //return;
                 if (totalCompra === 0) {
                     console.error("Erro: O valor total da compra não foi calculado corretamente.");
                     document.getElementById("msg_erro").textContent = "Erro ao calcular o valor total da compra.";

@@ -1,65 +1,65 @@
 <?php
-session_start();
-include('../../../conexao.php'); // Conexão com o banco
+    session_start();
+    include('../../../conexao.php'); // Conexão com o banco
 
-// Verificação de sessão
-if (!isset($_SESSION['id'])) {
-    header("Location: ../../../../index.php");
-    exit;
-}
-
-// Get user ID from session
-$id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
-if (!$id) {
-    header("Location: ../../../../index.php");
-    exit;
-}
-
-// Fetch filters from GET parameters
-$num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
-$data = isset($_GET['data']) ? $_GET['data'] : '';
-$status = isset($_GET['status']) ? $_GET['status'] : '';
-
-// Build query with filters
-$query = "SELECT * FROM pedidos WHERE id_cliente = ?";
-$params = [$id];
-$types = "i";
-
-if ($num_pedido) {
-    $query .= " AND num_pedido = ?";
-    $params[] = $num_pedido;
-    $types .= "i";
-}
-
-if ($data) {
-    $query .= " AND DATE(data) = ?";
-    $params[] = $data;
-    $types .= "s";
-}
-
-if ($status !== '') {
-    $query .= " AND status_cliente = ?";
-    $params[] = $status;
-    $types .= "i";
-}
-
-$query .= " ORDER BY num_pedido DESC";
-$stmt = $mysqli->prepare($query);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$result = $stmt->get_result();
-
-function formatDateTimeJS($dateString) {
-    if (empty($dateString)) {
-        return "Data não disponível";
+    // Verificação de sessão
+    if (!isset($_SESSION['id'])) {
+        header("Location: ../../../../index.php");
+        exit;
     }
-    try {
-        $date = new DateTime($dateString);
-        return $date->format('d/m/Y H:i');
-    } catch (Exception $e) {
-        return "Erro na data";
+
+    // Get user ID from session
+    $id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
+    if (!$id) {
+        header("Location: ../../../../index.php");
+        exit;
     }
-}
+
+    // Fetch filters from GET parameters
+    $num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
+    $data = isset($_GET['data']) ? $_GET['data'] : '';
+    $status = isset($_GET['status']) ? $_GET['status'] : '';
+
+    // Build query with filters
+    $query = "SELECT * FROM pedidos WHERE id_cliente = ?";
+    $params = [$id];
+    $types = "i";
+
+    if ($num_pedido) {
+        $query .= " AND num_pedido = ?";
+        $params[] = $num_pedido;
+        $types .= "i";
+    }
+
+    if ($data) {
+        $query .= " AND DATE(data) = ?";
+        $params[] = $data;
+        $types .= "s";
+    }
+
+    if ($status !== '') {
+        $query .= " AND status_cliente = ?";
+        $params[] = $status;
+        $types .= "i";
+    }
+
+    $query .= " ORDER BY num_pedido DESC";
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    function formatDateTimeJS($dateString) {
+        if (empty($dateString)) {
+            return "Data não disponível";
+        }
+        try {
+            $date = new DateTime($dateString);
+            return $date->format('d/m/Y H:i');
+        } catch (Exception $e) {
+            return "Erro na data";
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -183,25 +183,65 @@ function formatDateTimeJS($dateString) {
             }, 300000); // 300000 ms = 5 minutos
         }
 
-        function startCountdown(element, endTime) {
+        // Aguarda o carregamento do DOM para iniciar a lógica
+        document.addEventListener('DOMContentLoaded', function () {
+            // Seleciona todos os elementos com a classe 'countdown'
+            const countdownElements = document.querySelectorAll('.countdown');
+            countdownElements.forEach(function (element) {
+                // Obtém o timestamp do fim do tempo de cancelamento
+                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
+                // Obtém o tempo de entrega em milissegundos
+                const tempoEntrega = parseInt(element.getAttribute('data-tempo-entrega'), 10) * 60 * 1000;
+                // Inicia a contagem regressiva
+                startCountdown(element, endTime, tempoEntrega);
+            });
+        });
+
+        /**
+         * Inicia a contagem regressiva para o tempo de cancelamento.
+         * @param {HTMLElement} element - O elemento onde a contagem será exibida.
+         * @param {number} endTime - O timestamp do fim do tempo de cancelamento.
+         * @param {number} tempoEntrega - O tempo de entrega em milissegundos.
+         */
+        function startCountdown(element, endTime, tempoEntrega) {
             let interval;
+
+            /**
+             * Atualiza a contagem regressiva a cada segundo.
+             */
             function updateCountdown() {
-                const now = new Date().getTime();
-                const distance = endTime - now;
+                const now = new Date().getTime(); // Obtém o timestamp atual
+                const distance = endTime - now; // Calcula o tempo restante
 
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-
-                if (distance < 0) {
+                if (distance > 0) {
+                    // Calcula os minutos e segundos restantes
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    // Atualiza o texto do elemento com o tempo restante
+                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
+                    // Exibe o "Tempo para cancelar"
+                    element.closest('.cancel-timer').style.display = "block";
+                } else {
+                    // Quando o tempo expira, para o intervalo e ajusta a exibição
                     clearInterval(interval);
-                    element.closest('.cancel-timer').style.display = "none";
+                    element.closest('.cancel-timer').style.display = "none"; // Oculta o contador
+
+                    // Calcula o tempo limite para exibir a mensagem de cancelamento
+                    const pedidoTime = new Date(element.getAttribute('data-end-time')).getTime() - 15 * 60 * 1000; // Subtrai 15 minutos
+                    const tempoLimite = pedidoTime + tempoEntrega + 15 * 60 * 1000; // Soma o tempo de entrega + 15 minutos
+
+                    // Verifica se o tempo limite foi atingido
+                    if (now > tempoLimite) {
+                        const cancelMessage = element.closest('.card').querySelector('#text-cancelar');
+                        if (cancelMessage) {
+                            cancelMessage.style.display = "block"; // Exibe a mensagem de cancelamento
+                        }
+                    }
                 }
             }
 
-            updateCountdown();
-            interval = setInterval(updateCountdown, 1000);
+            updateCountdown(); // Atualiza a contagem imediatamente
+            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
         }
     </script>
 </head>
@@ -223,14 +263,20 @@ function formatDateTimeJS($dateString) {
         </form>
     </div>
     <div class="cards-container">
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch_assoc()): 
+            $valor = $row['valor'];
+            $taxa_crediario = $row['taxa_crediario'];
+            $frete = $row['valor_frete'];
+            $total = $valor + $taxa_crediario + $frete;
+            ?>
             <div class="card" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
+                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
                 <?php
                     // Fetch partner details from the database
                     $id_parceiro = $row['id_parceiro'];
 
-                    $query_parceiro = "SELECT logo, nomeFantasia FROM meus_parceiros WHERE id = ?";
+                    $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
                     $stmt_parceiro = $mysqli->prepare($query_parceiro);
                     $stmt_parceiro->bind_param("i", $id_parceiro);
                     $stmt_parceiro->execute();
@@ -238,6 +284,7 @@ function formatDateTimeJS($dateString) {
                     $loja = $result_parceiro->fetch_assoc();
                     $logo = $loja['logo'];
                     $nomeFantasia = $loja['nomeFantasia'];
+                    $tempo_entrega = $loja['estimativa_entrega'];
                     $stmt_parceiro->close();
 
                     // Calculate end time for countdown
@@ -263,8 +310,14 @@ function formatDateTimeJS($dateString) {
                 </p>
                 <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
                 <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
-                <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($row['valor'], 2, ',', '.')); ?></p>
-                <p class="cancel-timer" style="color: red;"><strong>Tempo para cancelar:</strong> <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span></p>
+                <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
+                <p class="cancel-timer" style="color: red;">
+                    <strong>Tempo para cancelar:</strong> 
+                    <span class="countdown" data-end-time="<?php echo $end_time; ?>" data-tempo_entrega="<?php echo $tempo_entrega; ?>"></span>
+                </p>
+                <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
+                    <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+                </p>
             </div>
         <?php endwhile; ?>
     </div>

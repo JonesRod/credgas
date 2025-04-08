@@ -59,10 +59,17 @@ try {
             $senha_cliente = $data['senha_cliente'];
             
             $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
-            $tota_compra = $valor_total_crediario + $valor_frete + $valor_total_sem_crediario;
+            $total_compra = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
+
+            if ($valor_total_crediario > 0) {
+                $taxa_crediario = $valor_total_crediario - $valor_total_sem_crediario;
+            } else {
+                $taxa_crediario = 0.0;
+            }
+            
 
             // Verifique se o valor foi calculado corretamente
-            if ($tota_compra === null || $tota_compra === 0) {
+            if ($total_compra === null || $total_compra === 0) {
                 echo json_encode(['success' => false, 'message' => 'Erro: O valor total da compra não foi calculado corretamente.']);
                 exit;
             }
@@ -89,15 +96,44 @@ try {
                 echo json_encode(['success' => false, 'message' => 'Senha incorreta.']);
                 exit;
             }
+            //Gerador do código de retirada de 6 digitos
+            $codigo_retirada = mt_rand(100000, 999999);
+            // Verifica se o código de retirada já existe
+            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ?");
+            if ($stmt) {
+                $stmt->bind_param("s", $codigo_retirada);
+                $stmt->execute();
+                $stmt->bind_result($count);
+                $stmt->fetch();
+                $stmt->close();
+            } else {
+                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+            }
+            // Se o código já existe, gere um novo
+            while ($count > 0) {
+                $codigo_retirada = mt_rand(100000, 999999);
+                $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ?");
+                if ($stmt) {
+                    $stmt->bind_param("s", $codigo_retirada);
+                    $stmt->execute();
+                    $stmt->bind_result($count);
+                    $stmt->fetch();
+                    $stmt->close();
+                } else {
+                    throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+                }
+            }
 
             // Processar a compra (exemplo de inserção no banco de dados)
             $stmt = $mysqli->prepare("INSERT INTO pedidos (
                 data,
+                codigo_retirada,
                 id_cliente, 
                 id_parceiro, 
                 produtos, 
                 valor_frete,
                 valor,
+                taxa_crediario,
                 formato_compra,
                 entrada,
                 forma_pg_entrada,
@@ -115,20 +151,22 @@ try {
                 comentario,
                 status_cliente,
                 status_parceiro) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             if (!$stmt) {
                 throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
             }
 
             $stmt->bind_param(
-                "siissssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
-                $data_hora,         // s: data
+                "ssiisssssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
+                $data_hora,
+                $codigo_retirada,         // s: data
                 $id_cliente,        // i: id_cliente
                 $id_parceiro,       // i: id_parceiro
                 $detalhes_produtos, // s: produtos
                 $valor_frete,       // d: valor_frete
-                $tota_compra,       // d: valor
+                $total_compra,
+                $taxa_crediario,       // d: valor
                 $tipo_compra,       // s: tipo_compra
                 $entrada,           // d: entrada
                 $tipo_entrada_crediario, // s: forma_pg_entrada
