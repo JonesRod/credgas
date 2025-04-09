@@ -1,65 +1,65 @@
 <?php
-    session_start();
-    include('../../../conexao.php'); // Conexão com o banco
+session_start();
+include('../../../conexao.php'); // Conexão com o banco
 
-    // Verificação de sessão
-    if (!isset($_SESSION['id'])) {
-        header("Location: ../../../../index.php");
-        exit;
+// Verificação de sessão
+if (!isset($_SESSION['id'])) {
+    header("Location: ../../../../index.php");
+    exit;
+}
+
+// Get user ID from session
+$id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
+if (!$id) {
+    header("Location: ../../../../index.php");
+    exit;
+}
+
+// Fetch filters from GET parameters
+$num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
+$data = isset($_GET['data']) ? $_GET['data'] : '';
+$status = isset($_GET['status']) ? $_GET['status'] : '';
+
+// Build query with filters
+$query = "SELECT * FROM pedidos WHERE id_cliente = ?";
+$params = [$id];
+$types = "i";
+
+if ($num_pedido) {
+    $query .= " AND num_pedido = ?";
+    $params[] = $num_pedido;
+    $types .= "i";
+}
+
+if ($data) {
+    $query .= " AND DATE(data) = ?";
+    $params[] = $data;
+    $types .= "s";
+}
+
+if ($status !== '') {
+    $query .= " AND status_cliente = ?";
+    $params[] = $status;
+    $types .= "i";
+}
+
+$query .= " ORDER BY num_pedido DESC";
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$result = $stmt->get_result();
+
+function formatDateTimeJS($dateString) {
+    if (empty($dateString)) {
+        return "Data não disponível";
     }
-
-    // Get user ID from session
-    $id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
-    if (!$id) {
-        header("Location: ../../../../index.php");
-        exit;
+    try {
+        $date = new DateTime($dateString);
+        return $date->format('d/m/Y H:i');
+    } catch (Exception $e) {
+        return "Erro na data";
     }
-
-    // Fetch filters from GET parameters
-    $num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
-    $data = isset($_GET['data']) ? $_GET['data'] : '';
-    $status = isset($_GET['status']) ? $_GET['status'] : '';
-
-    // Build query with filters
-    $query = "SELECT * FROM pedidos WHERE id_cliente = ?";
-    $params = [$id];
-    $types = "i";
-
-    if ($num_pedido) {
-        $query .= " AND num_pedido = ?";
-        $params[] = $num_pedido;
-        $types .= "i";
-    }
-
-    if ($data) {
-        $query .= " AND DATE(data) = ?";
-        $params[] = $data;
-        $types .= "s";
-    }
-
-    if ($status !== '') {
-        $query .= " AND status_cliente = ?";
-        $params[] = $status;
-        $types .= "i";
-    }
-
-    $query .= " ORDER BY num_pedido DESC";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    function formatDateTimeJS($dateString) {
-        if (empty($dateString)) {
-            return "Data não disponível";
-        }
-        try {
-            $date = new DateTime($dateString);
-            return $date->format('d/m/Y H:i');
-        } catch (Exception $e) {
-            return "Erro na data";
-        }
-    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -86,7 +86,30 @@
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            background-color: rgb(227, 229, 132);
+        }
+        .card.status-0 {
+            background-color: #ffcc80; /* Laranja */
+        }
+        .card.status-0:hover {
+            background-color: #ffb74d; /* Laranja mais escuro */
+        }
+        .card.status-1 {
+            background-color: #c8e6c9; /* Verde */
+        }
+        .card.status-1:hover {
+            background-color: #a5d6a7; /* Verde mais escuro */
+        }
+        .card.status-2 {
+            background-color: #ffcdd2; /* Vermelho */
+        }
+        .card.status-2:hover {
+            background-color: #ef9a9a; /* Vermelho mais escuro */
+        }
+        .card.status-3 {
+            background-color: #ffcdd2; /* Vermelho */
+        }
+        .card.status-3:hover {
+            background-color: #ef9a9a; /* Vermelho mais escuro */
         }
         .card h2 {
             color: rgb(13, 69, 147);
@@ -143,121 +166,67 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-bottom: 5px;
             transition: background-color 0.3s ease;
         }
         .filters button:hover {
             background-color: #0056b3;
         }
+
+        @media (max-width: 600px) {
+            .filters {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px; /* Espaçamento entre os elementos */
+            }
+            .filters input, .filters select, .filters button, .btn-voltar {
+                width: 100%; /* Ocupa toda a largura disponível */
+                max-width: 600px; /* Limita a largura máxima */
+                box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+            }
+            .filters form {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        @media (max-width: 380px) {
+            .filters {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px; /* Espaçamento entre os elementos */
+            }
+            .filters input, .filters select, .filters button, .btn-voltar {
+                width: 100%; /* Ocupa toda a largura disponível */
+                max-width: 300px; /* Limita a largura máxima */
+                box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+            }
+            .filters form {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
-    <script>
-        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'detalhes_pedido.php';
-
-            const fields = {
-                num_pedido: num_pedido,
-                id_parceiro: id_parceiro,
-                status_cliente: status_cliente,
-                data: data,
-                valor: valor
-            };
-
-            for (const key in fields) {
-                if (fields.hasOwnProperty(key)) {
-                    const hiddenField = document.createElement('input');
-                    hiddenField.type = 'hidden';
-                    hiddenField.name = key;
-                    hiddenField.value = fields[key];
-                    form.appendChild(hiddenField);
-                }
-            }
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-
-        function refreshPage() {
-            setInterval(function() {
-                location.reload();
-            }, 300000); // 300000 ms = 5 minutos
-        }
-
-        // Aguarda o carregamento do DOM para iniciar a lógica
-        document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona todos os elementos com a classe 'countdown'
-            const countdownElements = document.querySelectorAll('.countdown');
-            countdownElements.forEach(function (element) {
-                // Obtém o timestamp do fim do tempo de cancelamento
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
-                // Obtém o tempo de entrega em milissegundos
-                const tempoEntrega = parseInt(element.getAttribute('data-tempo-entrega'), 10) * 60 * 1000;
-                // Inicia a contagem regressiva
-                startCountdown(element, endTime, tempoEntrega);
-            });
-        });
-
-        /**
-         * Inicia a contagem regressiva para o tempo de cancelamento.
-         * @param {HTMLElement} element - O elemento onde a contagem será exibida.
-         * @param {number} endTime - O timestamp do fim do tempo de cancelamento.
-         * @param {number} tempoEntrega - O tempo de entrega em milissegundos.
-         */
-        function startCountdown(element, endTime, tempoEntrega) {
-            let interval;
-
-            /**
-             * Atualiza a contagem regressiva a cada segundo.
-             */
-            function updateCountdown() {
-                const now = new Date().getTime(); // Obtém o timestamp atual
-                const distance = endTime - now; // Calcula o tempo restante
-
-                if (distance > 0) {
-                    // Calcula os minutos e segundos restantes
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    // Atualiza o texto do elemento com o tempo restante
-                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-                    // Exibe o "Tempo para cancelar"
-                    element.closest('.cancel-timer').style.display = "block";
-                } else {
-                    // Quando o tempo expira, para o intervalo e ajusta a exibição
-                    clearInterval(interval);
-                    element.closest('.cancel-timer').style.display = "none"; // Oculta o contador
-
-                    // Calcula o tempo limite para exibir a mensagem de cancelamento
-                    const pedidoTime = new Date(element.getAttribute('data-end-time')).getTime() - 15 * 60 * 1000; // Subtrai 15 minutos
-                    const tempoLimite = pedidoTime + tempoEntrega + 15 * 60 * 1000; // Soma o tempo de entrega + 15 minutos
-
-                    // Verifica se o tempo limite foi atingido
-                    if (now > tempoLimite) {
-                        const cancelMessage = element.closest('.card').querySelector('#text-cancelar');
-                        if (cancelMessage) {
-                            cancelMessage.style.display = "block"; // Exibe a mensagem de cancelamento
-                        }
-                    }
-                }
-            }
-
-            updateCountdown(); // Atualiza a contagem imediatamente
-            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
-        }
-    </script>
 </head>
 <body onload="refreshPage()">
     <h1 class="title">Meus Pedidos</h1>
     <div class="filters">
         <form method="GET">
             <a href="../cliente_home.php" class="btn-voltar">Voltar</a>
-            <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?php echo htmlspecialchars($num_pedido); ?>">
             <input type="date" name="data" value="<?php echo htmlspecialchars($data); ?>">
             <select name="status">
                 <option value="">Todos os Status</option>
                 <option value="0" <?php if ($status === '0') echo 'selected'; ?>>Aguardando confirmação</option>
                 <option value="1" <?php if ($status === '1') echo 'selected'; ?>>Pedido confirmado</option>
                 <option value="2" <?php if ($status === '2') echo 'selected'; ?>>Pedido cancelado</option>
+                <option value="3" <?php if ($status === '3') echo 'selected'; ?>>Pedido recusado</option>
             </select>
+            <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?php echo htmlspecialchars($num_pedido); ?>">
             <button type="submit">Filtrar</button>
             <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
         </form>
@@ -268,8 +237,14 @@
             $taxa_crediario = $row['taxa_crediario'];
             $frete = $row['valor_frete'];
             $total = $valor + $taxa_crediario + $frete;
+
+            // Calculate end time for countdown
+            $pedido_time = new DateTime($row['data']);
+            $pedido_time->modify('+15 minutes');
+            $end_time = $pedido_time->format('Y-m-d H:i:s');
+            $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
             ?>
-            <div class="card" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
+            <div class="card <?php echo $status_class; ?>" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                 <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
                 <?php
@@ -284,16 +259,11 @@
                     $loja = $result_parceiro->fetch_assoc();
                     $logo = $loja['logo'];
                     $nomeFantasia = $loja['nomeFantasia'];
-                    $tempo_entrega = $loja['estimativa_entrega'];
+                    $estimativa_entrega = $loja['estimativa_entrega'];
                     $stmt_parceiro->close();
-
-                    // Calculate end time for countdown
-                    $pedido_time = new DateTime($row['data']);
-                    $pedido_time->modify('+15 minutes');
-                    $end_time = $pedido_time->format('Y-m-d H:i:s');
                 ?>
                 <p><strong>Status do Pedido:</strong>
-                    <span style="color: <?php echo $row['status_cliente'] == 0 ? 'orange' : ($row['status_cliente'] == 1 ? 'green' : 'red'); ?>">
+                    <span style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
                         <?php 
                             $status = $row['status_cliente']; 
                             if ($status == 0) {
@@ -302,6 +272,8 @@
                                 echo "Pedido confirmado";
                             } else if ($status == 2) {
                                 echo "Pedido cancelado";
+                            } else if ($status == 3) {
+                                echo '<span style="color: red;">Pedido recusado</span>';
                             } else {
                                 echo "Status desconhecido";
                             }
@@ -311,22 +283,120 @@
                 <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
                 <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
                 <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
-                <p class="cancel-timer" style="color: red;">
-                    <strong>Tempo para cancelar:</strong> 
-                    <span class="countdown" data-end-time="<?php echo $end_time; ?>" data-tempo_entrega="<?php echo $tempo_entrega; ?>"></span>
-                </p>
-                <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
-                    <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
-                </p>
+                <hr>
+                <p class="tempo-cancelar" style="color: red; display: none;"><strong>Tempo para cancelar:</strong>
+                <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span></p>
+                <?php if ($row['status_cliente'] != 1): ?>
+                    <p class="text-cancelar" style="color: red; display: none;">
+                        <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+                    </p>
+                <?php endif; ?>
             </div>
         <?php endwhile; ?>
     </div>
     <br>
 
     <script>
-        document.querySelectorAll('.countdown').forEach(function(element) {
-            const endTime = new Date(element.getAttribute('data-end-time')).getTime();
-            startCountdown(element, endTime);
+        // Função para redirecionar para a página de detalhes do pedido
+        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
+            const form = document.createElement('form'); // Cria um formulário dinamicamente
+            form.method = 'POST';
+            form.action = 'detalhes_pedido.php';
+
+            // Campos a serem enviados no formulário
+            const fields = {
+                num_pedido: num_pedido,
+                id_parceiro: id_parceiro,
+                status_cliente: status_cliente,
+                data: data,
+                valor: valor
+            };
+
+            // Adiciona os campos como inputs ocultos no formulário
+            for (const key in fields) {
+                if (fields.hasOwnProperty(key)) {
+                    const hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = key;
+                    hiddenField.value = fields[key];
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
+            form.submit(); // Submete o formulário
+        }
+
+        // Função para recarregar a página a cada 5 minutos
+        function refreshPage() {
+            setInterval(function() {
+                location.reload(); // Recarrega a página
+            }, 300000); // 300000 ms = 5 minutos
+        }
+
+        // Função para iniciar a contagem regressiva
+        function startCountdown(element, endTime, estimativaEntrega) {
+            let interval;
+
+            // Atualiza a contagem regressiva a cada segundo
+            function updateCountdown() {
+                const now = new Date().getTime(); // Obtém o timestamp atual
+                const distance = endTime - now; // Calcula o tempo restante
+
+                if (distance > 0) {
+                    // Calcula minutos e segundos restantes
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
+
+                    const tempoCancelar = element.closest('.tempo-cancelar');
+                    if (tempoCancelar) {
+                        tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar"
+                    }
+                } else {
+                    // Quando o tempo expira, para o intervalo e ajusta a exibição
+                    clearInterval(interval);
+
+                    const tempoCancelar = element.closest('.tempo-cancelar');
+                    if (tempoCancelar) {
+                        tempoCancelar.style.display = "none";
+                    }
+
+                    // Verifica se o tempo de cancelamento expirou
+                    const tempoEntregaMais15Min = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega
+                    const card = element.closest('.card');
+                    if (now > tempoEntregaMais15Min && card) {
+                        const textCancelar = card.querySelector('.text-cancelar');
+                        if (textCancelar) {
+                            textCancelar.style.display = "block"; // Mostra o texto de cancelamento
+                        }
+                    }
+                }
+            }
+
+            updateCountdown(); // Atualiza a contagem imediatamente
+            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const countdownElements = document.querySelectorAll('.countdown');
+
+            // Converte a estimativa de entrega para milissegundos
+            const estimativaEntrega = new Date(<?php echo json_encode($estimativa_entrega); ?>).getTime();
+
+            countdownElements.forEach(function (element) {
+                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
+                if (!isNaN(endTime)) {
+                    startCountdown(element, endTime, estimativaEntrega); // Chama a função startCountdown
+                }
+            });
+
+            // Garante que os elementos estejam inicialmente ocultos
+            document.querySelectorAll('.text-cancelar').forEach(function (element) {
+                if (element) {
+                    element.style.display = "none";
+                }
+            });
         });
     </script>
 </body>

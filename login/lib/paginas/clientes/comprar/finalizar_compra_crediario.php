@@ -99,9 +99,9 @@ try {
             //Gerador do código de retirada de 6 digitos
             $codigo_retirada = mt_rand(100000, 999999);
             // Verifica se o código de retirada já existe
-            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ?");
+            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
             if ($stmt) {
-                $stmt->bind_param("s", $codigo_retirada);
+                $stmt->bind_param("si", $codigo_retirada, $id_cliente);
                 $stmt->execute();
                 $stmt->bind_result($count);
                 $stmt->fetch();
@@ -112,9 +112,9 @@ try {
             // Se o código já existe, gere um novo
             while ($count > 0) {
                 $codigo_retirada = mt_rand(100000, 999999);
-                $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ?");
+                $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
                 if ($stmt) {
-                    $stmt->bind_param("s", $codigo_retirada);
+                    $stmt->bind_param("si", $codigo_retirada, $id_cliente);
                     $stmt->execute();
                     $stmt->bind_result($count);
                     $stmt->fetch();

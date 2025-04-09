@@ -660,6 +660,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             totalInput.value = '<?php echo $total; ?>';
             form.appendChild(totalInput);
 
+            const bandeirasInput = document.createElement('input');
+            bandeirasInput.type = 'hidden';
+            bandeirasInput.name = 'bandeiras';
+            bandeirasInput.value = '<?php echo $admin_cartoes_credito; ?>'; // Envia as bandeiras aceitas
+            form.appendChild(bandeirasInput);
+
             const detalhesProdutosInput = document.createElement('input');
             detalhesProdutosInput.type = 'hidden';
             detalhesProdutosInput.name = 'detalhes_produtos';

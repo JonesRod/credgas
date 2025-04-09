@@ -214,8 +214,8 @@ function formatDateTimeJS($dateString) {
             }
 
             table th, table td {
-                font-size: 14px;
-                padding: 6px;
+                font-size: 12px;
+                padding: 4px;
             }
 
             button {
@@ -225,6 +225,37 @@ function formatDateTimeJS($dateString) {
 
             img {
                 width: 80px;
+            }
+
+            textarea {
+                width: 91.5%;
+                height: 100px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                resize: none;
+            }
+
+            .valores {
+                font-size: 16px;
+                margin-right: 10px;
+            }
+
+            .button-container {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .cancel-timer {
+                font-size: 14px;
+            }
+
+            h1, h2, h3 {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 14px;
             }
         }
     </style>
@@ -250,19 +281,21 @@ function formatDateTimeJS($dateString) {
         </p>
         <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
         <p><strong>Status do Pedido:</strong> 
-            <?php 
-                if ($pedido['status_cliente'] == 0) {
-                    echo "Aguardando Confirmação.";
-                } elseif ($pedido['status_cliente'] == 1) {
-                    echo "Pedido Confirmado.";
-                } elseif ($pedido['status_cliente'] == 2) {
-                    echo "Pedido Recuzado!";
-                } elseif ($pedido['status_cliente'] == 3) {
-                    echo "Pedido Entregue";
-                } else {
-                    echo "Pedido Cancelado";
-                }
-            ?>
+            <span style="color: <?php echo $pedido['status_cliente'] === 0 ? '#ff5722' : ($pedido['status_cliente'] === 1 ? 'green' : ($pedido['status_cliente'] === 2 ? 'red' : ($pedido['status_cliente'] === 3 ? 'blue' : 'gray'))); ?>">
+                <?php 
+                    if ($pedido['status_cliente'] == 0) {
+                        echo "Aguardando Confirmação.";
+                    } elseif ($pedido['status_cliente'] == 1) {
+                        echo "Pedido Confirmado.";
+                    } elseif ($pedido['status_cliente'] == 2) {
+                        echo "Pedido Cancelado!";
+                    } elseif ($pedido['status_cliente'] == 3) {
+                        echo "Pedido Entregue.";
+                    } else {
+                        echo "Pedido Cancelado.";
+                    }
+                ?>
+            </span>
         </p>
         <hr>
         <h3>Produtos</h3>
@@ -382,31 +415,37 @@ function formatDateTimeJS($dateString) {
         <hr>
         <p id="tempo-cancelar" class="cancel-timer" style="color: red; display: none;">
             <strong>Tempo para cancelar:</strong> 
-            <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span>
+            <span id="countdown" data-end-time="<?php echo $end_time; ?>"></span>
         </p>
+        <?php if ($pedido['status_cliente'] != 1): // Não mostrar se o pedido estiver confirmado ?>
         <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
             <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
         </p>
+        <?php endif; ?>
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
+            <?php if ($pedido['status_cliente'] != 1): // Mostrar botão de cancelar apenas se o pedido não estiver confirmado ?>
             <button id="bt_cancelar_pedido" style="display: none;" onclick="">Cancelar pedido</button>
+            <?php endif; ?>
         </div>
     </div>
 </body>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona todos os elementos com a classe 'countdown'.
-            const countdownElements = document.querySelectorAll('.countdown');
-            countdownElements.forEach(function (element) {
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
-                startCountdown(element, endTime); // Inicia a contagem regressiva.
-            });
+            // Seleciona o elemento com a classe 'countdown'.
+            const countdownElement = document.querySelector('#countdown');
+            if (countdownElement) {
+                const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
+                startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
+            }
 
-            // Garante que os elementos estejam inicialmente ocultos.
-            document.getElementById('text-cancelar').style.display = "none";
-            //document.getElementById('bt_cancelar_pedido').style.display = "block"; // Mostra o botão de cancelar.
-            //document.getElementById('tempo-cancelar').style.display = "block"; // Mostra o "Tempo para cancelar" inicialmente.
+            // Garante que os elementos estejam inicialmente ocultos, se existirem.
+            const textCancelar = document.getElementById('text-cancelar');
+            const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+            if (textCancelar) textCancelar.style.display = "none";
+            if (btCancelarPedido) btCancelarPedido.style.display = "none";
         });
+
         /**
          * Inicia a contagem regressiva para o tempo de cancelamento.
          * @param {HTMLElement} element - O elemento onde a contagem será exibida.
@@ -427,39 +466,29 @@ function formatDateTimeJS($dateString) {
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                     element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-                    document.getElementById('tempo-cancelar').style.display = "block"; // Mostra o "Tempo para cancelar".
+
+                    const tempoCancelar = document.getElementById('tempo-cancelar');
+                    const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                    if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
+                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
                 } else {
                     // Quando o tempo expira, para o intervalo e ajusta a exibição.
                     clearInterval(interval);
-                    document.getElementById('tempo-cancelar').style.display = "none";
 
-                    // Trata o valor de tempoEntrega como milissegundos.
-                    const tempoEntrega = parseInt("<?php echo $tempo_entrega; ?>", 10);
-                    if (isNaN(tempoEntrega)) {
-                        console.error("Erro: tempoEntrega não é um número válido. Valor recebido:", "<?php echo $tempo_entrega; ?>");
-                        return;
-                    }
+                    const tempoCancelar = document.getElementById('tempo-cancelar');
+                    if (tempoCancelar) tempoCancelar.style.display = "none";
 
                     // Calcula os timestamps para as condições.
                     const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
                     const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
-                    const tempoEntregaMais15Min = pedidoTimestamp + tempoEntrega + 15 * 60 * 1000; // 15 minutos + estimativa de entrega.
 
-                    const statusParceiro = <?php echo $status_parceiro; ?>; // Status do parceiro.
-
-                    // Verifica as condições para exibir ou ocultar o botão.
-                    console.log("Status do parceiro:", now);
-                    console.log("Timestamp atual:", now);
-                    console.log("Timestamp de 15 minutos após o pedido:", quinzeMinutos);
-                    if (now <= quinzeMinutos) {
-                        document.getElementById('bt_cancelar_pedido').style.display = "none"; // Oculta o botão de cancelar.
-                        document.getElementById('text-cancelar').style.display = "none"; // Oculta o texto de cancelamento.
-                    } else if (now > tempoEntregaMais15Min && statusParceiro === 0) {
-                        document.getElementById('bt_cancelar_pedido').style.display = "block"; // Mostra o botão de cancelar.
-                        document.getElementById('text-cancelar').style.display = "block"; // Mostra o texto de cancelamento.
-                    } else {
-                        document.getElementById('bt_cancelar_pedido').style.display = "none"; // Oculta o botão de cancelar.
-                        document.getElementById('text-cancelar').style.display = "none"; // Oculta o texto de cancelamento.
+                    // Verifica se já passaram 15 minutos.
+                    const now = new Date().getTime();
+                    const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                    const textCancelar = document.getElementById('text-cancelar');
+                    if (now >= quinzeMinutos) {
+                        if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
+                        if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
                     }
                 }
             }
