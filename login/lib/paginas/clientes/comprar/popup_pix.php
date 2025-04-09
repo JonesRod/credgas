@@ -20,7 +20,7 @@
     $contato = isset($_POST['contato']) ? $_POST['contato'] : '';
     $comentario = isset($_POST['comentario']) ? $_POST['comentario'] : '';
 
-    var_dump($_POST);
+    //var_dump($_POST);
     // Verificar se a conexão foi estabelecida
     if (!$mysqli) {
         die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
@@ -398,6 +398,16 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+        }
+        button.voltar {
+            background-color: #2196F3; /* Cor azul */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button.voltar {
+            background-color: #1976D2; /* Cor azul mais escura ao passar o mouse */
         }
 
         button.cancelar {
@@ -1000,7 +1010,7 @@
         <img id="qr_code_pix" src="qr_code_pix.png" alt="QR Code PIX" style="display: none;">
         <br>
         <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
-        <button type="button" class="cancelar" onclick="document.getElementById('form_voltar').submit();">Voltar</button>
+        <button type="button" class="voltar" onclick="document.getElementById('form_voltar').submit();">Voltar</button>
         <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
         <button type="button" id="btn_continuar" onclick="continuarPagamento('PIX')" style="display: none;">Continuar</button>
     </div>

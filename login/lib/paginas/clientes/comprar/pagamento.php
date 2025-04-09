@@ -10,7 +10,7 @@
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    //var_dump($_POST);
+    var_dump($_POST);
     
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
@@ -153,6 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .container {
             max-width: 600px;
             margin: 0 auto;
+            margin-top: 10px;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -501,6 +502,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <button id="bt_comprar_crediario" type="button" style="display: block;" onclick="enviarDadosCrediario()">Continuar</button>
             </div>
+
+            <input type="text" id="momen_pagamento" name="momen_pagamento" value="online" style="display: block;">
+            <input type="text" id="tipo_pagamento" name="tipo_pagamento" value="" style="display: block;">
+            
             <input type="text" id="valor_total_sem_crediario" name="valor_total_sem_crediario" value="<?php echo $total_nao_vende_crediario; ?>" style="display: none;">
             <input type="text" id="maior_frete" name="maior_frete" value="<?php echo $maior_frete; ?>" style="display: none;">
             <input type="text" id="maior_parcelas" accept="" name="maior_parcelas" value="<?php echo $maior_parcelas; ?>" style="display: none;">
@@ -510,18 +515,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     
     <script> 
+        // Função para formatar o valor como moeda
         function mostrarDiv(divId) {
             document.getElementById('pg_online').style.display = 'none';
             document.getElementById('pg_entrega').style.display = 'none';
             document.getElementById('pg_crediario').style.display = 'none';
             document.getElementById(divId).style.display = 'block';
 
+            // Atualizar o valor do campo tipo_pagamento
+            const tipoPagamentoInput = document.getElementById('momen_pagamento');
+            if (divId === 'pg_online') {
+                tipoPagamentoInput.value = 'online';
+                document.getElementById('tipo_pagamento').value = '';
+                document.getElementById('formas_pagamento_online').value = 'selecionar'; // Redefinir para "Selecionar"
+            } else if (divId === 'pg_entrega') {
+                tipoPagamentoInput.value = 'hr_entrega';
+
+                // Limpar os checkboxes de pg_entrega
+                const checkboxes = document.querySelectorAll('input[name="forma_pagamento_entrega[]"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // Limpar o campo 
+                /*<span id="bandeiras_credito_entrega" style="display: none;">Cartões de Crédito aceitos: <?php echo $parceiro['cartao_credito']; ?></span>
+                <input type="hidden" value="<?php echo $parceiro['cartao_credito']; ?>" id="input_bandeiras_credito_crediario">*/
+                
+                document.getElementById('bandeiras_credito_entrega').style.display = 'none';
+                document.getElementById('input_bandeiras_credito_crediario').style.display = 'none';
+                document.getElementById('bandeiras_debito_entrega').style.display = 'none';
+                document.getElementById('input_bandeiras_debito_crediario').style.display = 'none';
+                document.getElementById('bandeiras_outros_entrega').style.display = 'none';
+                document.getElementById('input_bandeiras_outros_crediario').style.display = 'none';
+                document.getElementById('tipo_pagamento').value = '';
+
+            }
+
             // Atualizar o valor exibido ao selecionar "Pagar Online" ou "Pagar na Entrega"
             if (divId === 'pg_online' || divId === 'pg_entrega') {
                 const total = parseFloat('<?php echo $total; ?>');
                 const valorAPagarSpan = document.getElementById('valor_a_pagar');
                 valorAPagarSpan.innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-                //console.log('Valor atualizado para pagamento sem crediário:', valorAPagarSpan.innerText);
             }
         }
 
@@ -536,6 +570,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('btn_pix_online').style.display = selectedOptions.some(option => option.value === 'pix') ? 'block' : 'none';
             document.getElementById('btn_cartaoCred_online').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
             document.getElementById('btn_cartaoDeb_online').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
+            document.getElementById('tipo_pagamento').value = selectedOptions.some(option => option.value === 'cartaoCred') ? 'cartaoCred' : selectedOptions.some(option => option.value === 'cartaoDeb') ? 'cartaoDeb' : 'pix';
             // Mostrar ou esconder as bandeiras conforme a seleção
             document.getElementById('bandeiras_credito').style.display = selectedOptions.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
             document.getElementById('bandeiras_debito').style.display = selectedOptions.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
@@ -554,6 +589,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('bandeiras_credito_entrega').style.display = checkedCheckboxes.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
             document.getElementById('bandeiras_debito_entrega').style.display = checkedCheckboxes.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
             document.getElementById('bandeiras_outros_entrega').style.display = checkedCheckboxes.some(option => option.value === 'outros') ? 'block' : 'none';
+            
+            // Mostrar ou esconder as bandeiras conforme a seleção
+            document.getElementById('bandeiras_credito_entrega').style.display = checkedCheckboxes.some(option => option.value === 'cartaoCred') ? 'block' : 'none';
+            document.getElementById('bandeiras_debito_entrega').style.display = checkedCheckboxes.some(option => option.value === 'cartaoDeb') ? 'block' : 'none';
+            document.getElementById('bandeiras_outros_entrega').style.display = checkedCheckboxes.some(option => option.value === 'outros') ? 'block' : 'none';
+
+            // Atualizar o campo tipo_pagamento com os tipos selecionados se a divId for pg_entrega
+            if (document.getElementById('pg_entrega').style.display === 'block') {
+                const tiposSelecionados = checkedCheckboxes.map(chk => {
+                    if (chk.value === 'cartaoCred') return 'Cartão de Crédito';
+                    if (chk.value === 'cartaoDeb') return 'Cartão de Débito';
+                    if (chk.value === 'pix') return 'Pix';
+                    if (chk.value === 'dinheiro') return 'Dinheiro';
+                    if (chk.value === 'outros') return 'Outros';
+                    return chk.value;
+                }).join(', ');
+
+                document.getElementById('tipo_pagamento').value = tiposSelecionados;
+            }
         }
 
         function enviarDadosPix() {
@@ -634,7 +688,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function enviarDadosCartCredito() {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = 'popup_cartao_credito.php';
+            form.action = 'popup_cartao.php';
 
             const idClienteInput = document.createElement('input');
             idClienteInput.type = 'hidden';
@@ -660,6 +714,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             totalInput.value = '<?php echo $total; ?>';
             form.appendChild(totalInput);
 
+            const tipo_pagamento = document.createElement('input');
+            tipo_pagamento.type = 'hidden';
+            tipo_pagamento.name = 'tipo_pagamento';
+            tipo_pagamento.value = document.getElementById('tipo_pagamento').value; // Envia a forma de pagamento selecionada
+            form.appendChild(tipo_pagamento);
+
             const bandeirasInput = document.createElement('input');
             bandeirasInput.type = 'hidden';
             bandeirasInput.name = 'bandeiras';
@@ -671,6 +731,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             detalhesProdutosInput.name = 'detalhes_produtos';
             detalhesProdutosInput.value = '<?php echo $detalhes_produtos; ?>';
             form.appendChild(detalhesProdutosInput);
+
+            const momenPagamentoInput = document.createElement('input');
+            momenPagamentoInput.type = 'hidden';
+            momenPagamentoInput.name = 'momen_pagamento';
+            momenPagamentoInput.value = document.getElementById('momen_pagamento').value; // Envia a forma de pagamento selecionada
+            form.appendChild(momenPagamentoInput);
 
             const entregaInput = document.createElement('input');
             entregaInput.type = 'hidden';
@@ -712,7 +778,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             form.submit();
         }
 
-        function enviarDadosCartDebito() {
+        /*function enviarDadosCartDebito() {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = 'popup_cartao_debito.php';
@@ -785,7 +851,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             document.body.appendChild(form);
             form.submit();
-        }
+        }*/
         
         function enviarDadosPgEntrega() {
             const form = document.createElement('form');
