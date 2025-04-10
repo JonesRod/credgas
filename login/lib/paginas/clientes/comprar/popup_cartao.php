@@ -512,6 +512,8 @@
                 <input type="text" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado" readonly>
                 <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
                 <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
+
+
             </div>
             
             <div id="popup_novo_cartao" class="popup-content-cartoes" style="display: none;">
@@ -574,8 +576,8 @@
                 </div>
                 <div class="popup-buttons">
                     <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
-                    <button type="button" onclick="adicionarNovoCartao(true)">Salvar e Usar</button>
-                    <button type="button" onclick="adicionarNovoCartao(false)">Usar só dessa vez</button>
+                    <button type="button" onclick="adicionarNovoCartao(1)">Salvar e Usar</button>
+                    <button type="button" onclick="adicionarNovoCartao(0)">Usar só dessa vez</button>
                 </div>
             </div>
 
@@ -604,7 +606,7 @@
             <div id="popup-confirmacao" class="popup-content" style="display: none;">
                 <h3>Confirmação de Pagamento</h3>
                 <p>Ao clicar em "Finalizar", você concorda com os termos e condições de compra.</p>
-                <button type="button" id="btn_cancelar">Cancelar</button>
+                <button type="button" id="btn_cancelar" onclick="fecharPopupConfirmar()">Cancelar</button>
                 <button type="button" id="btn_finalizar" onclick="finalizarCompra()">Finalizar</button>
             </div>   
         </form>
@@ -625,6 +627,25 @@
     </div>
 </body>
     <script>
+        function fecharPopupConfirmar() {
+            //document.getElementById('popup-confirmacao').style.display = 'none';
+            //document.getElementById('popup-background').style.display = 'none';
+
+            if (document.getElementById('popup-confirmacao').style.display === 'block') {
+                console.log('Popup de novo cartão está aberto.');
+                document.getElementById('popup-confirmacao').style.display = 'none';
+
+                if (document.getElementById('popup-background').style.display === 'block') {
+                    console.log('Popup de novo cartão está aberto.');
+                    document.getElementById('popup_novo_cartao').style.display = 'block';
+                    document.getElementById('popup-background').style.display = 'block';
+                    document.getElementById('popup-background').style.zIndex = "999"; // Garantir que o background fique abaixo dos popups
+                    document.getElementById('popup_novo_cartao').style.position = "fixed"; // Garantir que o popup fique acima do background
+                    //document.getElementById('popup_novo_cartao').style.zIndex = "1000"; // Garantir que o popup fique acima do background
+                }
+            }
+        }
+        
         function obterHorarioLocal() {
             const agora = new Date();
             
@@ -646,20 +667,21 @@
         function abrirPopupRestante() {
 
             const popupRestante = document.getElementById("popup-restante");
-            document.getElementById('popup_novo_cartao').style.display = 'none';
-            //document.getElementById('popup-background').style.display = 'block';
+            //document.getElementById('popup_novo_cartao').style.display = 'none';
+            document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
             document.getElementById('popup-background').style.display = "block";
+            document.getElementById('popup-background').style.zIndex = "1000"; // Garantir que o background fique abaixo dos popups
 
             popupRestante.style.display = "block";
             popupRestante.style.position = "fixed";
             popupRestante.style.top = "50%";
             popupRestante.style.left = "50%";
             popupRestante.style.transform = "translate(-50%, -50%)";
-            popupRestante.style.zIndex = "1000";
+            popupRestante.style.zIndex = "1001"; // Garantir que o popupRestante fique acima do background
             popupRestante.style.backgroundColor = "#fff";
             popupRestante.style.padding = "20px";
             popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            obterHorarioLocal();
+            //obterHorarioLocal();
         }
 
         function abrirPopupNovoCartao() {
@@ -679,20 +701,19 @@
                 popupNovoCartao.style.top = '50%';
                 popupNovoCartao.style.left = '50%';
                 popupNovoCartao.style.transform = 'translate(-50%, -50%)';
-                popupNovoCartao.style.zIndex = '1000'; // Garantir que o popup esteja acima de outros elementos
+                popupNovoCartao.style.zIndex = '1000'; // Garantir que o popupNovoCartao fique acima do background
 
                 document.getElementById('popup-background').style.display = 'block';
-
+                document.getElementById('popup-background').style.zIndex = "999"; // Garantir que o background fique abaixo dos popups
                 //console.log('Popup de novo cartão aberto.');
             } else {
                 //console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
             }
         }
-
+        
         function fecharPopup(popupId) {
             document.getElementById(popupId).style.display = 'none';
             document.getElementById('popup-background').style.display = 'none';
-            document.getElementById('salvar_cartao').value = '0';
         }
 
         function formatarNumeroCartao(input) {
@@ -838,8 +859,9 @@
             document.getElementById('validade_selecionado').value = '';
             document.getElementById('cod_seguranca_selecionado').value = '';
             document.getElementById('nome_cartao_selecionado').value = '';
-            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = '1'; // Resetar para 1 parcela
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = ''; // Resetar para 1 parcela
             document.getElementById('valor_parcela_cartao_selecionado').value = '';
+            document.getElementById('salvar_cartao').value = '';
             // Esconder o botão de continuar
             document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
         }
@@ -876,13 +898,9 @@
 
         function adicionarNovoCartao(salvar) {
             if (validarCartao()) {
-            
-                // Corrigido: usar o valor passado no parâmetro
-                if (salvar === true) {
-                    document.getElementById('salvar_cartao').value = '1';
-                } else {
-                    document.getElementById('salvar_cartao').value = '0';
-                }
+                document.getElementById('salvar_cartao').value = salvar === 1 ? 1 : 0;
+                //console.log('Valor de salvar_cartao:', document.getElementById('salvar_cartao').value);
+            }
 
                 // Preencher os detalhes do cartão selecionado
                 document.getElementById('num_cartao_selecionado').value = document.getElementById('num_cartao').value.replace(/\s/g, '');
@@ -895,11 +913,52 @@
                 //console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
                 //document.getElementById('popup_novo_cartao').style.display = 'block';
                 //document.getElementById('popup-background').style.display = 'block';
+                const vl_a_pg_novo = document.getElementById('vl_a_pg_novo').value.replace(/\./g, '').replace(',', '.');
+                const valor_total = <?php echo $valor_total; ?>;
 
-                
-                abrirPopupRestante();
-            }
+                if (vl_a_pg_novo > valor_total) {
+                    alert('O valor a pagar não pode ser maior que o valor total.');
+                    document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                    calcularValorParcelaNovo();
+                    return;
+                } else if (vl_a_pg_novo <= 0) {
+                    alert('O valor a pagar deve ser menor ou igual á zero.');
+                    document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                    calcularValorParcelaNovo();
+                    return;
+                }else{
+                    // Se o valor for válido, continuar com o processo
+                    if (vl_a_pg_novo == valor_total) {
+                        // abrir popup de confirmação de compra
 
+                        const popupConfirmacao = document.getElementById("popup-confirmacao");
+                        const popup_background = document.getElementById('popup-background');
+                        //const popupRestante = document.getElementById("popup-restante");
+                        const popup_novo_cartao = document.getElementById('popup_novo_cartao');
+
+                        popup_novo_cartao.style.display = 'block';
+                        popup_novo_cartao.style.zIndex = "999";
+
+                        // Esconder os outros popups
+                        popup_background.style.display = "block";
+                        popup_background.style.zIndex = "1000"; // Garantir que o background fique acima dos popups
+                        
+                        popupConfirmacao.style.display = "block";
+                        popupConfirmacao.style.position = "fixed";
+                        popupConfirmacao.style.top = "50%";
+                        popupConfirmacao.style.left = "50%";
+                        popupConfirmacao.style.transform = "translate(-50%, -50%)";
+                        popupConfirmacao.style.zIndex = "1001"; // Garantir que o popupConfirmacao fique acima de todos
+                        popupConfirmacao.style.backgroundColor = "#fff";
+                        popupConfirmacao.style.padding = "20px";
+                        popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+                    } else {
+                        //abrir #popupRestante();
+
+                        abrirPopupRestante();
+                    }
+                }
+            
         }
 
         // Função para voltar ao popup entrada
@@ -934,6 +993,7 @@
             document.getElementById('popup-background').style.display = 'none';
         }
 */
+
         function calcularValorParcela() {
             const input = document.getElementById('vl_pg_cred');
             const valorTotal = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -979,6 +1039,23 @@
             // Se o valor for válido, continuar com o processo
             if (valor == valorTotal) {
                 // abrir popup de confirmação de compra
+                // Esconder os outros popups
+                const popupConfirmacao = document.getElementById("popup-confirmacao");
+                const popup_background = document.getElementById('popup-background');
+
+                popup_background.style.display = "block";
+                popup_background.style.zIndex = "1000"; // Garantir que o background fique acima dos popups
+                
+                popupConfirmacao.style.display = "block";
+                popupConfirmacao.style.position = "fixed";
+                popupConfirmacao.style.top = "50%";
+                popupConfirmacao.style.left = "50%";
+                popupConfirmacao.style.transform = "translate(-50%, -50%)";
+                popupConfirmacao.style.zIndex = "1001"; // Garantir que o popupConfirmacao fique acima de todos
+                popupConfirmacao.style.backgroundColor = "#fff";
+                popupConfirmacao.style.padding = "20px";
+                popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+
                 abrirPopupConfirmacaoCompra();
             } else {
                 //abrir #popupRestante();
@@ -990,13 +1067,22 @@
         function abrirPopupConfirmacaoCompra(){
             const popupConfirmacao = document.getElementById("popup-confirmacao");
             const popup_background = document.getElementById('popup-background');
+            //const popupRestante = document.getElementById("popup-restante");
+            //const popup_novo_cartao = document.getElementById('popup_novo_cartao');
+
+            //popup_novo_cartao.style.display = 'block';
+            //popup_novo_cartao.style.zIndex = "999";
+
+            // Esconder os outros popups
             popup_background.style.display = "block";
+            popup_background.style.zIndex = "1000"; // Garantir que o background fique acima dos popups
+            
             popupConfirmacao.style.display = "block";
             popupConfirmacao.style.position = "fixed";
             popupConfirmacao.style.top = "50%";
             popupConfirmacao.style.left = "50%";
             popupConfirmacao.style.transform = "translate(-50%, -50%)";
-            popupConfirmacao.style.zIndex = "1000";
+            popupConfirmacao.style.zIndex = "1001"; // Garantir que o popupConfirmacao fique acima de todos
             popupConfirmacao.style.backgroundColor = "#fff";
             popupConfirmacao.style.padding = "20px";
             popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
