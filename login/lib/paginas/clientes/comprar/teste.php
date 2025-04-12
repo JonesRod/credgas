@@ -2,1582 +2,260 @@
 session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
+// Configurar cabeçalhos para JSON
+header('Content-Type: application/json; charset=utf-8');
+
 // Verificação de sessão
 if (!isset($_SESSION['id'])) {
-    header("Location: ../../../../index.php");
+    echo json_encode(['success' => false, 'message' => 'Sessão expirada.']);
     exit;
 }
 
-// Get user ID from session
-$id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
-if (!$id) {
-    header("Location: ../../../../index.php");
-    exit;
-}
+$id_session = $_SESSION['id'];
 
-// Fetch filters from GET parameters
-$num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
-$data = isset($_GET['data']) ? $_GET['data'] : '';
-$status = isset($_GET['status']) ? $_GET['status'] : '';
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Receber os dados JSON
+        $input = file_get_contents('php://input');
+        $data = json_decode($input, true);
 
-// Build query with filters
-$query = "SELECT * FROM pedidos WHERE id_cliente = ?";
-$params = [$id];
-$types = "i";
-
-if ($num_pedido) {
-    $query .= " AND num_pedido = ?";
-    $params[] = $num_pedido;
-    $types .= "i";
-}
-
-if ($data) {
-    $query .= " AND DATE(data) = ?";
-    $params[] = $data;
-    $types .= "s";
-}
-
-if ($status !== '') {
-    $query .= " AND status_cliente = ?";
-    $params[] = $status;
-    $types .= "i";
-}
-
-$query .= " ORDER BY num_pedido DESC";
-$stmt = $mysqli->prepare($query);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$result = $stmt->get_result();
-
-function formatDateTimeJS($dateString) {
-    if (empty($dateString)) {
-        return "Data não disponível";
-    }
-    try {
-        $date = new DateTime($dateString);
-        return $date->format('d/m/Y H:i');
-    } catch (Exception $e) {
-        return "Erro na data";
-    }
-}
-?>
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Meus Pedidos</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 10px;
-            justify-content: center;
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Erro ao decodificar JSON: ' . json_last_error_msg()); // Verifica se houve erro na decodificação
         }
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            cursor: pointer;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            background-color: rgb(227, 229, 132);
-        }
-        .card h2 {
-            color: rgb(13, 69, 147);
-        }
-        .card .valor {
-            font-weight: bold;
-            color: rgb(13, 69, 147);
-        }
-        .card img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            vertical-align: middle;
-        }
-        .btn-voltar {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-voltar:hover {
-            background-color: #0056b3;
-        }
-        .title {
-            text-align: center;
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .filters {
-            margin-bottom: 20px;
-            text-align: center;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .filters input, .filters select {
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .filters button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .filters button:hover {
-            background-color: #0056b3;
-        }
-        @media (max-width: 768px) {
-            .filters {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px; /* Espaçamento entre os elementos */
-            }
-            .filters input, .filters select, .filters button, .btn-voltar {
-                width: 100%; /* Ocupa toda a largura disponível */
-                max-width: 300px; /* Limita a largura máxima */
-                box-sizing: border-box; /* Inclui padding e borda no tamanho total */
-            }
-            .filters form {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-    </style>
-</head>
-<body onload="refreshPage()">
-    <h1 class="title">Meus Pedidos</h1>
-    <div class="filters">
-        <form method="GET">
-            <a href="../cliente_home.php" class="btn-voltar">Voltar</a>
-            <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?php echo htmlspecialchars($num_pedido); ?>">
-            <input type="date" name="data" value="<?php echo htmlspecialchars($data); ?>">
-            <select name="status">
-                <option value="">Todos os Status</option>
-                <option value="0" <?php if ($status === '0') echo 'selected'; ?>>Aguardando confirmação</option>
-                <option value="1" <?php if ($status === '1') echo 'selected'; ?>>Pedido confirmado</option>
-                <option value="2" <?php if ($status === '2') echo 'selected'; ?>>Pedido cancelado</option>
-            </select>
-            <button type="submit">Filtrar</button>
-            <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
-        </form>
-    </div>
-    <div class="cards-container">
-        <?php while ($row = $result->fetch_assoc()): 
-            $valor = $row['valor'];
-            $taxa_crediario = $row['taxa_crediario'];
-            $frete = $row['valor_frete'];
-            $total = $valor + $taxa_crediario + $frete;
-
-            // Calculate end time for countdown
-            $pedido_time = new DateTime($row['data']);
-            $pedido_time->modify('+15 minutes');
-            $end_time = $pedido_time->format('Y-m-d H:i:s');
-            //echo $end_time;
-
-            ?>
-            <div class="card" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
-                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
-                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
-                <?php
-                    // Fetch partner details from the database
-                    $id_parceiro = $row['id_parceiro'];
-
-                    $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
-                    $stmt_parceiro = $mysqli->prepare($query_parceiro);
-                    $stmt_parceiro->bind_param("i", $id_parceiro);
-                    $stmt_parceiro->execute();
-                    $result_parceiro = $stmt_parceiro->get_result();
-                    $loja = $result_parceiro->fetch_assoc();
-                    $logo = $loja['logo'];
-                    $nomeFantasia = $loja['nomeFantasia'];
-                    $estimativa_entrega = $loja['estimativa_entrega'];
-                    $stmt_parceiro->close();
-                ?>
-                <p><strong>Status do Pedido:</strong>
-                    <span style="color: <?php echo $row['status_cliente'] == 0 ? 'orange' : ($row['status_cliente'] == 1 ? 'green' : 'red'); ?>">
-                        <?php 
-                            $status = $row['status_cliente']; 
-                            if ($status == 0) {
-                                echo "Aguardando confirmação";
-                            } else if ($status == 1) {
-                                echo "Pedido confirmado";
-                            } else if ($status == 2) {
-                                echo "Pedido cancelado";
-                            } else {
-                                echo "Status desconhecido";
-                            }
-                        ?>
-                    </span>
-                </p>
-                <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
-                <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
-                <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
-                <hr>
-                <p class="tempo-cancelar" style="color: red; display: none;"><strong>Tempo para cancelar:</strong>
-                <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span></p>
-                <p class="text-cancelar" style="color: red; display: none;">
-                    <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
-                </p>
-            </div>
-        <?php endwhile; ?>
-    </div>
-    <br>
-
-    <script>
-        // Função para redirecionar para a página de detalhes do pedido
-        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
-            const form = document.createElement('form'); // Cria um formulário dinamicamente
-            form.method = 'POST';
-            form.action = 'detalhes_pedido.php';
-
-            // Campos a serem enviados no formulário
-            const fields = {
-                num_pedido: num_pedido,
-                id_parceiro: id_parceiro,
-                status_cliente: status_cliente,
-                data: data,
-                valor: valor
-            };
-
-            // Adiciona os campos como inputs ocultos no formulário
-            for (const key in fields) {
-                if (fields.hasOwnProperty(key)) {
-                    const hiddenField = document.createElement('input');
-                    hiddenField.type = 'hidden';
-                    hiddenField.name = key;
-                    hiddenField.value = fields[key];
-                    form.appendChild(hiddenField);
-                }
-            }
-
-            document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
-            form.submit(); // Submete o formulário
-        }
-
-        // Função para recarregar a página a cada 5 minutos
-        function refreshPage() {
-            setInterval(function() {
-                location.reload(); // Recarrega a página
-            }, 300000); // 300000 ms = 5 minutos
-        }
-
-        // Função para iniciar a contagem regressiva
-        function startCountdown(element, endTime, estimativaEntrega) {
-            let interval;
-
-            // Atualiza a contagem regressiva a cada segundo
-            function updateCountdown() {
-                const now = new Date().getTime(); // Obtém o timestamp atual
-                const distance = endTime - now; // Calcula o tempo restante
-
-                if (distance > 0) {
-                    // Calcula minutos e segundos restantes
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-                    element.closest('.tempo-cancelar').style.display = "block"; // Mostra o "Tempo para cancelar"
-                } else {
-                    // Quando o tempo expira, para o intervalo e ajusta a exibição
-                    clearInterval(interval);
-                    element.closest('.tempo-cancelar').style.display = "none";
-
-                    // Verifica se o tempo de cancelamento expirou
-                    const tempoEntregaMais15Min = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega
-                    if (now > tempoEntregaMais15Min) {
-                        element.closest('.card').querySelector('.text-cancelar').style.display = "block"; // Mostra o texto de cancelamento
-                    }
-                }
-            }
-
-            updateCountdown(); // Atualiza a contagem imediatamente
-            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const countdownElements = document.querySelectorAll('.countdown');
-
-            // Converte a estimativa de entrega para milissegundos
-            const estimativaEntrega = new Date(<?php echo json_encode($estimativa_entrega); ?>).getTime();
-
-            countdownElements.forEach(function (element) {
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
-                startCountdown(element, endTime, estimativaEntrega); // Chama a função startCountdown
-            });
-
-            // Garante que os elementos estejam inicialmente ocultos
-            document.querySelectorAll('.text-cancelar').forEach(function (element) {
-                element.style.display = "none";
-            });
-        });
-    </script>
-</body>
-</html>
-
-<?php
-$stmt->close();
-$mysqli->close();
-?>
-
-
-
-
-
-
-<?php
-    session_start();
-    include('../../../conexao.php'); // Conexão com o banco
-
-    // Verificação de sessão
-    if (!isset($_SESSION['id'])) {
-        header("Location: ../../../../index.php");
-        exit;
-    }
-
-    $id_session = $_SESSION['id'];
-    var_dump($_POST);
-    //echo 'crediario';
-
-    $tipo_pagamento = isset($_POST['tipo_pagamento']) ? $_POST['tipo_pagamento'] : '';
-    //echo $tipo_pagamneto;
-    // Verificação e sanitização dos dados recebidos
-    if ($tipo_pagamento = 'pix'){
-        $tipo_pagamento = '2';
-    } else if ($tipo_pagamento = 'cartaoCred') {
-        $tipo_pagamento = '2';
-    } else if ($tipo_pagamento = 'cartaoDeb'){
-        $tipo_pagamento = '3';
-    }
-    echo $tipo_pagamento;
-
-    $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
-    $id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
-    $valor_frete = isset($_POST['valor_frete']) ? floatval(str_replace(',', '.', $_POST['valor_frete'])) : 0.0;
-    $valor_total = isset($_POST['valor_total']) ? floatval(str_replace(',', '.', $_POST['valor_total'])) : 0.0;
-    $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
-    $entrega = isset($_POST['entrega']) ? $_POST['entrega'] : '';
-    $rua = isset($_POST['rua']) ? $_POST['rua'] : '';
-    $bairro = isset($_POST['bairro']) ? $_POST['bairro'] : '';
-    $numero = isset($_POST['numero']) ? $_POST['numero'] : '';
-    $contato = isset($_POST['contato']) ? $_POST['contato'] : '';
-    $entrada = isset($_POST['entrada']) ? floatval(str_replace(',', '.', $_POST['entrada'])) : 0.0;
-    $restante = isset($_POST['restante']) ? floatval(str_replace(',', '.', $_POST['restante'])) : 0.0;
-    $tipo_entrada_crediario = isset($_POST['tipo_entrada_crediario']) ? $_POST['tipo_entrada_crediario'] : '';
-    $bandeiras_aceitas = isset($_POST['bandeiras']) ? $_POST['bandeiras'] : '';
-    $comentario = isset($_POST['comentario']) ? $_POST['comentario'] : '';
-    $maior_parcelas = isset($_POST['maiorParcelas']) ? intval($_POST['maiorParcelas']) : 1;
-
-    $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session") or die($mysqli->error);
-    $dados = $bd_cliente->fetch_assoc();
-    $senha_compra = $dados['senha_login'];
-    
-    //echo $tipo_entrada_crediario;
-
-    // Buscar cartões do cliente usando prepared statements
-    $stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
-    if ($stmt) {
-        $stmt->bind_param("i", $id_cliente);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $cartoes = array();
-        $cartoes_credito = 0;
-        $cartoes_debito = 0;
-        while ($row = $result->fetch_assoc()) {
-            $cartoes[] = $row;
-            if ($row['tipo'] === 'credito') {
-                $cartoes_credito++;
-            } elseif ($row['tipo'] === 'debito') {
-                $cartoes_debito++;
-            }
-        }
-
-        $stmt->close();
-    } else {
-        die("Erro na preparação da consulta: " . $mysqli->error);
-    }
-   
-?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formas de pagamento</title>
-    <style>
-        /* Estilos gerais */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .form-container {
-            max-width: 800px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        #popup-pix {
-            text-align: center
-        }
-
-        p {
-            margin: 10px 0;
-            color: #555;
-        }
-
-        /* Botões gerais */
-        button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* Botões de ação positiva (Continuar, Finalizar) */
-        button#btn_continuar,
-        button#btn_continuar_pg,
-        button#btn_finalizar {
-            background-color: #28a745; /* Verde */
-            color: #fff;
-        }
-
-        button#btn_continuar:hover,
-        button#btn_continuar_pg:hover,
-        button#btn_finalizar:hover {
-            background-color: #218838; /* Verde mais escuro */
-        }
-
-        /* Botão de ação negativa (Cancelar) */
-        button#btn_cancelar {
-            background-color: #dc3545; /* Vermelho */
-            color: #fff;
-        }
-
-        button#btn_cancelar:hover {
-            background-color: #c82333; /* Vermelho mais escuro */
-        }
-
-        /* Botões de ação neutra (Voltar, Gerar QR Code) */
-        button#btn_voltar,
-        button[onclick="gerarQRCode()"],
-        button[type="submit"] {
-            background-color: #007bff; /* Azul */
-            color: #fff;
-        }
-
-        button#btn_voltar:hover,
-        button[onclick="gerarQRCode()"]:hover,
-        button[type="submit"]:hover {
-            background-color: #0056b3; /* Azul mais escuro */
-        }
-
-        .popup-content {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            max-width: 90%;
-        }
-
-        .popup-content h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        .popup-content button {
-            width: 100%;
-        }
-        .popup-content-cartoes {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 50%;
-            max-width: 90%;
-            border: 1px solid #888;
-            text-align: center;
-        }
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .mensagem-sucesso {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .mensagem-sucesso .content-content {
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 5px;
-            text-align: center;
-            background-color: #fff;
-        }
-                /*Adicionar estilo para escurecer o fundo*/
-        .popup-background {
-            display: none;
-            position: fixed;
-            z-index: 999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        #dados_cartao {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #dados_cartao div {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        #dados_cartao label {
-            flex: 1;
-            text-align: left;
-        }
-
-        #dados_cartao input {
-            flex: 2;
-            padding: 5px;
-        }
-
-        .popup-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .popup-buttons button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .popup-buttons button.cancelar {
-            background-color: #dc3545;
-        }
-
-        .popup-buttons button:hover {
-            opacity: 0.9;
-        }
-
-        /* Estilos responsivos */
-        @media (max-width: 768px) {
-            .form-container {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            button {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
-
-            .popup-content {
-                max-width: 95%;
-            }
-
-            #dados_cartao div {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            #dados_cartao label {
-                margin-bottom: 5px;
-            }
-
-            #dados_cartao input {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .form-container {
-                padding: 10px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-
-            button {
-                font-size: 12px;
-                padding: 6px 12px;
-            }
-
-            .popup-content {
-                padding: 15px;
-            }
-
-            #dados_cartao div {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            #dados_cartao label {
-                margin-bottom: 5px;
-            }
-
-            #dados_cartao input {
-                width: 100%;
-            }
-        }
-
-    </style>
-</head>
-<body>
-    <div id="popup-background" class="popup-background"></div>
-    <div class="form-container">
-        <form id="form_crediario" method="POST" action="finalizar_compra_crediario.php">
-            <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
-            <input type="text" id="tipo_pagamento" value="<?php echo $tipo_pagamento; ?>" hidden>
-            <input type="text" id="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
-            <input type="text" id="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
-            <input type="text" id="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
-            <input type="text" id="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
-            <input type="text" id="entrega" value="<?php echo $entrega; ?>" hidden>
-            <input type="text" id="rua" value="<?php echo $rua; ?>" hidden>
-            <input type="text" id="bairro" value="<?php echo $bairro; ?>" hidden>
-            <input type="text" id="numero" value="<?php echo $numero; ?>" hidden>
-            <input type="text" id="contato" value="<?php echo $contato; ?>" hidden>
-            <input type="text" id="entrada" value="<?php echo $entrada; ?>" hidden>
-            <input type="text" id="restante" value="<?php echo $restante; ?>" hidden>
-            <input type="text" id="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" hidden>
-            <input type="text" id="comentario" value="<?php echo $comentario; ?>" hidden>
-            <input type="text" id="data_hora" name="data_hora" hidden>
-
-            <h1>Formas de Pagamento</h1>
-            <h3>Valor total da Compra: R$ <?php echo number_format($valor_total, 2, ',', '.'); ?></h3>
-            
-            <p style="display: block;"><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
-            <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" style="display: none;" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
-            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" style="display: none;" value="<?php echo $bandeiras_aceitas; ?>" readonly>
         
-            <hr style="border: 1px solid #ccc; margin: 10px 0;">
+        $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
+        $id_cliente = isset($data['id_cliente']) ? intval($data['id_cliente']) : 0;
+        $id_parceiro = isset($data['id_parceiro']) ? intval($data['id_parceiro']) : 0;
+        $detalhes_produtos = isset($data['detalhes_produtos']) ? $data['detalhes_produtos'] : '';
 
-            <div id="popup-pix" style="<?php if ($tipo_pagamento == 1) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
-                <h3>Pagar entrada com PIX</h3>
-                <p>Valor da Entrada: R$ <?php echo 'linha 384'; ?></p>
-                <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
+        $valor_frete = isset($data['valor_frete']) ? floatval($data['valor_frete']) : 0.0;
+        $valor_total = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
+        $taxa_crediario = isset($data['taxa_crediario']) ? floatval($data['taxa_crediario']) : 0.0;
+        $momen_pagamento = isset($data['momen_pagamento']) ? $data['momen_pagamento'] : '';
+        $tipo_pagamento = isset($data['tipo_pagamento']) ? $data['tipo_pagamento'] : '';
+        $entrega = isset($data['tipo_entrega']) ? $data['tipo_entrega'] : '';
 
-                <img id="qr_code_pix" src="qr_code_pix.png" alt="QR Code PIX" style="display: none;">
-                <br>
-                <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
-                <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
-                <button type="button" id="btn_continuar" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
-            </div>
+        $entrada = $valor_total;
 
-            <div id="popup_cartaoCred" style="<?php if ($tipo_pagamento == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
-                <h3>Selecione o cartão de Crédito a ser usado</h3>
-                <table id="cartoes_debito_cadastrados">
-                    <thead>
-                        <tr>
-                            <th>Selecionar</th>
-                            <th>Número do Cartão</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($cartoes) || count(array_filter($cartoes, fn($cartao) => $cartao['tipo'] === 'debito')) === 0): ?>
-                            <tr>
-                                <td colspan="3" id="mensagem_sem_cartao_debito">Nenhum cartão salvo!</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($cartoes as $cartao): ?>
-                                <?php if ($cartao['tipo'] === 'credito'): ?>
-                                    <tr>
-                                        <td>
-                                            <input type="checkbox" name="cartao_debito_selecionado" value="<?php echo $cartao['id']; ?>" 
-                                            data-num-cartao="<?php echo $cartao['num_cartao']; ?>" 
-                                            data-validade="<?php echo $cartao['validade']; ?>" 
-                                            data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" 
-                                            data-nome-cartao="<?php echo $cartao['nome']; ?>" 
-                                            onchange="verificarCartaoSelecionado()">
-                                        </td>
-                                        <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
-                                        <td>
-                                            <button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        $num_cartao = isset($data['num_cartao']) ? $data['num_cartao'] : '';
+        $nome_cartao = isset($data['nome_cartao']) ? $data['nome_cartao'] : '';
+        $validade = isset($data['validade']) ? $data['validade'] : '';
+        $cod_seguranca = isset($data['cod_seguranca']) ? $data['cod_seguranca'] : '';
+        $qt_parcelas_entrada = isset($data['qt_parcelas_entrada']) ? intval($data['qt_parcelas_entrada']) : 0;
+        
+        $valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
+        $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
+        $salvar_cartao = isset($data['salvar_cartao']) ? $data['salvar_cartao'] : '';
+        $tipo_compra = isset($data['tipo_compra']) ? $data['tipo_compra'] : '';
+        $restante = $valor_total - $entrada;
 
-                <div id="vl_pg" style="display: none;">   
-                    <hr>                 
-                    <p>Valor do pagamento: R$ <input type="text" id="vl_pg_cred" value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" oninput="formatarValorPagamento(this)"></p>
-                    <label for="parcelas_cartaoCred_entrada">Quantidade de parcelas:</label>
-                    <input id="parcelas_cartaoCred_entrada" name="parcelas_cartaoCred_entrada" type="number" min="1" max="12" value="1" onchange="calcularValorParcela()">
-                    <p>Valor da Parcela: R$ <span id="valor_parcela_cartaoCred_entrada"><?php echo number_format($valor_total, 2, ',', '.'); ?></span></p>
-                    <hr>
-                </div>
+        $valor_restante = isset($data['valor_restante']) ? floatval($data['valor_restante']) : 0.0;
+        $forma_pg_restante = isset($data['forma_pg_restante']) ? $data['forma_pg_restante'] : '';
+        $qt_parcelas = isset($data['qt_parcelas']) ? intval($data['qt_parcelas']) : 0;
 
-                <button type="button" class="usar-outro-cartao" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
-                <button type="button" id="btn_continuar_cartaoCred" onclick="validarValorPagamento()" style="display: none;">Continuar</button>
-                <br>
-            </div>
+        $rua = isset($data['rua']) ? $data['rua'] : '';
+        $numero = isset($data['numero']) ? $data['numero'] : '';
+        $bairro = isset($data['bairro']) ? $data['bairro'] : '';
+        $contato = isset($data['contato']) ? $data['contato'] : '';
+        $comentario = isset($data['comentario']) ? $data['comentario'] : '';
 
-            <div id="popup_cartaoDeb" style="<?php if ($tipo_pagamento == 3) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
-                <h3>Selecione o cartão de débito a ser usado</h3>
-                <table id="cartoes_debito_cadastrados">
-                    <thead>
-                        <tr>
-                            <th>Selecionar</th>
-                            <th>Número do Cartão</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($cartoes) || count(array_filter($cartoes, fn($cartao) => $cartao['tipo'] === 'debito')) === 0): ?>
-                            <tr>
-                                <td colspan="3" id="mensagem_sem_cartao_debito">Nenhum cartão salvo!</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($cartoes as $cartao): ?>
-                                <?php if ($cartao['tipo'] === 'debito'): ?>
-                                    <tr>
-                                        <td>
-                                            <input type="checkbox" name="cartao_credito_selecionado" value="<?php echo $cartao['id']; ?>" 
-                                            data-num-cartao="<?php echo $cartao['num_cartao']; ?>" 
-                                            data-validade="<?php echo $cartao['validade']; ?>" 
-                                            data-cod-seguranca="<?php echo $cartao['cod_seguranca']; ?>" 
-                                            data-nome-cartao="<?php echo $cartao['nome']; ?>"
-                                            data-valor-entreda="<?php echo $entrada; ?>"
-                                            data-valor-parcela=""
-                                            onchange="verificarCartaoSelecionado()">
-                                        </td>
-                                        <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
-                                        <td>
-                                            <button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-                <br>
+        $status_cliente = 0;
+        $status_parceiro = 0;
 
-                <button type="button" class="usar-outro-cartao-debito" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
-                <button type="button" id="btn_continuar_cartaoDeb" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
-                <br>
-            </div>
-            
-            <div id="detalhes_cartao" style="display: block;">
-                <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
-                <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
-                <input type="text" id="validade_selecionado" name="validade_selecionado_selecionado" readonly>
-                <input type="text" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
-                <input type="text" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado" readonly>
-                <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
-                <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
-            </div>
-            
-            <div id="popup_novo_cartao" class="popup-content-cartoes" style="display: none;">
-                <span class="close" onclick="fecharPopup('popup_novo_cartao')">&times;</span>
-                <h3>Adicionar Novo Cartão</h3>
-                <?php if (isset($mensagem_erro)): ?>
-                    <p style="color: red;"><?php echo $mensagem_erro; ?></p>
-                <?php endif; ?>
-                <h3>Valor da entrada: R$ <?php echo 'linha 498'; ?></h3>
-                <p>Bandeiras aceitas: <?php echo $bandeiras_aceitas; ?>.</p>
-
-                <div id="dados_cartao">
-                    <div>
-                        <label for="tipo_cartao">Tipo de Cartão:</label>
-                        <input type="text" id="tipo_cartao" name="tipo_cartao" value="<?php if ($tipo_entrada_crediario == 2) { echo 'Crédito'; } else { echo 'Débito'; } ?>" readonly>
-                    </div>
-                    <div>
-                        <label for="nome_cartao">Nome descrito Cartão:</label>
-                        <input type="text" id="nome_cartao" name="nome_cartao" required value="<?php echo isset($nome_cartao) ? $nome_cartao : ''; ?>">
-                    </div>
-                    <div>
-                        <label for="num_cartao">Número do Cartão:</label>
-                        <input type="text" id="num_cartao" name="num_cartao" required oninput="formatarNumeroCartao(this)" value="<?php echo isset($num_cartao) ? $num_cartao : ''; ?>">
-                    </div>
-                    <div>
-                        <label for="validade">Validade:</label>
-                        <input type="text" id="validade" name="validade" required oninput="formatarValidadeCartao(this)" value="<?php echo isset($validade) ? $validade : ''; ?>">
-                    </div>
-                    <div>
-                        <label for="cod_seguranca">Código de Segurança:</label>
-                        <input type="text" id="cod_seguranca" name="cod_seguranca" required oninput="formatarCodSeguranca(this)" value="<?php echo isset($cod_seguranca) ? $cod_seguranca : ''; ?>">
-                    </div>
-                    <div style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
-                        <label for="parcelas_cartaoCred_entrada_novo">Quantidade de parcelas:</label>
-                        <input id="parcelas_cartaoCred_entrada_novo" name="parcelas_cartaoCred_entrada_novo" type="number" min="1"  value="1" onchange="calcularValorParcelaNovo()">
-                    </div>
-                    <div style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
-                        <p>Valor da Parcela: R$ <span id="valor_parcela_cartaoCred_entrada_novo"><?php echo $entrada_formatado; ?></span></p>
-                    </div>
-                </div>
-                <div class="popup-buttons">
-                    <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
-                    <button type="button" onclick="adicionarNovoCartao(true)">Salvar e Usar</button>
-                    <button type="button" onclick="adicionarNovoCartao(false)">Usar só dessa vez</button>
-                </div>
-            </div>
-
-            <div id="popup-restante" class="popup-content" style="display: none;">
-                <h3>Pagamento do Restante</h3>
-                <p>Valor Restante: R$ <?php echo 'linha 539'?></p>
-                <label for="parcelas">Selecione o número de parcelas:</label>
-                <select id="parcelas" name="parcelas">
-                    <?php 
-                    if ($maior_parcelas > 0): 
-                        for ($i = 1; $i <= $maior_parcelas; $i++): ?>
-                            <option value="<?php echo $i; ?>"><?php echo $i; ?>x <?php echo $i === 1 ? '(sem juros)' : ''; ?></option>
-                        <?php endfor; 
-                    else: ?>
-                        <option value="1">1x (sem juros)</option>
-                    <?php endif; ?>
-                </select>
-
-                <p id="valor_parcela"></p>
-                <input type="text" id="input_parcela" style="display: none;">
-
-                <button type="button" id="btn_voltar" onclick="voltarParaEntrada()">Voltar</button>
-                <button type="button" id="btn_continuar_pg">Continuar</button>
-            </div>
-
-            <div id="popup-senha" class="popup-content" style="display: none;">
-                <p>Senha do Cliente: 
-                    <input type="password" id="senha_cliente" name="senha_cliente" >
-                    <span id="toggle_senha" style="cursor: pointer;">👁️</span>
-                </p>
-                <p id="msg_erro" style="color: red; display: none;"></p>
-                <p id="msg_sucesso" style="color: green; display: none;"></p>
-                <p>Digite a senha do cliente para continuar com o pagamento.</p>
-                <p>Após a confirmação, o pedido será finalizado e o restante do valor será cobrado.</p>
-                <button type="button" id="btn_cancelar">Cancelar</button>
-                <button type="button" id="btn_finalizar">Finalizar</button>
-            </div>    
-        </form>
-
-        <form id="form-voltar" action="forma_entrega.php" method="GET">
-            <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
-            <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-            <input type="hidden" name="valor_total" value="<?php echo $valor_total; ?>">
-            <input type="hidden" name="valor_frete" value="<?php echo $valor_frete; ?>">
-            <input type="hidden" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
-            <input type="hidden" name="entrega" value="<?php echo $entrega; ?>">
-            <input type="hidden" name="rua" value="<?php echo $rua; ?>">
-            <input type="hidden" name="bairro" value="<?php echo $bairro; ?>">
-            <input type="hidden" name="numero" value="<?php echo $numero; ?>">
-            <input type="hidden" name="contato" value="<?php echo $contato; ?>">
-            <button type="submit">Voltar</button>
-        </form>        
-    </div>
-</body>
-    <script>
-        function obterHorarioLocal() {
-            const agora = new Date();
-            
-            // Obtém os componentes da data e hora
-            const ano = agora.getFullYear();
-            const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
-            const dia = String(agora.getDate()).padStart(2, '0');
-            const hora = String(agora.getHours()).padStart(2, '0');
-            const minuto = String(agora.getMinutes()).padStart(2, '0');
-            const segundo = String(agora.getSeconds()).padStart(2, '0');
-
-            // Formata a data e hora como YYYY-MM-DD HH:MM:SS
-            const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
-
-            //console.log("Horário do dispositivo:", dataFormatada);
-            document.getElementById('data_hora').value = dataFormatada;
+        if ($tipo_pagamento === '1') {
+            $tipo_pagamento = 'pix';
+        } else if ($tipo_pagamento === '2') {
+            $tipo_pagamento = 'credito';
+        } else {
+            $formato_compra = 'debito';
         }
 
-        function abrirPopupRestante() {
-
-            const popupRestante = document.getElementById("popup-restante");
-            document.getElementById('popup_novo_cartao').style.display = 'none';
-            //document.getElementById('popup-background').style.display = 'block';
-            document.getElementById('popup-background').style.display = "block";
-
-            popupRestante.style.display = "block";
-            popupRestante.style.position = "fixed";
-            popupRestante.style.top = "50%";
-            popupRestante.style.left = "50%";
-            popupRestante.style.transform = "translate(-50%, -50%)";
-            popupRestante.style.zIndex = "1000";
-            popupRestante.style.backgroundColor = "#fff";
-            popupRestante.style.padding = "20px";
-            popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            obterHorarioLocal();
+        //Gerador do código de retirada de 6 digitos
+        $codigo_retirada = mt_rand(100000, 999999);
+        // Verifica se o código de retirada já existe
+        $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
+        if ($stmt) {
+            $stmt->bind_param("si", $codigo_retirada, $id_cliente);
+            $stmt->execute();
+            $stmt->bind_result($count);
+            $stmt->fetch();
+            $stmt->close();
+        } else {
+            throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
         }
-
-        /*function abrirPopupNovoCartao() {
-            const popupNovoCartao = document.getElementById('popup_novo_cartao');
-            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
-
-            // Desmarcar todos os outros cartões
-            checkboxes.forEach((cb) => {
-                cb.checked = false;
-                //console.log('Desmarcando cartão:', cb);
-                limparDetalhesCartao();
-            });
-
-            if (popupNovoCartao) {
-                popupNovoCartao.style.display = 'block'; // Exibir o popup
-                popupNovoCartao.style.position = 'fixed'; // Garantir que o popup seja exibido sobre a página
-                popupNovoCartao.style.top = '50%';
-                popupNovoCartao.style.left = '50%';
-                popupNovoCartao.style.transform = 'translate(-50%, -50%)';
-                popupNovoCartao.style.zIndex = '1000'; // Garantir que o popup esteja acima de outros elementos
-
-                document.getElementById('popup-background').style.display = 'block';
-
-                //console.log('Popup de novo cartão aberto.');
+        // Se o código já existe, gere um novo
+        while ($count > 0) {
+            $codigo_retirada = mt_rand(100000, 999999);
+            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
+            if ($stmt) {
+                $stmt->bind_param("si", $codigo_retirada, $id_cliente);
+                $stmt->execute();
+                $stmt->bind_result($count);
+                $stmt->fetch();
+                $stmt->close();
             } else {
-                //console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
+                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
             }
         }
 
-        function fecharPopup(popupId) {
-            document.getElementById(popupId).style.display = 'none';
-            document.getElementById('popup-background').style.display = 'none';
-            document.getElementById('salvar_cartao').value = '0';
+        // Processar a compra (exemplo de inserção no banco de dados)
+        $stmt = $mysqli->prepare("INSERT INTO pedidos (
+            data,
+            codigo_retirada,
+            id_cliente, 
+            id_parceiro,
+            produtos,
+            valor_frete,
+            valor,
+            taxa_crediario,
+            formato_compra,
+            entrada,
+            forma_pg_entrada,
+            qt_parcela_entrada,
+            valor_parcela_entrada,
+            valor_restante,
+            forma_pg_restante,
+            qt_parcelas,
+            valor_parcela,
+            tipo_entrega,
+            endereco_entrega,
+            num_entrega,
+            bairro_entrega,
+            contato_recebedor,
+            comentario,
+            status_cliente,
+            status_parceiro) 
+            VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        if (!$stmt) {
+            throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
         }
 
-        function formatarNumeroCartao(input) {
-            input.value = input.value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').slice(0, 19);
-        }
+        $stmt->bind_param(
+            "siissssssssisssisssssssii", // Tipos de dados: s = string, i = inteiro, d = double
+            $data_hora,
+            $codigo_retirada,
+            $id_cliente,        // i: id_cliente
+            $id_parceiro,      // i: id_parceiro
+            $detalhes_produtos, // s: produtos
+            $valor_frete,       // d: valor_frete
+            $total_compra,
+            $taxa_crediario,       // d: valor
+            $momen_pagamento,       // s: tipo_compra
+            $entrada,           // d: entrada
+            $tipo_pagamento, // s: forma_pg_entrada
+            $qt_parcelas_entrada, // i: qt_parcelas_entrada
+            $valorParcela_entrada, // d: valor_parcela_entrada
+            $restante,          // d: valor_restante
+            $tipo_compra,       // s: forma_pg_restante
+            $parcelas,          // i: qt_parcelas
+            $valor_parcela,     // d: valor_parcela
+            $entrega,           // s: tipo_entrega
+            $rua,               // s: endereco_entrega
+            $numero,            // s: num_entrega
+            $bairro,            // s: bairro_entrega
+            $contato,           // s: contato_recebedor
+            $comentario,        // s: comentario
+            $status_cliente,    // i: status_cliente
+            $status_parceiro    // i: status_parceiro*
+        );
 
-        function formatarValidadeCartao(input) {
-            input.value = input.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
-        }
+        if ($stmt->execute()) {
+            $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
+            $stmt->close();
 
-        function formatarCodSeguranca(input) {
-            input.value = input.value.replace(/\D/g, '').slice(0, 3);
-        }*/
-        function mostrarParcelasCartaoCred(Primeiro_pag) {
-            const parcelasSelect = document.getElementById('parcelas_cartaoCred_entrada');
-            parcelasSelect.innerHTML = '';
+            // Buscar cartões do cliente usando prepared statements
+            $stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $id_cliente);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-            const maxParcelas = 12; // Defina o número máximo de parcelas
-
-            if (maxParcelas > 0) {
-                for (let i = 1; i <= maxParcelas; i++) {
-                    let valorParcela;
-                    let labelJuros = ''; // Texto para indicar se há juros
-
-                    if (i > 3) {
-                        // Aplicar juros compostos para parcelas acima de 3x
-                        const taxaJuros = 0.0299; // 2.99% ao mês
-                        valorParcela = (Primeiro_pag * Math.pow(1 + taxaJuros, i)) / i;
-                        labelJuros = ' com 2,99% a.m.';
-                    } else {
-                        // Parcelas sem juros
-                        valorParcela = Primeiro_pag / i;
-                        labelJuros = ' sem juros';
+                $cartoes = array();
+                $cartoes_credito = 0;
+                $cartoes_debito = 0;
+                while ($row = $result->fetch_assoc()) {
+                    $cartoes[] = $row;
+                    if ($row['tipo'] === 'credito') {
+                        $cartoes_credito++;
+                    } elseif ($row['tipo'] === 'debito') {
+                        $cartoes_debito++;
                     }
-
-                    const option = document.createElement('option');
-                    option.value = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
-                    option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
-                    parcelasSelect.appendChild(option);
                 }
+
+                $stmt->close();
             } else {
-                console.error('Erro: maxParcelas inválido.');
+                die("Erro na preparação da consulta: " . $mysqli->error);
             }
-        }
 
-        function mostrarParcelasCartaoCred(restante) {
-            const parcelasSelect = document.getElementById('parcelas_cartaoCred_segunda');
-            parcelasSelect.innerHTML = '';
+            // salvar o cartão de crédito ou débito se necessário
+            if ($salvar_cartao == 1) {
+                // Criptografar o código de segurança
+                $cod_seguranca_criptografado = password_hash($cod_seguranca, PASSWORD_DEFAULT);
+    
+                // Verificar se o cartão já está cadastrado
+                $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ? AND tipo = ?");
 
-            const maxParcelas = 12; // Defina o número máximo de parcelas
-
-            if (maxParcelas > 0) {
-                for (let i = 1; i <= maxParcelas; i++) {
-                    let valorParcela;
-                    let labelJuros = ''; // Texto para indicar se há juros
-
-                    if (i > 3) {
-                        // Aplicar juros compostos para parcelas acima de 3x
-                        const taxaJuros = 0.0299; // 2.99% ao mês
-                        valorParcela = (restante * Math.pow(1 + taxaJuros, i)) / i;
-                        labelJuros = ' com 2,99% a.m.';
+                if ($stmt) {
+                    $stmt->bind_param("iss", $id_cliente, $num_cartao, $tipo_cartao);
+                    $stmt->execute();
+                    $stmt->store_result();
+    
+                    if ($stmt->num_rows > 0) {
+                        $stmt->close();
+                        //$mensagem_erro = "Este cartão já está cadastrado.";
                     } else {
-                        // Parcelas sem juros
-                        valorParcela = restante / i;
-                        labelJuros = ' sem juros';
-                    }
-
-                    const option = document.createElement('option');
-                    option.value = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
-                    option.textContent = `${i}x de R$ ${valorParcela.toFixed(2).replace('.', ',')}${labelJuros}`;
-                    parcelasSelect.appendChild(option);
-                }
-            } else {
-                console.error('Erro: maxParcelas inválido.');
-            }
-        }
-
-        function verificarCartaoSelecionado() {
-            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
-            
-            checkboxes.forEach((checkbox) => {
-                checkbox.addEventListener('change', function () {
-                    if (this.checked) {
-                        // Desmarcar todos os outros cartões
-                        checkboxes.forEach((cb) => {
-                            if (cb !== this) cb.checked = false;
-                            limparDetalhesCartao();
-                        });
-
-                        // Preencher os detalhes do cartão selecionado
-                        carregarDetalhesCartao(this);
-                    } else {
-                        // Limpar os detalhes do cartão se nenhum for selecionado
-                        limparDetalhesCartao();
-                    }
-                });
-            });
-
-            // Verificar se algum cartão já está selecionado ao carregar a página
-            const selecionado = Array.from(checkboxes).find(cb => cb.checked);
-            if (selecionado) {
-                carregarDetalhesCartao(selecionado);
-            }
-        }
-
-        function carregarDetalhesCartao(cartao) {
-            const numCartao = cartao.dataset.numCartao;
-            const validade = cartao.dataset.validade;
-            const codSeguranca = cartao.dataset.codSeguranca;
-            const nomeCartao = cartao.dataset.nomeCartao;
-
-            document.getElementById('num_cartao_selecionado').value = numCartao;
-            document.getElementById('validade_selecionado').value = validade;
-            document.getElementById('cod_seguranca_selecionado').value = codSeguranca;
-            document.getElementById('nome_cartao_selecionado').value = nomeCartao;
-
-            // Atualizar o valor da parcela, se aplicável
-            const parcelasInput = document.getElementById('parcelas_cartaoCred_entrada');
-            if (parcelasInput) {
-                const parcelaSelecionada = parcelasInput.value || 1;
-                document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = parcelaSelecionada;
-            }
-            const valorParcela = document.getElementById('valor_parcela_cartaoCred_entrada');
-            if (valorParcela) {
-                const valor = parseFloat(valorParcela.textContent.replace('R$ ', '').replace('.', '').replace(',', '.'));
-                document.getElementById('valor_parcela_cartao_selecionado').value = valor;
-            }
-            // Exibir o botão de continuar
-            document.getElementById('vl_pg').style.display = 'block';
-            document.getElementById('btn_continuar_cartaoCred').style.display = 'block';
-            document.getElementById('btn_continuar_cartaoDeb').style.display = 'block'; 
-        }
-
-        function limparDetalhesCartao() {
-            //console.log('Limpar detalhes do cartão');
-            document.getElementById('vl_pg').style.display = 'none';
-            document.getElementById('vl_pg_cred').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-            //document.getElementById('parcelas_cartaoCred_entrada').value = '1'; // Resetar para 1 parcela
-            //document.getElementById('valor_parcela_cartaoCred_entrada').textContent = "<?php echo 'R$ ' . number_format($valor_total, 2, ',', '.'); ?>";
-            
-            document.getElementById('num_cartao_selecionado').value = '';
-            document.getElementById('validade_selecionado').value = '';
-            document.getElementById('cod_seguranca_selecionado').value = '';
-            document.getElementById('nome_cartao_selecionado').value = '';
-            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = '1'; // Resetar para 1 parcela
-            document.getElementById('valor_parcela_cartao_selecionado').value = '';
-            // Esconder o botão de continuar
-            document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
-        }
-
-        /*function validarCartao() {
-            const numCartao = document.getElementById('num_cartao').value.replace(/\s/g, '');
-            const validade = document.getElementById('validade').value;
-            const codSeguranca = document.getElementById('cod_seguranca').value;
-
-            if (numCartao.length !== 16) {
-                alert('O número do cartão deve ter 16 dígitos.');
-                return false;
-            }
-
-            if (validade.length !== 5 || !/^\d{2}\/\d{2}$/.test(validade)) {
-                alert('A validade deve estar no formato MM/AA.');
-                return false;
-            }
-
-            if (codSeguranca.length !== 3) {
-                alert('O código de segurança deve ter 3 dígitos.');
-                return false;
-            }
-
-            // Verificar se o nome do cartão não está vazio
-            const nomeCartao = document.getElementById('nome_cartao').value;
-            if ((nomeCartao.trim() === '') || nomeCartao.length < 5) {
-                alert('O nome do cartão precisa ser preenchido corretamente.');
-                return false;
-            }
-
-            return true;
-        }
-
-        function adicionarNovoCartao(salvar) {
-            if (validarCartao()) {
-            
-                // Corrigido: usar o valor passado no parâmetro
-                if (salvar === true) {
-                    document.getElementById('salvar_cartao').value = '1';
-                } else {
-                    document.getElementById('salvar_cartao').value = '0';
-                }
-
-                // Preencher os detalhes do cartão selecionado
-                document.getElementById('num_cartao_selecionado').value = document.getElementById('num_cartao').value.replace(/\s/g, '');
-                document.getElementById('validade_selecionado').value = document.getElementById('validade').value;
-                document.getElementById('cod_seguranca_selecionado').value = document.getElementById('cod_seguranca').value;
-                document.getElementById('nome_cartao_selecionado').value = document.getElementById('nome_cartao').value;
-                document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
-                document.getElementById('valor_parcela_cartao_selecionado').value = parseFloat(document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent.replace('.', '').replace(',', '.'));
-
-                //console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
-                //document.getElementById('popup_novo_cartao').style.display = 'block';
-                //document.getElementById('popup-background').style.display = 'block';
-
-                abrirPopupRestante();
-            }
-
-        }*/
-
-        // Função para voltar ao popup entrada
-        function voltarParaEntrada() {
-            const tipo_pagamento = <?php echo $tipo_pagamento; ?>;
-            const popupRestante = document.getElementById("popup-restante");
-            const popup_background = document.getElementById('popup-background');
-            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
-
-            // Desmarcar todos os outros cartões
-            checkboxes.forEach((cb) => {
-                cb.checked = false;
-                //console.log('Desmarcando cartão:', cb);
-                //limparDetalhesCartao();
-            });
-
-            popup_background.style.display = "none";
-            popupRestante.style.display = "none";
-
-            if (tipo_pagamento == 1) {
-                document.getElementById('popup-pix').style.display = "block";
-            } else if (tipo_pagamento == 2) {
-                document.getElementById('popup_cartaoCred').style.display = "block";
-            } else {
-                document.getElementById('popup_cartaoDeb').style.display = "block";
-            }
-            //limparDetalhesCartao();
-        };
-
-        /*function cancelarSalvarUsar() {
-            document.getElementById('popup_confirmacao_salvar_usar').style.display = 'none';
-            document.getElementById('popup-background').style.display = 'none';
-        }
-*/
-        function calcularValorParcela() {
-            const input = document.getElementById('vl_pg_cred');
-            const valorTotal = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada').value) || 1;
-
-            if (numParcelas <= 0) {
-                alert('O número de parcelas deve ser maior que zero.');
-                return;
-            }
-
-            let valorParcela;
-            if (numParcelas > 3) {
-                const taxaJuros = 0.0299; // 2.99% ao mês
-                valorParcela = (valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
-            } else {
-                valorParcela = valorTotal / numParcelas; // Sem juros para até 3 parcelas
-            }
-
-            const valorParcelaFormatado = valorParcela.toFixed(2).replace('.', ',');
-            document.getElementById('valor_parcela_cartaoCred_entrada').textContent = valorParcelaFormatado;
-            document.getElementById('valor_parcela_cartao_selecionado').value = valorParcela;
-            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = numParcelas;
-        }
-
-        function validarValorPagamento() {
-            const input = document.getElementById('vl_pg_cred');
-            const valorTotal = <?php echo $valor_total; ?>;
-            let valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-
-            if (valor > valorTotal) {
-                alert('O valor não pode ser maior que o valor total.');
-                input.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-                document.getElementById('vl_pg_cred').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-                calcularValorParcela();
-                return;
-            } else if (valor <= 0) {
-                alert('O valor não pode ser igual ou menor que 0.');
-                input.value = "<?php echo number_format(0, 2, ',', '.'); ?>";
-                document.getElementById('vl_pg_cred').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-                calcularValorParcela();
-                return;
-            }
-
-            abrirPopupRestante();
-        }
-
-        function formatarValorPagamento(input) {
-            let valor = input.value.replace(/[^\d]/g, ''); // Remove tudo que não for número
-            if (valor) {
-                valor = (parseInt(valor) / 100).toFixed(2); // Divide por 100 para ajustar os centavos
-                input.value = valor.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Formata com ponto de milhar e vírgula para centavos
-            } else {
-                input.value = '';
-            }
-            calcularValorParcela();
-        }
-
-        /*function calcularValorParcelaNovo() {valor_parcela_cartaoCred_entrada_novo
-            const valorTotal = parseFloat(document.getElementById('entrada').value) || 0;
-            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada_novo').value) || 1;
-
-            if (numParcelas <= 0) {
-                alert('O número de parcelas deve ser maior que zero.');
-                return;
-            }
-
-            let valorParcela;
-            if (numParcelas > 3) {
-                const taxaJuros = 0.0299; // 2.99% ao mês
-                valorParcela = (valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
-            } else {
-                valorParcela = valorTotal / numParcelas; // Sem juros para até 3 parcelas
-            }
-
-            const valorParcelaFormatado = valorParcela.toFixed(2).replace('.', ',');
-            document.getElementById('valor_parcela_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const tipoEntrada = "<?php echo $tipo_entrada_crediario; ?>";
-            const popupPix = document.getElementById("popup-pix");
-            const popupCartaoDeb = document.getElementById("popup_cartaoDeb");
-            const popupCartaoCred = document.getElementById("popup_cartaoCred");
-            const popupRestante = document.getElementById("popup-restante");
-            const popupSenha = document.getElementById("popup-senha");
-            const qrCodePix = document.getElementById("qr_code_pix");
-            const linkPix = document.getElementById("link_pix");
-            const btnContinuar = document.getElementById("btn_continuar");
-            const btnContinuarPg = document.getElementById("btn_continuar_pg");
-            const btnCancelar = document.getElementById("btn_cancelar");
-            const senhaInput = document.getElementById("senha_cliente");
-            const toggleSenha = document.getElementById("toggle_senha");
-            const parcelasSelect = document.getElementById("parcelas");
-            const btnVoltar = document.getElementById("btn_voltar");
-            
-            let senhaVisivelTimeout;
-
-            // Mostrar o popup PIX se tipo_entrada_crediario for 1
-            if (tipoEntrada === "1") {
-                popupPix.style.display = "block";
-            } else if (tipoEntrada === "2") {
-                // Mostrar o popup de cartão de débito
-                popupCartaoCred.style.display = "block";
-            } else {
-                // Mostrar o popup de cartão de crédito
-                popupCartaoDeb.style.display = "block";
-            }
-
-            // Função para gerar o QR Code
-            window.gerarQRCode = function () {
-                qrCodePix.style.display = "block";
-                linkPix.style.display = "block";
-                btnContinuar.style.display = "inline-block";
-            };
-
-            // Executar só quando o botão for clicado:
-            btnContinuar.onclick = abrirPopupRestante;
-
-            // Função para abrir o popup de senha ao clicar em "Continuar"
-            btnContinuarPg.onclick = function () {
-                popupRestante.style.display = "none";
-                popupSenha.style.display = "block";
-                popupSenha.style.position = "fixed";
-                popupSenha.style.top = "50%";
-                popupSenha.style.left = "50%";
-                popupSenha.style.transform = "translate(-50%, -50%)";
-                popupSenha.style.zIndex = "1000";
-                popupSenha.style.backgroundColor = "#fff";
-                popupSenha.style.padding = "20px";
-                popupSenha.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            };
-
-            // Função para fechar o popup de senha e reabrir o popup do restante
-            btnCancelar.addEventListener("click", function () {
-                popupSenha.style.display = "none";
-                popupRestante.style.display = "block";
-                popupRestante.style.position = "fixed";
-                popupRestante.style.top = "50%";
-                popupRestante.style.left = "50%";
-                popupRestante.style.transform = "translate(-50%, -50%)";
-                popupRestante.style.zIndex = "1000";
-                popupRestante.style.backgroundColor = "#fff";
-                popupRestante.style.padding = "20px";
-                popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            });
-
-            // Função para alternar visibilidade da senha
-            toggleSenha.addEventListener("click", function () {
-                if (senhaInput.type === "password") {
-                    senhaInput.type = "text";
-                    toggleSenha.textContent = "🙈"; // Ícone para ocultar
-                    // Ocultar automaticamente após 5 segundos
-                    clearTimeout(senhaVisivelTimeout);
-                    senhaVisivelTimeout = setTimeout(() => {
-                        senhaInput.type = "password";
-                        toggleSenha.textContent = "👁️"; // Ícone para visualizar
-                    }, 5000);
-                } else {
-                    senhaInput.type = "password";
-                    toggleSenha.textContent = "👁️"; // Ícone para visualizar
-                    clearTimeout(senhaVisivelTimeout);
-                }
-            });
-
-            // Função para calcular parcelas
-            function calcularParcelas() {
-                const restante = <?php echo $restante; ?>;
-                const parcelas = parcelasSelect.value;
-                const taxa = 0.0299; // 2,99% ao mês
-                let valorParcela;
-
-                if (parcelas == 1) {
-                    valorParcela = restante;
-                } else {
-                    valorParcela = restante * Math.pow(1 + taxa, parcelas) / parcelas;
-                }
-
-                // Formatar o valor com ponto de milhar e vírgula para centavos
-                const valorFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById("valor_parcela").innerText = 
-                    `Valor de cada parcela: R$ ${valorFormatado}`;
-                document.getElementById("input_parcela").value = valorParcela.toFixed(2);
-            }
-
-            // Calcular parcelas ao carregar a página
-            calcularParcelas();
-
-            // Recalcular parcelas ao selecionar uma nova parcela
-            parcelasSelect.addEventListener("change", calcularParcelas);
-
-            // Criar o overlay escuro
-            const overlay = document.createElement("div");
-            overlay.id = "overlay";
-            overlay.style.position = "fixed";
-            overlay.style.top = "0";
-            overlay.style.left = "0";
-            overlay.style.width = "100%";
-            overlay.style.height = "100%";
-            overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-            overlay.style.zIndex = "999";
-            overlay.style.display = "none";
-            document.body.appendChild(overlay);
-
-            // Criar o popup de sucesso
-            const popupSucesso = document.createElement("div");
-            popupSucesso.id = "popup-sucesso";
-            popupSucesso.style.display = "none";
-            popupSucesso.style.position = "fixed";
-            popupSucesso.style.top = "50%";
-            popupSucesso.style.left = "50%";
-            popupSucesso.style.transform = "translate(-50%, -50%)";
-            popupSucesso.style.zIndex = "1000";
-            popupSucesso.style.backgroundColor = "#fff";
-            popupSucesso.style.padding = "20px";
-            popupSucesso.style.borderRadius = "8px";
-            popupSucesso.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            popupSucesso.innerHTML = `
-                <h3>Compra Finalizada</h3>
-                <p>Sua compra foi finalizada com sucesso!</p>
-                <p>Você será redirecionado em <span id="contador">5</span> segundos...</p>
-            `;
-            document.body.appendChild(popupSucesso);
-
-            // Mostrar o popup de sucesso e o overlay
-            function mostrarPopupSucesso() {
-                overlay.style.display = "block";
-                popupSucesso.style.display = "block";
-                document.body.style.overflow = "hidden"; // Travar a rolagem da tela
-            }
-
-            // Ocultar o popup de sucesso e o overlay
-            function ocultarPopupSucesso() {
-                overlay.style.display = "none";
-                popupSucesso.style.display = "none";
-                document.body.style.overflow = "auto"; // Liberar a rolagem da tela
-            }
-
-            // Função para enviar os dados via JavaScript em formato JSON
-            document.getElementById("btn_finalizar").addEventListener("click", function () {
-                const dataFormatada = document.getElementById('data_hora').value;
-
-                // Calcular o valor total da compra no cliente (se necessário)
-                const valorTotalCrediario = parseFloat(document.getElementById("valor_total_crediario").value) || 0;
-                const valorFrete = parseFloat(document.getElementById("valor_frete").value) || 0;
-                const valorTotalSemCrediario = parseFloat(document.getElementById("valor_total_sem_crediario").value) || 0;
-                const totalCompra = valorTotalSemCrediario;
-
-                console.log("Valor total da compra:", totalCompra);
-                //return;
-                if (totalCompra === 0) {
-                    console.error("Erro: O valor total da compra não foi calculado corretamente.");
-                    document.getElementById("msg_erro").textContent = "Erro ao calcular o valor total da compra.";
-                    document.getElementById("msg_erro").style.display = "block";
-                    return;
-                }
-
-                const formData = {
-                    senha_compra: document.getElementById("senha_compra").value,
-                    tipo_compra: document.getElementById("tipo_compra").value,
-                    id_cliente: document.getElementById("id_cliente").value,
-                    id_parceiro: document.getElementById("id_parceiro").value,
-                    valor_frete: valorFrete,
-                    valor_total_sem_crediario: valorTotalSemCrediario,
-                    valor_total_crediario: valorTotalCrediario,
-                    total_compra: totalCompra, // Enviar o valor total calculado
-                    detalhes_produtos: document.getElementById("detalhes_produtos").value,
-                    entrega: document.getElementById("entrega").value,
-                    rua: document.getElementById("rua").value,
-                    bairro: document.getElementById("bairro").value,
-                    numero: document.getElementById("numero").value,
-                    contato: document.getElementById("contato").value,
-                    entrada: document.getElementById("entrada").value,
-
-                    num_cartao: document.getElementById("num_cartao_selecionado").value,
-                    nome_cartao: document.getElementById("nome_cartao_selecionado").value,
-                    validade: document.getElementById("validade_selecionado").value,
-                    cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
-                    qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
-                    valorParcela_entrada: document.getElementById("valor_parcela_cartao_selecionado").value,
-                    salvar_cartao: document.getElementById("salvar_cartao").value,
-
-                    restante: document.getElementById("restante").value,
-                    tipo_entrada_crediario: document.getElementById("tipo_entrada_crediario").value,
-                    bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
-                    comentario: document.getElementById("comentario").value,
-                    parcelas: document.getElementById("parcelas").value, // Corrigido para usar o ID correto
-                    valor_parcela: document.getElementById("input_parcela").value,
-                    senha_cliente: document.getElementById("senha_cliente").value,
-                    data_hora: dataFormatada
-                };
-
-                fetch("finalizar_compra_crediario.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const popupSenha = document.getElementById("popup-senha");
-                        popupSenha.style.display = "none"; // Ocultar o popup de senha
-                        mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
-                        let contador = 5;
-                        const intervalo = setInterval(() => {
-                            contador--;
-                            document.getElementById("contador").textContent = contador;
-                            if (contador === 0) {
-                                clearInterval(intervalo);
-                                ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
-                                window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
+                        $stmt->close();
+    
+                        // Verificar se o limite de cartões foi atingido
+                        if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
+                            //$mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
+                        } else {
+                            // Salvar o novo cartão no banco de dados
+                            $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo, nome) VALUES (?, ?, ?, ?, ?, ?)");
+                            if ($stmt) {
+                                $stmt->bind_param("isssss", $id_cliente, $num_cartao, $validade, $cod_seguranca_criptografado, $tipo_cartao, $nome_cartao);
+                                $stmt->execute();
+                                $stmt->close();
+                            } else {
+                                die("Erro ao salvar o cartão: " . $mysqli->error);
                             }
-                        }, 1000);
-                    } else {
-                        document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
-                        document.getElementById("msg_erro").style.display = "block";
+                        }
                     }
-                })
-                .catch(error => {
-                    console.error("Erro:", error);
-                    document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
-                    document.getElementById("msg_erro").style.display = "block";
-                });
-            });
-        });*/
-    </script>
-</html>
+                } else {
+                    die("Erro na preparação da consulta: " . $mysqli->error);
+                }
+            }
+
+            // Salvar notificação na tabela contador_notificacoes_cliente
+            $msg = "Pedido #$num_pedido em Análise.";
+            $stmt_notificacao = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, 'pedido', 1)");
+            if ($stmt_notificacao) {
+                $stmt_notificacao->bind_param("sis", $data_hora, $id_cliente, $msg);
+                $stmt_notificacao->execute();
+                $stmt_notificacao->close();
+            } else {
+                throw new Exception("Erro ao salvar a notificação: " . $mysqli->error);
+            }
+
+            // Excluir o pedido do carrinho
+            $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+            if ($stmt_carrinho) {
+                $stmt_carrinho->bind_param("ii", $id_cliente, $id_parceiro);
+                $stmt_carrinho->execute();
+                $stmt_carrinho->close();
+            } else {
+                throw new Exception("Erro ao excluir do carrinho: " . $mysqli->error);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
+        } else {
+            throw new Exception('Erro ao executar a consulta: ' . $stmt->error);
+        }
+    } else {
+        throw new Exception('Erro ao receber o post: ' . $stmt->error);
+    }
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+}
+?>

@@ -344,11 +344,13 @@ function formatDateTimeJS($dateString) {
         <p>
             <?php 
                 if ($formato_compra == 'crediario') {
-                    echo "Pagamento realizado Online.";
+                    echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
                 } elseif ($formato_compra == 'online') {
-                    echo "Pagamento realizado Online.";
+                    echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
                 } elseif ($formato_compra == 'retirar') {
-                    echo "Receber na hora da entrega.";
+                    echo "<p><strong>Pagamento: <span>Na Retirada.</span></p></strong></p>";
+                } else {
+                    echo "<p><strong>Pagamento: <span>Na Entrega.</span></p></strong></p>";
                 }
             ?>
         </p>

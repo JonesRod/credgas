@@ -22,7 +22,8 @@
     } else if ($tipo_pagamento == 'cartaoDeb'){
         $tipo_pagamento = '3';
     }
-    //echo $tipo_pagamento;
+    echo $tipo_pagamento;
+    $momen_pagamento = isset($_POST['momen_pagamento']) ? $_POST['momen_pagamento'] : 'online';
 
     $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
     $id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
@@ -368,6 +369,7 @@
     <div id="popup-background" class="popup-background"></div>
     <div class="form-container">
         <form id="form_primeiro_pg" method="POST" action="">
+            <input type="text" id="momen_pagamento" name="momen_pagamento" value="<?php echo $momen_pagamento; ?>" hidden>
             <input type="text" id="valor_total" name="valor_total" value="<?php echo $valor_total; ?>" hidden>
             <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
             <input type="text" id="tipo_pagamento" value="<?php echo $tipo_pagamento; ?>" hidden>
@@ -529,8 +531,8 @@
                     <div>
                         <label for="tipo_cartao">Tipo de Cartão:</label>
                         <select id="tipo_cartao" name="tipo_cartao" onchange="atualizarBandeiras()">
-                            <option value="Crédito" <?php if ($tipo_entrada_crediario == 2) echo 'selected'; ?>>Crédito</option>
-                            <option value="Débito" <?php if ($tipo_entrada_crediario == 3) echo 'selected'; ?>>Débito</option>
+                            <option value="Crédito" <?php if ($tipo_pagamento == 2) echo 'selected'; ?>>Crédito</option>
+                            <option value="Débito" <?php if ($tipo_pagamento == 3) echo 'selected'; ?>>Débito</option>
                         </select>
                     </div>
                     <p>Bandeiras aceitas: <span id="bandeiras_aceitas_texto"><?php echo $admin_cartoes_credito; ?></span></p>
@@ -549,9 +551,9 @@
                     <div>
                         <label for="cod_seguranca">Código de Segurança:</label>
                         <input type="text" id="cod_seguranca" name="cod_seguranca" required oninput="formatarCodSeguranca(this)" value="<?php echo isset($cod_seguranca) ? $cod_seguranca : ''; ?>">
-                    </div>
-                    <div id="div_parcelas_cartaoCred_entrada_novo" style="display: block;">
-                        <p>Valor á pagar: R$ <input type="text" id="vl_a_pg_novo" value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" oninput="formatarValorPagamentoNovo(this)"></p>
+                    </div>                        
+                    <p>Valor á pagar: R$ <input type="text" id="vl_a_pg_novo" value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" oninput="formatarValorPagamentoNovo(this)"></p>
+                    <div id="div_parcelas_cartaoCred_entrada_novo" style="<?php if ($tipo_pagamento == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
                         <label for="parcelas_cartaoCred_entrada_novo">Quantidade de parcelas:</label>
                         <input id="parcelas_cartaoCred_entrada_novo" name="parcelas_cartaoCred_entrada_novo" type="number" min="1"  value="1" max="12" onchange="calcularValorParcelaNovo()">
                         <p>Valor da Parcela: R$ <span id="valor_parcelas_cartaoCred_entrada_novo"><?php echo number_format($valor_total, 2, ',', '.'); ?></span></p>
@@ -559,24 +561,10 @@
                     <div style="<?php if ($tipo_entrada_crediario == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
                         <p>Valor da Parcela: R$ <span id="valor_parcela_cartaoCred_entrada_novo"><?php echo $entrada_formatado; ?></span></p>
                     </div>
-                    <script>
-                        function atualizarBandeiras() {
-                            const tipoCartao = document.getElementById('tipo_cartao').value;
-                            const bandeirasTexto = document.getElementById('bandeiras_aceitas_texto');
-                            const div_parcelas_cartaoCred_entrada_novo = document.getElementById('div_parcelas_cartaoCred_entrada_novo');
-                            if (tipoCartao === 'Crédito') {
-                                bandeirasTexto.textContent = "<?php echo $admin_cartoes_credito; ?>";
-                                div_parcelas_cartaoCred_entrada_novo.style.display = 'block';
-                            } else if (tipoCartao === 'Débito') {
-                                bandeirasTexto.textContent = "<?php echo $admin_cartoes_debito; ?>";
-                                div_parcelas_cartaoCred_entrada_novo.style.display = 'none';
-                            }
-                        }
-                    </script>
                 </div>
                 <div class="popup-buttons">
                     <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
-                    <button type="button" onclick="adicionarNovoCartao(1)">Salvar e Usar</button>
+                    <button type="button" onclick="adicionarNovoCartao(1)">Usar e Salvar</button>
                     <button type="button" onclick="adicionarNovoCartao(0)">Usar só dessa vez</button>
                 </div>
             </div>
@@ -600,6 +588,8 @@
             <div id="popup-confirmacao" class="popup-content" style="display: none;">
                 <h3>Confirmação de Pagamento</h3>
                 <p>Ao clicar em "Finalizar", você concorda com os termos e condições de compra.</p>
+                <p id="msg_erro" style="color: red; display: none;"></p>
+                <p id="msg_sucesso" style="color: green; display: none;"></p>
                 <button type="button" id="btn_cancelar" onclick="fecharPopupConfirmar()">Cancelar</button>
                 <button type="button" id="btn_finalizar" onclick="finalizarCompra()">Finalizar</button>
             </div>   
@@ -621,6 +611,24 @@
     </div>
 </body>
     <script>
+
+        function atualizarBandeiras() {
+            const tipoCartao = document.getElementById('tipo_cartao').value;
+            const bandeirasTexto = document.getElementById('bandeiras_aceitas_texto');
+            const div_parcelas_cartaoCred_entrada_novo = document.getElementById('div_parcelas_cartaoCred_entrada_novo');
+            if (tipoCartao === 'Crédito') {
+                document.getElementById("tipo_pagamento").value = 2;
+                console.log('Tipo de pagamento: ' + document.getElementById("tipo_pagamento").value);
+                bandeirasTexto.textContent = "<?php echo $admin_cartoes_credito; ?>";
+                div_parcelas_cartaoCred_entrada_novo.style.display = 'block';
+            } else if (tipoCartao === 'Débito') {
+                document.getElementById("tipo_pagamento").value = 3;
+                console.log('Tipo de pagamento: ' + document.getElementById("tipo_pagamento").value);
+                bandeirasTexto.textContent = "<?php echo $admin_cartoes_debito; ?>";
+                div_parcelas_cartaoCred_entrada_novo.style.display = 'none';
+            }
+        }
+
         function fecharPopupConfirmar() {
             //document.getElementById('popup-confirmacao').style.display = 'none';
             //document.getElementById('popup-background').style.display = 'none';
@@ -679,7 +687,7 @@
             popupRestante.style.backgroundColor = "#fff";
             popupRestante.style.padding = "20px";
             popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            //obterHorarioLocal();
+            obterHorarioLocal();
         }
 
         function abrirPopupNovoCartao() {
@@ -872,16 +880,19 @@
 
             if (numCartao.length !== 16) {
                 alert('O número do cartão deve ter 16 dígitos.');
+                document.getElementById('num_cartao').focus();
                 return false;
             }
 
             if (validade.length !== 5 || !/^\d{2}\/\d{2}$/.test(validade)) {
                 alert('A validade deve estar no formato MM/AA.');
+                document.getElementById('validade').focus();
                 return false;
             }
 
             if (codSeguranca.length !== 3) {
                 alert('O código de segurança deve ter 3 dígitos.');
+                document.getElementById('cod_seguranca').focus();
                 return false;
             }
 
@@ -889,6 +900,7 @@
             const nomeCartao = document.getElementById('nome_cartao').value;
             if ((nomeCartao.trim() === '') || nomeCartao.length < 5) {
                 alert('O nome do cartão precisa ser preenchido corretamente.');
+                document.getElementById('nome_cartao').focus();
                 return false;
             }
 
@@ -899,7 +911,6 @@
             if (validarCartao()) {
                 document.getElementById('salvar_cartao').value = salvar === 1 ? 1 : 0;
                 //console.log('Valor de salvar_cartao:', document.getElementById('salvar_cartao').value);
-            }
 
                 // Preencher os detalhes do cartão selecionado
                 document.getElementById('num_cartao_selecionado').value = document.getElementById('num_cartao').value.replace(/\s/g, '');
@@ -909,56 +920,50 @@
                 document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
                 document.getElementById('valor_parcela_cartao_selecionado').value = parseFloat(document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent.replace('.', '').replace(',', '.'));
 
-                //console.log('Valor do cartão selecionado:', document.getElementById('num_cartao_selecionado').value);
-                //document.getElementById('popup_novo_cartao').style.display = 'block';
-                //document.getElementById('popup-background').style.display = 'block';
-                const vl_a_pg_novo = document.getElementById('vl_a_pg_novo').value.replace(/\./g, '').replace(',', '.');
+                let vl_a_pg_novo = parseFloat(document.getElementById('vl_a_pg_novo').value.replace(/\./g, '').replace(',', '.'));
                 const valor_total = <?php echo $valor_total; ?>;
 
-                if (vl_a_pg_novo > valor_total) {
+                vl_a_pg_novo = Math.round(vl_a_pg_novo * 100) / 100; // Arredondar para 2 casas decimais
+                const valor_total_arredondado = Math.round(valor_total * 100) / 100; // Arredondar para 2 casas decimais
+
+                if (vl_a_pg_novo > valor_total_arredondado) {
                     alert('O valor a pagar não pode ser maior que o valor total.');
                     document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                     calcularValorParcelaNovo();
                     return;
                 } else if (vl_a_pg_novo <= 0) {
-                    alert('O valor a pagar deve ser menor ou igual á zero.');
+                    alert('O valor a pagar deve ser maior que zero.');
                     document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                     calcularValorParcelaNovo();
                     return;
-                }else{
-                    // Se o valor for válido, continuar com o processo
-                    if (vl_a_pg_novo == valor_total) {
-                        // abrir popup de confirmação de compra
-
+                } else {
+                    if (vl_a_pg_novo === valor_total_arredondado) {
                         const popupConfirmacao = document.getElementById("popup-confirmacao");
                         const popup_background = document.getElementById('popup-background');
-                        //const popupRestante = document.getElementById("popup-restante");
                         const popup_novo_cartao = document.getElementById('popup_novo_cartao');
 
                         popup_novo_cartao.style.display = 'block';
                         popup_novo_cartao.style.zIndex = "999";
 
-                        // Esconder os outros popups
                         popup_background.style.display = "block";
-                        popup_background.style.zIndex = "1000"; // Garantir que o background fique acima dos popups
-                        
+                        popup_background.style.zIndex = "1000";
+
                         popupConfirmacao.style.display = "block";
                         popupConfirmacao.style.position = "fixed";
                         popupConfirmacao.style.top = "50%";
                         popupConfirmacao.style.left = "50%";
                         popupConfirmacao.style.transform = "translate(-50%, -50%)";
-                        popupConfirmacao.style.zIndex = "1001"; // Garantir que o popupConfirmacao fique acima de todos
+                        popupConfirmacao.style.zIndex = "1001";
                         popupConfirmacao.style.backgroundColor = "#fff";
                         popupConfirmacao.style.padding = "20px";
                         popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
                     } else {
-                        //abrir #popupRestante();
                         abrirPopupRestante();
                     }
                 }
-            
+            }
         }
-       
+
         function voltarParaEntrada() {
             const tipo_pagamento = <?php echo $tipo_pagamento; ?>;
             const popupRestante = document.getElementById("popup-restante");
@@ -993,7 +998,7 @@
         function calcularValorParcela() {
             const valor = document.getElementById('vl_pg_cred');
             const valorTotal = parseFloat(valor.value.replace(/\./g, '').replace(',', '.')) || 0;
-            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada').value) || 1;
+            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada_selecionado').value) || 1;
 
             if (numParcelas <= 0) {
                 alert('O número de parcelas deve ser maior que zero.');
@@ -1003,9 +1008,11 @@
             let valorParcela;
             if (numParcelas > 3) {
                 const taxaJuros = 0.0299; // 2.99% ao mês
-                valorParcela = (valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
+                valorParcela = Math.round(valorTotal * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
+
             } else {
                 valorParcela = valorTotal / numParcelas; // Sem juros para até 3 parcelas
+                valorParcela = Math.round((valorTotal / numParcelas) * 100) / 100; // Arredondar para 2 casas decimais
             }
 
             const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1016,7 +1023,7 @@
             const valorTotalCompra = document.getElementById('valor_total').value;
             const pg_restante = document.getElementById('pg_restante');
 
-            document.getElementById('restante').value = valorTotalCompra - valorTotal;
+            document.getElementById('restante').value =  Math.round(valorTotalCompra - valorTotal);
             pg_restante.textContent = (valorTotalCompra - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             //console.log('Valor da parcela:', valorParcelaFormatado);
             //valor_parcela_cartaoCred_entrada valor_parcela_cartaoCred_entrada
@@ -1024,8 +1031,8 @@
 
         function validarValorPagamento() {
             const input = document.getElementById('vl_pg_cred');
-            const valorTotal = <?php echo $valor_total; ?>;
-            let valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const valorTotal = Math.round(<?php echo $valor_total; ?> * 100) / 100; // Arredondar para 2 casas decimais
+            let valor = Math.round((parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0) * 100) / 100; // Arredondar para 2 casas decimais
 
             if (valor > valorTotal) {
                 alert('O valor não pode ser maior que o valor total.');
@@ -1136,21 +1143,21 @@
             document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
         }
         
-        function finalizar_pg(){
-            
-        }
-
         // Função para enviar os dados via JavaScript em formato JSON
         function finalizarCompra() {
-            const dataFormatada = document.getElementById('data_hora').value;
+            obterHorarioLocal();
 
+            const dataFormatada = document.getElementById('data_hora').value;
+            const popup_confirmacao = document.getElementById("popup-confirmacao");
             // Calcular o valor total da compra no cliente (se necessário)
             const restante = parseFloat(document.getElementById("restante").value) || 0;
             const valorFrete = parseFloat(document.getElementById("valor_frete").value) || 0;
-            const valorTotalSemCrediario = parseFloat(document.getElementById("valor_total").value) || 0;
-            const totalCompra = valorTotalSemCrediario;
+            const valorTotal= parseFloat(document.getElementById("valor_total").value) || 0;
+            const totalCompra = valorTotal;
 
-            console.log("Valor total da compra:", totalCompra);
+            //console.log("Valor total da compra:", totalCompra);
+            //console.log(dataFormatada);
+            
             //return;
             if (totalCompra === 0) {
                 console.error("Erro: O valor total da compra não foi calculado corretamente.");
@@ -1165,188 +1172,6 @@
                 //document.getElementById("msg_erro").style.display = "block";
                 return;
             }
-
-            const formData = {
-                tipo_compra: document.getElementById("tipo_pagamento").value,
-                id_cliente: document.getElementById("id_cliente").value,
-                id_parceiro: document.getElementById("id_parceiro").value,
-                valor_frete: valorFrete,
-                valor_total_sem_crediario: valorTotalSemCrediario,
-                //valor_total_crediario: valorTotalCrediario,
-                total_compra: totalCompra, // Enviar o valor total calculado
-                detalhes_produtos: document.getElementById("detalhes_produtos").value,
-                entrega: document.getElementById("entrega").value,
-                rua: document.getElementById("rua").value,
-                bairro: document.getElementById("bairro").value,
-                numero: document.getElementById("numero").value,
-                contato: document.getElementById("contato").value,
-                entrada: document.getElementById("entrada").value,
-
-                num_cartao: document.getElementById("num_cartao_selecionado").value,
-                nome_cartao: document.getElementById("nome_cartao_selecionado").value,
-                validade: document.getElementById("validade_selecionado").value,
-                cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
-                qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
-                valorParcela_entrada: document.getElementById("valor_parcela_cartao_selecionado").value,
-                salvar_cartao: document.getElementById("salvar_cartao").value,
-
-                restante: document.getElementById("restante").value,
-                //tipo_entrada_crediario: document.getElementById("tipo_entrada_crediario").value,
-                bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
-                comentario: document.getElementById("comentario").value,
-                parcelas: document.getElementById("parcelas").value, // Corrigido para usar o ID correto
-                //valor_parcela: document.getElementById("input_parcela").value,
-                //senha_cliente: document.getElementById("senha_cliente").value,
-                data_hora: dataFormatada
-            };
-
-            fetch("finalizar_compra_pg_online.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const popupSenha = document.getElementById("popup-senha");
-                    popupSenha.style.display = "none"; // Ocultar o popup de senha
-                    mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
-                    let contador = 5;
-                    const intervalo = setInterval(() => {
-                        contador--;
-                        document.getElementById("contador").textContent = contador;
-                        if (contador === 0) {
-                            clearInterval(intervalo);
-                            ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
-                            window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
-                        }
-                    }, 1000);
-                } else {
-                    document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
-                    document.getElementById("msg_erro").style.display = "block";
-                }
-            })
-            .catch(error => {
-                console.error("Erro:", error);
-                document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
-                document.getElementById("msg_erro").style.display = "block";
-            });
-        };
-    
-
-        /*document.addEventListener("DOMContentLoaded", function () {
-            const tipoEntrada = "<?php echo $tipo_entrada_crediario; ?>";
-            const popupPix = document.getElementById("popup-pix");
-            const popupCartaoDeb = document.getElementById("popup_cartaoDeb");
-            const popupCartaoCred = document.getElementById("popup_cartaoCred");
-            const popupRestante = document.getElementById("popup-restante");
-            const popupSenha = document.getElementById("popup-senha");
-            const qrCodePix = document.getElementById("qr_code_pix");
-            const linkPix = document.getElementById("link_pix");
-            const btnContinuar = document.getElementById("btn_continuar");
-            const btnContinuarPg = document.getElementById("btn_continuar_pg");
-            const btnCancelar = document.getElementById("btn_cancelar");
-            const senhaInput = document.getElementById("senha_cliente");
-            const toggleSenha = document.getElementById("toggle_senha");
-            const parcelasSelect = document.getElementById("parcelas");
-            const btnVoltar = document.getElementById("btn_voltar");
-            
-            let senhaVisivelTimeout;
-
-            // Mostrar o popup PIX se tipo_entrada_crediario for 1
-            if (tipoEntrada === "1") {
-                popupPix.style.display = "block";
-            } else if (tipoEntrada === "2") {
-                // Mostrar o popup de cartão de débito
-                popupCartaoCred.style.display = "block";
-            } else {
-                // Mostrar o popup de cartão de crédito
-                popupCartaoDeb.style.display = "block";
-            }
-
-            // Função para gerar o QR Code
-            window.gerarQRCode = function () {
-                qrCodePix.style.display = "block";
-                linkPix.style.display = "block";
-                btnContinuar.style.display = "inline-block";
-            };
-
-            // Executar só quando o botão for clicado:
-            btnContinuar.onclick = abrirPopupRestante;
-
-            // Função para abrir o popup de senha ao clicar em "Continuar"
-            btnContinuarPg.onclick = function () {
-                popupRestante.style.display = "none";
-                popupSenha.style.display = "block";
-                popupSenha.style.position = "fixed";
-                popupSenha.style.top = "50%";
-                popupSenha.style.left = "50%";
-                popupSenha.style.transform = "translate(-50%, -50%)";
-                popupSenha.style.zIndex = "1000";
-                popupSenha.style.backgroundColor = "#fff";
-                popupSenha.style.padding = "20px";
-                popupSenha.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            };
-
-            // Função para fechar o popup de senha e reabrir o popup do restante
-            btnCancelar.addEventListener("click", function () {
-                popupSenha.style.display = "none";
-                popupRestante.style.display = "block";
-                popupRestante.style.position = "fixed";
-                popupRestante.style.top = "50%";
-                popupRestante.style.left = "50%";
-                popupRestante.style.transform = "translate(-50%, -50%)";
-                popupRestante.style.zIndex = "1000";
-                popupRestante.style.backgroundColor = "#fff";
-                popupRestante.style.padding = "20px";
-                popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            });
-
-            // Função para alternar visibilidade da senha
-            toggleSenha.addEventListener("click", function () {
-                if (senhaInput.type === "password") {
-                    senhaInput.type = "text";
-                    toggleSenha.textContent = "🙈"; // Ícone para ocultar
-                    // Ocultar automaticamente após 5 segundos
-                    clearTimeout(senhaVisivelTimeout);
-                    senhaVisivelTimeout = setTimeout(() => {
-                        senhaInput.type = "password";
-                        toggleSenha.textContent = "👁️"; // Ícone para visualizar
-                    }, 5000);
-                } else {
-                    senhaInput.type = "password";
-                    toggleSenha.textContent = "👁️"; // Ícone para visualizar
-                    clearTimeout(senhaVisivelTimeout);
-                }
-            });
-
-            // Função para calcular parcelas
-            function calcularParcelas() {
-                const restante = <?php echo $restante; ?>;
-                const parcelas = parcelasSelect.value;
-                const taxa = 0.0299; // 2,99% ao mês
-                let valorParcela;
-
-                if (parcelas == 1) {
-                    valorParcela = restante;
-                } else {
-                    valorParcela = restante * Math.pow(1 + taxa, parcelas) / parcelas;
-                }
-
-                // Formatar o valor com ponto de milhar e vírgula para centavos
-                const valorFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                document.getElementById("valor_parcela").innerText = 
-                    `Valor de cada parcela: R$ ${valorFormatado}`;
-                document.getElementById("input_parcela").value = valorParcela.toFixed(2);
-            }
-
-            // Calcular parcelas ao carregar a página
-            calcularParcelas();
-
-            // Recalcular parcelas ao selecionar uma nova parcela
-            parcelasSelect.addEventListener("change", calcularParcelas);
 
             // Criar o overlay escuro
             const overlay = document.createElement("div");
@@ -1383,6 +1208,7 @@
 
             // Mostrar o popup de sucesso e o overlay
             function mostrarPopupSucesso() {
+                popup_confirmacao.style.display = "none";
                 overlay.style.display = "block";
                 popupSucesso.style.display = "block";
                 document.body.style.overflow = "hidden"; // Travar a rolagem da tela
@@ -1393,14 +1219,77 @@
                 overlay.style.display = "none";
                 popupSucesso.style.display = "none";
                 document.body.style.overflow = "auto"; // Liberar a rolagem da tela
-            }*/
+            }
+            //console.log(document.getElementById("tipo_pagamento").value);
+            //console.log(document.getElementById("salvar_cartao").value);
+            //return;
+            // Enviar os dados via fetch
+            const formData = {
+                data_hora: dataFormatada,
+                id_cliente: document.getElementById("id_cliente").value,
+                id_parceiro: document.getElementById("id_parceiro").value,
+                detalhes_produtos: document.getElementById("detalhes_produtos").value,
+                
+                valor_frete: valorFrete,
+                total_compra: totalCompra, // Enviar o valor total calculado
+                momen_pagamento: document.getElementById("momen_pagamento").value,
 
-            /*});
-        document.getElementById("btn_cancelar").addEventListener("click", function () {
-            const popupBackground = document.getElementById("popup-background");
-            const popupConfirmacao = document.getElementById("popup-confirmacao");
-            popupBackground.style.display = "none";
-            popupConfirmacao.style.display = "none";
-        });*/
+                tipo_entrega: document.getElementById("entrega").value,
+                tipo_pagamento: document.getElementById("tipo_pagamento").value,
+                valor_entrada: totalCompra, // Valor de entrada
+                restante: document.getElementById("restante").value ,
+
+                num_cartao: document.getElementById("num_cartao_selecionado").value,
+                nome_cartao: document.getElementById("nome_cartao_selecionado").value,
+                validade: document.getElementById("validade_selecionado").value,
+                cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
+                valor_parcela: document.getElementById("valor_parcela_cartaoCred_entrada").textContent, // Valor da parcela                
+                qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
+                bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
+                salvar_cartao: document.getElementById("salvar_cartao").value,
+
+                rua: document.getElementById("rua").value,
+                bairro: document.getElementById("bairro").value,
+                numero: document.getElementById("numero").value,
+                contato: document.getElementById("contato").value,
+                comentario: document.getElementById("comentario").value   
+            };
+
+            fetch("finalizar_compra_pg_online.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
+                    let contador = 5;
+                    const intervalo = setInterval(() => {
+                        contador--;
+                        document.getElementById("contador").textContent = contador;
+                        if (contador === 0) {
+                            clearInterval(intervalo);
+                            ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
+                            window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
+                        }
+                    }, 1000);
+                } else {
+                    document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
+                    document.getElementById("msg_erro").style.display = "block";
+                    ocultarPopupSucesso(); // Garantir que o overlay seja removido em caso de erro
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
+                document.getElementById("msg_erro").style.display = "block";
+                ocultarPopupSucesso(); // Garantir que o overlay seja removido em caso de erro
+            });
+
+        };
     </script>
 </html>
