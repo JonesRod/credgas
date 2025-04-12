@@ -185,6 +185,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         button:hover {
             background-color: #0056b3;
         }
+        .bt_pg_online{
+            background-color:rgb(76, 145, 73);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .bt_pg_online:hover{
+            background-color: rgb(0, 255, 0);
+        }
 
         .popup {
             position: fixed;
@@ -421,9 +430,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p id="bandeiras_debito" style="display: none;">Cartões de Débito aceitos: <?php echo $admin_cartoes_debito; ?></p>
                     </div>
                     
-                    <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
-                    <button id="btn_cartaoCred_online" type="button" style="display: none;" onclick="enviarDadosCartao()">Pagar com Cartão de Crédito</button>
-                    <button id="btn_cartaoDeb_online" type="button" style="display: none;" onclick="enviarDadosCartao()">Pagar com Cartão de Débito</button>
+                    <button id="btn_pix_online" class="bt_pg_online" type="button" style="display: none;" onclick="enviarDadosPgOnline()">Pagar com PIX</button>
+                    <button id="btn_cartaoCred_online" class="bt_pg_online" type="button" style="display: none;" onclick="enviarDadosPgOnline()">Pagar com Cartão de Crédito</button>
+                    <button id="btn_cartaoDeb_online" class="bt_pg_online" type="button" style="display: none;" onclick="enviarDadosPgOnline()">Pagar com Cartão de Débito</button>
                 </div>
             </div>
 
@@ -610,85 +619,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        function enviarDadosPix() {
+        function enviarDadosPgOnline() {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = 'popup_pix.php';
-
-            const idClienteInput = document.createElement('input');
-            idClienteInput.type = 'hidden';
-            idClienteInput.name = 'id_cliente';
-            idClienteInput.value = '<?php echo $id_cliente; ?>';
-            form.appendChild(idClienteInput);
-
-            const idParceiroInput = document.createElement('input');
-            idParceiroInput.type = 'hidden';
-            idParceiroInput.name = 'id_parceiro';
-            idParceiroInput.value = '<?php echo $id_parceiro; ?>';
-            form.appendChild(idParceiroInput);
-
-            const freteInput = document.createElement('input');
-            freteInput.type = 'hidden';
-            freteInput.name = 'valor_frete';
-            freteInput.value = '<?php echo $valor_frete; ?>';
-            form.appendChild(freteInput);
-
-            const totalInput = document.createElement('input');
-            totalInput.type = 'hidden';
-            totalInput.name = 'valor_total';
-            totalInput.value = '<?php echo $total; ?>';
-            form.appendChild(totalInput);
-
-            const detalhesProdutosInput = document.createElement('input');
-            detalhesProdutosInput.type = 'hidden';
-            detalhesProdutosInput.name = 'detalhes_produtos';
-            detalhesProdutosInput.value = '<?php echo $detalhes_produtos; ?>';
-            form.appendChild(detalhesProdutosInput);
-
-            const entregaInput = document.createElement('input');
-            entregaInput.type = 'hidden';
-            entregaInput.name = 'entrega';
-            entregaInput.value = '<?php echo $entrega; ?>';
-            form.appendChild(entregaInput);
-
-            const ruaInput = document.createElement('input');
-            ruaInput.type = 'hidden';
-            ruaInput.name = 'rua';
-            ruaInput.value = '<?php echo $rua; ?>';
-            form.appendChild(ruaInput);
-
-            const bairroInput = document.createElement('input');
-            bairroInput.type = 'hidden';
-            bairroInput.name = 'bairro';
-            bairroInput.value = '<?php echo $bairro; ?>';
-            form.appendChild(bairroInput);
-
-            const numeroInput = document.createElement('input');
-            numeroInput.type = 'hidden';
-            numeroInput.name = 'numero';
-            numeroInput.value = '<?php echo $numero; ?>';
-            form.appendChild(numeroInput);
-
-            const contatoInput = document.createElement('input'); // Adicionar esta linha
-            contatoInput.type = 'hidden';
-            contatoInput.name = 'contato';
-            contatoInput.value = '<?php echo $contato; ?>';
-            form.appendChild(contatoInput);
-
-            const comentarioInput = document.createElement('input'); // Adicionar esta linha
-            comentarioInput.type = 'hidden';
-            comentarioInput.name = 'comentario';
-            comentarioInput.value = document.getElementById('comentario').value;
-            form.appendChild(comentarioInput);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-
-        function enviarDadosCartao() {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'popup_cartao.php';
+            form.action = 'popup_pg_online.php';
 
             const idClienteInput = document.createElement('input');
             idClienteInput.type = 'hidden';

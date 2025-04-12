@@ -60,6 +60,8 @@ try {
             
             $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
             $total_compra = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
+            
+            //$total_compra_sem_frete = $total_compra - $valor_frete;
 
             if ($valor_total_crediario > 0) {
                 $taxa_crediario = $valor_total_crediario - $valor_total_sem_crediario;
@@ -67,7 +69,6 @@ try {
                 $taxa_crediario = 0.0;
             }
             
-
             // Verifique se o valor foi calculado corretamente
             if ($total_compra === null || $total_compra === 0) {
                 echo json_encode(['success' => false, 'message' => 'Erro: O valor total da compra não foi calculado corretamente.']);

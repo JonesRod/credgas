@@ -245,8 +245,6 @@ function formatDateTimeJS($dateString) {
             $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
             ?>
             <div class="card <?php echo $status_class; ?>" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
-                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
-                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
                 <?php
                     // Fetch partner details from the database
                     $id_parceiro = $row['id_parceiro'];
@@ -262,6 +260,9 @@ function formatDateTimeJS($dateString) {
                     $estimativa_entrega = $loja['estimativa_entrega'];
                     $stmt_parceiro->close();
                 ?>
+                <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
+                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
+                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
                 <p><strong>Status do Pedido:</strong>
                     <span style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
                         <?php 
@@ -280,7 +281,6 @@ function formatDateTimeJS($dateString) {
                         ?>
                     </span>
                 </p>
-                <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
                 <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
                 <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
                 <hr>

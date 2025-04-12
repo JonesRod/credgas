@@ -22,7 +22,7 @@
     } else if ($tipo_pagamento == 'cartaoDeb'){
         $tipo_pagamento = '3';
     }
-    echo $tipo_pagamento;
+    //echo $tipo_pagamento;
     $momen_pagamento = isset($_POST['momen_pagamento']) ? $_POST['momen_pagamento'] : 'online';
 
     $id_cliente = isset($_POST['id_cliente']) ? intval($_POST['id_cliente']) : 0;
@@ -138,14 +138,14 @@
 
         /* Botões de ação positiva (Continuar, Finalizar) */
         button#btn_continuar,
-        button#btn_continuar_pg,
+        #btn_continuar_pg,
         button#btn_finalizar {
             background-color: #28a745; /* Verde */
             color: #fff;
         }
 
         button#btn_continuar:hover,
-        button#btn_continuar_pg:hover,
+        #btn_continuar_pg:hover,
         button#btn_finalizar:hover {
             background-color: #218838; /* Verde mais escuro */
         }
@@ -162,7 +162,6 @@
 
         /* Botões de ação neutra (Voltar, Gerar QR Code) */
         button#btn_voltar,
-        button[onclick="gerarQRCode()"],
         button[type="submit"] {
             background-color: #007bff; /* Azul */
             color: #fff;
@@ -171,6 +170,13 @@
         button#btn_voltar:hover,
         button[onclick="gerarQRCode()"]:hover,
         button[type="submit"]:hover {
+            background-color: #0056b3; /* Azul mais escuro */
+        }
+        #id_gr_qrCode{
+            background-color: #007bff; /* Azul */
+            color: #fff;
+        }
+        #id_gr_qrCode:hover{
             background-color: #0056b3; /* Azul mais escuro */
         }
 
@@ -368,10 +374,9 @@
 <body>
     <div id="popup-background" class="popup-background"></div>
     <div class="form-container">
-        <form id="form_primeiro_pg" method="POST" action="">
+        <form action="segunda_pg_online.php" method="POST">
             <input type="text" id="momen_pagamento" name="momen_pagamento" value="<?php echo $momen_pagamento; ?>" hidden>
             <input type="text" id="valor_total" name="valor_total" value="<?php echo $valor_total; ?>" hidden>
-            <input type="text" id="senha_compra" name="senha_compra" value="<?php echo $senha_compra; ?>" hidden>
             <input type="text" id="tipo_pagamento" value="<?php echo $tipo_pagamento; ?>" hidden>
             <input type="text" id="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
             <input type="text" id="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
@@ -390,27 +395,34 @@
             <h1>Formas de Pagamento</h1>
             <h3>Valor total da Compra: R$ <?php echo number_format($valor_total, 2, ',', '.'); ?></h3>
             
-            <p style="display: block;"><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
-            <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" style="display: none;" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
-            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" style="display: none;" value="<?php echo $bandeiras_aceitas; ?>" readonly>
-        
+            <div style="<?php if ($tipo_pagamento == 1) { echo 'display: none;'; } else { echo 'display: block;'; } ?>">
+                <p style="display: block;"><span><?php echo 'Bandeiras aceitas: '.$bandeiras_aceitas; ?></span></p>
+                <input id="tipo_entrada_crediario" name="tipo_entrada_crediario" style="display: none;" value="<?php echo $tipo_entrada_crediario; ?>" readonly>
+                <input type="text" id="bandeiras" name="bandeiras" style="display: none;" value="<?php echo $bandeiras_aceitas; ?>" readonly>          
+            </div>
+
             <hr style="border: 1px solid #ccc; margin: 10px 0;">
 
             <div id="popup-pix" style="<?php if ($tipo_pagamento == 1) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
                 <h3>Pagar entrada com PIX</h3>
-                <p>Valor da Entrada: R$ <?php echo 'linha 384'; ?></p>
-                <p>Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
+                <p>Valor do pagamento: R$ <input type="text" 
+                    value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" 
+                    id="vl_pg_pix" name="vl_pg_pix" 
+                    oninput="formatarValorPagamentoPix(this)">
+                </p>
+                <p id="restante_pix">Valor do restante: R$ <?php echo number_format('0', 2, ',', '.'); ?></p>
+                <p id="p_testo_orientacao" style="display: none;">Abra o aplicativo do seu banco e faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
 
-                <img id="qr_code_pix" src="qr_code_pix.png" alt="QR Code PIX" style="display: none;">
+                <img id="qr_code_pix" src="" alt="QR Code PIX" style="display: none;">
                 <br>
                 <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
-                <button type="button" onclick="gerarQRCode()">Gerar QR Code</button>
-                <button type="button" id="btn_continuar" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
+                <button type="button" id="id_gr_qrCode" onclick="validarValorPix()">Gerar QR Code</button>
+                <button type="button" id="btn_continuar" onclick="confirmar_pix()" style="display: none;">Continuar</button>
             </div>
 
             <div id="popup_cartaoCred" style="<?php if ($tipo_pagamento == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
                 <h3>Selecione o cartão de Crédito a ser usado</h3>
-                <table id="cartoes_debito_cadastrados">
+                <table id="cartoes_credito_cadastrados">
                     <thead>
                         <tr>
                             <th>Selecionar</th>
@@ -572,8 +584,8 @@
             <div id="popup-restante" class="popup-content" style="display: none;">
                 <h3>Pagamento do Restante</h3>
                 <p>Valor Restante: R$ <span id="pg_restante"></span></p>
-                <label for="parcelas">Selecione a forma de pagamento:</label>
-                <select id="parcelas" name="parcelas">
+                <label for="segunda_forma_pg">Selecione a forma de pagamento:</label>
+                <select id="segunda_forma_pg" name="segunda_forma_pg" required>
                         <option value="1">Selecione</option>
                         <option value="2">PIX</option>
                         <option value="3">Cartão de Crédito</option>
@@ -581,7 +593,7 @@
                 </select>
                 <div>
                     <button type="button" id="btn_voltar" onclick="voltarParaEntrada()">Voltar</button>
-                    <button type="button" id="btn_continuar_pg">Continuar</button>                    
+                    <button type="submit" id="btn_continuar_pg" name="btn_continuar_pg" onclick="return validarFormulario()">Continuar</button>                      
                 </div>
             </div>
 
@@ -592,7 +604,7 @@
                 <p id="msg_sucesso" style="color: green; display: none;"></p>
                 <button type="button" id="btn_cancelar" onclick="fecharPopupConfirmar()">Cancelar</button>
                 <button type="button" id="btn_finalizar" onclick="finalizarCompra()">Finalizar</button>
-            </div>   
+            </div>  
         </form>
 
         <form id="form-voltar" action="forma_entrega.php" method="GET">
@@ -607,7 +619,7 @@
             <input type="hidden" name="numero" value="<?php echo $numero; ?>">
             <input type="hidden" name="contato" value="<?php echo $contato; ?>">
             <button type="submit">Voltar</button>
-        </form>        
+        </form>
     </div>
 </body>
     <script>
@@ -671,36 +683,15 @@
             document.getElementById('data_hora').value = dataFormatada;
         }
 
-        function abrirPopupRestante() {
-            const popupRestante = document.getElementById("popup-restante");
-            //document.getElementById('popup_novo_cartao').style.display = 'none';
-            document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
-            document.getElementById('popup-background').style.display = "block";
-            document.getElementById('popup-background').style.zIndex = "1000"; // Garantir que o background fique abaixo dos popups
-
-            popupRestante.style.display = "block";
-            popupRestante.style.position = "fixed";
-            popupRestante.style.top = "50%";
-            popupRestante.style.left = "50%";
-            popupRestante.style.transform = "translate(-50%, -50%)";
-            popupRestante.style.zIndex = "1001"; // Garantir que o popupRestante fique acima do background
-            popupRestante.style.backgroundColor = "#fff";
-            popupRestante.style.padding = "20px";
-            popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            obterHorarioLocal();
-        }
-
         function abrirPopupNovoCartao() {
             const popupNovoCartao = document.getElementById('popup_novo_cartao');
             const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
-
             // Desmarcar todos os outros cartões
             checkboxes.forEach((cb) => {
                 cb.checked = false;
                 //console.log('Desmarcando cartão:', cb);
                 limparDetalhesCartao();
             });
-
             if (popupNovoCartao) {
                 popupNovoCartao.style.display = 'block'; // Exibir o popup
                 popupNovoCartao.style.position = 'fixed'; // Garantir que o popup seja exibido sobre a página
@@ -713,7 +704,7 @@
                 document.getElementById('popup-background').style.zIndex = "999"; // Garantir que o background fique abaixo dos popups
                 //console.log('Popup de novo cartão aberto.');
             } else {
-                //console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
+                console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
             }
         }
         
@@ -1099,6 +1090,122 @@
             popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
         }
 
+        function formatarValorPagamentoPix(input) {
+            let valor = input.value.replace(/[^\d]/g, ''); // Remove tudo que não for número
+            if (valor) {
+                valor = (parseInt(valor) / 100).toFixed(2); // Divide por 100 para ajustar os centavos
+                input.value = valor.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Formata com ponto de milhar e vírgula para centavos
+            } else {
+                input.value = '';
+            }
+            calcularValorRestantePix();
+        }
+
+        function calcularValorRestantePix() {
+            const valorTotalInput = document.getElementById('valor_total');
+            const vl_pg_pix = document.getElementById('vl_pg_pix');
+            const restante_pix = document.getElementById('restante_pix');
+
+            // Converter os valores para float
+            const valorTotal = parseFloat(valorTotalInput.value) || 0;
+            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+
+            // Calcular valor restante
+            const restante = valorTotal - valorPagamento;
+
+            document.getElementById('valor_parcela_cartao_selecionado').value = Math.round(restante * 100) / 100; // Arredondar para 2 casas decimais
+            
+            // Exibir o valor restante formatado
+            restante_pix.textContent = 'Valor do restante: R$ ' + restante.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            document.getElementById('qr_code_pix').style.display = 'none';
+            document.getElementById('link_pix').style.display = 'none';
+            document.getElementById('btn_continuar').style.display = 'none';
+
+            // restante_pix.value = 'Valor do restante: R$ ' + restante_pix.textContent;
+
+            /*const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('valor_parcela_cartaoCred_entrada').textContent = valorParcelaFormatado;
+            document.getElementById('valor_parcela_cartao_selecionado').value = valorParcela;
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = numParcelas;
+
+            const valorTotalCompra = document.getElementById('valor_total').value;
+            const pg_restante = document.getElementById('pg_restante');
+
+            document.getElementById('restante').value =  Math.round(valorTotalCompra - valorTotal);
+            pg_restante.textContent = (valorTotalCompra - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            //console.log('Valor da parcela:', valorParcelaFormatado);
+            //valor_parcela_cartaoCred_entrada valor_parcela_cartaoCred_entrada*/
+        }
+
+        // Função para gerar o QR Code
+        window.gerarQRCode = function () {
+            const p_testo_orientacao = document.getElementById("p_testo_orientacao");
+            const qrCodePix = document.getElementById("qr_code_pix");
+            const linkPix = document.getElementById("link_pix");
+            const btnContinuar = document.getElementById("btn_continuar");
+
+            p_testo_orientacao.style.display = "block";
+            qrCodePix.style.display = "block";
+            linkPix.style.display = "block";
+            btnContinuar.style.display = "inline-block";
+        };
+
+        function validarValorPix (){
+            const valor = document.getElementById('valor_total');
+            const valorTotal = parseFloat(valor.value) || 0;
+            const vl_pg_pix = document.getElementById('vl_pg_pix');
+            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const valorTotalArredondado = Math.round(valorTotal * 100) / 100; // Arredondar para 2 casas decimais
+            const vl_pg_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
+            const restante_pix = document.getElementById('restante_pix');
+
+            vl_pg_pix.value = vl_pg_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            //console.log('Valor a pagar:', vl_pg_pix_arredondado);
+            //console.log('Valor total:', valorTotalArredondado);
+            if (vl_pg_pix_arredondado > valorTotalArredondado) {
+                alert('O valor a pagar não pode ser maior que o valor total.');
+                vl_pg_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                restante_pix.textContent = 'Valor do restante: R$ ' + (valorTotalArredondado).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                return;
+            } else if (vl_pg_pix_arredondado <= 0) {
+                alert('O valor a pagar deve ser maior que zero.');
+                vl_pg_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                restante_pix.textContent = 'Valor do restante: R$ ' + (valorTotalArredondado).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                return;
+            }
+            calcularValorRestantePix();
+            gerarQRCode();
+        }
+
+        function confirmar_pix(){
+            const valor = document.getElementById('valor_total');
+            const valorTotal = parseFloat(valor.value) || 0;
+            const vl_pg_pix = document.getElementById('vl_pg_pix');
+            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const valorTotalArredondado = Math.round(valorTotal * 100) / 100; // Arredondar para 2 casas decimais
+            const vl_pg_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
+            const restante_pix = document.getElementById('restante_pix');
+
+            vl_pg_pix.value = vl_pg_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            //console.log('Valor a pagar:', vl_pg_pix_arredondado);
+            //console.log('Valor total:', valorTotalArredondado);
+            if (vl_pg_pix_arredondado < valorTotalArredondado && vl_pg_pix_arredondado > 0) {
+                abrirPopupRestante();
+            } else {
+                finalizarCompra();
+            }
+        }
+
         function formatarValorPagamento(input) {
             let valor = input.value.replace(/[^\d]/g, ''); // Remove tudo que não for número
             if (valor) {
@@ -1143,6 +1250,25 @@
             document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
         }
         
+        function abrirPopupRestante() {
+            const popupRestante = document.getElementById("popup-restante");
+            //document.getElementById('popup_novo_cartao').style.display = 'none';
+            document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
+            document.getElementById('popup-background').style.display = "block";
+            document.getElementById('popup-background').style.zIndex = "1000"; // Garantir que o background fique abaixo dos popups
+
+            popupRestante.style.display = "block";
+            popupRestante.style.position = "fixed";
+            popupRestante.style.top = "50%";
+            popupRestante.style.left = "50%";
+            popupRestante.style.transform = "translate(-50%, -50%)";
+            popupRestante.style.zIndex = "1001"; // Garantir que o popupRestante fique acima do background
+            popupRestante.style.backgroundColor = "#fff";
+            popupRestante.style.padding = "20px";
+            popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+            //obterHorarioLocal();
+        }
+
         // Função para enviar os dados via JavaScript em formato JSON
         function finalizarCompra() {
             obterHorarioLocal();
@@ -1291,5 +1417,24 @@
             });
 
         };
+
+        function validarFormulario() {
+            // Exemplo de validação de campo obrigatório
+            const valorTotal = document.getElementById('valor_total').value;
+            if (!valorTotal || parseFloat(valorTotal) <= 0) {
+                alert("O valor total deve ser maior que zero.");
+                return false; // Impede o envio do formulário
+            }
+
+            const tipoPagamento = document.getElementById('segunda_forma_pg').value;
+            if (tipoPagamento === '1') { // Verifica se o valor é '1', que representa "Selecione"
+                alert("Selecione uma forma de pagamento.");
+                return false; // Impede o envio do formulário
+            }
+
+            // Garantir que o formulário seja enviado
+            console.log("Validação do formulário executada com sucesso.");
+            return true; // Permite o envio do formulário
+        }
     </script>
 </html>

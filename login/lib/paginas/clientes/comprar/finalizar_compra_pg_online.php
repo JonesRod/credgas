@@ -30,6 +30,7 @@ try {
 
         $valor_frete = isset($data['valor_frete']) ? floatval($data['valor_frete']) : 0.0;
         $valor_total = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
+        $total_compra_sem_frete = $valor_total - $valor_frete;
         $taxa_crediario = isset($data['taxa_crediario']) ? floatval($data['taxa_crediario']) : 0.0;
         $momen_pagamento = isset($data['momen_pagamento']) ? $data['momen_pagamento'] : '';
         $tipo_pagamento = isset($data['tipo_pagamento']) ? $data['tipo_pagamento'] : '';
@@ -65,6 +66,10 @@ try {
 
         if ($tipo_pagamento === '1') {
             $tipo_pagamento = 'pix';
+            $entrada = 0;
+            $valorParcela_entrada = 0;
+            $valor_parcela = 0;
+            $valor_restante = 0;
         } else if ($tipo_pagamento === '2') {
             $tipo_pagamento = 'credito';
         } else if ($tipo_pagamento === '3') {
@@ -140,7 +145,7 @@ try {
             $id_parceiro,      // i: id_parceiro
             $detalhes_produtos, // s: produtos
             $valor_frete,       // d: valor_frete
-            $valor_total,
+            $total_compra_sem_frete,
             $taxa_crediario,       // d: valor
             $momen_pagamento,       // s: tipo_compra
             $entrada,           // d: entrada
@@ -240,14 +245,14 @@ try {
             }
 
             // Excluir o pedido do carrinho
-            $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+            /*$stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
             if ($stmt_carrinho) {
                 $stmt_carrinho->bind_param("ii", $id_cliente, $id_parceiro);
                 $stmt_carrinho->execute();
                 $stmt_carrinho->close();
             } else {
                 throw new Exception("Erro ao excluir do carrinho: " . $mysqli->error);
-            }
+            }*/
 
             echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
         } else {

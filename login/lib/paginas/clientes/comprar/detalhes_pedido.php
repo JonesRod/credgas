@@ -335,7 +335,7 @@ function formatDateTimeJS($dateString) {
             if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
                 echo "<p id='taxa_crediario' class='valores'><strong>Taxa do Crediario:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
             } else {
-                echo "<p id='taxa_crediario' class='valores'><strong></strong>Taxa do Crediario: Grátis</p>";
+                echo "<p id='taxa_crediario' class='valores' style='display: none;'><strong></strong>Taxa do Crediario: Grátis</p>";
             }
         ?>
         <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
