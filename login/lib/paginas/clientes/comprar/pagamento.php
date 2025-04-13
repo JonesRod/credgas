@@ -654,11 +654,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             tipo_pagamento.value = document.getElementById('tipo_pagamento').value; // Envia a forma de pagamento selecionada
             form.appendChild(tipo_pagamento);
 
-            const bandeirasInput = document.createElement('input');
+            /*const bandeirasInput = document.createElement('input');
             bandeirasInput.type = 'hidden';
             bandeirasInput.name = 'bandeiras';
             bandeirasInput.value = '<?php echo $admin_cartoes_credito; ?>'; // Envia as bandeiras aceitas
-            form.appendChild(bandeirasInput);
+            form.appendChild(bandeirasInput);*/
 
             const detalhesProdutosInput = document.createElement('input');
             detalhesProdutosInput.type = 'hidden';

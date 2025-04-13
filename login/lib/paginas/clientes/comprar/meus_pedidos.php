@@ -67,7 +67,7 @@ function formatDateTimeJS($dateString) {
 <head>
     <meta charset="UTF-8">
     <title>Meus Pedidos</title>
-    <link rel="stylesheet" href="styles.css">
+
     <style>
         .cards-container {
             display: grid;
