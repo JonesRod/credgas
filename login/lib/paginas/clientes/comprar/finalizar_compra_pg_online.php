@@ -42,10 +42,10 @@ try {
         $nome_cartao = isset($data['nome_cartao']) ? $data['nome_cartao'] : '';
         $validade = isset($data['validade']) ? $data['validade'] : '';
         $cod_seguranca = isset($data['cod_seguranca']) ? $data['cod_seguranca'] : '';
-        $valorParcela_entrada = isset($data['valor_entrada']) ? floatval($data['valor_entrada']) : 0.0;
+        $valorParcela_entrada = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
         $qt_parcelas_entrada = isset($data['qt_parcelas_entrada']) ? intval($data['qt_parcelas_entrada']) : 0;
         
-        $valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
+        //$valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
         $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
         $salvar_cartao = isset($data['salvar_cartao']) ? $data['salvar_cartao'] : '';
         $tipo_compra = isset($data['tipo_compra']) ? $data['tipo_compra'] : '';
@@ -54,6 +54,7 @@ try {
         $valor_restante = isset($data['valor_restante']) ? floatval($data['valor_restante']) : 0.0;
         $forma_pg_restante = isset($data['forma_pg_restante']) ? $data['forma_pg_restante'] : '';
         $qt_parcelas = isset($data['qt_parcelas']) ? intval($data['qt_parcelas']) : 0;
+        $valor_parcela_restante = isset($data['valor_parcela_restante']) ? floatval($data['valor_parcela_restante']) : 0.0;
 
         $rua = isset($data['rua']) ? $data['rua'] : '';
         $numero = isset($data['numero']) ? $data['numero'] : '';
@@ -66,10 +67,6 @@ try {
 
         if ($tipo_pagamento === '1') {
             $tipo_pagamento = 'pix';
-            $entrada = 0;
-            $valorParcela_entrada = 0;
-            $valor_parcela = 0;
-            $valor_restante = 0;
         } else if ($tipo_pagamento === '2') {
             $tipo_pagamento = 'credito';
         } else if ($tipo_pagamento === '3') {
@@ -112,7 +109,7 @@ try {
             id_parceiro,
             produtos,
             valor_frete,
-            valor,
+            valor_produtos,
             taxa_crediario,
             formato_compra,
             entrada,
@@ -155,7 +152,7 @@ try {
             $restante,          // d: valor_restante
             $forma_pg_restante,       // s: forma_pg_restante
             $qt_parcelas,          // i: qt_parcelas
-            $valorParcela_entrada,     // d: valor_parcela
+            $valor_parcela_restante,     // d: valor_parcela
             $entrega,           // s: tipo_entrega
             $rua,               // s: endereco_entrega
             $numero,            // s: num_entrega

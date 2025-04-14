@@ -416,7 +416,7 @@
                 <h3>Pagar entrada com PIX</h3>
                 <p>Valor do pagamento: R$ <input type="text" 
                     value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" 
-                    id="vl_pg_pix" name="vl_pg_pix" 
+                    id="vl_pix" name="vl_pix" 
                     oninput="formatarValorPagamentoPix(this)">
                 </p>
                 <p id="restante_pix">Valor do restante: R$ <?php echo number_format('0', 2, ',', '.'); ?></p>
@@ -529,7 +529,7 @@
                 </div>
                 <div class="div_bt_principal">                
                     <button type="button" class="usar-outro-cartao-debito" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
-                    <button type="button" id="btn_continuar_cartaoDeb" onclick="abrirPopupRestante()" style="display: none;">Continuar</button>
+                    <button type="button" id="btn_continuar_cartaoDeb" onclick="validarValorPagamentoDeb()" style="display: none;">Continuar</button>
                 </div>
             </div>
             
@@ -550,7 +550,7 @@
                             <option value="Débito" <?php if ($tipo_pagamento == 3) echo 'selected'; ?>>Débito</option>
                         </select>
                     </div>
-                    <p>Bandeiras aceitas: <span id="bandeiras_aceitas_texto"><?php echo $admin_cartoes_credito; ?></span></p>
+                    <p>Bandeiras aceitas: <span id="bandeiras_aceitas_texto"><?php if ($tipo_pagamento == 2) echo $admin_cartoes_credito ; else echo $admin_cartoes_debito; ?></span></p>: 
                     <div>
                         <label for="nome_cartao">Nome descrito Cartão:</label>
                         <input type="text" id="nome_cartao" name="nome_cartao" value="<?php echo isset($nome_cartao) ? $nome_cartao : ''; ?>">
@@ -567,7 +567,7 @@
                         <label for="cod_seguranca">Código de Segurança:</label>
                         <input type="text" id="cod_seguranca" name="cod_seguranca" oninput="formatarCodSeguranca(this)" value="<?php echo isset($cod_seguranca) ? $cod_seguranca : ''; ?>">
                     </div>                        
-                    <p>Valor á pagar: R$ <input type="text" id="vl_a_pg_novo" value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" oninput="formatarValorPagamentoNovo(this)"></p>
+                    <p>Valor á pagar: R$ <input type="text" id="vl_novo" value="<?php echo number_format($valor_total, 2, ',', '.'); ?>" oninput="formatarValorPagamentoNovo(this)"></p>
                     <div id="div_parcelas_cartaoCred_entrada_novo" style="<?php if ($tipo_pagamento == 2) { echo 'display: block;'; } else { echo 'display: none;'; } ?>">
                         <label for="parcelas_cartaoCred_entrada_novo">Quantidade de parcelas:</label>
                         <input id="parcelas_cartaoCred_entrada_novo" name="parcelas_cartaoCred_entrada_novo" type="number" min="1"  value="1" max="12" onchange="calcularValorParcelaNovo()">
@@ -595,7 +595,8 @@
                 <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
                 <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
                 <input type="text" id="restante" name="restante" readonly >
-            </div>            
+            </div> 
+
             <div id="popup-restante" class="popup-content" style="display: none;">
                 <h3>Pagamento do Restante</h3>
                 <p>Valor Restante: R$ <span id="pg_restante"></span></p>
@@ -834,6 +835,7 @@
         }
 
         function carregarDetalhesCartao(cartao) {
+            const valor_total = document.getElementById('valor_total').value;
             const numCartao = cartao.dataset.numCartao;
             const validade = cartao.dataset.validade;
             const codSeguranca = cartao.dataset.codSeguranca;
@@ -848,8 +850,7 @@
             
             if (cartao.name === "cartao_credito_selecionado") {
                 const restante_cred_principal = document.getElementById('restante_cred_inicio').textContent.replace(/\./g, '').replace(',', '.');
-                const valor_total = document.getElementById('valor_total').value;
-
+                
                 console.log('Cartão de crédito selecionado');
 
                 document.getElementById('div_cred_principal').style.display = 'block';
@@ -871,7 +872,7 @@
                 document.getElementById('btn_continuar_cartaoDeb').style.display = 'block';
                 document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
 
-                document.getElementById('valor_parcela_cartao_selecionado').value = '';
+                document.getElementById('valor_parcela_cartao_selecionado').value = valor_total;
                 document.getElementById('parcelas_cartaoCred_entrada_principal').value = '';
                 document.getElementById('salvar_cartao').value = '0';
                 document.getElementById('restante').value = restante_deb_principal;
@@ -946,7 +947,7 @@
                 document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = document.getElementById('parcelas_cartaoCred_entrada_novo').value;
                 document.getElementById('valor_parcela_cartao_selecionado').value = parseFloat(document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent.replace('.', '').replace(',', '.'));
 
-                let vl_a_pg_novo = parseFloat(document.getElementById('vl_a_pg_novo').value.replace(/\./g, '').replace(',', '.'));
+                let vl_a_pg_novo = parseFloat(document.getElementById('vl_novo').value.replace(/\./g, '').replace(',', '.'));
                 const valor_total = <?php echo $valor_total; ?>;
 
                 vl_a_pg_novo = Math.round(vl_a_pg_novo * 100) / 100; // Arredondar para 2 casas decimais
@@ -954,12 +955,12 @@
 
                 if (vl_a_pg_novo > valor_total_arredondado) {
                     alert('O valor a pagar não pode ser maior que o valor total.');
-                    document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                    document.getElementById('vl_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                     calcularValorParcelaNovo();
                     return;
                 } else if (vl_a_pg_novo <= 0) {
                     alert('O valor a pagar deve ser maior que zero.');
-                    document.getElementById('vl_a_pg_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                    document.getElementById('vl_novo').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                     calcularValorParcelaNovo();
                     return;
                 } else {
@@ -1056,26 +1057,29 @@
 
         }
 
-        function validarValorPagamento() {
-            const input = document.getElementById('vl_cred_principal');
+        function validarValorPagamentoCred() {
+            const vl_cred_principal = document.getElementById('vl_cred_principal');
             const valorTotal = Math.round(<?php echo $valor_total; ?> * 100) / 100; // Arredondar para 2 casas decimais
-            let valor = Math.round((parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0) * 100) / 100; // Arredondar para 2 casas decimais
+            
+            let valorCred = Math.round((parseFloat(vl_cred_principal.value.replace(/\./g, '').replace(',', '.')) || 0) * 100) / 100; // Arredondar para 2 casas decimais
 
-            if (valor > valorTotal) {
+            if (valorCred > valorTotal) {
                 alert('O valor não pode ser maior que o valor total.');
-                input.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                vl_cred_principal.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                 document.getElementById('vl_cred_principal').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                 calcularValorParcelaCred();
                 return;
-            } else if (valor <= 0) {
+            } else if (valorCred <= 0) {
                 alert('O valor não pode ser igual ou menor que 0.');
-                input.value = "<?php echo number_format(0, 2, ',', '.'); ?>";
+                vl_cred_principal.value = "<?php echo number_format(0, 2, ',', '.'); ?>";
                 document.getElementById('vl_cred_principal').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
                 calcularValorParcelaCred();
                 return;
             }
+
+
             // Se o valor for válido, continuar com o processo
-            if (valor == valorTotal) {
+            if (valorCred == valorTotal) {
                 // abrir popup de confirmação de compra
                 // Esconder os outros popups
                 const popupConfirmacao = document.getElementById("popup-confirmacao");
@@ -1096,10 +1100,61 @@
 
                 abrirPopupConfirmacaoCompra();
             } else {
-                //abrir #popupRestante();
                 abrirPopupRestante();
-            }
+            }  
+        }
+
+        function validarValorPagamentoDeb() {
+            const vl_deb_principal = document.getElementById('vl_deb_principal');
+            const valorTotal = Math.round(<?php echo $valor_total; ?> * 100) / 100; // Arredondar para 2 casas decimais
             
+            let valorDeb = Math.round((parseFloat(vl_deb_principal.value.replace(/\./g, '').replace(',', '.')) || 0) * 100) / 100; // Arredondar para 2 casas decimais
+
+            if (valorDeb > valorTotal) {
+                alert('O valor não pode ser maior que o valor total.');
+                vl_deb_principal.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                document.getElementById('vl_deb_principal').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                document.getElementById('restante_deb_principal').textContent = '0,00';
+                document.getElementById('valor_parcela_cartao_selecionado').value = valorTotal;
+                document.getElementById('restante').value = '0.00';
+                //calcularValorParcelaCred();
+                return;
+            } else if (valorDeb <= 0) {
+                alert('O valor não pode ser igual ou menor que 0.');
+                vl_deb_principal.value = "<?php echo number_format(0, 2, ',', '.'); ?>";
+                document.getElementById('vl_deb_principal').value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                document.getElementById('restante_deb_principal').textContent = '0,00';
+                document.getElementById('valor_parcela_cartao_selecionado').value = valorTotal;
+                document.getElementById('restante').value = '0.00';
+                //calcularValorParcelaCred();
+                return;
+            }
+
+
+            // Se o valor for válido, continuar com o processo
+            if (valorDeb == valorTotal) {
+                // abrir popup de confirmação de compra
+                // Esconder os outros popups
+                const popupConfirmacao = document.getElementById("popup-confirmacao");
+                const popup_background = document.getElementById('popup-background');
+
+                popup_background.style.display = "block";
+                popup_background.style.zIndex = "1000"; // Garantir que o background fique acima dos popups
+                
+                popupConfirmacao.style.display = "block";
+                popupConfirmacao.style.position = "fixed";
+                popupConfirmacao.style.top = "50%";
+                popupConfirmacao.style.left = "50%";
+                popupConfirmacao.style.transform = "translate(-50%, -50%)";
+                popupConfirmacao.style.zIndex = "1001"; // Garantir que o popupConfirmacao fique acima de todos
+                popupConfirmacao.style.backgroundColor = "#fff";
+                popupConfirmacao.style.padding = "20px";
+                popupConfirmacao.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+
+                abrirPopupConfirmacaoCompra();
+            } else {
+                abrirPopupRestante();
+            }  
         }
 
         function abrirPopupConfirmacaoCompra(){
@@ -1139,18 +1194,16 @@
 
         function calcularValorRestantePix() {
             const valorTotalInput = document.getElementById('valor_total');
-            const vl_pg_pix = document.getElementById('vl_pg_pix');
+            const vl_pix = document.getElementById('vl_pix');
             const restante_pix = document.getElementById('restante_pix');
 
             // Converter os valores para float
             const valorTotal = parseFloat(valorTotalInput.value) || 0;
-            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const valorPagamento = parseFloat(vl_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
 
             // Calcular valor restante
             const restante = valorTotal - valorPagamento;
 
-            document.getElementById('valor_parcela_cartao_selecionado').value = Math.round(restante * 100) / 100; // Arredondar para 2 casas decimais
-            
             // Exibir o valor restante formatado
             restante_pix.textContent = 'Valor do restante: R$ ' + restante.toLocaleString('pt-BR', {
                 minimumFractionDigits: 2,
@@ -1161,20 +1214,10 @@
             document.getElementById('link_pix').style.display = 'none';
             document.getElementById('btn_continuar').style.display = 'none';
 
-            // restante_pix.value = 'Valor do restante: R$ ' + restante_pix.textContent;
-
-            /*const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('valor_parcela_cartaoCred_entrada').textContent = valorParcelaFormatado;
-            document.getElementById('valor_parcela_cartao_selecionado').value = valorParcela;
-            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = numParcelas;
-
-            const valorTotalCompra = document.getElementById('valor_total').value;
-            const pg_restante = document.getElementById('pg_restante');
-
-            document.getElementById('restante').value =  Math.round(valorTotalCompra - valorTotal);
-            pg_restante.textContent = (valorTotalCompra - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            //console.log('Valor da parcela:', valorParcelaFormatado);
-            //valor_parcela_cartaoCred_entrada valor_parcela_cartaoCred_entrada*/
+            document.getElementById('valor_parcela_cartao_selecionado').value = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = '1';
+            document.getElementById('restante').value = Math.round(restante * 100) / 100; // Arredondar para 2 casas decimais
+        
         }
 
         // Função para gerar o QR Code
@@ -1193,30 +1236,24 @@
         function validarValorPix (){
             const valor = document.getElementById('valor_total');
             const valorTotal = parseFloat(valor.value) || 0;
-            const vl_pg_pix = document.getElementById('vl_pg_pix');
-            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const vl_pix = document.getElementById('vl_pix');
+            const valorPagamento = parseFloat(vl_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorTotalArredondado = Math.round(valorTotal * 100) / 100; // Arredondar para 2 casas decimais
-            const vl_pg_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
+            const vl_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
             const restante_pix = document.getElementById('restante_pix');
 
-            vl_pg_pix.value = vl_pg_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            vl_pix.value = vl_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             //console.log('Valor a pagar:', vl_pg_pix_arredondado);
             //console.log('Valor total:', valorTotalArredondado);
-            if (vl_pg_pix_arredondado > valorTotalArredondado) {
+            if (vl_pix_arredondado > valorTotalArredondado) {
                 alert('O valor a pagar não pode ser maior que o valor total.');
-                vl_pg_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-                restante_pix.textContent = 'Valor do restante: R$ ' + (valorTotalArredondado).toLocaleString('pt-BR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
+                vl_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                restante_pix.textContent = 'Valor do restante: R$ 0,00';
                 return;
-            } else if (vl_pg_pix_arredondado <= 0) {
+            } else if (vl_pix_arredondado <= 0) {
                 alert('O valor a pagar deve ser maior que zero.');
-                vl_pg_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-                restante_pix.textContent = 'Valor do restante: R$ ' + (valorTotalArredondado).toLocaleString('pt-BR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
+                vl_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
+                restante_pix.textContent = 'Valor do restante: R$ 0,00';
                 return;
             }
             calcularValorRestantePix();
@@ -1226,16 +1263,16 @@
         function confirmar_pix(){
             const valor = document.getElementById('valor_total');
             const valorTotal = parseFloat(valor.value) || 0;
-            const vl_pg_pix = document.getElementById('vl_pg_pix');
-            const valorPagamento = parseFloat(vl_pg_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const vl_pix = document.getElementById('vl_pix');
+            const valorPagamento = parseFloat(vl_pix.value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorTotalArredondado = Math.round(valorTotal * 100) / 100; // Arredondar para 2 casas decimais
-            const vl_pg_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
+            const vl_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
             const restante_pix = document.getElementById('restante_pix');
 
-            vl_pg_pix.value = vl_pg_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            vl_pix.value = vl_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             //console.log('Valor a pagar:', vl_pg_pix_arredondado);
             //console.log('Valor total:', valorTotalArredondado);
-            if (vl_pg_pix_arredondado < valorTotalArredondado && vl_pg_pix_arredondado > 0) {
+            if (vl_pix_arredondado < valorTotalArredondado && vl_pix_arredondado > 0) {
                 abrirPopupRestante();
             } else {
                 finalizarCompra();
@@ -1266,13 +1303,13 @@
                 restante = valor_total - valor; // Calcula o restante
                 restante = Math.round(restante * 100) / 100; // Arredondar para 2 casas decimais
                 
-                console.log('Valor total:', valor_total);
-                console.log('Valor:', valor);
-                console.log('Restante:', restante);
+                //console.log('Valor total:', valor_total);
+                //console.log('Valor:', valor);
+                //console.log('Restante:', restante);
 
                 document.getElementById('vl_deb_principal').value = valor.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Formata com ponto de milhar e vírgula para centavos
                 document.getElementById('restante_deb_principal').textContent = restante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                //document.getElementById('valor_parcela_cartao_selecionado').value = valor;
+                document.getElementById('valor_parcela_cartao_selecionado').value = valor;
                 document.getElementById('restante').value = restante; // Atualiza o valor da parcela
             
             
@@ -1295,9 +1332,11 @@
         }
 
         function calcularValorParcelaNovo() { 
-            let valor = document.getElementById('vl_a_pg_novo').value.replace(/\./g, '').replace(',', '.'); // Remove pontos de milhar e troca vírgula por ponto
+            const valorTotalCompra = document.getElementById('valor_total').value;
+            let valor = document.getElementById('vl_novo').value.replace(/\./g, '').replace(',', '.'); // Remove pontos de milhar e troca vírgula por ponto
             const valorTotal = valor;
             const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada_novo').value) || 1;
+            const restante = document.getElementById('restante_novo').textContent.replace(/\./g, '').replace(',', '.'); // Remove pontos de milhar e troca vírgula por ponto
 
             if (numParcelas <= 0) {
                 alert('O número de parcelas deve ser maior que zero.');
@@ -1314,11 +1353,14 @@
 
             const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
+            document.getElementById('restante_novo').textContent = (valorTotalCompra - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         
         function abrirPopupRestante() {
             const popupRestante = document.getElementById("popup-restante");
-            //document.getElementById('popup_novo_cartao').style.display = 'none';
+            const pg_restante = document.getElementById('restante').value;
+
+            document.getElementById('pg_restante').textContent = pg_restante.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
             document.getElementById('popup-background').style.display = "block";
             document.getElementById('popup-background').style.zIndex = "1000"; // Garantir que o background fique abaixo dos popups
@@ -1428,14 +1470,14 @@
 
                 tipo_entrega: document.getElementById("entrega").value,
                 tipo_pagamento: document.getElementById("tipo_pagamento_principal").value,
-                valor_entrada: totalCompra, // Valor de entrada
+                valor_entrada: '', // Valor de entrada
                 restante: document.getElementById("restante").value ,
 
                 num_cartao: document.getElementById("num_cartao_selecionado").value,
                 nome_cartao: document.getElementById("nome_cartao_selecionado").value,
                 validade: document.getElementById("validade_selecionado").value,
                 cod_seguranca: document.getElementById("cod_seguranca_selecionado").value,
-                valor_parcela: document.getElementById("valor_parcela_cartaoCred_entrada").textContent, // Valor da parcela                
+                valor_parcela: document.getElementById("valor_parcela_cartao_selecionado").value, // Valor da parcela                
                 qt_parcelas_entrada: document.getElementById("parcelas_cartaoCred_entrada_selecionado").value,
                 bandeiras_aceitas: document.getElementById("bandeiras_aceitas").value,
                 salvar_cartao: document.getElementById("salvar_cartao").value,
@@ -1466,7 +1508,7 @@
                         if (contador === 0) {
                             clearInterval(intervalo);
                             ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
-                            window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
+                            //window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
                         }
                     }, 1000);
                 } else {

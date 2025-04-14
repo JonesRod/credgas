@@ -133,7 +133,7 @@ try {
                 id_parceiro, 
                 produtos, 
                 valor_frete,
-                valor,
+                valor_produtos,
                 taxa_crediario,
                 formato_compra,
                 entrada,
