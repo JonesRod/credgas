@@ -602,10 +602,10 @@
                 <p>Valor Restante: R$ <span id="pg_restante"></span></p>
                 <label for="segunda_forma_pg">Selecione a forma de pagamento:</label>
                 <select id="segunda_forma_pg" name="segunda_forma_pg" required>
-                        <option value="1">Selecione</option>
-                        <option value="2">PIX</option>
-                        <option value="3">Cartão de Crédito</option>
-                        <option value="4">Cartão de Débito</option>
+                        <option value="0">Selecione</option>
+                        <option value="1">PIX</option>
+                        <option value="2">Cartão de Crédito</option>
+                        <option value="3">Cartão de Débito</option>
                 </select>
                 <div>
                     <button type="button" id="btn_voltar" onclick="voltarParaEntrada()">Voltar</button>
@@ -1374,7 +1374,7 @@
             popupRestante.style.backgroundColor = "#fff";
             popupRestante.style.padding = "20px";
             popupRestante.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-            //obterHorarioLocal();
+            obterHorarioLocal();
         }
 
         // Função para enviar os dados via JavaScript em formato JSON
@@ -1535,7 +1535,7 @@
             }
 
             const tipoPagamento = document.getElementById('segunda_forma_pg').value;
-            if (tipoPagamento === '1') { // Verifica se o valor é '1', que representa "Selecione"
+            if (tipoPagamento === '0') { // Verifica se o valor é '1', que representa "Selecione"
                 alert("Selecione uma forma de pagamento.");
                 return false; // Impede o envio do formulário
             }
