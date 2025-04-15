@@ -1,76 +1,80 @@
 <?php
-    session_start();
-    include('../../../conexao.php'); // Conexão com o banco
+session_start();
+include('../../../conexao.php'); // Conexão com o banco
 
-    $id_cliente = isset($_GET['id_cliente']) ? intval($_GET['id_cliente']) : 0;
-    $id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : 0;
+$id_cliente = isset($_GET['id_cliente']) ? intval($_GET['id_cliente']) : 0;
+$id_parceiro = isset($_GET['id_parceiro']) ? intval($_GET['id_parceiro']) : 0;
 
-    // Obtém a data de hoje menos 1 dia
-    $data_limite = date('Y-m-d', strtotime('-1 days'));
+// Obtém a data de hoje menos 1 dia
+$data_limite = date('Y-m-d', strtotime('-1 days'));
 
-    // Exclui produtos do carrinho do cliente adicionados há mais de 1 dia
-    $sql_delete = "DELETE FROM carrinho WHERE id_cliente = ? AND DATE(data) < ?";
-    $stmt_delete = $mysqli->prepare($sql_delete);
-    $stmt_delete->bind_param("is", $id_cliente, $data_limite);
-    $stmt_delete->execute();
-    $stmt_delete->close();
+// Exclui produtos do carrinho do cliente adicionados há mais de 1 dia
+$sql_delete = "DELETE FROM carrinho WHERE id_cliente = ? AND DATE(data) < ?";
+$stmt_delete = $mysqli->prepare($sql_delete);
+$stmt_delete->bind_param("is", $id_cliente, $data_limite);
+$stmt_delete->execute();
+$stmt_delete->close();
 
-    // Buscar os produtos do carrinho
-    $stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, c.valor_produto, p.taxa_padrao, p.vende_crediario, p.qt_parcelas, c.frete 
+// Buscar os produtos do carrinho
+$stmt = $mysqli->prepare("SELECT c.*, p.nome_produto, c.valor_produto, p.taxa_padrao, p.vende_crediario, p.qt_parcelas, c.frete 
                               FROM carrinho c 
                               JOIN produtos p ON c.id_produto = p.id_produto 
                               WHERE c.id_cliente = ? AND p.id_parceiro = ?");
 
-    $stmt->bind_param("ii", $id_cliente, $id_parceiro);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $produtos = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->bind_param("ii", $id_cliente, $id_parceiro);
+$stmt->execute();
+$result = $stmt->get_result();
+$produtos = $result->fetch_all(MYSQLI_ASSOC);
 
-    $taxa_padrao = !empty($produtos) ? $produtos[0]['taxa_padrao'] : 0;
-    $vendeCrediario = !empty($produtos) ? $produtos[0]['vende_crediario'] : 0;
+$taxa_padrao = !empty($produtos) ? $produtos[0]['taxa_padrao'] : 0;
+$vendeCrediario = !empty($produtos) ? $produtos[0]['vende_crediario'] : 0;
 
-    // Buscar se o parceiro aceita cartão de crédito
-    $stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
-    $stmt->bind_param("i", $id_parceiro);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $parceiro = $result->fetch_assoc();
+// Buscar se o parceiro aceita cartão de crédito
+$stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
+$stmt->bind_param("i", $id_parceiro);
+$stmt->execute();
+$result = $stmt->get_result();
+$parceiro = $result->fetch_assoc();
 
-    $cartao_debito_ativo = !empty($parceiro['cartao_debito']); 
-    $cartao_credito_ativo = !empty($parceiro['cartao_credito']); // Se estiver vazio, será falso
-    $outros = !empty($parceiro['outras_formas']); 
+$cartao_debito_ativo = !empty($parceiro['cartao_debito']);
+$cartao_credito_ativo = !empty($parceiro['cartao_credito']); // Se estiver vazio, será falso
+$outros = !empty($parceiro['outras_formas']);
 
-    $nomeFantasia = !empty($parceiro['nomeFantasia']) ? $parceiro['nomeFantasia'] : '';
-    $cidade_parceiro = !empty($parceiro['cidade']) ? $parceiro['cidade'] : '';
-    $uf_parceiro = !empty($parceiro['estado']) ? $parceiro['estado'] : '';
-    $endereco_parceiro = !empty($parceiro['endereco']) ? $parceiro['endereco'] : '';
-    $numero_parceiro = !empty($parceiro['numero']) ? $parceiro['numero'] : '';
-    $bairro_parceiro = !empty($parceiro['bairro']) ? $parceiro['bairro'] : '';
-    $telefoneComercial = !empty($parceiro['telefoneComercial']) ? $parceiro['telefoneComercial'] : '';
+$nomeFantasia = !empty($parceiro['nomeFantasia']) ? $parceiro['nomeFantasia'] : '';
+$cidade_parceiro = !empty($parceiro['cidade']) ? $parceiro['cidade'] : '';
+$uf_parceiro = !empty($parceiro['estado']) ? $parceiro['estado'] : '';
+$endereco_parceiro = !empty($parceiro['endereco']) ? $parceiro['endereco'] : '';
+$numero_parceiro = !empty($parceiro['numero']) ? $parceiro['numero'] : '';
+$bairro_parceiro = !empty($parceiro['bairro']) ? $parceiro['bairro'] : '';
+$telefoneComercial = !empty($parceiro['telefoneComercial']) ? $parceiro['telefoneComercial'] : '';
 
-    // Buscar se o parceiro aceita cartão de crédito
-    $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
-    $stmt->bind_param("i", $id_cliente);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $cliente = $result->fetch_assoc();
+// Buscar se o parceiro aceita cartão de crédito
+$stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
+$stmt->bind_param("i", $id_cliente);
+$stmt->execute();
+$result = $stmt->get_result();
+$cliente = $result->fetch_assoc();
 
-    $limite_cred = !empty($cliente['limite_cred']) ? $cliente['limite_cred'] : 0;
+$limite_cred = !empty($cliente['limite_cred']) ? $cliente['limite_cred'] : 0;
 
-    $cidade = !empty($cliente['cidade']) ? $cliente['cidade'] : '';
-    $uf = !empty($cliente['uf']) ? $cliente['uf'] : '';
-    $endereco_cadastrado = !empty($cliente['endereco']) ? $cliente['endereco'] : '';
-    $numero = !empty($cliente['numero']) ? $cliente['numero'] : '';
-    $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
-    $celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
-    
-    $saldo = !empty($cliente['saldo']) ? $cliente['saldo'] : 0;
+$cidade = !empty($cliente['cidade']) ? $cliente['cidade'] : '';
+$uf = !empty($cliente['uf']) ? $cliente['uf'] : '';
+$endereco_cadastrado = !empty($cliente['endereco']) ? $cliente['endereco'] : '';
+$numero = !empty($cliente['numero']) ? $cliente['numero'] : '';
+$bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
+$celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
 
-    //var_dump($produtos);
+$saldo = !empty($cliente['saldo']) ? $cliente['saldo'] : 0;
+
+// Definir a variável $valorTaxaCrediario
+$valorTaxaCrediario = 5; // Exemplo: 5% de taxa
+
+//var_dump($produtos);
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,17 +96,21 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1px 1px 1px 1px; /* Centraliza a tabela */
+            margin: 1px 1px 1px 1px;
+            /* Centraliza a tabela */
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        table, th, td {
+        table,
+        th,
+        td {
             border: 1px solid #ddd;
 
         }
 
-        th, td {
+        th,
+        td {
             padding: 5px;
             text-align: left;
 
@@ -123,23 +131,31 @@
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .entrega{
+
+        .entrega {
+            background-color: cornflowerblue;
             margin-top: 10px;
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
             padding: 10px;
         }
-        .entrega h3{
+
+        .entrega h3 {
             margin-top: 5px;
             text-align: center;
         }
+
         .input-radio {
             display: flex;
-            justify-content: center; /* Centraliza os elementos */
-            align-items: center; /* Alinha os itens verticalmente */
-            flex-wrap: wrap; /* Permite que os elementos quebrem para a linha de baixo se necessário */
-            gap: 10px; /* Espaçamento entre os elementos */
+            justify-content: center;
+            /* Centraliza os elementos */
+            align-items: center;
+            /* Alinha os itens verticalmente */
+            flex-wrap: wrap;
+            /* Permite que os elementos quebrem para a linha de baixo se necessário */
+            gap: 10px;
+            /* Espaçamento entre os elementos */
             text-align: center;
             margin-top: 10px;
             margin-bottom: 20px;
@@ -148,20 +164,25 @@
 
         .input-radio label {
             display: flex;
-            align-items: center; /* Mantém o rádio alinhado ao texto */
+            align-items: center;
+            /* Mantém o rádio alinhado ao texto */
         }
 
         .input-radio label input[type="radio"] {
-            margin-right: 5px; /* Espaço entre o rádio e o texto */
-            transform: translateY(-2px); /* Move o rádio um pouco para cima */
-            vertical-align: middle; /* Alinha melhor com o texto */
+            margin-right: 5px;
+            /* Espaço entre o rádio e o texto */
+            transform: translateY(-2px);
+            /* Move o rádio um pouco para cima */
+            vertical-align: middle;
+            /* Alinha melhor com o texto */
         }
 
-        .entrega p{
+        .entrega p {
             margin-left: 10px;
         }
 
-        input[type="text"], select {
+        input[type="text"],
+        select {
             width: 100%;
             padding: 10px;
             margin: 5px 0 10px;
@@ -176,8 +197,10 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
             margin-bottom: 20px;
-            text-align: left; /* Garante que o texto fique alinhado à esquerda */
-            padding: 10px; /* Adiciona um espaço interno para não colar no canto */
+            text-align: left;
+            /* Garante que o texto fique alinhado à esquerda */
+            padding: 10px;
+            /* Adiciona um espaço interno para não colar no canto */
         }
 
         .valores h3 {
@@ -198,7 +221,7 @@
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color:rgb(32, 105, 36);
         }
 
         #enderecoCadastrado button[onclick="mostrarCamposEndereco()"] {
@@ -207,7 +230,7 @@
         }
 
         #enderecoCadastrado button[onclick="mostrarCamposEndereco()"]:hover {
-            background-color:rgb(70, 70, 238)
+            background-color: rgb(70, 70, 238)
         }
 
         #novoEndereco button[onclick="usarEnderecoCadastrado()"] {
@@ -216,7 +239,7 @@
         }
 
         #novoEndereco button[onclick="usarEnderecoCadastrado()"]:hover {
-            background-color:rgb(70, 70, 238)
+            background-color: rgb(70, 70, 238)
         }
 
         .voltar {
@@ -231,23 +254,75 @@
         .voltar:hover {
             text-decoration: underline;
         }
-        #div_saldo p{
+
+        #div_saldo p {
             text-align: center
+        }
+
+        #div_valores {
+            background-color: blueviolet;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .btn-voltar {
+            background-color: #007bff;
+            /* Azul */
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            width: 93.5%;
+            margin-bottom: 10px;
+        }
+
+        .btn-voltar:hover {
+            background-color:rgb(9, 71, 137);
+            /* Azul mais escuro */
+        }
+        th:nth-child(1),
+        td:nth-child(1),
+        /* Oculta a coluna ID Produto */
+        th:nth-child(6),
+        td:nth-child(6) {
+            /* Oculta a coluna Vende Crediário */
+            display: none;
+        }
+
+        .highlight-saldo {
+            background-color: #d4edda;
+            /* Verde claro */
+            border: 2px solid #28a745;
+            /* Verde escuro */
+            animation: pulse 1.5s infinite;
+            /* Animação de movimento */
         }
 
         @media screen and (max-width: 768px) {
             table {
                 width: 100%;
-                font-size: 14px; /* Reduz o tamanho da fonte para melhor ajuste */
+                font-size: 14px;
+                /* Reduz o tamanho da fonte para melhor ajuste */
             }
 
-            th, td {
-                padding: 8px; /* Ajusta o espaçamento */
+            th,
+            td {
+                padding: 8px;
+                /* Ajusta o espaçamento */
             }
 
             form {
-                margin-left: 25px;
-                max-width: 95%; /* Aumenta a largura do formulário em telas pequenas */
+                margin-left: 1px;
+                margin-right: 1px;
+                max-width: 100%;
+                /* Aumenta a largura do formulário em telas pequenas */
                 padding: 10px;
 
             }
@@ -255,15 +330,18 @@
             .input-radio {
                 /*flex-direction: column; /* Empilha os itens quando o espaço for pequeno */
                 /*align-items: flex-start; /* Alinha os itens à esquerda */
-                gap: 5px; /* Reduz o espaçamento */
+                gap: 5px;
+                /* Reduz o espaçamento */
             }
 
             .input-radio label {
-                justify-content: flex-start; /* Mantém o alinhamento dos elementos */
+                justify-content: flex-start;
+                /* Mantém o alinhamento dos elementos */
             }
 
             .valores {
-                padding: 8px; /* Reduz o espaçamento interno */
+                padding: 8px;
+                /* Reduz o espaçamento interno */
             }
 
             .valores h3 {
@@ -272,7 +350,8 @@
             }
 
             button {
-                font-size: 14px; /* Reduz o tamanho do botão */
+                font-size: 14px;
+                /* Reduz o tamanho do botão */
                 padding: 10px;
             }
 
@@ -282,59 +361,76 @@
             }
         }
 
-@media screen and (max-width: 480px) {
-    h2 {
-        font-size: 18px; /* Reduz o tamanho do título */
-    }
+        @media screen and (max-width: 480px) {
+            h2 {
+                font-size: 18px;
+                /* Reduz o tamanho do título */
+            }
 
-    table {
-        font-size: 12px; /* Ajusta a fonte da tabela */
-    }
+            table {
+                font-size: 12px;
+                /* Ajusta a fonte da tabela */
+            }
 
-    th, td {
-        padding: 6px; /* Reduz o padding */
-    }
+            th,
+            td {
+                padding: 6px;
+                /* Reduz o padding */
+            }
 
-    form {
-        max-width: 95%;
-        padding: 8px;
-    }
+            form {
+                max-width: 95%;
+                padding: 8px;
+            }
 
-    .entrega h3 {
-        font-size: 14px;
-    }
+            .entrega h3 {
+                font-size: 14px;
+            }
 
-    .input-radio {
-        flex-direction: column; /* Empilha os itens quando o espaço for pequeno */
-        align-items: flex-start; /* Alinha os itens à esquerda */
-        gap: 5px; /* Reduz o espaçamento */
-    }
+            .input-radio {
+                flex-direction: column;
+                /* Empilha os itens quando o espaço for pequeno */
+                align-items: flex-start;
+                /* Alinha os itens à esquerda */
+                gap: 5px;
+                /* Reduz o espaçamento */
+            }
 
-    .input-radio label {
-        font-size: 14px;
-    }
+            .input-radio label {
+                font-size: 14px;
+            }
 
-    button {
-        font-size: 12px;
-        padding: 8px;
-    }
+            button {
+                font-size: 12px;
+                padding: 8px;
+            }
 
-    .voltar {
-        font-size: 12px;
-        margin: 10px 0;
-    }
-}
+            .voltar {
+                font-size: 12px;
+                margin: 10px 0;
+            }
+        }
 
-        th:nth-child(1), td:nth-child(1), /* Oculta a coluna ID Produto */
-        th:nth-child(6), td:nth-child(6) { /* Oculta a coluna Vende Crediário */
-            display: none;
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
     </style>
 </head>
+
 <body>
     <h2>Minha compra</h2>
     <?php if (!empty($produtos)): ?>
-        <form action="pagamento.php" method="post">        
+        <form action="pagamento.php" method="post">
             <table border="1">
                 <tr>
                     <th>ID Produto</th>
@@ -344,40 +440,40 @@
                     <th>Total</th>
                     <th>Vende Crediário</th>
                 </tr>
-                <?php 
-                    if (!empty($produtos) && is_array($produtos)) {
-                        $totalGeral = 0;
-                        $maiorFrete = 0;
-                        $maiorQtPar = 0;
+                <?php
+                if (!empty($produtos) && is_array($produtos)) {
+                    $totalGeral = 0;
+                    $maiorFrete = 0;
+                    $maiorQtPar = 0;
 
-                        foreach ($produtos as $produto): 
-                            $qtParcelas = $produto['qt_parcelas'];
+                    foreach ($produtos as $produto):
+                        $qtParcelas = $produto['qt_parcelas'];
 
-                            $valorProComTaxa = $produto['valor_produto'];
-                            $total = $valorProComTaxa * $produto['qt'];
-                            
-                            $totalGeral += $total;
+                        $valorProComTaxa = $produto['valor_produto'];
+                        $total = $valorProComTaxa * $produto['qt'];
 
-                            // Verifica o maior frete no carrinho
-                            if ($produto['frete'] > $maiorFrete) {
-                                $maiorFrete = $produto['frete'];
-                            }
+                        $totalGeral += $total;
 
-                            // Verifica o maior quantidade de parcelas
-                            if ($qtParcelas > $maiorQtPar) {
-                                $maiorQtPar = $qtParcelas;
-                            }
-                ?>
-                <tr>
-                    <td><?php echo $produto['id_produto']; ?></td>
-                    <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
-                    <td style="text-align: center;"><?php echo $produto['qt']; ?></td>
-                    <td>R$ <?php echo number_format($valorProComTaxa, 2, ',', '.'); ?></td>
-                    <td>R$ <?php echo number_format($total, 2, ',', '.'); ?></td>
-                    <td><?php echo $produto['vende_crediario'] ? '1' : '0'; ?></td>
-                </tr>
-                <?php endforeach; 
-                    
+                        // Verifica o maior frete no carrinho
+                        if ($produto['frete'] > $maiorFrete) {
+                            $maiorFrete = $produto['frete'];
+                        }
+
+                        // Verifica o maior quantidade de parcelas
+                        if ($qtParcelas > $maiorQtPar) {
+                            $maiorQtPar = $qtParcelas;
+                        }
+                        ?>
+                        <tr>
+                            <td><?php echo $produto['id_produto']; ?></td>
+                            <td><?php echo htmlspecialchars($produto['nome_produto']); ?></td>
+                            <td style="text-align: center;"><?php echo $produto['qt']; ?></td>
+                            <td>R$ <?php echo number_format($valorProComTaxa, 2, ',', '.'); ?></td>
+                            <td>R$ <?php echo number_format($total, 2, ',', '.'); ?></td>
+                            <td><?php echo $produto['vende_crediario'] ? '1' : '0'; ?></td>
+                        </tr>
+                    <?php endforeach;
+
                     // Soma o maior frete ao total da compra
                     $totalComFrete = $totalGeral + $maiorFrete;
                     $totalCrediario = $limite_cred - $totalComFrete;
@@ -401,48 +497,57 @@
                         <input type="radio" name="entrega" value="entregar" checked onclick="verificarEndereco()"> Entregar
                     </label>
                     <label>
-                        <input type="radio" name="entrega" value="buscar" onclick="atualizarTotal(false); esconderCamposEndereco(); mostrarEnderecoLoja()"> Retirar no local
-                    </label>                    
+                        <input type="radio" name="entrega" value="buscar"
+                            onclick="atualizarTotal(false); esconderCamposEndereco(); mostrarEnderecoLoja()"> Retirar no
+                        local
+                    </label>
                 </div>
 
-                <div class="valores">
+                <div class="valores" id="div_valores">
                     <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
-                    <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
-                    <?php if (isset($saldo) && $saldo > 0) : ?>
-                        <div id="div_saldo" class="valores">
-                            <h3>Saldo disponível: <span id="saldo"><?php echo 'R$ ' . number_format($saldo, 2, ',', '.'); ?></span></h3>
-                            <p><input type="checkbox" name="checkbox_saldo" id="checkbox_saldo" onchange="toggleCampoSaldo()"> Usar Saldo</p>
-                            <p id="p_saldo" style="display: none;">Digite o valor que você deseja usar: R$ <input type="text" oninput="formatarSaldo(this)" name="input_saldo" id="input_saldo" value="<?php echo number_format($saldo, 2, ',', '.'); ?>"></p>
+                    <h3>Frete: <span
+                            id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span>
+                    </h3>
+                    <?php if (isset($saldo) && $saldo > 0): ?>
+                        <div id="div_saldo" class="valores highlight-saldo">
+                            <h3>Saldo disponível: <span
+                                    id="saldo"><?php echo 'R$ ' . number_format($saldo, 2, ',', '.'); ?></span></h3>
+                            <p><input type="checkbox" name="checkbox_saldo" id="checkbox_saldo" onchange="toggleCampoSaldo()">
+                                <label for="checkbox_saldo">Usar saldo</label>
+                            </p>
+                            <p id="p_saldo" style="display: none;">Digite o valor que você deseja usar: R$ <input type="text"
+                                    oninput="formatarSaldo(this)" name="input_saldo" id="input_saldo" value="0,00"></p>
                         </div>
-                    <?php endif;?>
-                    
-                    <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$  
+                    <?php endif; ?>
+
+                    <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$
                         <span id="taxaCrediario">
                             <?php
-                                $total = ($totalComFrete * $valorTaxaCrediario) / 100;
-                                echo number_format($total, 2, ',', '.'); 
+                            $total = ($totalComFrete * $valorTaxaCrediario) / 100;
+                            echo number_format($total, 2, ',', '.');
                             ?>
                         </span>
                     </h3>
-                    <h3>Valor Total á pagar: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
-                </div>  
+                    <h3>Valor Total á pagar: <span
+                            id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
+                </div>
 
                 <?php if (!empty($endereco_cadastrado)): ?>
                     <div id="enderecoCadastrado">
                         <h3>Meu endereço</h3>
-                        <p><strong>Cidade/UF:</strong> 
-                            <span id="cidade_uf"><?php echo $cidade.'/'.$uf; ?></span>
+                        <p><strong>Cidade/UF:</strong>
+                            <span id="cidade_uf"><?php echo $cidade . '/' . $uf; ?></span>
                         </p>
-                        <p><strong>Rua/AV.:</strong> 
+                        <p><strong>Rua/AV.:</strong>
                             <span id="enderecoAtual"><?php echo htmlspecialchars($endereco_cadastrado); ?></span>
                         </p>
-                        <p><strong>Número:</strong> 
+                        <p><strong>Número:</strong>
                             <span id="enderecoAtual"><?php echo htmlspecialchars($numero); ?></span>
                         </p>
-                        <p><strong>Bairro</strong>:</strong> 
+                        <p><strong>Bairro</strong>:</strong>
                             <span id="enderecoAtual"><?php echo htmlspecialchars($bairro); ?></span>
                         </p>
-                        <p><strong>WhatsApp:</strong> 
+                        <p><strong>WhatsApp:</strong>
                             <span id="celular1"><?php echo htmlspecialchars($celular1); ?></span>
                         </p>
                         <button type="button" onclick="mostrarCamposEndereco()">Outro endereço</button>
@@ -463,7 +568,8 @@
                     <input type="text" name="numero" placeholder="Digite o número"><br>
 
                     <label>Contato/WhatsApp:</label>
-                    <input type="text" name="contato" id="contato" placeholder="Digite o número" oninput="formatarCelular(this)" onblur="verificaCelular()"><br>
+                    <input type="text" name="contato" id="contato" placeholder="Digite o número"
+                        oninput="formatarCelular(this)" onblur="verificaCelular()"><br>
 
                     <button type="button" onclick="usarEnderecoCadastrado()">Usar meu endereço</button>
                 </div>
@@ -473,42 +579,45 @@
                         <h3>
                             <strong>
                                 Loja: <span id="nomeFantasia"><?php echo $nomeFantasia; ?></span>
-                            </strong> 
+                            </strong>
                         </h3>
-                        <p><strong>Cidade/UF:</strong> 
+                        <p><strong>Cidade/UF:</strong>
                             <span id="cidade_uf"><?php echo $cidade_parceiro . '/' . $uf_parceiro; ?></span>
                         </p>
-                        <p><strong>Rua/AV.:</strong> 
+                        <p><strong>Rua/AV.:</strong>
                             <span id="ruaParceiro"><?php echo htmlspecialchars($endereco_parceiro); ?></span>
                         </p>
-                        <p><strong>Número:</strong> 
+                        <p><strong>Número:</strong>
                             <span id="numeroParceiro"><?php echo htmlspecialchars($numero_parceiro); ?></span>
                         </p>
-                        <p><strong>Bairro:</strong> 
+                        <p><strong>Bairro:</strong>
                             <span id="bairroParceiro"><?php echo htmlspecialchars($bairro_parceiro); ?></span>
                         </p>
-                        <p><strong>WhatsApp:</strong> 
+                        <p><strong>WhatsApp:</strong>
                             <span id="telefone"><?php echo htmlspecialchars($telefoneComercial); ?></span>
                         </p>
                     </div>
-                <?php endif; ?>                
+                <?php endif; ?>
             </div>
 
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
             <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
             <input type="hidden" name="valor_total" value="<?php echo $totalComFrete; ?>">
-            <input type="hidden" name="valor_frete" id="valor_frete" value="<?php echo ($maiorFrete > 0) ? $maiorFrete : 0; ?>">
-            
+            <input type="hidden" name="valor_frete" id="valor_frete"
+                value="<?php echo ($maiorFrete > 0) ? $maiorFrete : 0; ?>">
+
             <input type="hidden" id="qt_parcelas" value="<?php echo $maiorQtPar; ?>">
-            <input type="hidden" name="detalhes_produtos" id="detalhes_produtos" >
+            <input type="hidden" name="detalhes_produtos" id="detalhes_produtos">
             <br>
-            <a href="meu_carrinho.php?id_cliente=<?php echo $id_cliente; ?>" class="voltar">Voltar</a>
-            <button type="submit">Continua</button>
+            <a href="meu_carrinho.php?id_cliente=<?php echo $id_cliente; ?>" class="btn-voltar">
+                Voltar
+            </a>
+            <button type="submit">Continuar</button>
         </form>
 
     <?php else: ?>
         <p style="text-align: center;">Nenhum produto no carrinho.</p>
-        <a href="../cliente_home.php" class="voltar">Voltar</a>
+        <a href="../cliente_home.php" class="btn-voltar">Voltar</a>
     <?php endif; ?>
 
     <script>
@@ -516,10 +625,10 @@
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
 
-        function calcularDescontoSaldo(){
+        function calcularDescontoSaldo() {
             const inputSaldo = document.getElementById('input_saldo');
             const checkboxSaldo = document.getElementById('checkbox_saldo');
-            const valorTotalElement = <?php echo $totalComFrete;?>
+            const valorTotalElement = parseFloat("<?php echo $totalComFrete; ?>");
 
             if (checkboxSaldo.checked) {
                 const valorSaldo = parseFloat(inputSaldo.value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -534,23 +643,26 @@
             } else {
                 document.getElementById('ValorTotal').textContent = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
             }
-
         }
 
         function toggleCampoSaldo() {
             const checkbox = document.getElementById('checkbox_saldo');
             const campo = document.getElementById('p_saldo');
             const input = document.getElementById('input_saldo');
-            const valorTotalElement = <?php echo $totalComFrete;?>
+            const valorTotalElement = parseFloat("<?php echo $totalComFrete; ?>");
+            let inputsaldo = parseFloat("<?php echo $saldo; ?>") || 0;
 
             if (checkbox.checked) {
                 campo.style.display = 'block';
-                input.value = '<?php echo number_format($saldo, 2, ',', '.'); ?>';
-            
+
+                const novoTotal = valorTotalElement - inputsaldo;
+                input.value = inputsaldo.toFixed(2).replace('.', ',');
+                document.getElementById('ValorTotal').textContent = novoTotal.toFixed(2).replace('.', ',');
+
             } else {
                 campo.style.display = 'none';
-                document.getElementById('ValorTotal').textContent = 'R$ ' + valorTotalElement.toFixed(2).replace('.', ',');
-                input.value = '0';
+                input.value = '0,00';
+                document.getElementById('ValorTotal').textContent = valorTotalElement.toFixed(2).replace('.', ',');
             }
         }
 
@@ -559,8 +671,8 @@
             if (valor_saldo) {
                 valor_saldo = (parseInt(valor_saldo) / 100).toFixed(2); // Divide por 100 para ajustar os centavos
                 input.value = valor_saldo.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Formata com ponto de milhar e vírgula para centavos
-            
-            }else{
+
+            } else {
                 input.value = '0'
             }
             calcularDescontoSaldo();
@@ -591,13 +703,12 @@
             document.getElementById("novoEndereco").style.display = "none";
         }
 
-        function mostrarEnderecoLoja(){
+        function mostrarEnderecoLoja() {
             document.getElementById("enderecoParceiro").style.display = "block";
         }
-        
 
         document.querySelectorAll('input[name="entrega"]').forEach(radio => {
-            radio.addEventListener('change', function() {
+            radio.addEventListener('change', function () {
                 atualizarTotal(this.value === "entregar");
             });
         });
@@ -621,12 +732,10 @@
             } else {
                 freteElement.style.color = 'black';
             }
-
             // Atualizar o valor total
             let totalComFrete = totalBase + (cobrarFrete ? freteComTaxa : 0);
             document.getElementById('ValorTotal').innerText = 'R$ ' + totalComFrete.toFixed(2).replace('.', ',');
         }
-
         // Chamar a função para definir a cor inicial do frete
         atualizarTotal(true);
 
@@ -642,8 +751,7 @@
                 inputSaldo.focus(); // Foca no campo para correção
                 return false; // Impede o envio do formulário
             }
-                //return true; // Permite o envio do formulário
-            
+            //return true; // Permite o envio do formulário
 
             const form = document.querySelector('form');
             const enderecoSelecionado = document.querySelector('input[name="entrega"]:checked').value;
@@ -663,41 +771,36 @@
                 const numero = document.querySelector('input[name="numero"]').value;
                 const contato = document.querySelector('input[name="contato"]').value;
 
-                if (rua && bairro && numero && contato) {
-                    form.submit();
-                } else {
+                if (!rua || !bairro || !numero || !contato) {
                     alert('Por favor, preencha todos os campos do endereço.');
+                    return false;
                 }
-            } else {
-                form.submit();
             }
+
+            form.submit();
         }
 
-        document.querySelector('button[type="submit"]').addEventListener('click', function(event) {
+        document.querySelector('button[type="submit"]').addEventListener('click', function (event) {
             event.preventDefault();
             enviarFormulario();
-            
+
         });
 
         function formatarCelular(input) {
             let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
-            if (value.length > 11) {
-                value = value.substr(0, 11);
-            }
+            if (value.length > 11) value = value.substr(0, 11);
             if (value.length > 10) {
-                value = value.replace(/(\d{1})(\d{1})(\d{5})/, '($1$2) $3-');
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
             } else if (value.length > 6) {
-                value = value.replace(/(\d{1})(\d{1})(\d{4})/, '($1$2) $3-');
+                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
             } else if (value.length > 2) {
-                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
-            }else if (value.length > 2) {
-                value = value.replace(/(\d{1})(\d{1})/, '($1$2) ');
-            }else if (value.length = 1) {
-                value = value.replace(/(\d{1})/, '($1');
+                value = value.replace(/(\d{2})(\d{0,4})/, '($1) $2');
+            } else {
+                value = value.replace(/(\d{0,2})/, '($1');
             }
             input.value = value;
         }
     </script>
-
 </body>
+
 </html>

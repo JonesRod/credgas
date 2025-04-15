@@ -9,7 +9,7 @@
     }
 
     $id_session = $_SESSION['id'];
-    //var_dump($_POST);
+    var_dump($_POST);
     //echo 'crediario';
 
     // Verificação e sanitização dos dados recebidos
@@ -19,6 +19,7 @@
     $valor_frete = isset($_POST['valor_frete']) ? floatval(str_replace(',', '.', $_POST['valor_frete'])) : 0.0;
     $valor_total_sem_crediario = isset($_POST['valor_total_sem_crediario']) ? floatval(str_replace(',', '.', $_POST['valor_total_sem_crediario'])) : 0.0;
     $valor_total_crediario = isset($_POST['valor_total_crediario']) ? floatval(str_replace(',', '.', $_POST['valor_total_crediario'])) : 0.0;
+    $saldo_usado = isset($_POST['entrada_saldo']) ? floatval(str_replace(',', '.', $_POST['entrada_saldo'])) : 0.0;
     $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
     $entrega = isset($_POST['entrega']) ? $_POST['entrega'] : '';
     $rua = isset($_POST['rua']) ? $_POST['rua'] : '';
@@ -36,7 +37,8 @@
     $valor_total_crediario_formatado = number_format($valor_total_crediario, 2, ',', '.');
     $entrada_formatado = number_format($entrada, 2, ',', '.');
     $restante_formatado = number_format($restante, 2, ',', '.');
-
+    $taxa_crediario = isset($_POST['taxa_crediario']) ? floatval($_POST['taxa_crediario']) : 0.0;
+    
     $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session") or die($mysqli->error);
     $dados = $bd_cliente->fetch_assoc();
     $senha_compra = $dados['senha_login'];
@@ -169,6 +171,7 @@
         }
 
         .popup-content h3 {
+            text-align: center;
             margin-top: 0;
             color: #333;
         }
@@ -356,6 +359,7 @@
             <input type="text" id="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
             <input type="text" id="valor_total_sem_crediario" value="<?php echo $valor_total_sem_crediario; ?>" hidden>
             <input type="text" id="valor_total_crediario" value="<?php echo $valor_total_crediario; ?>" hidden>
+            <input type="text" id="taxa_crediario" value="<?php echo $taxa_crediario; ?>" hidden>
             <input type="text" id="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
             <input type="text" id="entrega" value="<?php echo $entrega; ?>" hidden>
             <input type="text" id="rua" value="<?php echo $rua; ?>" hidden>
@@ -369,6 +373,8 @@
             <input type="text" id="comentario" value="<?php echo $comentario; ?>" hidden>
             <input type="text" id="tipo_compra" value="<?php echo $tipo_compra; ?>" hidden>
             <input type="text" id="data_hora" name="data_hora" hidden>
+            <input type="text" id="maior_parcelas" name="maior_parcelas" value="<?php echo $maior_parcelas; ?>" hidden>
+            <input type="text" id="saldo_usado" name="saldo_usado" value="<?php echo $saldo_usado; ?>" hidden>
 
             <h1>Compra no Crediário</h1>
             <p>Valor da Compra: R$ <?php echo $valor_total_crediario_formatado; ?></p>
@@ -567,6 +573,7 @@
             </div>
 
             <div id="popup-senha" class="popup-content" style="display: none;">
+                <h3>Finalizar Compra</h3>
                 <p>Senha do Cliente: 
                     <input type="password" id="senha_cliente" name="senha_cliente" >
                     <span id="toggle_senha" style="cursor: pointer;">👁️</span>
@@ -1095,6 +1102,7 @@
                     valor_frete: valorFrete,
                     valor_total_sem_crediario: valorTotalSemCrediario,
                     valor_total_crediario: valorTotalCrediario,
+                    taxa_crediario: document.getElementById("taxa_crediario").value,
                     total_compra: totalCompra, // Enviar o valor total calculado
                     detalhes_produtos: document.getElementById("detalhes_produtos").value,
                     entrega: document.getElementById("entrega").value,
@@ -1103,6 +1111,7 @@
                     numero: document.getElementById("numero").value,
                     contato: document.getElementById("contato").value,
                     entrada: document.getElementById("entrada").value,
+                    saldo_usado: document.getElementById("saldo_usado").value,
 
                     num_cartao: document.getElementById("num_cartao_selecionado").value,
                     nome_cartao: document.getElementById("nome_cartao_selecionado").value,

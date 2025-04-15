@@ -31,10 +31,11 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $pedido = $result->fetch_assoc();
     $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor'];
+    $valor_a_vista = $pedido['valor_produtos'];
     $taxa_crediario = $pedido['taxa_crediario'];
     $frete = $pedido['valor_frete'];
-    $total = $valor_a_vista + $frete + $taxa_crediario;
+    $saldo_usado = $pedido['saldo_usado'];
+    $total = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
     $tipo_entrega = $pedido['tipo_entrega'];
     //echo $status_parceiro;
 } else {
@@ -332,10 +333,17 @@ function formatDateTimeJS($dateString) {
             }
         ?>
         <?php
-            if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
-                echo "<p id='taxa_crediario' class='valores'><strong>Taxa do Crediario:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+            if ($saldo_usado != 0) {
+                echo "<p id='saldo_usado' class='valores'><strong>Saldo Utilzado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
             } else {
-                echo "<p id='taxa_crediario' class='valores' style='display: none;'><strong></strong>Taxa do Crediario: Grátis</p>";
+                echo "<p id='saldo_usado' class='valores' style='display: none;'><strong></strong>saldo_usado: 0,00</p>";
+            }
+        ?>
+        <?php
+            if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
+                echo "<p id='taxa_crediario' class='valores'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+            } else {
+                echo "<p id='taxa_crediario' class='valores' style='display: none;'><strong></strong>Taxa: Grátis</p>";
             }
         ?>
         <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>

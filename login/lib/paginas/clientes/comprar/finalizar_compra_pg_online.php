@@ -30,7 +30,8 @@ try {
 
         $valor_frete = isset($data['valor_frete']) ? floatval($data['valor_frete']) : 0.0;
         $valor_total = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
-        $total_compra_sem_frete = $valor_total - $valor_frete;
+        $saldo_usado = isset($data['saldo_usado']) ? floatval($data['saldo_usado']) : 0.0;
+        $total_compra_sem_frete = $valor_total - $valor_frete + $saldo_usado;
         $taxa_crediario = isset($data['taxa_crediario']) ? floatval($data['taxa_crediario']) : 0.0;
         $momen_pagamento = isset($data['momen_pagamento']) ? $data['momen_pagamento'] : '';
         $tipo_pagamento = isset($data['tipo_pagamento']) ? $data['tipo_pagamento'] : '';
@@ -110,6 +111,7 @@ try {
             produtos,
             valor_frete,
             valor_produtos,
+            saldo_usado,
             taxa_crediario,
             formato_compra,
             entrada,
@@ -128,14 +130,14 @@ try {
             comentario,
             status_cliente,
             status_parceiro) 
-            VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        if (!$stmt) {
-            throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
-        }
+            if (!$stmt) {
+                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+            }
 
-        $stmt->bind_param(
-            "siissssssssisssisssssssii", // Tipos de dados: s = string, i = inteiro, d = double 
+            $stmt->bind_param(
+                "ssiissssssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
             $data_hora,
             $codigo_retirada,
             $id_cliente,        // i: id_cliente
@@ -143,6 +145,7 @@ try {
             $detalhes_produtos, // s: produtos
             $valor_frete,       // d: valor_frete
             $total_compra_sem_frete,
+            $saldo_usado,       // d: saldo_usado
             $taxa_crediario,       // d: valor
             $momen_pagamento,       // s: tipo_compra
             $entrada,           // d: entrada

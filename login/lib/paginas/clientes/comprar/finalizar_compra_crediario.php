@@ -43,7 +43,9 @@ try {
             $contato = isset($data['contato']) ? $data['contato'] : '';
             $entrada = isset($data['entrada']) ? floatval($data['entrada']) : 0.0;
             $restante = isset($data['restante']) ? floatval($data['restante']) : 0.0;
+            $saldo_usado = isset($data['saldo_usado']) ? floatval($data['saldo_usado']) : 0.0;
             $tipo_entrada_crediario = isset($data['tipo_entrada_crediario']) ? $data['tipo_entrada_crediario'] : '';
+
             if ($tipo_entrada_crediario === '1') {
                 $tipo_entrada_crediario = 'pix';
             } else if ($tipo_entrada_crediario === '2') {
@@ -51,6 +53,7 @@ try {
             } else {
                 $tipo_entrada_crediario = 'debito';
             }
+
             $tipo_cartao = $tipo_entrada_crediario;
             $bandeiras_aceitas = isset($data['bandeiras_aceitas']) ? $data['bandeiras_aceitas'] : '';
             $comentario = isset($data['comentario']) ? $data['comentario'] : '';
@@ -60,11 +63,12 @@ try {
             
             $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
             $total_compra = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
+            $taxa_crediario = isset($data['taxa_crediario']) ? floatval($data['taxa_crediario']) : 0.0;
             
-            //$total_compra_sem_frete = $total_compra - $valor_frete;
+            $total_compra_sem_frete = $total_compra - $valor_frete;
 
             if ($valor_total_crediario > 0) {
-                $taxa_crediario = $valor_total_crediario - $valor_total_sem_crediario;
+                $taxa_crediario = (($total_compra - $saldo_usado) * $taxa_crediario)/100;
             } else {
                 $taxa_crediario = 0.0;
             }
@@ -134,6 +138,7 @@ try {
                 produtos, 
                 valor_frete,
                 valor_produtos,
+                saldo_usado,
                 taxa_crediario,
                 formato_compra,
                 entrada,
@@ -152,21 +157,22 @@ try {
                 comentario,
                 status_cliente,
                 status_parceiro) 
-                VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             if (!$stmt) {
                 throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
             }
 
             $stmt->bind_param(
-                "ssiisssssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
+                "ssiissssssssisssssssssssii", // Tipos de dados: s = string, i = inteiro, d = double
                 $data_hora,
                 $codigo_retirada,         // s: data
                 $id_cliente,        // i: id_cliente
                 $id_parceiro,       // i: id_parceiro
                 $detalhes_produtos, // s: produtos
                 $valor_frete,       // d: valor_frete
-                $total_compra,
+                $total_compra_sem_frete, // d: valor_produtos
+                $saldo_usado,
                 $taxa_crediario,       // d: valor
                 $tipo_compra,       // s: tipo_compra
                 $entrada,           // d: entrada

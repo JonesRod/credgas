@@ -233,10 +233,11 @@ function formatDateTimeJS($dateString) {
     </div>
     <div class="cards-container">
         <?php while ($row = $result->fetch_assoc()): 
-            $valor = $row['valor'];
+            $valor = $row['valor_produtos'];
+            $saldo_usado = $row['saldo_usado'];
             $taxa_crediario = $row['taxa_crediario'];
             $frete = $row['valor_frete'];
-            $total = $valor + $taxa_crediario + $frete;
+            $total = $valor + $frete - $saldo_usado + $taxa_crediario;
 
             // Calculate end time for countdown
             $pedido_time = new DateTime($row['data']);
@@ -244,7 +245,8 @@ function formatDateTimeJS($dateString) {
             $end_time = $pedido_time->format('Y-m-d H:i:s');
             $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
             ?>
-            <div class="card <?php echo $status_class; ?>" onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor']); ?>')">
+            <div class="card <?php echo $status_class; ?>" 
+            onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
                 <?php
                     // Fetch partner details from the database
                     $id_parceiro = $row['id_parceiro'];
