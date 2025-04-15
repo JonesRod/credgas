@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
     $valor_frete = floatval($_POST['valor_frete']);
+
+    $entrada_saldo = isset($_POST['input_saldo']) ? $_POST['input_saldo'] : '';
+    $entrada_saldo = str_replace('.', '', $entrada_saldo); // Remove os pontos dos milhares
+    $entrada_saldo = str_replace(',', '.', $entrada_saldo); // Troca a vírgula decimal por ponto
+
+    $total = $total - $entrada_saldo;
     $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
 
     $entrega = $_POST['entrega'];
@@ -54,14 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Exibe os valores calculados
-   /* echo "<h3>Resumo dos Produtos:</h3>";
-    echo "<p><strong>Total de produtos vendidos no crediário:</strong> R$ " . number_format($total_vende_crediario, 2, ',', '.') . "</p>";
-    echo "<p><strong>Total de produtos que não são vendidos no crediário (entrada obrigatória):</strong> R$ " . number_format($total_nao_vende_crediario, 2, ',', '.') . "</p>";
-    echo "<p><strong>Maior quantidade de parcelas:</strong> $maior_parcelas</p>";
-    echo "<p><strong>Maior frete:</strong> R$ " . number_format($maior_frete, 2, ',', '.') . "</p>";
-    echo "<p><strong>O produto com o maior frete é vendido no crediário?</strong> " . ($produto_maior_frete_vende_crediario ? 'Sim' : 'Não') . "</p>";
-*/
     // Buscar os dados do cliente
     $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
     $stmt->bind_param("i", $id_cliente);
@@ -88,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }*/
 
     // Calcula o valor total a pagar
-   $valor_total_a_pagar = $total_nao_vende_crediario + $total_vende_crediario;
+   $valor_total_a_pagar = ($total_nao_vende_crediario - $entrada_saldo) + $total_vende_crediario;
     //echo "<h3>Valor total da compra: R$ " . number_format($valor_total_a_pagar, 2, ',', '.') . "</h3>";
 
     // Buscar se o parceiro aceita cartão de crédito
@@ -545,10 +543,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = false;
                 });
-
-                // Limpar o campo 
-                /*<span id="bandeiras_credito_entrega" style="display: none;">Cartões de Crédito aceitos: <?php echo $parceiro['cartao_credito']; ?></span>
-                <input type="hidden" value="<?php echo $parceiro['cartao_credito']; ?>" id="input_bandeiras_credito_crediario">*/
                 
                 document.getElementById('bandeiras_credito_entrega').style.display = 'none';
                 document.getElementById('input_bandeiras_credito_crediario').style.display = 'none';
@@ -653,12 +647,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             tipo_pagamento.name = 'tipo_pagamento';
             tipo_pagamento.value = document.getElementById('tipo_pagamento').value; // Envia a forma de pagamento selecionada
             form.appendChild(tipo_pagamento);
-
-            /*const bandeirasInput = document.createElement('input');
-            bandeirasInput.type = 'hidden';
-            bandeirasInput.name = 'bandeiras';
-            bandeirasInput.value = '<?php echo $admin_cartoes_credito; ?>'; // Envia as bandeiras aceitas
-            form.appendChild(bandeirasInput);*/
 
             const detalhesProdutosInput = document.createElement('input');
             detalhesProdutosInput.type = 'hidden';
@@ -831,11 +819,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const total_nao_vende_crediario = parseFloat('<?php echo $total_nao_vende_crediario; ?>') || 0;
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>') || 0;
+            
 
             let total;
             if (maior_frete_vende_crediario) {
                 total = total_vende_crediario + maior_frete;
-                //console.log('Total com frete:', total);
+                console.log('Total com frete:', total);
             } else {
                 total = total_nao_vende_crediario + maior_frete;
             }
@@ -1075,7 +1064,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function atualizarRestante() {
-            const total = parseFloat('<?php echo $total; ?>');
+            const total = parseFloat('<?php echo $valor_total_a_pagar; ?>');
             const taxaCrediario = parseFloat('<?php echo $admin_taxas['taxa_crediario']; ?>') || 0;
             const valorTotal = total + (total * taxaCrediario) / 100;
 
@@ -1086,6 +1075,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const restante = valorTotal - entrada;
 
             restanteInput.value = restante.toFixed(2).replace('.', ',');
+            console.log('oi');
         }
 
         function verificarEntradaMinima() {

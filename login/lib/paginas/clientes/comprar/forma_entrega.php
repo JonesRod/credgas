@@ -63,6 +63,8 @@
     $numero = !empty($cliente['numero']) ? $cliente['numero'] : '';
     $bairro = !empty($cliente['bairro']) ? $cliente['bairro'] : '';
     $celular1 = !empty($cliente['celular1']) ? $cliente['celular1'] : '';
+    
+    $saldo = !empty($cliente['saldo']) ? $cliente['saldo'] : 0;
 
     //var_dump($produtos);
 ?>
@@ -229,6 +231,9 @@
         .voltar:hover {
             text-decoration: underline;
         }
+        #div_saldo p{
+            text-align: center
+        }
 
         @media screen and (max-width: 768px) {
             table {
@@ -328,7 +333,6 @@
 </head>
 <body>
     <h2>Minha compra</h2>
-
     <?php if (!empty($produtos)): ?>
         <form action="pagamento.php" method="post">        
             <table border="1">
@@ -404,6 +408,14 @@
                 <div class="valores">
                     <h3>Total: <span id="Total"><?php echo 'R$ ' . number_format($totalGeral, 2, ',', '.'); ?></span></h3>
                     <h3>Frete: <span id="frete"><?php echo ($maiorFrete > 0) ? 'R$ ' . number_format($maiorFrete, 2, ',', '.') : 'Entrega Grátis'; ?></span></h3>
+                    <?php if (isset($saldo) && $saldo > 0) : ?>
+                        <div id="div_saldo" class="valores">
+                            <h3>Saldo disponível: <span id="saldo"><?php echo 'R$ ' . number_format($saldo, 2, ',', '.'); ?></span></h3>
+                            <p><input type="checkbox" name="checkbox_saldo" id="checkbox_saldo" onchange="toggleCampoSaldo()"> Usar Saldo</p>
+                            <p id="p_saldo" style="display: none;">Digite o valor que você deseja usar: R$ <input type="text" oninput="formatarSaldo(this)" name="input_saldo" id="input_saldo" value="<?php echo number_format($saldo, 2, ',', '.'); ?>"></p>
+                        </div>
+                    <?php endif;?>
+                    
                     <h3 id="taxaCred" style="display: none; margin-top: 10px;">Taxa Crediário: R$  
                         <span id="taxaCrediario">
                             <?php
@@ -412,7 +424,7 @@
                             ?>
                         </span>
                     </h3>
-                    <h3>Valor Total: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
+                    <h3>Valor Total á pagar: <span id="ValorTotal"><?php echo 'R$ ' . number_format($totalComFrete, 2, ',', '.'); ?></span></h3>
                 </div>  
 
                 <?php if (!empty($endereco_cadastrado)): ?>
@@ -492,7 +504,6 @@
             <br>
             <a href="meu_carrinho.php?id_cliente=<?php echo $id_cliente; ?>" class="voltar">Voltar</a>
             <button type="submit">Continua</button>
-            <button id="btn_pix_online" type="button" style="display: none;" onclick="enviarDadosPix()">Pagar com PIX</button>
         </form>
 
     <?php else: ?>
@@ -501,10 +512,59 @@
     <?php endif; ?>
 
     <script>
-
         let maiorFrete = parseFloat("<?php echo $maiorFrete; ?>");
         let totalGeral = parseFloat("<?php echo $totalGeral; ?>");
         let enderecoCadastrado = "<?php echo $endereco_cadastrado ?? ''; ?>";
+
+        function calcularDescontoSaldo(){
+            const inputSaldo = document.getElementById('input_saldo');
+            const checkboxSaldo = document.getElementById('checkbox_saldo');
+            const valorTotalElement = <?php echo $totalComFrete;?>
+
+            if (checkboxSaldo.checked) {
+                const valorSaldo = parseFloat(inputSaldo.value.replace(/\./g, '').replace(',', '.')) || 0;
+                if (valorSaldo > totalGeral) {
+                    alert('O valor do saldo não pode ser maior que o total da compra.');
+                    inputSaldo.value = '0,00';
+                    document.getElementById('ValorTotal').textContent = 'R$ ' + valorTotalElement.toFixed(2).replace('.', ',');
+                    return;
+                }
+                const novoTotal = totalGeral - valorSaldo + maiorFrete;
+                document.getElementById('ValorTotal').textContent = 'R$ ' + novoTotal.toFixed(2).replace('.', ',');
+            } else {
+                document.getElementById('ValorTotal').textContent = 'R$ ' + totalGeral.toFixed(2).replace('.', ',');
+            }
+
+        }
+
+        function toggleCampoSaldo() {
+            const checkbox = document.getElementById('checkbox_saldo');
+            const campo = document.getElementById('p_saldo');
+            const input = document.getElementById('input_saldo');
+            const valorTotalElement = <?php echo $totalComFrete;?>
+
+            if (checkbox.checked) {
+                campo.style.display = 'block';
+                input.value = '<?php echo number_format($saldo, 2, ',', '.'); ?>';
+            
+            } else {
+                campo.style.display = 'none';
+                document.getElementById('ValorTotal').textContent = 'R$ ' + valorTotalElement.toFixed(2).replace('.', ',');
+                input.value = '0';
+            }
+        }
+
+        function formatarSaldo(input) {
+            let valor_saldo = input.value.replace(/[^\d]/g, ''); // Remove tudo que não for número
+            if (valor_saldo) {
+                valor_saldo = (parseInt(valor_saldo) / 100).toFixed(2); // Divide por 100 para ajustar os centavos
+                input.value = valor_saldo.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Formata com ponto de milhar e vírgula para centavos
+            
+            }else{
+                input.value = '0'
+            }
+            calcularDescontoSaldo();
+        }
 
         function verificarEndereco() {
             if (enderecoCadastrado.trim() !== "") {
@@ -571,6 +631,20 @@
         atualizarTotal(true);
 
         function enviarFormulario() {
+            const inputSaldo = document.getElementById('input_saldo');
+            const valorSaldo = parseFloat(inputSaldo.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const totalComFrete = parseFloat("<?php echo $totalComFrete; ?>");
+            const checkbox = document.getElementById('checkbox_saldo');
+
+            if (checkbox.checked && valorSaldo <= 0 || valorSaldo > totalComFrete) {
+                alert('O valor do saldo deve ser maior que 0 e menor ou igual ao valor total da compra.');
+                inputSaldo.value = '0,00';
+                inputSaldo.focus(); // Foca no campo para correção
+                return false; // Impede o envio do formulário
+            }
+                //return true; // Permite o envio do formulário
+            
+
             const form = document.querySelector('form');
             const enderecoSelecionado = document.querySelector('input[name="entrega"]:checked').value;
             const novoEndereco = document.getElementById("novoEndereco");
@@ -602,21 +676,8 @@
         document.querySelector('button[type="submit"]').addEventListener('click', function(event) {
             event.preventDefault();
             enviarFormulario();
+            
         });
-
-        function enviarDadosPix() {
-            const form = document.querySelector('form');
-
-            // Coletar detalhes dos produtos
-            const produtos = <?php echo json_encode($produtos); ?>;
-            const detalhesProdutos = produtos.map(produto => {
-                return `${produto.nome_produto}/${produto.qt}/${produto.valor_produto}/${produto.qt * produto.valor_produto}`;
-            }).join('|');
-
-            document.getElementById('detalhes_produtos').value = detalhesProdutos;
-
-            form.submit();
-        }
 
         function formatarCelular(input) {
             let value = input.value.replace(/\D/g, ''); // Remove todos os caracteres não numéricos
@@ -636,7 +697,6 @@
             }
             input.value = value;
         }
-
     </script>
 
 </body>

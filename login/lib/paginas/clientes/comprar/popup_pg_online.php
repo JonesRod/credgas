@@ -1358,7 +1358,7 @@
         
         function abrirPopupRestante() {
             const popupRestante = document.getElementById("popup-restante");
-            const pg_restante = document.getElementById('restante').value;
+            const pg_restante = document.getElementById('restante');
 
             document.getElementById('pg_restante').textContent = pg_restante.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
