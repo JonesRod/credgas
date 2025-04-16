@@ -9,9 +9,6 @@ if (!isset($_SESSION['id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    //var_dump($_POST);
-
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
@@ -20,14 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $entrada_saldo = isset($_POST['input_saldo']) ? $_POST['input_saldo'] : '';
     $entrada_saldo = str_replace('.', '', $entrada_saldo); // Remove os pontos dos milhares
     $entrada_saldo = str_replace(',', '.', $entrada_saldo); // Troca a vírgula decimal por ponto
-    $total = $total - $entrada_saldo; // Subtrai o valor do saldo do total
-    $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
+    $total -= $entrada_saldo; // Subtrai o valor do saldo do total
 
+    $detalhes_produtos = isset($_POST['detalhes_produtos']) ? $_POST['detalhes_produtos'] : '';
     $entrega = $_POST['entrega'];
     $rua = $_POST['rua'];
     $bairro = $_POST['bairro'];
     $numero = $_POST['numero'];
-    $contato = $_POST['contato']; // Adicionar esta linha
+    $contato = $_POST['contato'];
 
     $produtos = isset($_POST['produtos']) ? json_decode($_POST['produtos'], true) : [];
 
@@ -45,17 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $total_nao_vende_crediario += $produto['valor_produto'] * $produto['qt'];
         }
 
-        // Verifica a maior quantidade de parcelas
         if ($produto['qt_parcelas'] > $maior_parcelas) {
             $maior_parcelas = $produto['qt_parcelas'];
         }
 
-        // Verifica o maior frete
         if ($produto['frete'] > $maior_frete) {
             $maior_frete = $produto['frete'];
             $produto_maior_frete_vende_crediario = $produto['vende_crediario'] == 1;
-            /*echo "Frete: R$ " . number_format($produto['frete'], 2, ',', '.') . "<br>";
-            echo $produto_maior_frete_vende_crediario;*/
         }
     }
 
@@ -72,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Calcula o valor total a pagar
     $valor_total_a_pagar = $total_nao_vende_crediario + $total_vende_crediario;
-    //echo "<h3>Valor total da compra: R$ " . number_format($valor_total_a_pagar, 2, ',', '.') . "</h3>";
 
     // Buscar se o parceiro aceita cartão de crédito
     $stmt = $mysqli->prepare("SELECT * FROM meus_parceiros WHERE id = ?");
@@ -82,10 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $parceiro = $result->fetch_assoc();
 
     $cartao_debito_ativo = !empty($parceiro['cartao_debito']);
-    $cartao_credito_ativo = !empty($parceiro['cartao_credito']); // Se estiver vazio, será falso
+    $cartao_credito_ativo = !empty($parceiro['cartao_credito']);
     $outros = !empty($parceiro['outras_formas']);
 
-    // Buscar os cartões de crédito e débito aceitos online com a última data de alteração onde formas_pagamento não está vazio
+    // Buscar os cartões de crédito e débito aceitos online
     $stmt = $mysqli->prepare("
         SELECT cartoes_debito, cartoes_credito, data_alteracao 
         FROM config_admin 
@@ -110,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $stmt->get_result();
     $admin_taxas = $result->fetch_assoc();
 
-    // Verificar se $admin_taxas possui resultados antes de acessar 'taxa_crediario'
     $taxa_crediario = isset($admin_taxas['taxa_crediario']) ? floatval($admin_taxas['taxa_crediario']) : 0;
 }
 ?>
@@ -465,9 +456,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div id="bandeiras_aceitas" style="margin-top: 10px;">
                         <p id="bandeiras_credito" style="display: none;">Cartões de Crédito aceitos:
-                            <?php echo $admin_cartoes_credito; ?></p>
+                            <?php echo $admin_cartoes_credito; ?>
+                        </p>
                         <p id="bandeiras_debito" style="display: none;">Cartões de Débito aceitos:
-                            <?php echo $admin_cartoes_debito; ?></p>
+                            <?php echo $admin_cartoes_debito; ?>
+                        </p>
                     </div>
 
                     <button id="btn_pix_online" class="bt_pg_online" type="button" style="display: none;"
@@ -559,9 +552,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </select>
                     <div id="bandeiras_crediario" style="margin-top: 10px;">
                         <p id="bandeiras_credito_crediario" style="display: none;">Cartões de Crédito aceitos:
-                            <?php echo $admin_cartoes_credito; ?></p>
+                            <?php echo $admin_cartoes_credito; ?>
+                        </p>
                         <p id="bandeiras_debito_crediario" style="display: none;">Cartões de Débito aceitos:
-                            <?php echo $admin_cartoes_debito; ?></p>
+                            <?php echo $admin_cartoes_debito; ?>
+                        </p>
                     </div>
                     <input type="hidden" id="valor_total_crediario">
                     <input type="hidden" name="tipo_entrada_crediario" id="tipo_entrada_crediario">

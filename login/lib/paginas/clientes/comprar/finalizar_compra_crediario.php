@@ -19,6 +19,10 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
 
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Erro ao decodificar JSON: ' . json_last_error_msg());
+        }
+
         if (isset($data['senha_cliente']) && isset($data['senha_compra'])) {
             // Buscar a senha do cliente no banco
             $bd_cliente = $mysqli->query("SELECT senha_login FROM meus_clientes WHERE id = $id_session");
@@ -27,6 +31,18 @@ try {
             }
             $dados = $bd_cliente->fetch_assoc();
             $senha_compra = $dados['senha_login'];
+
+            // Verificar se a senha foi preenchida
+            if (empty($data['senha_cliente'])) {
+                echo json_encode(['success' => false, 'message' => 'Senha não informada.']);
+                exit;
+            }
+
+            // Verifica se a senha está correta usando password_verify
+            if (!password_verify($data['senha_cliente'], $senha_compra)) {
+                echo json_encode(['success' => false, 'message' => 'Senha incorreta.']);
+                exit;
+            }
 
             // Verificar e sanitizar os dados recebidos
             $tipo_compra = 'crediario';
@@ -60,19 +76,19 @@ try {
             $parcelas = isset($data['parcelas']) ? intval($data['parcelas']) : 1;
             $valor_parcela = isset($data['valor_parcela']) ? floatval($data['valor_parcela']) : 0.0;
             $senha_cliente = $data['senha_cliente'];
-            
+
             $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
             $total_compra = isset($data['total_compra']) ? floatval($data['total_compra']) : 0.0;
             $taxa_crediario = isset($data['taxa_crediario']) ? floatval($data['taxa_crediario']) : 0.0;
-            
+
             $total_compra_sem_frete = $total_compra - $valor_frete;
 
             if ($valor_total_crediario > 0) {
-                $taxa_crediario = (($total_compra - $saldo_usado) * $taxa_crediario)/100;
+                $taxa_crediario = (($total_compra - $saldo_usado) * $taxa_crediario) / 100;
             } else {
                 $taxa_crediario = 0.0;
             }
-            
+
             // Verifique se o valor foi calculado corretamente
             if ($total_compra === null || $total_compra === 0) {
                 echo json_encode(['success' => false, 'message' => 'Erro: O valor total da compra não foi calculado corretamente.']);
@@ -89,75 +105,37 @@ try {
 
             $status_cliente = 0; // Status do cliente
             $status_parceiro = 0; // Status do parceiro
-            
-            // Verifica se a senha foi preenchida
-            if (empty($senha_cliente)) {
-                echo json_encode(['success' => false, 'message' => 'Senha não informada.']);
-                exit;
-            }
 
-            // Verifica se a senha está correta usando password_verify
-            if (!password_verify($senha_cliente, $senha_compra)) {
-                echo json_encode(['success' => false, 'message' => 'Senha incorreta.']);
-                exit;
-            }
-            //Gerador do código de retirada de 6 digitos
+            // Gerador do código de retirada de 6 dígitos
             $codigo_retirada = mt_rand(100000, 999999);
-            // Verifica se o código de retirada já existe
-            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
-            if ($stmt) {
+            $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? AND id_cliente = ?");
+            if (!$stmt) {
+                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+            }
+            $stmt->bind_param("si", $codigo_retirada, $id_cliente);
+            $stmt->execute();
+            $stmt->bind_result($count);
+            $stmt->fetch();
+            $stmt->close();
+
+            // Gera um novo código se já existir
+            while ($count > 0) {
+                $codigo_retirada = mt_rand(100000, 999999);
+                $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? AND id_cliente = ?");
+                if (!$stmt) {
+                    throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
+                }
                 $stmt->bind_param("si", $codigo_retirada, $id_cliente);
                 $stmt->execute();
                 $stmt->bind_result($count);
                 $stmt->fetch();
                 $stmt->close();
-            } else {
-                throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
-            }
-            // Se o código já existe, gere um novo
-            while ($count > 0) {
-                $codigo_retirada = mt_rand(100000, 999999);
-                $stmt = $mysqli->prepare("SELECT COUNT(*) FROM pedidos WHERE codigo_retirada = ? && id_cliente = ?");
-                if ($stmt) {
-                    $stmt->bind_param("si", $codigo_retirada, $id_cliente);
-                    $stmt->execute();
-                    $stmt->bind_result($count);
-                    $stmt->fetch();
-                    $stmt->close();
-                } else {
-                    throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
-                }
             }
 
-            // Processar a compra (exemplo de inserção no banco de dados)
+            // Processar a compra
             $stmt = $mysqli->prepare("INSERT INTO pedidos (
-                data,
-                codigo_retirada,
-                id_cliente, 
-                id_parceiro, 
-                produtos, 
-                valor_frete,
-                valor_produtos,
-                saldo_usado,
-                taxa_crediario,
-                formato_compra,
-                entrada,
-                forma_pg_entrada,
-                qt_parcela_entrada,
-                valor_parcela_entrada,
-                valor_restante,
-                forma_pg_restante,
-                qt_parcelas,
-                valor_parcela,
-                tipo_entrega,
-                endereco_entrega,
-                num_entrega,
-                bairro_entrega,
-                contato_recebedor,
-                comentario,
-                status_cliente,
-                status_parceiro) 
-                VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                data, codigo_retirada, id_cliente, id_parceiro, produtos, valor_frete, valor_produtos, saldo_usado, taxa_crediario, formato_compra, entrada, forma_pg_entrada, qt_parcela_entrada, valor_parcela_entrada, valor_restante, forma_pg_restante, qt_parcelas, valor_parcela, tipo_entrega, endereco_entrega, num_entrega, bairro_entrega, contato_recebedor, comentario, status_cliente, status_parceiro
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             if (!$stmt) {
                 throw new Exception('Erro ao preparar a consulta: ' . $mysqli->error);
@@ -194,7 +172,7 @@ try {
             );
 
             if ($stmt->execute()) {
-                $num_pedido = $stmt->insert_id; // Obter o ID do pedido inserido
+                $num_pedido = $stmt->insert_id;
                 $stmt->close();
 
                 // Buscar cartões do cliente usando prepared statements
@@ -225,7 +203,7 @@ try {
                 if ($salvar_cartao == 1) {
                     // Criptografar o código de segurança
                     $cod_seguranca_criptografado = password_hash($cod_seguranca, PASSWORD_DEFAULT);
-        
+
                     // Verificar se o cartão já está cadastrado
                     $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ? AND tipo = ?");
 
@@ -233,13 +211,13 @@ try {
                         $stmt->bind_param("iss", $id_cliente, $num_cartao, $tipo_cartao);
                         $stmt->execute();
                         $stmt->store_result();
-        
+
                         if ($stmt->num_rows > 0) {
                             $stmt->close();
                             //$mensagem_erro = "Este cartão já está cadastrado.";
                         } else {
                             $stmt->close();
-        
+
                             // Verificar se o limite de cartões foi atingido
                             if (($tipo_cartao === 'credito' && $cartoes_credito >= 5) || ($tipo_cartao === 'debito' && $cartoes_debito >= 5)) {
                                 //$mensagem_erro = "Você atingiu o limite de 5 cartões de $tipo_cartao.";
@@ -260,16 +238,15 @@ try {
                     }
                 }
 
-                // Salvar notificação na tabela contador_notificacoes_cliente
+                // Salvar notificação
                 $msg = "Pedido #$num_pedido em Análise.";
                 $stmt_notificacao = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, 'pedido', 1)");
-                if ($stmt_notificacao) {
-                    $stmt_notificacao->bind_param("sis", $data_hora, $id_cliente, $msg);
-                    $stmt_notificacao->execute();
-                    $stmt_notificacao->close();
-                } else {
+                if (!$stmt_notificacao) {
                     throw new Exception("Erro ao salvar a notificação: " . $mysqli->error);
                 }
+                $stmt_notificacao->bind_param("sis", $data_hora, $id_cliente, $msg);
+                $stmt_notificacao->execute();
+                $stmt_notificacao->close();
 
                 // Excluir o pedido do carrinho
                 $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");

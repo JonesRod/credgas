@@ -106,6 +106,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <title>Formas de pagamento</title>
     <style>
         /* Estilos gerais */
@@ -536,6 +537,14 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
             color: #dc3545;
             /* Vermelho */
         }
+
+        .trash-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .trash-icon:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
     </style>
 </head>
 
@@ -545,16 +554,13 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
     <div class="form-container">
 
         <form action="segunda_pg_online.php" method="POST">
-            <input type="text" id="momen_pagamento" name="momen_pagamento" value="<?php echo $momen_pagamento; ?>"
-                hidden>
+            <input type="text" id="momen_pagamento" name="momen_pagamento" value="<?php echo $momen_pagamento; ?>" hidden>
             <input type="text" id="valor_total" name="valor_total" value="<?php echo $valor_total; ?>" hidden>
-            <input type="text" id="tipo_pagamento_principal" name="tipo_pagamento_principal"
-                value="<?php echo $tipo_pagamento; ?>" hidden>
+            <input type="text" id="tipo_pagamento_principal" name="tipo_pagamento_principal" value="<?php echo $tipo_pagamento; ?>" hidden>
             <input type="text" id="id_cliente" name="id_cliente" value="<?php echo $id_cliente; ?>" hidden>
             <input type="text" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>" hidden>
             <input type="text" id="valor_frete" name="valor_frete" value="<?php echo $valor_frete; ?>" hidden>
-            <input type="text" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>"
-                hidden>
+            <input type="text" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>" hidden>
             <input type="text" id="entrega" name="entrega" value="<?php echo $entrega; ?>" hidden>
             <input type="text" id="rua" name="rua" value="<?php echo $rua; ?>" hidden>
             <input type="text" id="bairro" name="bairro" value="<?php echo $bairro; ?>" hidden>
@@ -562,8 +568,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
             <input type="text" id="contato" name="contato" value="<?php echo $contato; ?>" hidden>
             <input type="text" id="entrada" name="entrada" value="<?php echo $entrada; ?>" hidden>
             <input type="text" id="saldo_usado" name="saldo_usado" value="<?php echo $saldo_usado; ?>" hidden>
-            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>"
-                hidden>
+            <input type="text" id="bandeiras_aceitas" name="bandeiras_aceitas" value="<?php echo $bandeiras_aceitas; ?>" hidden>
             <input type="text" id="comentario" name="comentario" value="<?php echo $comentario; ?>" hidden>
             <input type="text" id="data_hora" name="data_hora" hidden>
 
@@ -641,8 +646,10 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
                                         </td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
                                         <td>
-                                            <button type="button"
-                                                onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button>
+                                            <button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)"
+                                                style="background: none; border: none; cursor: pointer;">
+                                                <i class="fas fa-trash-alt trash-icon" style="color: red;"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -708,8 +715,10 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
                                         </td>
                                         <td>**** **** **** <?php echo substr($cartao['num_cartao'], -4); ?></td>
                                         <td>
-                                            <button type="button"
-                                                onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)">Excluir</button>
+                                            <button type="button" onclick="confirmarExclusaoCartao(<?php echo $cartao['id']; ?>)"
+                                                style="background: none; border: none; cursor: pointer;">
+                                                <i class="fas fa-trash-alt trash-icon" style="color: red;"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -803,10 +812,8 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
                 <input type="hidden" id="validade_selecionado" name="validade_selecionado" readonly>
                 <input type="hidden" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
 
-                <input type="hidden" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado"
-                    readonly>
-                <input type="hidden" id="parcelas_cartaoCred_entrada_selecionado"
-                    name="parcelas_cartaoCred_entrada_selecionado" readonly>
+                <input type="hidden" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado"readonly>
+                <input type="hidden" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
                 <input type="hidden" id="salvar_cartao" name="salvar_cartao" readonly>
                 <input type="hidden" id="restante" name="restante" readonly>
             </div>
@@ -1208,7 +1215,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
     }
 
     function voltarParaEntrada() {
-        const tipo_pagamento = <?php echo $tipo_pagamento; ?>;
+        const tipo_pagamento = '<?php echo $tipo_pagamento; ?>';
         const popupRestante = document.getElementById("popup-restante");
         const popup_background = document.getElementById('popup-background');
         const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
@@ -1570,13 +1577,22 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('valor_parcelas_cartaoCred_entrada_novo').textContent = valorParcelaFormatado;
         document.getElementById('restante_novo').textContent = (valorTotalCompra - valorTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('restante').value = (valorTotalCompra - valorTotal).toFixed(2); // Atualiza o valor da parcela
     }
 
     function abrirPopupRestante() {
         const popupRestante = document.getElementById("popup-restante");
         const pg_restante = document.getElementById('restante').value;
 
-        document.getElementById('pg_restante').textContent = pg_restante.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        // Converte para número, depois para string formatada com 2 casas decimais
+        const valorFormatado = parseFloat(pg_restante)
+        .toFixed(2) // garante 2 casas: "1234.56"
+        .replace('.', ',') // troca ponto por vírgula: "1234,56"
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // adiciona separadores: "1.234,56"
+
+        document.getElementById('pg_restante').textContent = valorFormatado;
+
+
         document.getElementById('popup_novo_cartao').style.zIndex = "999"; // Garantir que o popup fique abaixo do background
         document.getElementById('popup-background').style.display = "block";
         document.getElementById('popup-background').style.zIndex = "1000"; // Garantir que o background fique abaixo dos popups

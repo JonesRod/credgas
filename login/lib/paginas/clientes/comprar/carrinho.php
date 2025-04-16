@@ -4,9 +4,9 @@ include('../../../conexao.php');
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_cliente = $_POST['id_cliente'] ?? '';
-    $id_produto = $_POST['id_produto_carrinho'] ?? '';
-    $qt = intval($_POST['quantidade'] ?? '1');
+    $id_cliente = $_POST['id_cliente'] ?? ''; // O formulário deve ter um campo com name="id_cliente" ou id="id_cliente"
+    $id_produto = $_POST['id_produto_carrinho'] ?? ''; // O formulário deve ter um campo com name="id_produto_carrinho" ou id="id_produto_carrinho"
+    $qt = intval($_POST['quantidade'] ?? '1'); // O formulário deve ter um campo com name="quantidade" ou id="quantidade"
 
     if (empty($id_cliente) || empty($id_produto) || $qt < 1) {
         echo json_encode(["status" => "error", "message" => "Dados inválidos!"]);
