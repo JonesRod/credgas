@@ -49,7 +49,8 @@ $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-function formatDateTimeJS($dateString) {
+function formatDateTimeJS($dateString)
+{
     if (empty($dateString)) {
         return "Data não disponível";
     }
@@ -64,6 +65,7 @@ function formatDateTimeJS($dateString) {
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Meus Pedidos</title>
@@ -75,6 +77,7 @@ function formatDateTimeJS($dateString) {
             gap: 10px;
             justify-content: center;
         }
+
         .card {
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -83,47 +86,68 @@ function formatDateTimeJS($dateString) {
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             cursor: pointer;
         }
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
         .card.status-0 {
-            background-color: #ffcc80; /* Laranja */
+            background-color: #ffcc80;
+            /* Laranja */
         }
+
         .card.status-0:hover {
-            background-color: #ffb74d; /* Laranja mais escuro */
+            background-color: #ffb74d;
+            /* Laranja mais escuro */
         }
+
         .card.status-1 {
-            background-color: #c8e6c9; /* Verde */
+            background-color: #c8e6c9;
+            /* Verde */
         }
+
         .card.status-1:hover {
-            background-color: #a5d6a7; /* Verde mais escuro */
+            background-color: #a5d6a7;
+            /* Verde mais escuro */
         }
+
         .card.status-2 {
-            background-color: #ffcdd2; /* Vermelho */
+            background-color: #ffcdd2;
+            /* Vermelho */
         }
+
         .card.status-2:hover {
-            background-color: #ef9a9a; /* Vermelho mais escuro */
+            background-color: #ef9a9a;
+            /* Vermelho mais escuro */
         }
+
         .card.status-3 {
-            background-color: #ffcdd2; /* Vermelho */
+            background-color: #ffcdd2;
+            /* Vermelho */
         }
+
         .card.status-3:hover {
-            background-color: #ef9a9a; /* Vermelho mais escuro */
+            background-color: #ef9a9a;
+            /* Vermelho mais escuro */
         }
+
         .card h2 {
             color: rgb(13, 69, 147);
         }
+
         .card .valor {
             font-weight: bold;
             color: rgb(13, 69, 147);
         }
+
         .card img {
             width: 50px;
             height: 50px;
             border-radius: 50%;
             vertical-align: middle;
         }
+
         .btn-voltar {
             display: inline-block;
             padding: 10px 20px;
@@ -134,15 +158,18 @@ function formatDateTimeJS($dateString) {
             border-radius: 5px;
             transition: background-color 0.3s ease;
         }
+
         .btn-voltar:hover {
             background-color: #0056b3;
         }
+
         .title {
             text-align: center;
             font-size: 2em;
             margin-bottom: 20px;
             color: #333;
         }
+
         .filters {
             margin-bottom: 20px;
             text-align: center;
@@ -151,13 +178,16 @@ function formatDateTimeJS($dateString) {
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .filters input, .filters select {
+
+        .filters input,
+        .filters select {
             padding: 10px;
             margin: 5px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         .filters button {
             padding: 10px 20px;
             font-size: 16px;
@@ -169,6 +199,7 @@ function formatDateTimeJS($dateString) {
             margin-bottom: 5px;
             transition: background-color 0.3s ease;
         }
+
         .filters button:hover {
             background-color: #0056b3;
         }
@@ -178,13 +209,22 @@ function formatDateTimeJS($dateString) {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 10px; /* Espaçamento entre os elementos */
+                gap: 10px;
+                /* Espaçamento entre os elementos */
             }
-            .filters input, .filters select, .filters button, .btn-voltar {
-                width: 100%; /* Ocupa toda a largura disponível */
-                max-width: 600px; /* Limita a largura máxima */
-                box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+
+            .filters input,
+            .filters select,
+            .filters button,
+            .btn-voltar {
+                width: 100%;
+                /* Ocupa toda a largura disponível */
+                max-width: 600px;
+                /* Limita a largura máxima */
+                box-sizing: border-box;
+                /* Inclui padding e borda no tamanho total */
             }
+
             .filters form {
                 width: 100%;
                 display: flex;
@@ -192,18 +232,28 @@ function formatDateTimeJS($dateString) {
                 align-items: center;
             }
         }
+
         @media (max-width: 380px) {
             .filters {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 10px; /* Espaçamento entre os elementos */
+                gap: 10px;
+                /* Espaçamento entre os elementos */
             }
-            .filters input, .filters select, .filters button, .btn-voltar {
-                width: 100%; /* Ocupa toda a largura disponível */
-                max-width: 300px; /* Limita a largura máxima */
-                box-sizing: border-box; /* Inclui padding e borda no tamanho total */
+
+            .filters input,
+            .filters select,
+            .filters button,
+            .btn-voltar {
+                width: 100%;
+                /* Ocupa toda a largura disponível */
+                max-width: 300px;
+                /* Limita a largura máxima */
+                box-sizing: border-box;
+                /* Inclui padding e borda no tamanho total */
             }
+
             .filters form {
                 width: 100%;
                 display: flex;
@@ -212,7 +262,17 @@ function formatDateTimeJS($dateString) {
             }
         }
     </style>
+
+    <script>
+        // Função para recarregar a página a cada 5 minutos
+        function refreshPage() {
+            setInterval(function () {
+                location.reload(); // Recarrega a página
+            }, 300000); // 300000 ms = 3 minutos
+        }
+    </script>
 </head>
+
 <body onload="refreshPage()">
     <h1 class="title">Meus Pedidos</h1>
     <div class="filters">
@@ -221,18 +281,23 @@ function formatDateTimeJS($dateString) {
             <input type="date" name="data" value="<?php echo htmlspecialchars($data); ?>">
             <select name="status">
                 <option value="">Todos os Status</option>
-                <option value="0" <?php if ($status === '0') echo 'selected'; ?>>Aguardando confirmação</option>
-                <option value="1" <?php if ($status === '1') echo 'selected'; ?>>Pedido confirmado</option>
-                <option value="2" <?php if ($status === '2') echo 'selected'; ?>>Pedido cancelado</option>
-                <option value="3" <?php if ($status === '3') echo 'selected'; ?>>Pedido recusado</option>
+                <option value="0" <?php if ($status === '0')
+                    echo 'selected'; ?>>Aguardando confirmação</option>
+                <option value="1" <?php if ($status === '1')
+                    echo 'selected'; ?>>Pedido confirmado</option>
+                <option value="2" <?php if ($status === '2')
+                    echo 'selected'; ?>>Pedido cancelado</option>
+                <option value="3" <?php if ($status === '3')
+                    echo 'selected'; ?>>Pedido recusado</option>
             </select>
-            <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?php echo htmlspecialchars($num_pedido); ?>">
+            <input type="text" name="num_pedido" placeholder="Número do Pedido"
+                value="<?php echo htmlspecialchars($num_pedido); ?>">
             <button type="submit">Filtrar</button>
             <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
         </form>
     </div>
     <div class="cards-container">
-        <?php while ($row = $result->fetch_assoc()): 
+        <?php while ($row = $result->fetch_assoc()):
             $valor = $row['valor_produtos'];
             $saldo_usado = $row['saldo_usado'];
             $taxa_crediario = $row['taxa_crediario'];
@@ -245,49 +310,53 @@ function formatDateTimeJS($dateString) {
             $end_time = $pedido_time->format('Y-m-d H:i:s');
             $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
             ?>
-            <div class="card <?php echo $status_class; ?>" 
-            onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
+            <div class="card <?php echo $status_class; ?>"
+                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
                 <?php
-                    // Fetch partner details from the database
-                    $id_parceiro = $row['id_parceiro'];
+                // Fetch partner details from the database
+                $id_parceiro = $row['id_parceiro'];
 
-                    $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
-                    $stmt_parceiro = $mysqli->prepare($query_parceiro);
-                    $stmt_parceiro->bind_param("i", $id_parceiro);
-                    $stmt_parceiro->execute();
-                    $result_parceiro = $stmt_parceiro->get_result();
-                    $loja = $result_parceiro->fetch_assoc();
-                    $logo = $loja['logo'];
-                    $nomeFantasia = $loja['nomeFantasia'];
-                    $estimativa_entrega = $loja['estimativa_entrega'];
-                    $stmt_parceiro->close();
+                $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
+                $stmt_parceiro = $mysqli->prepare($query_parceiro);
+                $stmt_parceiro->bind_param("i", $id_parceiro);
+                $stmt_parceiro->execute();
+                $result_parceiro = $stmt_parceiro->get_result();
+                $loja = $result_parceiro->fetch_assoc();
+                $logo = $loja['logo'];
+                $nomeFantasia = $loja['nomeFantasia'];
+                $estimativa_entrega = $loja['estimativa_entrega'];
+                $stmt_parceiro->close();
                 ?>
-                <p><img src="../../parceiros/arquivos/<?php echo $logo;?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
+                <p><img src="../../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
-                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
+                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
+                </h3>
                 <p><strong>Status do Pedido:</strong>
-                    <span style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
-                        <?php 
-                            $status = $row['status_cliente']; 
-                            if ($status == 0) {
-                                echo "Aguardando confirmação";
-                            } else if ($status == 1) {
-                                echo "Pedido confirmado";
-                            } else if ($status == 2) {
-                                echo "Pedido cancelado";
-                            } else if ($status == 3) {
-                                echo '<span style="color: red;">Pedido recusado</span>';
-                            } else {
-                                echo "Status desconhecido";
-                            }
+                    <span
+                        style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
+                        <?php
+                        $status = $row['status_cliente'];
+                        if ($status == 0) {
+                            echo "Aguardando confirmação";
+                        } else if ($status == 1) {
+                            echo "Pedido confirmado";
+                        } else if ($status == 2) {
+                            echo "Pedido cancelado";
+                        } else if ($status == 3) {
+                            echo '<span style="color: red;">Pedido recusado</span>';
+                        } else {
+                            echo "Status desconhecido";
+                        }
                         ?>
                     </span>
                 </p>
                 <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
-                <p class="valor"><strong>Valor da compra: R$ </strong> <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
+                <p class="valor"><strong>Valor da compra: R$ </strong>
+                    <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
                 <hr>
                 <p class="tempo-cancelar" style="color: red; display: none;"><strong>Tempo para cancelar:</strong>
-                <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span></p>
+                    <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span>
+                </p>
                 <?php if ($row['status_cliente'] != 1): ?>
                     <p class="text-cancelar" style="color: red; display: none;">
                         <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
@@ -327,13 +396,6 @@ function formatDateTimeJS($dateString) {
 
             document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
             form.submit(); // Submete o formulário
-        }
-
-        // Função para recarregar a página a cada 5 minutos
-        function refreshPage() {
-            setInterval(function() {
-                location.reload(); // Recarrega a página
-            }, 300000); // 300000 ms = 5 minutos
         }
 
         // Função para iniciar a contagem regressiva
@@ -402,6 +464,7 @@ function formatDateTimeJS($dateString) {
         });
     </script>
 </body>
+
 </html>
 
 <?php

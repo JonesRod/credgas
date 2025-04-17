@@ -27,7 +27,7 @@ try {
         if (empty($data['id_cliente']) || empty($data['id_parceiro']) || empty($data['detalhes_produtos'])) {
             throw new Exception('Dados obrigatórios ausentes.');
         }
-              
+
         $data_hora = isset($data['data_hora']) ? $data['data_hora'] : '';
         $id_cliente = isset($data['id_cliente']) ? intval($data['id_cliente']) : 0;
         $id_parceiro = isset($data['id_parceiro']) ? intval($data['id_parceiro']) : 0;
@@ -46,7 +46,7 @@ try {
         $qt_parcelas_entrada = isset($data['qt_parcelas_entrada']) ? intval($data['qt_parcelas_entrada']) : 0;
         $restante = isset($data['restante']) ? floatval($data['restante']) : 0.0;
 
-        $segunda_forma_pg = isset($data['segunda_forma_pg']) ? $data['segunda_forma_pg'] : '';        
+        $segunda_forma_pg = isset($data['segunda_forma_pg']) ? $data['segunda_forma_pg'] : '';
         $num_cartao = isset($data['num_cartao']) ? $data['num_cartao'] : '';
         $nome_cartao = isset($data['nome_cartao']) ? $data['nome_cartao'] : '';
         $validade = isset($data['validade']) ? $data['validade'] : '';
@@ -76,12 +76,18 @@ try {
             $tipo_pagamento_principal = 'debito';
         }
 
-        if ($segunda_forma_pg === '1') {
+        if ($segunda_forma_pg === 'pix' || $segunda_forma_pg === '1') {
             $segunda_forma_pg = 'pix';
-        } else if ($segunda_forma_pg === '2') {
+        } else if ($segunda_forma_pg === 'credito' || $segunda_forma_pg === '2') {
             $segunda_forma_pg = 'credito';
-        } else if ($segunda_forma_pg === '3') {
+        } else if ($segunda_forma_pg === 'debito' || $segunda_forma_pg === '3') {
             $segunda_forma_pg = 'debito';
+        } else {
+            $segunda_forma_pg = null; // Define como nulo se o valor for inválido
+        }
+
+        if (is_null($segunda_forma_pg)) {
+            throw new Exception('Segunda forma de pagamento inválida.');
         }
 
         // Gerador do código de retirada de 6 dígitos
@@ -112,10 +118,11 @@ try {
 
         // Processar a compra
         $stmt = $mysqli->prepare("INSERT INTO pedidos (data, codigo_retirada, id_cliente, id_parceiro, produtos, 
-        valor_frete, valor_produtos, saldo_usado, taxa_crediario, formato_compra, entrada, 
-        forma_pg_entrada, qt_parcela_entrada, valor_parcela_entrada, valor_restante, forma_pg_restante, 
-        qt_parcelas, valor_parcela, tipo_entrega, endereco_entrega, num_entrega, 
-        bairro_entrega, contato_recebedor, comentario, status_cliente, status_parceiro) 
+        valor_frete, valor_produtos, saldo_usado, taxa_crediario, formato_compra, 
+        entrada, forma_pg_entrada, qt_parcela_entrada, valor_parcela_entrada, valor_restante,
+        forma_pg_restante, qt_parcelas, valor_parcela, tipo_entrega, endereco_entrega, 
+        num_entrega, bairro_entrega, contato_recebedor, comentario, status_cliente, 
+        status_parceiro) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         if (!$stmt) {
@@ -123,7 +130,7 @@ try {
         }
 
         $stmt->bind_param(
-            "ssiissssssssisssissssssii",
+            "ssiissssssssisssisssssssii",
             $data_hora,
             $codigo_retirada,
             $id_cliente,
@@ -141,7 +148,7 @@ try {
             $restante,
             $segunda_forma_pg,
             $qt_parcelas_restante,
-            $valor_parcela_restante,
+            $valor_parcelas_restante,
             $tipo_entrega,
             $rua,
             $numero,
