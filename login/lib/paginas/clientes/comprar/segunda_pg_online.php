@@ -146,19 +146,75 @@ if ($segunda_forma_pg == '2') {
         /* Estilo para o fundo escuro do popup */
         #popup-background {
             display: none;
-            /* Inicialmente oculto */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             /* Fundo preto com transparência */
             z-index: 998;
             /* Abaixo do popup */
         }
-        #popup_novo_cartao{
-            background-color: aliceblue;
+
+        /* Estilo para o popup */
+        #popup_novo_cartao {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            /* Acima do fundo */
+            padding: 20px;
+        }
+
+        /* Botão de fechar */
+        #popup_novo_cartao .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* Botões dentro do popup */
+        .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .popup-buttons .btn_proximo {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup-buttons .btn_proximo:hover {
+            background-color: #0056b3;
+        }
+
+        .popup-buttons .cancelar {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .popup-buttons .cancelar:hover {
+            background-color: #a71d2a;
         }
     </style>
 </head>
@@ -255,6 +311,9 @@ if ($segunda_forma_pg == '2') {
 
     <div id="popup_cartaoCred"
         style="display: <?php echo (isset($segunda_forma_pg) && $segunda_forma_pg == '2') ? 'block' : 'none'; ?>;">
+        <hr>
+            <p>Valor Restante: R$ <span id="restante_cred_inicio"><?php echo number_format($restante, 2, ',', '.'); ?></span></p>
+        <hr>
         <h3>Selecione o cartão de Crédito a ser usado</h3>
         <table id="cartoes_credito_cadastrados">
             <thead>
@@ -296,16 +355,12 @@ if ($segunda_forma_pg == '2') {
 
         <div id="div_cred_principal" style="display: none;">
             <hr>
-            <p>Valor do pagamento: R$ <input type="text" id="vl_cred_principal"
-                    value="<?php echo number_format($valor_total, 2, ',', '.'); ?>"
-                    oninput="formatarValorPagamentoCred()"></p>
-            <label for="parcelas_cartaoCred_entrada_principal">Quantidade de parcelas:</label>
-            <input id="parcelas_cartaoCred_entrada_principal" name="parcelas_cartaoCred_entrada_principal" type="number"
-                min="1" max="12" value="1" onchange="calcularValorParcelaCred()">
-            <p>Valor da Parcela: R$ <span
-                    id="valor_parcela_cartaoCred_entrada"><?php echo number_format($valor_total, 2, ',', '.'); ?></span>
-            </p>
-            <p>Restante: R$ <span id="restante_cred_inicio">0,00</span></p>
+                <label for="parcelas_cartaoCred_entrada_principal">Quantidade de parcelas:</label>
+                <input id="parcelas_cartaoCred_entrada_principal" name="parcelas_cartaoCred_entrada_principal" type="number"
+                    min="1" max="12" value="1" onchange="calcularValorParcelaCred()">
+                <p>Valor da Parcela: R$ <span
+                        id="valor_parcela_cartaoCred_entrada"><?php echo number_format($restante, 2, ',', '.'); ?></span>
+                </p>
             <hr>
         </div>
         <div class="div_bt_principal">
@@ -317,7 +372,12 @@ if ($segunda_forma_pg == '2') {
     </div>
     <div id="popup_cartaoDeb"
         style="display: <?php echo (isset($segunda_forma_pg) && $segunda_forma_pg == '3') ? 'block' : 'none'; ?>;">
-        <h3>Selecione o cartão de débito a ser usado</h3>
+        <div id="div_deb_principal" style="display: block;">
+            <hr>
+                <p>Valor Restante: R$ <span id="restante_deb_principal"><?php echo number_format($restante, 2, ',', '.'); ?></span></p>
+            <hr>
+        </div>
+        <h3>Selecione o Cartão de Débito a ser usado.</h3>
         <table id="cartoes_debito_cadastrados">
             <thead>
                 <tr>
@@ -357,14 +417,6 @@ if ($segunda_forma_pg == '2') {
                 <?php endif; ?>
             </tbody>
         </table>
-        <div id="div_deb_principal" style="display: none;">
-            <hr>
-            <p>Valor do pagamento: R$ <input type="text" id="vl_deb_principal"
-                    value="<?php echo number_format($valor_total, 2, ',', '.'); ?>"
-                    oninput="formatarValorPagamentoDeb()"></p>
-            <p>Restante: R$ <span id="restante_deb_principal">0,00</span></p>
-            <hr>
-        </div>
         <div class="div_bt_principal">
             <button type="button" class="usar-outro-cartao-debito" onclick="abrirPopupNovoCartao()">Usar outro
                 cartão</button>
@@ -429,11 +481,21 @@ if ($segunda_forma_pg == '2') {
         <div class="popup-buttons">
             <button type="button" class="cancelar" onclick="fecharPopup('popup_novo_cartao')">Cancelar</button>
             <button type="button" class="btn_proximo" onclick="adicionarNovoCartao(1)">Usar e Salvar</button>
-            <button type="button" class="btn_proximo" onclick="adicionarNovoCartao(0)">Usar só dessa
-                vez</button>
+            <button type="button" class="btn_proximo" onclick="adicionarNovoCartao(0)">Usar só dessa vez</button>
         </div>
     </div>
+    <div id="detalhes_cartao" style="display: block;">
+        <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
+        <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
+        <input type="text" id="validade_selecionado" name="validade_selecionado" readonly>
+        <input type="text" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
+
+        <input type="text" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado"readonly>
+        <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado" readonly>
+        <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
+        <input type="text" id="restante" name="restante" readonly>
     </div>
+</body>
     <script>
         function abrirPopupNovoCartao() {
             const popupNovoCartao = document.getElementById('popup_novo_cartao');
@@ -461,20 +523,36 @@ if ($segunda_forma_pg == '2') {
             }
         }
 
+        function fecharPopup(popupId) {
+            document.getElementById(popupId).style.display = 'none';
+            document.getElementById('popup-background').style.display = 'none';
+        }
+
         function verificarCartaoSelecionado() {
-            const checkboxes = document.querySelectorAll('input[name="cartao_debito_selecionado"], input[name="cartao_credito_selecionado"]');
+            const checkboxes = document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]');
+
             checkboxes.forEach((checkbox) => {
                 checkbox.addEventListener('change', function () {
                     if (this.checked) {
+                        // Desmarcar todos os outros cartões
                         checkboxes.forEach((cb) => {
                             if (cb !== this) cb.checked = false;
                         });
+
+                        // Preencher os detalhes do cartão selecionado
                         carregarDetalhesCartao(this);
                     } else {
+                        // Limpar os detalhes do cartão se nenhum for selecionado
                         limparDetalhesCartao();
                     }
                 });
             });
+
+            // Verificar se algum cartão já está selecionado ao carregar a página
+            const selecionado = Array.from(checkboxes).find(cb => cb.checked);
+            if (selecionado) {
+                carregarDetalhesCartao(selecionado);
+            }
         }
 
         function atualizarBandeiras() {
@@ -495,15 +573,16 @@ if ($segunda_forma_pg == '2') {
         }
 
         function carregarDetalhesCartao(cartao) {
+            const nomeCartao = cartao.dataset.nomeCartao;
             const numCartao = cartao.dataset.numCartao;
             const validade = cartao.dataset.validade;
             const codSeguranca = cartao.dataset.codSeguranca;
-            const nomeCartao = cartao.dataset.nomeCartao;
 
-            document.getElementById('num_cartao_selecionado_valor').value = numCartao;
-            document.getElementById('validade_selecionado_valor').value = validade;
-            document.getElementById('cod_seguranca_selecionado_valor').value = codSeguranca;
-            document.getElementById('nome_cartao_selecionado_valor').value = nomeCartao;
+            
+            document.getElementById('nome_cartao_selecionado').value = nomeCartao;
+            document.getElementById('num_cartao_selecionado').value = numCartao;
+            document.getElementById('validade_selecionado').value = validade;
+            document.getElementById('cod_seguranca_selecionado').value = codSeguranca;
 
             if (cartao.name === "cartao_debito_selecionado") {
                 document.getElementById('div_deb_principal').style.display = 'block';
@@ -517,17 +596,70 @@ if ($segunda_forma_pg == '2') {
         function limparDetalhesCartao() {
             document.getElementById('div_deb_principal').style.display = 'none';
             document.getElementById('div_cred_principal').style.display = 'none';
-
-            document.getElementById('num_cartao_selecionado_valor').value = '';
-            document.getElementById('validade_selecionado_valor').value = '';
-            document.getElementById('cod_seguranca_selecionado_valor').value = '';
-            document.getElementById('nome_cartao_selecionado_valor').value = '';
+            
+            document.getElementById('nome_cartao_selecionado').value = '';
+            document.getElementById('num_cartao_selecionado').value = '';
+            document.getElementById('validade_selecionado').value = '';
+            document.getElementById('cod_seguranca_selecionado').value = '';
 
             document.getElementById('btn_continuar_cartaoDeb').style.display = 'none';
             document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
         }
 
-        function validarValorPagamentoDeb() {
+        function calcularValorParcelaCred() {
+            const restante = document.getElementById('restante_cred_inicio').textContent;
+            const restante_cred_inicio = parseFloat(restante.replace(/\./g, '').replace(',', '.')) || 0;
+            const numParcelas = parseInt(document.getElementById('parcelas_cartaoCred_entrada_principal').value) || 1;
+
+            if (numParcelas <= 0) {
+                alert('O número de parcelas deve ser maior que zero.');
+                return;
+            }
+
+            let valorParcela;
+            if (numParcelas > 3) {
+                const taxaJuros = 0.0299; // 2.99% ao mês
+                valorParcela = Math.round(restante_cred_inicio * Math.pow(1 + taxaJuros, numParcelas)) / numParcelas;
+
+            } else {
+                valorParcela = restante_cred_inicio / numParcelas; // Sem juros para até 3 parcelas
+                valorParcela = Math.round((restante_cred_inicio / numParcelas) * 100) / 100; // Arredondar para 2 casas decimais
+            }
+
+            const valorParcelaFormatado = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            document.getElementById('valor_parcela_cartaoCred_entrada').textContent = valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('valor_parcela_cartao_selecionado').value = valorParcela.toFixed(2);;
+            document.getElementById('parcelas_cartaoCred_entrada_selecionado').value = numParcelas;
+        }
+
+        function confirmarExclusaoCartao(idCartao) {
+            if (confirm("Tem certeza de que deseja excluir este cartão?")) {
+                fetch(`excluir_cartao.php?id_cartao=${idCartao}`, {
+                    method: "GET"
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Erro na resposta do servidor.");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            alert("Cartão excluído com sucesso!");
+                            location.reload(); // Recarregar a página para atualizar a lista de cartões
+                        } else {
+                            alert("Erro ao excluir o cartão: " + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao excluir o cartão:", error);
+                        alert("Erro ao processar a solicitação.");
+                    });
+            }
+        }
+
+        /*function validarValorPagamentoDeb() {
             const valorDeb = parseFloat(document.getElementById('vl_deb_principal').value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorTotal = parseFloat(document.getElementById('valor_pedido').value.replace(/\./g, '').replace(',', '.')) || 0;
 
@@ -538,8 +670,6 @@ if ($segunda_forma_pg == '2') {
 
             const restante = valorTotal - valorDeb;
             document.getElementById('restante_deb_principal').textContent = restante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        }*/
     </script>
-</body>
-
 </html>
