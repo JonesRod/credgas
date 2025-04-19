@@ -412,8 +412,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </h3>
         <div>
             <label for="comentario">Comentário (opcional):</label>
-            <textarea id="comentario" name="comentario" rows="4" cols="50" 
-            placeholder="Deixe um recado, uma referência, nome de quem vai receber ou retirar, ..."></textarea>
+            <textarea id="comentario" name="comentario" rows="4" cols="50"
+                placeholder="Deixe um recado, uma referência, nome de quem vai receber ou retirar, ..."></textarea>
         </div>
         <form method="POST" action="">
             <h3>Escolha o momento do pagamento</h3>
@@ -543,6 +543,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </p>
                     <select id="formas_pagamento_crediario" name="forma_pagamento[]"
                         onchange="mostrarBandeirasCriterio(this); limitarSelect(this);">
+                        <option value="selecionar">Selecionar</option>
                         <option value="pix">PIX</option>
                         <?php if ($admin_cartoes_credito): ?>
                             <option value="cartaoCred">Cartão de Crédito</option>
@@ -566,7 +567,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="taxa_crediario" id="taxa_crediario"
                         value="<?php echo $taxa_crediario; ?>">
                 </div>
-                <button id="bt_comprar_crediario" type="button" style="display: block;"
+                <button id="bt_comprar_crediario" type="button" style="display: none;"
                     onclick="verificarEntradaMinima()">Continuar</button>
             </div>
 
@@ -952,7 +953,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const restante = valorTotal - entrada;
 
             span_restante.textContent = restante.toFixed(2).replace('.', ',');
-
+            //console.log('Valor total:', valorTotal);
             /*console.log('Valor total:', valorTotal);
             console.log('Entrada:', entrada);
             console.log('Restante:', restante);
@@ -978,6 +979,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Atualizar os campos ocultos
             document.getElementById('tipo_entrada_crediario').value = selectedValues.includes('cartaoCred') ? '2' : selectedValues.includes('cartaoDeb') ? '3' : '1';
             document.getElementById('bandeiras_aceita').value = selectedValues.includes('cartaoCred') ? '<?php echo $admin_cartoes_credito; ?>' : selectedValues.includes('cartaoDeb') ? '<?php echo $admin_cartoes_debito; ?>' : '';
+
+            // Mostrar o botão "Continuar" se o valor selecionado for diferente de "selecionar"
+            const continuarButton = document.getElementById('bt_comprar_crediario');
+            continuarButton.style.display = selectedValues.includes('selecionar') ? 'none' : 'block';
         }
 
         function recalcularValor() {
@@ -998,8 +1003,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 valorTotal = total_vende_crediario + ((total_vende_crediario) * taxaCrediario) / 100 + total_nao_vende_crediario + valor_frete;
             }
 
-            const diferenca = valorTotal - limiteCred;
-            const restante = valorTotal - entrada;
+            valorTotal = Math.round(valorTotal * 100) / 100; // Arredondar para 2 casas decimais
+            const diferenca = Math.round((valorTotal - limiteCred) * 100) / 100; // Arredondar para 2 casas decimais
+            const restante = Math.round((valorTotal - entrada) * 100) / 100; // Arredondar para 2 casas decimais
 
             if (entrada < diferenca) {
                 alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
@@ -1019,7 +1025,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             document.getElementById('valor_a_pagar').innerText = 'R$ ' + valorTotal.toFixed(2).replace('.', ',');
 
-            console.log('Valor total:', valorTotal);
+            /*console.log('Valor total:', valorTotal);
             console.log('Entrada mínima:', diferenca);
             console.log('Restante:', restante);
             console.log('Entrada:', entrada);
@@ -1028,7 +1034,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             console.log('Total vende crediário:', total_vende_crediario);
             console.log('Taxa crediário:', taxaCrediario);
             console.log('Limite crediário:', limiteCred);
-            console.log('Produto maior frete vende crediário:', produto_maior_frete_vende_crediario);
+            console.log('Produto maior frete vende crediário:', produto_maior_frete_vende_crediario);*/
         }
 
         function verificarEntradaMinima() {
@@ -1039,9 +1045,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const valorTotal = parseFloat(valorAPagarSpan.innerText.replace('R$ ', '').replace(/\./g, '').replace(',', '.')) || 0;
             const restanteInput = document.getElementById('restanteInput');
             const limiteCred = parseFloat('<?php echo $limite_cred; ?>');
-            const diferenca = valorTotal - limiteCred;
+            const diferenca = Math.round((valorTotal - limiteCred) * 100) / 100; // Arredondar para 2 casas decimais
 
-            if (entrada < diferenca) {
+            if (entrada < diferenca) { // Corrigir para "<" ao invés de "<="
                 alert('A entrada deve ser no mínimo R$ ' + diferenca.toFixed(2).replace('.', ','));
                 entradaInput.value = diferenca.toFixed(2).replace('.', ',');
                 span_restante.innerText = (valorTotal - diferenca).toFixed(2).replace('.', ',');

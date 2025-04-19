@@ -41,87 +41,255 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmar pedido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button[type="button"] {
+            background-color: #007bff;
+            color: white;
+        }
+
+        button[type="button"]:hover {
+            background-color: #0056b3;
+        }
+
+        #popup-senha {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        #popup-senha h3 {
+            margin-bottom: 15px;
+        }
+
+        #popup-senha p {
+            margin-bottom: 10px;
+        }
+
+        #popup-senha input[type="password"] {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #popup-senha span {
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        #popup-senha button {
+            margin-top: 10px;
+            width: 48%;
+        }
+
+        #popup-senha .button-group {
+            justify-content: space-between;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            #popup-senha input[type="password"] {
+                width: calc(100% - 30px);
+            }
+
+            #popup-senha button {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h3 {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            #popup-senha {
+                padding: 15px;
+            }
+
+            #popup-senha h3 {
+                font-size: 16px;
+            }
+
+            #popup-senha p {
+                font-size: 14px;
+            }
+
+            #popup-senha button {
+                font-size: 12px;
+                padding: 6px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <h3>Você escolheu em pagar na hora da entrega ou retirada.</h3>
-    <p>Valor total da compra: R$ <?php echo $valor_total; ?> .</p>
-    <p <?php if (isset($entrada_saldo) && floatval($entrada_saldo) > 0): ?> style="display: block;" <?php else: ?>
-            style="display: none;" <?php endif; ?>>
-        Saldo utilizado na compra: R$ <?php echo $entrada_saldo; ?> .
-    </p>
-    <p
-        style="<?php echo (isset($valor_frete) && floatval($valor_frete) == 0) ? 'color: darkgreen;' : 'color: black;'; ?>">
-        <?php
-        if (isset($valor_frete) && floatval($valor_frete) == 0) {
-            echo "Entrega Grátis";
-        } else {
-            echo "Valor do Frete: R$ " . number_format($valor_frete, 2, ',', '.');
-        }
-        ?>
-    </p>
+    <div class="container">
+        <h3>Você escolheu em pagar na hora da entrega ou retirada.</h3>
+        <p>Valor total da compra: R$ <?php echo $valor_total; ?> .</p>
+        <p <?php if (isset($entrada_saldo) && floatval($entrada_saldo) > 0): ?> style="display: block;" <?php else: ?>
+                style="display: none;" <?php endif; ?>>
+            Saldo utilizado na compra: R$ <?php echo $entrada_saldo; ?> .
+        </p>
+        <p
+            style="<?php echo (isset($valor_frete) && floatval($valor_frete) == 0) ? 'color: darkgreen;' : 'color: black;'; ?>">
+            <?php
+            if (isset($valor_frete) && floatval($valor_frete) == 0) {
+                echo "Entrega Grátis";
+            } else {
+                echo "Valor do Frete: R$ " . number_format($valor_frete, 2, ',', '.');
+            }
+            ?>
+        </p>
 
-    <p <?php if (isset($entrada_saldo) && floatval($entrada_saldo) >= 0): ?> style="display: block;" <?php else: ?>
-            style="display: none;" <?php endif; ?>>
-        Valor á pagar: R$
-        <?php echo number_format(floatval($valor_total) + floatval($valor_frete) - floatval($entrada_saldo), 2, ',', '.'); ?>
-        .
-    </p>
+        <p <?php if (isset($entrada_saldo) && floatval($entrada_saldo) >= 0): ?> style="display: block;" <?php else: ?>
+                style="display: none;" <?php endif; ?>>
+            Valor á pagar: R$
+            <?php echo number_format(floatval($valor_total) + floatval($valor_frete) - floatval($entrada_saldo), 2, ',', '.'); ?>
+            .
+        </p>
 
-    <p>Formas de pagamentos escolhidas:</p>
-    <ul>
-        <?php
-        // Expressão regular para separar itens sem dividir o conteúdo entre parênteses
-        preg_match_all('/(?:[^,(]+|\([^)]*\))+/i', $bandeiras_outros_aceitos, $matches);
-        $formas_pagamento = $matches[0];
-        foreach ($formas_pagamento as $forma): ?>
-            <li><?php echo trim($forma); ?>.</li>
-        <?php endforeach; ?>
-    </ul>
+        <p>Formas de pagamentos escolhidas:</p>
+        <ul>
+            <?php
+            // Expressão regular para separar itens sem dividir o conteúdo entre parênteses
+            preg_match_all('/(?:[^,(]+|\([^)]*\))+/i', $bandeiras_outros_aceitos, $matches);
+            $formas_pagamento = $matches[0];
+            foreach ($formas_pagamento as $forma): ?>
+                <li><?php echo trim($forma); ?>.</li>
+            <?php endforeach; ?>
+        </ul>
 
-    <p>Confira os tipos de pagamentos e bandeiras aceitas pela loja.</p>
+        <p>Confira os tipos de pagamentos e bandeiras aceitas pela loja.</p>
 
-    <p <?php if (isset($entrega) && $entrega == 'entregar'): ?> style="display: block;" <?php else: ?>
-            style="display: none;" <?php endif; ?>>
-        <strong>O seu pedido ao ser aprovado, será entregue no endereço do usúario cadastrado.</strong>
-    </p>
+        <p <?php if (isset($entrega) && $entrega == 'entregar'): ?> style="display: block;" <?php else: ?>
+                style="display: none;" <?php endif; ?>>
+            <strong>O seu pedido ao ser aprovado, será entregue no endereço do usúario cadastrado.</strong>
+        </p>
 
-    <div <?php if (isset($entrega) && $entrega == 'entregar' && isset($rua) && $rua != ''): ?> style="display: block;"
-        <?php else: ?> style="display: none;" <?php endif; ?>>
-        <strong>O seu pedido ao ser aprovado, será entregue na:
-            <p for="">Rua/Av: <?php echo $rua; ?>.</p>
-            <p for="">Número: <?php echo $numero; ?>.</p>
-            <p for="">Bairro: <?php echo $bairro; ?>.</p>
-            <p for="">Contato: <?php echo $contato; ?>.</p>
-            <p for="">Comentário: <?php echo $comentario; ?>.</p>
-    </div>
+        <div <?php if (isset($entrega) && $entrega == 'entregar' && isset($rua) && $rua != ''): ?> style="display: block;"
+            <?php else: ?> style="display: none;" <?php endif; ?>>
+            <strong>O seu pedido ao ser aprovado, será entregue na:
+                <p for="">Rua/Av: <?php echo $rua; ?>.</p>
+                <p for="">Número: <?php echo $numero; ?>.</p>
+                <p for="">Bairro: <?php echo $bairro; ?>.</p>
+                <p for="">Contato: <?php echo $contato; ?>.</p>
+                <p for="">Comentário: <?php echo $comentario; ?>.</p>
+        </div>
 
-    <p <?php if (isset($entrega) && $entrega == 'buscar'): ?> style="display: block;" <?php else: ?>
-            style="display: none;" <?php endif; ?>>
-        <strong>O seu pedido ao ser aprovado, pode ser retirado no endereço da loja.</strong>
-    </p>
+        <p <?php if (isset($entrega) && $entrega == 'buscar'): ?> style="display: block;" <?php else: ?>
+                style="display: none;" <?php endif; ?>>
+            <strong>O seu pedido ao ser aprovado, pode ser retirado no endereço da loja.</strong>
+        </p>
 
-    <input type="hidden" id="id_cliente" name="id_cliente" value="<?php echo $id_cliente; ?>">
-    <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-    <input type="hidden" id="valor_frete" name="valor_frete" value="<?php echo $valor_frete; ?>">
-    <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $valor_total; ?>">
-    <input type="hidden" id="entrada_saldo" name="entrada_saldo" value="<?php echo $entrada_saldo; ?>">
-    <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
-    <input type="hidden" id="entrega" name="entrega" value="<?php echo $entrega; ?>">
-    <input type="hidden" id="rua" name="rua" value="<?php echo $rua; ?>">
-    <input type="hidden" id="bairro" name="bairro" value="<?php echo $bairro; ?>">
-    <input type="hidden" id="numero" name="numero" value="<?php echo $numero; ?>">
-    <input type="hidden" id="contato" name="contato" value="<?php echo $contato; ?>">
-    <input type="hidden" id="comentario" name="comentario" value="<?php echo $comentario; ?>">
-    <input type="hidden" id="bandeiras_outros_aceitos" name="bandeiras_outros_aceitos"
-        value="<?php echo $bandeiras_outros_aceitos; ?>">
-    <input type="hidden" id="data_hora" name="data_hora" value="">
+        <input type="hidden" id="id_cliente" name="id_cliente" value="<?php echo $id_cliente; ?>">
+        <input type="hidden" id="id_parceiro" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
+        <input type="hidden" id="valor_frete" name="valor_frete" value="<?php echo $valor_frete; ?>">
+        <input type="hidden" id="valor_total" name="valor_total" value="<?php echo $valor_total; ?>">
+        <input type="hidden" id="entrada_saldo" name="entrada_saldo" value="<?php echo $entrada_saldo; ?>">
+        <input type="hidden" id="detalhes_produtos" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
+        <input type="hidden" id="entrega" name="entrega" value="<?php echo $entrega; ?>">
+        <input type="hidden" id="rua" name="rua" value="<?php echo $rua; ?>">
+        <input type="hidden" id="bairro" name="bairro" value="<?php echo $bairro; ?>">
+        <input type="hidden" id="numero" name="numero" value="<?php echo $numero; ?>">
+        <input type="hidden" id="contato" name="contato" value="<?php echo $contato; ?>">
+        <input type="hidden" id="comentario" name="comentario" value="<?php echo $comentario; ?>">
+        <input type="hidden" id="bandeiras_outros_aceitos" name="bandeiras_outros_aceitos"
+            value="<?php echo $bandeiras_outros_aceitos; ?>">
+        <input type="hidden" id="data_hora" name="data_hora" value="">
 
-    <div>
-        <a href="forma_entrega.php?id_cliente=<?php echo $id_cliente; ?>&id_parceiro=<?php echo $id_parceiro; ?>">
-            <button type="button">Voltar</button>
-        </a>
-        <button type="button" id="btn_continuar_pg">Confirmar</button>
+        <div class="button-group">
+            <a href="forma_entrega.php?id_cliente=<?php echo $id_cliente; ?>&id_parceiro=<?php echo $id_parceiro; ?>">
+                <button type="button">Voltar</button>
+            </a>
+            <button type="button" id="btn_continuar_pg">Confirmar</button>
+        </div>
     </div>
 
     <div id="popup-senha" class="popup-content" style="display: none;">
@@ -133,8 +301,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p id="msg_erro" style="color: red; display: none;"></p>
         <p id="msg_sucesso" style="color: green; display: none;"></p>
         <p>Digite sua senha para continuar com o pedido.</p>
-        <button type="button" id="btn_cancelar">Cancelar</button>
-        <button type="button" id="btn_finalizar">Finalizar</button>
+        <div class="button-group">
+            <button type="button" id="btn_cancelar">Cancelar</button>
+            <button type="button" id="btn_finalizar">Finalizar</button>
+        </div>
     </div>
 
     <script>
