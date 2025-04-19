@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 $id_session = $_SESSION['id'];
-var_dump($_POST);
+//var_dump($_POST);
 //echo 'crediario';
 
 if (isset($_POST['id_cliente'])) {
@@ -183,6 +183,20 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
     <title>2ª Formas de pagamento</title>
     <style>
         /* Estilo para o fundo escuro do popup */
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         #popup-background {
             display: none;
             position: fixed;
@@ -191,30 +205,32 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
-            /* Fundo preto com transparência */
             z-index: 998;
-            /* Abaixo do popup */
         }
 
         /* Estilo para o popup */
-        #popup_novo_cartao {
+        #popup_novo_cartao,
+        #popup-confirmacao,
+        #popup-pix,
+        #popup_cartaoCred,
+        #popup_cartaoDeb {
+
             display: none;
-            position: fixed;
+            /*position: fixed;*/
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            /*transform: translate(-50%, -50%);*/
             width: 90%;
             max-width: 500px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 999;
-            /* Acima do fundo */
             padding: 20px;
         }
 
         /* Botão de fechar */
-        #popup_novo_cartao .close {
+        .close {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -226,17 +242,26 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         /* Botões dentro do popup */
         .popup-buttons {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             margin-top: 20px;
+        }
+
+        .popup-buttons button {
+            flex: 1 1 calc(48% - 10px);
+            margin: 5px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
         .popup-buttons .btn_proximo {
             background-color: #007bff;
             color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
         }
 
         .popup-buttons .btn_proximo:hover {
@@ -246,14 +271,213 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         .popup-buttons .cancelar {
             background-color: #dc3545;
             color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
         }
 
         .popup-buttons .cancelar:hover {
             background-color: #a71d2a;
+        }
+
+        .popup-buttons .continuar {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .popup-buttons .continuar:hover {
+            background-color: #218838;
+        }
+
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th,
+        table td {
+            border: none;
+            /* Remove as linhas da tabela */
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+
+            #popup_novo_cartao,
+            #popup-confirmacao,
+            #popup-pix,
+            #popup_cartaoCred,
+            #popup_cartaoDeb {
+                width: 90%;
+                padding: 15px;
+            }
+
+            .popup-buttons .btn_proximo,
+            .popup-buttons .cancelar {
+                flex: 1 1 90%;
+                margin: 5px 0;
+            }
+
+            table th,
+            table td {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            table th,
+            table td {
+                font-size: 12px;
+            }
+
+            .popup-buttons .btn_proximo,
+            .popup-buttons .cancelar {
+                flex: 1 1 90%;
+                font-size: 14px;
+            }
+        }
+
+        #popup_novo_cartao {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            max-width: 450px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+            /* Adiciona rolagem vertical se o conteúdo exceder a altura */
+            max-height: 90vh;
+            /* Limita a altura máxima do popup a 90% da altura da tela */
+        }
+
+        #popup_novo_cartao h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            word-wrap: break-word;
+            /* Quebra o texto se for muito longo */
+            margin-top: 10px;
+            /* Adiciona margem superior para evitar sobreposição */
+        }
+
+        #popup_novo_cartao label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        #popup_novo_cartao input[type="text"],
+        #popup_novo_cartao select {
+            width: 70%;
+            padding: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        #popup_novo_cartao p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        #popup_novo_cartao .popup-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        #popup_novo_cartao .popup-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #popup_novo_cartao .popup-buttons .cancelar {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        #popup_novo_cartao .popup-buttons .cancelar:hover {
+            background-color: #a71d2a;
+        }
+
+        #popup_novo_cartao .popup-buttons .btn_proximo {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        #popup_novo_cartao .popup-buttons .btn_proximo:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 480px) {
+            #popup_novo_cartao {
+                width: 95%;
+                padding: 15px;
+            }
+
+            #popup_novo_cartao h3 {
+                font-size: 18px;
+            }
+
+            #popup_novo_cartao .popup-buttons button {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+
+        #popup-confirmacao .btn_cancelar {
+            background-color: #dc3545;
+            /* Vermelho */
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #popup-confirmacao .btn_cancelar:hover {
+            background-color: #a71d2a;
+            /* Vermelho mais escuro */
+        }
+
+        #popup-confirmacao .btn_continuar {
+            background-color: #28a745;
+            /* Verde */
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #popup-confirmacao .btn_continuar:hover {
+            background-color: #218838;
+            /* Verde mais escuro */
         }
     </style>
 </head>
@@ -350,12 +574,15 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         <img id="qr_code_pix" src="" alt="QR Code PIX" style="display: none;">
         <br>
         <p id="link_pix" style="display: none;">Link de cópia e cola do PIX: <a href="#" id="pix_link">Copiar</a></p>
-        <button type="button" id="id_gr_qrCode" onclick="validarValorPix()">Gerar QR Code</button>
-        <button type="button" id="btn_continuar" onclick="confirmar_pix()" style="display: none;">Continuar</button>
+        <div class="popup-buttons">
+            <button type="button" id="id_gr_qrCode" class="btn_proximo" onclick="validarValorPix()">Gerar QR
+                Code</button>
+            <button type="button" id="btn_continuar" class="continuar" onclick="confirmar_pix()"
+                style="display: none;">Continuar</button>
+        </div>
     </div>
 
     <div id="popup_cartaoCred" style="display: none;">
-        <hr>
         <p>Valor Restante: R$ <span
                 id="restante_cred_inicio"><?php echo number_format($restante, 2, ',', '.'); ?></span></p>
         <hr>
@@ -409,17 +636,15 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
             </p>
             <hr>
         </div>
-        <div class="div_bt_principal">
-            <button type="button" class="btn_proximo" onclick="abrirPopupNovoCartao()">Usar outro
-                cartão</button>
-            <button type="button" id="btn_continuar_cartaoCred" class="continuar" onclick="abrirPopupConfirmacaoCompra()"
-                style="display: none;">Continuar</button>
+        <div class="popup-buttons">
+            <button type="button" class="btn_proximo" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
+            <button type="button" id="btn_continuar_cartaoCred" class="continuar"
+                onclick="abrirPopupConfirmacaoCompra()" style="display: none;">Continuar</button>
         </div>
     </div>
 
     <div id="popup_cartaoDeb" style="display: none;">
         <div id="div_deb_principal" style="display: block;">
-            <hr>
             <p>Valor Restante: R$ <span
                     id="restante_deb_principal"><?php echo number_format($restante, 2, ',', '.'); ?></span></p>
             <hr>
@@ -465,10 +690,9 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
                 <?php endif; ?>
             </tbody>
         </table>
-        <div class="div_bt_principal">
-            <button type="button" class="usar-outro-cartao-debito" onclick="abrirPopupNovoCartao()">Usar outro
-                cartão</button>
-            <button type="button" id="btn_continuar_cartaoDeb" onclick="abrirPopupConfirmacaoCompra()"
+        <div class="popup-buttons">
+            <button type="button" class="btn_proximo" onclick="abrirPopupNovoCartao()">Usar outro cartão</button>
+            <button type="button" id="btn_continuar_cartaoDeb" class="continuar" onclick="abrirPopupConfirmacaoCompra()"
                 style="display: none;">Continuar</button>
         </div>
     </div>
@@ -482,7 +706,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         <h3>Valor da compra: R$ <?php echo number_format($restante, 2, ',', '.'); ?></h3>
 
         <div id="dados_cartao">
-            <div>
+            <p>
                 <label for="tipo_cartao">Tipo de Cartão:</label>
                 <select id="tipo_cartao" name="tipo_cartao" onchange="atualizarBandeiras()">
                     <option value="Crédito" <?php if ($segunda_forma_pg == 2)
@@ -490,28 +714,28 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
                     <option value="Débito" <?php if ($segunda_forma_pg == 3)
                         echo 'selected'; ?>>Débito</option>
                 </select>
-            </div>
+            </p>
             <p>Bandeiras aceitas: <span
                     id="bandeiras_aceitas_texto"><?php echo $segunda_forma_pg == 2 ? $admin_cartoes_credito : $admin_cartoes_debito; ?></span>
             </p>
-            <div>
+            <p>
                 <label for="nome_cartao">Nome descrito no Cartão:</label>
                 <input type="text" id="nome_cartao" name="nome_cartao"
                     value="<?php echo htmlspecialchars($nome_cartao); ?>">
-            </div>
-            <div>
+            </p>
+            <p>
                 <label for="num_cartao">Número do Cartão:</label>
                 <input type="text" id="num_cartao" name="num_cartao" oninput="formatarNumeroCartao(this)" value="">
-            </div>
-            <div>
+            </p>
+            <p>
                 <label for="validade">Validade:</label>
                 <input type="text" id="validade" name="validade" oninput="formatarValidadeCartao(this)" value="">
-            </div>
-            <div>
+            </p>
+            <p>
                 <label for="cod_seguranca">Código de Segurança:</label>
                 <input type="text" id="cod_seguranca" name="cod_seguranca" oninput="formatarCodSeguranca(this)"
                     value="">
-            </div>
+            </p>
             <p>Valor a pagar: R$ <span id="vl_novo"><?php echo number_format($valor_total, 2, ',', '.'); ?></span></p>
             <div id="div_parcelas_cartaoCred_entrada_novo"
                 style="<?php echo $segunda_forma_pg == 2 ? 'display: block;' : 'display: none;'; ?>">
@@ -535,40 +759,39 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         <p>Ao clicar em "Finalizar", você concorda com os termos e condições de compra.</p>
         <p id="msg_erro" style="color: red; display: none;"></p>
         <p id="msg_sucesso" style="color: green; display: none;"></p>
-        <button type="button" id="btn_cancelar" class="btn_cancelar" onclick="fecharPopupConfirmar()">Cancelar</button>
-        <button type="button" id="btn_finalizar" class="btn_continuar" onclick="finalizarCompra()">Finalizar</button>
+        <div class="popup-buttons">
+            <button type="button" id="btn_cancelar" class="btn_cancelar"
+                onclick="fecharPopupConfirmar()">Cancelar</button>
+            <button type="button" id="btn_finalizar" class="btn_continuar"
+                onclick="finalizarCompra()">Finalizar</button>
+        </div>
     </div>
 
-    <div id="detalhes_cartao" style="display: block;">
-        <input type="text" id="segunda_forma_pg" name="segunda_forma_pg" value="<?= htmlspecialchars($_POST['segunda_forma_pg'] ?? '') ?>" readonly>
+    <div id="detalhes_cartao" style="display: none;">
+        <input type="text" id="segunda_forma_pg" name="segunda_forma_pg"
+            value="<?= htmlspecialchars($_POST['segunda_forma_pg'] ?? '') ?>" readonly>
         <input type="text" id="nome_cartao_selecionado" name="nome_cartao_selecionado" readonly>
         <input type="text" id="num_cartao_selecionado" name="num_cartao_selecionado" readonly>
         <input type="text" id="validade_selecionado" name="validade_selecionado" readonly>
 
         <input type="text" id="cod_seguranca_selecionado" name="cod_seguranca_selecionado" readonly>
         <input type="text" id="valor_parcela_cartao_selecionado" name="valor_parcela_cartao_selecionado" readonly>
-        <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado"readonly>
+        <input type="text" id="parcelas_cartaoCred_entrada_selecionado" name="parcelas_cartaoCred_entrada_selecionado"
+            readonly>
         <input type="text" id="salvar_cartao" name="salvar_cartao" readonly>
     </div>
 </body>
 <script>
     function validarValorPix() {
-        const valor = document.getElementById('restante_valor');
+        const valor = document.getElementById('restante');
         const valorPagamento = parseFloat(valor.value.replace(/\./g, '').replace(',', '.')) || 0;
         const vl_pix_arredondado = Math.round(valorPagamento * 100) / 100; // Arredondar para 2 casas decimais
 
-        //vl_pix.value = vl_pix_arredondado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        //console.log('Valor a pagar:', vl_pg_pix_arredondado);
-        //console.log('Valor total:', valorTotalArredondado);
         if (vl_pix_arredondado > valorPagamento) {
             alert('O valor a pagar não pode ser maior que o valor total.');
-            //vl_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-
             return;
         } else if (vl_pix_arredondado <= 0) {
             alert('O valor a pagar deve ser maior que zero.');
-            //vl_pix.value = "<?php echo number_format($valor_total, 2, ',', '.'); ?>";
-
             return;
         }
         gerarQRCode();
@@ -584,45 +807,75 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         qrCodePix.style.display = "block";
         linkPix.style.display = "block";
         btnContinuar.style.display = "inline-block";
-        
         document.getElementById('segunda_forma_pg').value = 1;
     };
 
     function confirmar_pix() {
+        // Limpar os detalhes do cartão, se necessário
         limparDetalhesCartao();
-        //finalizarCompra();
+
+        // Finalizar a compra
+        finalizarCompra();
     }
 
     function abrirPopupNovoCartao() {
         const popupNovoCartao = document.getElementById('popup_novo_cartao');
-        const popupBackground = document.getElementById('popup-background'); // Certifique-se de que o elemento existe
+        const popupBackground = document.getElementById('popup-background');
+        const popupCartaoCred = document.getElementById('popup_cartaoCred');
+        const popupCartaoDeb = document.getElementById('popup_cartaoDeb');
 
-        if (!popupNovoCartao) {
-            console.error('Elemento com ID "popup_novo_cartao" não encontrado.');
+        if (!popupNovoCartao || !popupBackground) {
+            console.error('Elementos necessários não encontrados.');
             return;
         }
 
-        // Exibir o popup de novo cartão
-        popupNovoCartao.style.display = 'block';
-        popupNovoCartao.style.position = 'fixed';
-        popupNovoCartao.style.top = '50%';
-        popupNovoCartao.style.left = '50%';
-        popupNovoCartao.style.transform = 'translate(-50%, -50%)';
-        popupNovoCartao.style.zIndex = '1000';
+        if (popupCartaoCred) {
+            popupCartaoCred.style.display = 'block';
+            popupCartaoCred.style.zIndex = '998';
 
-        // Exibir o background se ele existir
-        if (popupBackground) {
+            // Exibir o background cobrindo tudo
             popupBackground.style.display = 'block';
             popupBackground.style.zIndex = '999';
-        } else {
-            console.warn('Elemento com ID "popup-background" não encontrado. Ignorando exibição do background.');
+
+            // Exibir o popup de novo cartão por cima do background
+            popupNovoCartao.style.display = 'block';
+            popupNovoCartao.style.position = 'fixed';
+            popupNovoCartao.style.top = '50%';
+            popupNovoCartao.style.left = '50%';
+            popupNovoCartao.style.transform = 'translate(-50%, -50%)';
+            popupNovoCartao.style.zIndex = '1000';
+        }
+        if (popupCartaoDeb) {
+            popupCartaoDeb.style.display = 'block';
+            popupCartaoDeb.style.zIndex = '998';
+            // Exibir o background cobrindo tudo
+            popupBackground.style.display = 'block';
+            popupBackground.style.zIndex = '999';
+            // Exibir o popup de novo cartão por cima do background
+            popupNovoCartao.style.display = 'block';
+            popupNovoCartao.style.position = 'fixed';
+            popupNovoCartao.style.top = '50%';
+            popupNovoCartao.style.left = '50%';
+            popupNovoCartao.style.transform = 'translate(-50%, -50%)';
+            popupNovoCartao.style.zIndex = '1000';
         }
     }
 
     function fecharPopup(popupId) {
+        const segunda_forma_pg = document.getElementById('segunda_forma_pg').value;
+        const popup_cartaoCred = document.getElementById('popup_cartaoCred').style.display;
+        const popup_cartaoDeb = document.getElementById('popup_cartaoDeb').style.display;
+
+        if (segunda_forma_pg === '2') {
+            document.getElementById('popup_cartaoCred').style.display = 'block';
+            document.getElementById('popup_cartaoDeb').style.display = 'none';
+        } else if (segunda_forma_pg === '3') {
+            document.getElementById('popup_cartaoCred').style.display = 'none';
+            document.getElementById('popup_cartaoDeb').style.display = 'block';
+        }
+
         document.getElementById(popupId).style.display = 'none';
-        document.getElementById('popup-background').style.display = 'none';
-        seg_pg();
+        document.getElementById('popup-background').style.display = 'none'
     }
 
     function fecharPopupConfirmar() {
@@ -690,7 +943,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         }
     }
 
-    function seg_pg(){
+    function seg_pg() {
         const tipo_pagamento = document.getElementById('tipo_pagamento').value;
         if (tipo_pagamento === 'pix') {
             document.getElementById('segunda_forma_pg').value = 1;
@@ -826,7 +1079,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         const validade = document.getElementById('validade').value;
         const codSeguranca = document.getElementById('cod_seguranca').value;
         const nomeCartao = document.getElementById('nome_cartao').value;// Verificar se o nome do cartão não está vazio
-       
+
         if ((nomeCartao.trim() === '') || nomeCartao.length < 5) {
             alert('O nome do cartão precisa ser preenchido corretamente.');
             document.getElementById('nome_cartao').focus();
@@ -1050,7 +1303,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
 
             salvar_cartao: document.getElementById("salvar_cartao").value
         };
-//return;
+        //return;
         fetch("finalizar_compra_segundo_pg_online.php", {
             method: "POST",
             headers: {
@@ -1059,32 +1312,32 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
             body: JSON.stringify(formData)
         })
 
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
-                let contador = 5;
-                const intervalo = setInterval(() => {
-                    contador--;
-                    document.getElementById("contador").textContent = contador;
-                    if (contador === 0) {
-                        clearInterval(intervalo);
-                        ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
-                        window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
-                    }
-                }, 1000);
-            } else {
-                document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarPopupSucesso(); // Mostrar o popup de sucesso e o overlay
+                    let contador = 5;
+                    const intervalo = setInterval(() => {
+                        contador--;
+                        document.getElementById("contador").textContent = contador;
+                        if (contador === 0) {
+                            clearInterval(intervalo);
+                            ocultarPopupSucesso(); // Ocultar o popup e o overlay antes de redirecionar
+                            window.location.href = "meus_pedidos.php"; // Redirecionar após 5 segundos
+                        }
+                    }, 1000);
+                } else {
+                    document.getElementById("msg_erro").textContent = data.message || "Erro ao finalizar a compra.";
+                    document.getElementById("msg_erro").style.display = "block";
+                    ocultarPopupSucesso(); // Garantir que o overlay seja removido em caso de erro
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
                 document.getElementById("msg_erro").style.display = "block";
                 ocultarPopupSucesso(); // Garantir que o overlay seja removido em caso de erro
-            }
-        })
-        .catch(error => {
-            console.error("Erro:", error);
-            document.getElementById("msg_erro").textContent = "Erro ao processar a solicitação.";
-            document.getElementById("msg_erro").style.display = "block";
-            ocultarPopupSucesso(); // Garantir que o overlay seja removido em caso de erro
-        });
+            });
 
     };
 
@@ -1096,9 +1349,21 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         document.getElementById('popup_cartaoCred').style.display = 'none';
         document.getElementById('popup_cartaoDeb').style.display = 'none';
 
+        // Desmarcar todos os cartões e esconder botões "Continuar"
+        document.querySelectorAll('input[name="cartao_credito_selecionado"], input[name="cartao_debito_selecionado"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        document.getElementById('btn_continuar_cartaoCred').style.display = 'none';
+        document.getElementById('btn_continuar_cartaoDeb').style.display = 'none';
+
+        // Esconder o div_cred_principal
+        document.getElementById('div_cred_principal').style.display = 'none';
+
         // Exibir o popup correspondente ao tipo de pagamento selecionado
         if (tipoPagamento === 'pix') {
             document.getElementById('popup-pix').style.display = 'block';
+            document.getElementById('qr_code_pix').style.display = 'none';
+            document.getElementById('btn_continuar').style.display = 'none';
         } else if (tipoPagamento === 'credito') {
             document.getElementById('popup_cartaoCred').style.display = 'block';
         } else if (tipoPagamento === 'debito') {

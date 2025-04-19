@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 $id_session = $_SESSION['id'];
-var_dump($_POST);
+//var_dump($_POST);
 //echo 'crediario';
 
 // Verificação e sanitização dos dados recebidos
@@ -1232,6 +1232,7 @@ if ($stmt) {
                 });
         });
     });
+
 </script>
 
 </html>

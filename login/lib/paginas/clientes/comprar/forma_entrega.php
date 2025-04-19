@@ -68,7 +68,6 @@ $saldo = !empty($cliente['saldo']) ? $cliente['saldo'] : 0;
 
 // Definir a variável $valorTaxaCrediario
 $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
-
 //var_dump($produtos);
 ?>
 
@@ -221,7 +220,7 @@ $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
         }
 
         button:hover {
-            background-color:rgb(32, 105, 36);
+            background-color: rgb(32, 105, 36);
         }
 
         #enderecoCadastrado button[onclick="mostrarCamposEndereco()"] {
@@ -260,13 +259,14 @@ $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
         }
 
         #div_valores {
-            background-color: blueviolet;
+            background-color:rgb(203, 169, 106);
             margin-top: 10px;
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
             padding: 10px;
         }
+
         .btn-voltar {
             background-color: #007bff;
             /* Azul */
@@ -284,9 +284,10 @@ $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
         }
 
         .btn-voltar:hover {
-            background-color:rgb(9, 71, 137);
+            background-color: rgb(9, 71, 137);
             /* Azul mais escuro */
         }
+
         th:nth-child(1),
         td:nth-child(1),
         /* Oculta a coluna ID Produto */
@@ -799,6 +800,16 @@ $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
                 value = value.replace(/(\d{0,2})/, '($1');
             }
             input.value = value;
+        }
+
+        function verificaCelular() {
+            const input = document.getElementById('contato');
+            const value = input.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+            if (value.length < 10 || value.length > 11) {
+                alert('Por favor, insira um número de celular válido com DDD.');
+                input.focus();
+            }
         }
     </script>
 </body>

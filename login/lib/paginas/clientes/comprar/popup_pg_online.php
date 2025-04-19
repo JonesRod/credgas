@@ -850,14 +850,7 @@ $nome_cartao = isset($nome_cartao) ? $nome_cartao : '';
         <form id="form-voltar" action="forma_entrega.php" method="GET">
             <input type="hidden" name="id_cliente" value="<?php echo $id_cliente; ?>">
             <input type="hidden" name="id_parceiro" value="<?php echo $id_parceiro; ?>">
-            <input type="hidden" name="valor_total" value="<?php echo $valor_total; ?>">
-            <input type="hidden" name="valor_frete" value="<?php echo $valor_frete; ?>">
-            <input type="hidden" name="detalhes_produtos" value="<?php echo $detalhes_produtos; ?>">
-            <input type="hidden" name="entrega" value="<?php echo $entrega; ?>">
-            <input type="hidden" name="rua" value="<?php echo $rua; ?>">
-            <input type="hidden" name="bairro" value="<?php echo $bairro; ?>">
-            <input type="hidden" name="numero" value="<?php echo $numero; ?>">
-            <input type="hidden" name="contato" value="<?php echo $contato; ?>">
+
             <button type="submit">Voltar</button>
         </form>
     </div>

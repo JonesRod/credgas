@@ -412,7 +412,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </h3>
         <div>
             <label for="comentario">Comentário (opcional):</label>
-            <textarea id="comentario" name="comentario" rows="4" cols="50"></textarea>
+            <textarea id="comentario" name="comentario" rows="4" cols="50" 
+            placeholder="Deixe um recado, uma referência, nome de quem vai receber ou retirar, ..."></textarea>
         </div>
         <form method="POST" action="">
             <h3>Escolha o momento do pagamento</h3>
@@ -861,12 +862,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const selecionados = Array.from(document.querySelectorAll('input[name="forma_pagamento_entrega[]"]:checked'))
                     .map(chk => {
                         let label = chk.value;
-                        if (chk.value === 'cartaoCred') {
-                            label += ` (${document.getElementById('input_bandeiras_credito_crediario').value})`;
+                        if (chk.value === 'pix') {
+                            label = ` Pix`;
+                        } else if (chk.value === 'dinheiro') {
+                            label = ` Dinheiro`;
+                        } else if (chk.value === 'cartaoCred') {
+                            label = ` Cartão de Crédito(${document.getElementById('input_bandeiras_credito_crediario').value})`;
                         } else if (chk.value === 'cartaoDeb') {
-                            label += ` (${document.getElementById('input_bandeiras_debito_crediario').value})`;
+                            label = ` Cartão de Débito(${document.getElementById('input_bandeiras_debito_crediario').value})`;
                         } else if (chk.value === 'outros') {
-                            label += ` (${document.getElementById('input_bandeiras_outros_crediario').value})`;
+                            label = ` Outros(${document.getElementById('input_bandeiras_outros_crediario').value})`;
                         }
                         return label;
                     })
