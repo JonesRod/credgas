@@ -1381,7 +1381,7 @@ border: 1px solid #ddd;*/
                 </div>
                 <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" style="color:#f0f0f0;"><i
                         class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i></a>
-                <!-- Exibir a contagem de notificações -->
+                <!-- Exibir a contagem de produtos no carrinho -->
                 <?php if ($total_carrinho > 0): ?>
                     <span id="carrinho-count" class="carrinho-count"><?php echo htmlspecialchars($total_carrinho); ?></span>
                 <?php else: ?>
