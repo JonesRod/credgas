@@ -10,7 +10,7 @@
         $idParceiro = intval($_GET['id']);
 
         // Consulta para buscar os dados do parceiro
-        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO' AND aberto_fechado_manual = 'Aberto'";
+        $sql = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = '1'";
         $result = $mysqli->query($sql);
 
         if ($result->num_rows > 0) {
@@ -62,15 +62,15 @@
         $data_fim = $produtos_encontrados['fim_promocao'];
 
         // Verifica se a promoção deve estar ativa ou inativa
-        if ($promocao === 'sim' && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
+        if ($promocao === '1' && $data_inicio <= $data_atual && $data_fim >= $data_atual) {
             // A promoção deve continuar como "sim"
             continue;
         } elseif ($data_fim < $data_atual) {
             // A promoção terminou; atualize para "não"
-            $mysqli->query("UPDATE produtos SET promocao = 'não' WHERE id_produto = '$id_produto'");
+            $mysqli->query("UPDATE produtos SET promocao = '0' WHERE id_produto = '$id_produto'");
         } elseif ($data_inicio > $data_atual) {
             // A promoção ainda não começou; continue com "sim" se for o caso
-            $mysqli->query("UPDATE produtos SET promocao = 'sim' WHERE id_produto = '$id_produto'");
+            $mysqli->query("UPDATE produtos SET promocao = '1' WHERE id_produto = '$id_produto'");
         }
     }
     
@@ -108,27 +108,27 @@
     $catalogo = $mysqli->query(query: "SELECT * FROM produtos 
     WHERE id_parceiro = '$idParceiro'
     AND categoria = '$categoriaSelecionada'  
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim'") or die($mysqli->error);
+    AND oculto != '1' 
+    AND produto_aprovado = '1'") or die($mysqli->error);
 
     // Verifica se existem promoções, mais vendidos e frete grátis
     $promocoes =  $mysqli->query("SELECT * FROM produtos 
     WHERE id_parceiro = '$idParceiro' 
     AND categoria = '$categoriaSelecionada' 
-    AND promocao = 'sim' 
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim'") or die($mysqli->error);
+    AND promocao = '1' 
+    AND oculto != '1' 
+    AND produto_aprovado = '1'") or die($mysqli->error);
 
     // Consulta SQL corrigida
     $queryFreteGratis = "SELECT * FROM produtos 
     WHERE id_parceiro = '$idParceiro'
     AND categoria = '$categoriaSelecionada'
-    AND oculto != 'sim' 
-    AND produto_aprovado = 'sim' 
-    AND frete_gratis = 'sim' 
-    OR (promocao = 'sim' 
+    AND oculto != '1' 
+    AND produto_aprovado = '1' 
+    AND frete_gratis = '1' 
+    OR (promocao = '1' 
     AND categoria = '$categoriaSelecionada'
-    AND frete_gratis_promocao = 'sim')";
+    AND frete_gratis_promocao = '1')";
 
     // Executa a consulta e verifica erros
     $freteGratis = $mysqli->query($queryFreteGratis) or die($mysqli->error);
@@ -145,8 +145,8 @@
         FROM produtos 
         WHERE id_parceiro = '$idParceiro' 
         AND categoria = '$categoriaSelecionada' 
-        AND oculto != 'sim' 
-        AND produto_aprovado = 'sim'
+        AND oculto != '1' 
+        AND produto_aprovado = '1'
         AND DATEDIFF(NOW(), data) <= 30
     ") or die("Erro na consulta: " . $mysqli->error);
 
@@ -261,7 +261,7 @@
     <div class="categorias">
         <?php 
             // Consulta para buscar parceiros pelo CEP
-            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = 'ATIVO'";
+            $sql_parceiros = "SELECT * FROM meus_parceiros WHERE id = $idParceiro AND status = '1'";
             $result_parceiros = $mysqli->query($sql_parceiros) or die($mysqli->error);
 
             if ($result_parceiros->num_rows > 0): 
@@ -397,14 +397,14 @@
                         <h3 class="produto-nome">
                             <?php 
                                 // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                             ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php 
                                 endif;
 
                                 // Exibe o ícone de promoção, se o produto estiver em promoção
-                                if ($produto['promocao'] === 'sim'): 
+                                if ($produto['promocao'] === '1'): 
                             ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
@@ -426,7 +426,7 @@
                         <!-- Preço do produto -->
                         <?php
                             $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === '1' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
@@ -489,14 +489,14 @@
                         <h3 class="produto-nome">
                             <?php 
                                 // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                             ?>
                                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                             <?php 
                                 endif;
 
                                 // Exibe o ícone de promoção, se o produto estiver em promoção
-                                if ($produto['promocao'] === 'sim'): 
+                                if ($produto['promocao'] === '1'): 
                             ?>
                                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
                             <?php 
@@ -519,7 +519,7 @@
                         <!-- Preço do produto -->
                         <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === '1' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
@@ -571,14 +571,14 @@
                             <h3 class="produto-nome">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
                                     endif;
 
                                     // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
+                                    if ($produto['promocao'] === '1'): 
                                 ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
@@ -601,7 +601,7 @@
                             <!-- Preço do produto -->
                             <?php
                             $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === '1' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);
@@ -656,14 +656,14 @@
                             <h3 class="produto-nome">
                                 <?php 
                                     // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                                    if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                                    if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
                                 ?>
                                     <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
                                 <?php 
                                     endif;
 
                                     // Exibe o ícone de promoção, se o produto estiver em promoção
-                                    if ($produto['promocao'] === 'sim'): 
+                                    if ($produto['promocao'] === '1'): 
                                 ?>
                                     <span class="icone-promocao" title="Produto em promoção">🔥</span>
                                 <?php 
@@ -686,7 +686,7 @@
                             <!-- Preço do produto -->
                             <?php
                             $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                            $valor_base = isset($produto['promocao']) && $produto['promocao'] === '1' 
                                 ? floatval($produto['valor_promocao'] ?? 0) 
                                 : floatval($produto['valor_produto'] ?? 0);  
                             $valor_produto = $valor_base + (($valor_base * $taxa_padrao)/ 100);

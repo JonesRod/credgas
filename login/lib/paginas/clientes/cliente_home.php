@@ -122,74 +122,54 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            /* Alinha itens ao topo */
             padding: 20px;
         }
 
         header h1 {
             flex-grow: 1;
-            /* Faz o título ocupar o espaço disponível */
             text-align: center;
-            /* Centraliza o título horizontalmente */
             font-size: 30px;
-            /* Tamanho padrão do título */
             line-height: 100px;
-            /* Alinha verticalmente o título com a altura do cabeçalho */
             margin: 0;
-            /* Remove margens padrão */
         }
 
         header .logo img {
             height: 150px;
-            /* Aumenta o tamanho do logo */
             width: 150px;
-            /* Ajuste proporcional ao tamanho */
             border-radius: 50%;
-            /* Mantém o logo redondo */
         }
-
         .menu-superior-direito {
             font-size: 20px;
             display: flex;
-            align-items: center; /* Alinha verticalmente os itens */
-            justify-content: flex-end; /* Alinha os itens no canto superior direito */
-            gap: 10px; /* Espaçamento entre os itens */
+            align-items: center;
+            justify-content: flex-end;
+            gap: 3px;
         }
 
         .menu-superior-direito span {
-            margin: 0; /* Remove margens extras */
+            margin: 0;
             transition: color 0.3s ease;
         }
 
         .menu-superior-direito i {
             font-size: 20px;
-            /* Aumenta o tamanho dos ícones */
             margin-left: 15px;
             transition: transform 0.3s ease, color 0.3s ease;
-            /* Transição para o movimento e cor */
             cursor: pointer;
-            /* Cursor de ponteiro ao passar o mouse */
         }
 
-        /* Efeito ao passar o mouse */
         .menu-superior-direito span:hover {
             color: #f0a309;
-            /* Muda a cor do texto ao passar o mouse */
         }
 
         .menu-superior-direito i:hover {
             transform: translateY(-5px);
-            /* Move o ícone para cima ao passar o mouse */
             color: #ff9d00;
-            /* Muda a cor do ícone ao passar o mouse */
         }
 
-        /* Efeito ao clicar */
         .menu-superior-direito i:active {
             transform: scale(0.9);
-            /* Diminui o tamanho do ícone ao clicar */
             color: #ff9d09;
-            /* Muda a cor do ícone ao passar o mouse */
         }
 
         aside#menu-lateral {
@@ -351,11 +331,11 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
         .carrinho-count {
             position: absolute;
-            top: 0px;
-            right: 33px;
+            top: 7px;
+            right: 60px;
             background-color: chocolate;
             color: white;
-            padding: 3px;
+            padding: 5px;
             border-radius: 50%;
             font-size: 10px;
             font-weight: bold;
@@ -401,25 +381,6 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             background-color: #f0f0f0;
         }
 
-        /*.profile-dropdown {
-position: relative;
-}
-
-.profile-dropdown #dropdownMenu {
-display: none;
-position: absolute;
-top: 100%;
-right: 0;
-background: #fff;
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-border-radius: 4px;
-list-style: none;
-padding: 10px;
-}
-
-.profile-dropdown:hover #dropdownMenu {
-display: block;
-}*/
         /* Faixa de Navegação */
         .sub-nav {
             display: flex;
@@ -546,13 +507,7 @@ display: block;
             align-items: center;
             /* Centraliza horizontalmente */
             justify-content: center;
-            /* Centraliza verticalmente */
-            /*left: 50vh;
-height: 40vh; /* Altura total da tela */
             text-align: center;
-            /*width: 95%;
-/*padding: 10px;
-margin-left: 10px;*/
         }
 
         .parceiros-carousel {
@@ -569,14 +524,9 @@ margin-left: 10px;*/
         .parceiros-carousel .parceiro-card {
             text-align: center;
             padding: 10px;
-            /*background: #f9f9f9;
-border: 1px solid #ddd;*/
             border-radius: 60px;
-            /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
             margin: 10px auto;
-            /* Centraliza e ajusta margens vertical e horizontal */
             max-width: 200px;
-            /* Define o comprimento máximo do cartão */
             background-color: transparent;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -836,145 +786,6 @@ border: 1px solid #ddd;*/
             /* Muda a cor do ícone ao passar o mouse */
         }
 
-        @media (max-width: 768px) {
-
-            /*.sub-nav {
-    flex-direction: column; /* Coloca os itens em coluna em telas menores */
-            /*align-items: flex-start; /* Alinha os itens à esquerda */
-            /*padding: 15px; /* Aumenta o padding em telas menores */
-            /*}*/
-            .menu-superior-direito .fa-shopping-cart {
-                display: none;
-            }
-
-            /* Adicionando esta linha para esconder o ícone do menu */
-            .menu-superior-direito .fa-bars {
-                display: none;
-                /* Oculta o ícone do menu em telas pequenas */
-            }
-
-            .carrinho-count {
-                display: none !important;
-            }
-
-            .menu-superior-direito span {
-                /*position: absolute; /* Mantém a barra lateral fixa */
-                font-size: 0.7rem;
-                /* Tamanho reduzido para o nome fantasia */
-            }
-
-            .sub-nav div {
-                margin: 10px 0;
-                /* Reduz o espaçamento entre os itens em telas menores */
-                text-align: left;
-                /* Alinha os itens à esquerda */
-            }
-
-            .nome-fantasia {
-                font-size: 1.8rem;
-                /* Tamanho reduzido para o nome fantasia */
-                font-weight: bold;
-                color: #ffffff;
-                /* Cor mais suave para o texto */
-                text-align: left;
-                /* Alinha à esquerda para ficar mais natural ao lado da logo */
-                margin: 0;
-                line-height: 1.2;
-                display: flex;
-                justify-content: flex-start;
-                /* Garante que o texto fique alinhado à esquerda */
-                align-items: center;
-                flex-grow: 1;
-                /* Permite que o nome ocupe o máximo de espaço disponível ao lado da logo */
-                padding-left: 15px;
-                /* Espaço entre a logo e o nome */
-                margin: 15px 0;
-                /* Ajusta o espaçamento para telas pequenas */
-            }
-
-            /* Cartão do produto */
-            .product-card {
-                background: #ffffff;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                width: 180px;
-                /* Largura do cartão */
-                height: 450px;
-                /* Define a altura fixa */
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                overflow: hidden;
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-                text-align: center;
-                padding: 3px;
-            }
-
-            .menu-mobile {
-                display: flex;
-                /* Exibe o menu mobile em telas pequenas */
-            }
-
-            .notificacao-count {
-                font-size: 5px;
-            }
-
-            .carrinho-count {
-                display: none;
-            }
-
-            .carrinho-count-rodape {
-                position: absolute;
-                top: 0px;
-                /*right: 260px;*/
-                background-color: chocolate;
-                color: white;
-                padding: 3px;
-                border-radius: 50%;
-                font-size: 10px;
-                font-weight: bold;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nome-fantasia {
-                font-size: 1.2rem;
-                /* Ainda menor para dispositivos móveis */
-                letter-spacing: 1px;
-                /* Reduz o espaçamento entre as letras */
-            }
-
-            .logo-img {
-                width: 130px;
-                height: 130px;
-                border-radius: 50%;
-                margin-right: 10px;
-            }
-
-            .btn-login {
-                padding: 3px 5px;
-                border-radius: 5px;
-            }
-
-            .menu-mobile {
-                display: flex;
-                /* Exibe o menu mobile em telas pequenas */
-            }
-
-            /* Adicionando esta linha para esconder o ícone do menu */
-            .menu-superior-direito .fa-bars {
-                display: none;
-                /* Oculta o ícone do menu em telas pequenas */
-            }
-
-            .menu-superior-direito .fa-shopping-cart {
-                display: none;
-            }
-
-            .carrinho-count {
-                display: none;
-            }
-
-        }
-
         #lista-notificacoes a {
             text-decoration: none;
             /* Remove o sublinhado */
@@ -1140,154 +951,6 @@ border: 1px solid #ddd;*/
             margin-bottom: 5px;
         }
 
-        /* Responsividade geral */
-        @media (max-width: 768px) {
-            .logo img {
-                max-width: 100px;
-                /* Reduz o tamanho da logo */
-                height: auto;
-            }
-
-            .nome-fantasia {
-                font-size: 18px;
-                /* Ajusta o tamanho da fonte */
-                text-align: center;
-            }
-
-            .menu-superior-direito {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .menu-superior-direito span {
-                font-size: 14px;
-            }
-
-            .menu-superior-direito i {
-                font-size: 18px;
-            }
-
-            .opcoes {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-            }
-
-            .tab {
-                flex: 1 1 calc(50% - 10px);
-                /* Ajusta o tamanho das abas */
-                text-align: center;
-                padding: 10px;
-                font-size: 14px;
-            }
-
-            .conteudo-aba h2 {
-                font-size: 18px;
-                text-align: center;
-            }
-
-            .parceiros-carousel .parceiro-card img {
-                max-width: 80px;
-                /* Ajusta o tamanho das imagens dos parceiros */
-                height: auto;
-            }
-
-            .parceiros-carousel .parceiro-card h3 {
-                font-size: 14px;
-            }
-
-            .products .product-card img {
-                max-width: 100px;
-                /* Ajusta o tamanho das imagens dos produtos */
-                height: auto;
-            }
-
-            .products .product-card h3 {
-                font-size: 14px;
-            }
-
-            .products .product-card p {
-                font-size: 12px;
-            }
-
-            .input {
-                width: 90%;
-                /* Ajusta a largura dos inputs de pesquisa */
-                margin: 10px auto;
-                font-size: 14px;
-            }
-
-            .popup {
-                width: 90%;
-                /* Ajusta a largura do popup */
-                height: auto;
-            }
-
-            .popup input {
-                font-size: 14px;
-            }
-
-            .popup p {
-                font-size: 14px;
-            }
-
-            footer.menu-mobile ul {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-around;
-            }
-
-            footer.menu-mobile ul li {
-                flex: 1 1 20%;
-                text-align: center;
-            }
-
-            footer.menu-mobile ul li i {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo img {
-                max-width: 80px;
-            }
-
-            .nome-fantasia {
-                font-size: 16px;
-            }
-
-            .tab {
-                flex: 1 1 100%;
-                font-size: 12px;
-            }
-
-            .products .product-card img {
-                max-width: 80px;
-            }
-
-            .products .product-card h3 {
-                font-size: 12px;
-            }
-
-            .products .product-card p {
-                font-size: 10px;
-            }
-
-            .input {
-                font-size: 12px;
-            }
-
-            .popup p {
-                font-size: 12px;
-            }
-
-            footer.menu-mobile ul li i {
-                font-size: 16px;
-            }
-        }
     </style>
     <script>
 
@@ -1542,7 +1205,7 @@ border: 1px solid #ddd;*/
                     <?php while ($parceiro = $result_parceiros->fetch_assoc()):
                         $logoParceiro = !empty($parceiro['logo']) ? $parceiro['logo'] : 'placeholder.jpg'; ?>
                         <div class="parceiro-card"
-                            onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>'">
+                            onclick="window.location.href='loja_parceiro.php?id=<?php echo $parceiro['id']; ?>&id_cliente=<?php echo $id; ?>'">
                             <img src="../parceiros/arquivos/<?php echo htmlspecialchars($logoParceiro); ?>"
                                 alt="Loja não encontrada">
                             <h3><?php echo mb_strimwidth(htmlspecialchars($parceiro['nomeFantasia'] ?? ''), 0, 18, '...'); ?>
