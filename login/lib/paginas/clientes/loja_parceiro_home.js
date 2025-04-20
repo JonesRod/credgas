@@ -56,11 +56,6 @@ window.addEventListener('click', function(event) {
     }
 });
 
-
-
-
-
-
 // ------Função para mostrar o conteúdo da aba selecionada
 function mostrarConteudo(aba, element) {
 

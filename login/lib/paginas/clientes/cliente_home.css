@@ -607,15 +607,13 @@ border: 1px solid #ddd;*/
 
 .descricao {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    /* Limita a 2 linhas */
+    -webkit-line-clamp: 2; /* Limita a 2 linhas */
     -webkit-box-orient: vertical;
-    overflow: hidden;
-    /* Oculta o texto excedente */
-    text-overflow: ellipsis;
-    /* Adiciona "..." ao final do texto cortado */
-    max-width: 100%;
-    /* Define uma largura máxima para o texto */
+    overflow: hidden; /* Oculta o texto excedente */
+    text-overflow: ellipsis; /* Adiciona "..." ao final do texto cortado */
+    max-width: 100%; /* Define uma largura máxima para o texto */
+    word-wrap: break-word; /* Quebra palavras longas */
+    line-height: 1.5; /* Ajusta o espaçamento entre linhas */
 }
 
 .conteudo-aba h2 {
@@ -898,7 +896,6 @@ flex-direction: column; /* Coloca os itens em coluna em telas menores */
     border-radius: 5px;
     /* Arredonda os cantos */
 }
-
 
 .popup h2 {
     margin-top: 0;

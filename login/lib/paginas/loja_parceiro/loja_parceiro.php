@@ -41,7 +41,7 @@
     } */
 
     // Consulta para obter o valor de not_inscr_parceiro da primeira linha
-    $sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
+    /*$sql_query_not_par = "SELECT * FROM contador_notificacoes_parceiro WHERE id_parceiro = $idParceiro";
     $result = $mysqli->query(query: $sql_query_not_par);
     $row = $result->fetch_assoc();
     $platafoma= $row['plataforma'] ?? 0; // Define 0 se não houver resultado
@@ -49,7 +49,7 @@
     $not_adicao_produto= $row['not_adicao_produto'] ?? 0; // Define 0 se não houver resultado
     $pedidos = $row['pedidos'] ?? 0; // Define 0 se não houver resultado
     // Soma todos os valores de notificações
-    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;
+    $total_notificacoes = $not_novo_produto + $not_adicao_produto + $pedidos;*/
 
     // Obtenha a data atual
     $data_atual = date('Y-m-d');
@@ -159,9 +159,873 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $parceiro['nomeFantasia']; ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="loja_parceiro_home.css">
+    <!--<link rel="stylesheet" href="loja_parceiro_home.css">-->
     <script src="loja_parceiro_home.js"></script> 
     <style>
+        /* Estilos gerais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #007BFF;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+    overflow-y: scroll; /* Garante que o corpo da página possa rolar */
+}
+
+header {
+    background-color: #007BFF;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Alinha itens ao topo */
+    padding: 20px;
+}
+
+header h1 {
+    flex-grow: 1; /* Faz o título ocupar o espaço disponível */
+    text-align: center; /* Centraliza o título horizontalmente */
+    font-size: 40px; /* Tamanho padrão do título */
+    line-height: 100px; /* Alinha verticalmente o título com a altura do cabeçalho */
+    margin: 0; /* Remove margens padrão */
+}
+
+header .logo img {
+    height: 150px; /* Aumenta o tamanho do logo */
+    width: 150px; /* Ajuste proporcional ao tamanho */
+    border-radius: 50%; /* Mantém o logo redondo */
+}
+
+.menu-superior-direito {
+    font-size: 20px;
+    display: flex;
+    align-items: flex-start; /* Alinha o conteúdo no topo */
+    margin-top: -10px; /* Ajuste para alinhar ao topo */
+}
+
+.menu-superior-direito span {
+    margin-right: 15px; /* Espaçamento entre o nome do usuário e os ícones */
+    transition: color 0.3s ease; /* Transição suave para a cor */
+}
+
+.menu-superior-direito i {
+    font-size: 27px; /* Aumenta o tamanho dos ícones */
+    margin-left: 15px;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para o movimento e cor */
+    cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+}
+/* Efeito ao passar o mouse */
+.menu-superior-direito span:hover {
+    color: #f0a309; /* Muda a cor do texto ao passar o mouse */
+}
+
+.menu-superior-direito i:hover {
+    transform: translateY(-5px); /* Move o ícone para cima ao passar o mouse */
+    color: #ff9d00; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Efeito ao clicar */
+.menu-superior-direito i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ff9d09; /* Muda a cor do ícone ao passar o mouse */
+}
+aside#menu-lateral {
+    font-weight: bold; /* Aplica negrito ao texto */
+    background-color: #d3d0ce;
+    color: rgb(24, 8, 235);
+    width: 250px; /* Largura fixa da barra lateral */
+    padding: 20px;
+    position: absolute; /* Mantém a barra lateral fixa */
+    top: 60px; /* Ajusta a posição abaixo do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    display: none; /* Inicialmente escondido */
+    transition: all 0.3s ease; /* Transição suave */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para dar destaque */
+}
+
+aside#menu-lateral ul {
+    list-style: none;
+    padding: 0;
+}
+
+aside#menu-lateral ul li {
+    margin: 15px 0; /* Margem entre os itens */
+    font-size: 16px; /* Tamanho da fonte */
+    display: flex; /* Flexbox para alinhar ícone e texto */
+    align-items: center; /* Alinha verticalmente */
+    transition: background-color 0.3s ease; /* Transição suave para a cor de fundo */
+    border-radius: 5px; /* Bordas arredondadas */
+    padding: 10px; /* Espaçamento interno */
+    font-weight: bold; /* Aplica negrito ao texto */
+}
+
+/* Remove o sublinhado do link "Sair" */
+#menu-lateral a {
+    text-decoration: none; /* Remove o sublinhado */
+    color: inherit; /* Mantém a cor do texto herdada */
+    transition: color 0.3s ease; /* Suave transição de cor */
+}
+
+/* Efeito ao passar o mouse sobre o link */
+#menu-lateral a:hover {
+    cursor: pointer;
+    color: #007BFF; /* Muda a cor ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+aside#menu-lateral ul li:hover {
+    cursor: pointer;
+    background-color: rgba(0, 123, 255, 0.1); /* Cor de fundo ao passar o mouse */
+}
+
+/* Estilo para ícones */
+aside#menu-lateral ul li i {
+    margin-right: 10px; /* Espaçamento entre ícone e texto */
+    font-size: 20px; /* Tamanho dos ícones */
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o ícone */
+aside#menu-lateral ul li:hover i {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Efeito ao clicar em um ícone */
+aside#menu-lateral ul li i:active {
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeitos para os spans */
+aside#menu-lateral ul li span {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição para movimento e cor */
+}
+
+/* Efeito ao passar o mouse sobre o span */
+aside#menu-lateral ul li:hover span {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o ícone para cima ao passar o mouse */
+    color: #bf9c44; /* Muda a cor do texto ao passar o mouse */
+    /*text-decoration: underline; /* Adiciona sublinhado ao passar o mouse */
+}
+/* Seção de Produtos, Promoções, Mais Vendidos e Frete Grátis */
+.section {
+    margin: 40px auto;
+    width: 70%;
+    max-width: 1200px;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Botão "Inclua seu primeiro produto" */
+.button {
+    /*display: inline-block;*/
+    margin-top: 50px;
+    font-weight: bold; /* Deixa o texto em negrito */
+    padding: 15px 30px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: background-color 0.3s, transform 0.3s; /* Suaviza a mudança de cor e transformação */
+    font-size: 16px;
+    border-color: #fad102;
+}
+
+.button:hover {
+    background-color: #fad102; /* Cor de fundo ao passar o mouse */
+    transform: scale(1.1); /* Aumenta o tamanho do botão em 10% */
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+    box-sizing: border-box;
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    text-align: center;
+}
+
+/* Estilos para as abas */
+main .opcoes {
+    background-color: #007BFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0px;
+    padding: auto;
+}
+
+main .tab {
+    padding: 10px;
+    border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+    background-color: #007BFF;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+main .tab:hover {
+    background-color: #afa791;
+    color: white;
+    transform: scale(1.05);
+}
+
+main .tab.active {
+    background-color: #ffb300; /* Aba ativa com cor diferente */
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Estilos para o conteúdo das abas */
+.conteudo-aba {
+    flex-grow: 1; /* Faz o conteúdo ocupar todo o espaço restante */
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 0px;
+    padding: 10px;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    display: none; /* Por padrão, todos os conteúdos estão escondidos */
+    padding-top: 5px;
+    box-sizing: border-box; /* Garante que o padding seja incluído no tamanho */
+    overflow: auto; /* Para que o conteúdo role se for maior que a tela */
+    background-color: #d3d0ce;
+    width: 100%;
+    text-align: center; /* Centraliza o texto */
+    display: flex; /* Define um layout flexível */
+    flex-direction: column; /* Coloca os elementos verticalmente */
+    align-items: center; /* Centraliza horizontalmente os itens */
+    justify-content: center; /* Centraliza verticalmente os itens */
+    min-height: 200px; /* Define uma altura mínima para centralização adequada */
+    /*padding: 20px; /* Adiciona espaçamento interno */
+/* padding-bottom: 50px; /* Ajuste conforme o tamanho do seu menu */
+}
+
+.container{
+    display: flex;
+    /*flex-direction: column;*/
+    align-items: center; /* Centraliza horizontalmente */
+    justify-content: center; /* Centraliza verticalmente */
+    /*left: 50vh;
+    height: 40vh; /* Altura total da tela */
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    /*margin-top: -30px;*/
+}
+
+.titulo {
+font-size: 20px;
+font-weight: bold;
+}
+
+.input {
+width: 50%;
+padding: 10px;
+font-size: 20px;
+border: 1px solid #ccc;
+border-radius: 10px;
+text-align: left;
+margin: 10px;
+}
+.conteudo {
+display: flex;
+flex-direction: column;
+align-items: center; /* Centraliza horizontalmente */
+justify-content: center; /* Centraliza verticalmente */
+left: 50vh;
+height: 40vh; /* Altura total da tela */
+text-align: center;
+}
+
+.conteudo p {
+    margin-bottom: 10px; /* Espaçamento entre o parágrafo e o botão */
+}
+
+.conteudo .button {
+    padding: 10px 20px;
+}
+
+
+
+.menu-mobile {
+    background-color: #343a40;
+    color: white;
+    padding: 15px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: none;
+    justify-content: space-around;
+}
+#menu-mobile i {
+    text-decoration: none; /* Remove o sublinhado dos links */
+    color: inherit; /* Herda a cor do item pai */
+}
+#menu-mobile i:hover {
+    background-color: #f0f0f0; /* Efeito de hover */
+    color: #007BFF; /* Cor ao passar o mouse */
+}
+.menu-mobile ul {
+    list-style: none;  
+    display: flex;
+    justify-content: space-around;
+    width: 100%; /* Garantir que o menu ocupe toda a largura */
+}
+
+/* Efeitos para os itens do menu mobile */
+.menu-mobile ul li {
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+}
+/* Efeito ao passar o mouse sobre o item do menu */
+.menu-mobile ul li:hover {
+    cursor: pointer;
+    transform: translateY(-3px); /* Move o item para cima ao passar o mouse */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+.menu-mobile ul li i {
+    font-size: 24px; /* Aumente o tamanho dos ícones aqui */
+    margin: 0; /* Remova a margem, se necessário */
+    display: block; /* Garante que o ícone seja exibido como um bloco */
+    text-align: center; /* Centraliza o ícone dentro do item do menu */
+    transform: scale(0.9); /* Diminui o tamanho do ícone ao clicar */
+    /*color: #afa791; /* Muda a cor do ícone ao passar o mouse */
+}
+/* Efeito ao passar o mouse sobre o ícone */
+.menu-mobile ul li:hover i {
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease; /* Transição suave para movimento e cor */
+    color: #ffbb09; /* Muda a cor do ícone ao passar o mouse */
+}
+
+/* Estilo para o ícone de notificações com o número de notificações */
+.notificacoes {
+    position: relative;
+    display: inline-block;
+}
+/* Efeito de movimento no ícone de notificação e no número de notificações ao passar o mouse */
+.notificacoes:hover i, 
+.notificacoes:hover .notificacao-count {
+    animation: moverNotificacao 0.5s ease-in-out forwards;
+}
+/* Definição da animação de movimento */
+@keyframes moverNotificacao {
+    0% {
+        transform: translateY(0); /* Posição inicial */
+    }
+    50% {
+        transform: translateY(-10px); /* Movimento para cima */
+    }
+    100% {
+        transform: translateY(0); /* Volta à posição original */
+    }
+}
+
+.notificacao-count {
+    position: absolute;
+    top: -8px;
+    right: -1px;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+
+/* Painel de notificações estilo semelhante ao menu lateral */
+#painel-notificacoes {
+    display: none;
+    position: fixed;
+    top: 60px; /* Ajuste conforme a altura do cabeçalho */
+    right: 20px; /* Posiciona o menu à direita */
+    width: 250px;
+    height: 400px;
+    background-color: white;
+    border: 2px solid #ffb300;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 10px;
+}
+
+#painel-notificacoes h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#painel-notificacoes ul {
+    list-style: none;
+    padding: 0;
+}
+
+#painel-notificacoes li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+#painel-notificacoes li:hover {
+    background-color: #f0f0f0;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Estilos para telas maiores (desktops) */
+.lista-produtos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+
+.lista-promocoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+.lista-freteGratis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+.lista-novidades {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+.produto-item {
+    background-color: aliceblue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 3px;
+    border-radius: 8px;
+    width: 170px;
+    height: 310px; /* Adjusted height */
+    text-align: center;
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.produto-item:hover {
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.2);
+}
+
+.produto-imagem {
+    width: 100%;
+    height: auto;
+    max-height: 160px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.produto-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+
+/* Estilo para o nome do produto com limite de espaço */
+.produto-nome {
+    /*font-size: 1.2em;*/
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    white-space: nowrap; /* Não permite quebra de linha */
+    overflow: hidden;    /* Oculta o conteúdo que ultrapassa */
+    text-overflow: ellipsis; /* Adiciona os três pontos '...' */
+}
+
+/* Estilo para a descrição do produto com limite de linhas */
+.produto-descricao {
+    font-size: 14px;
+    line-height: 1.4; /* Espaçamento entre as linhas */
+    max-height: 4.2em; /* Limita a altura da descrição para 3 linhas (1.4 * 3) */
+    overflow: hidden;  /* Oculta o conteúdo que ultrapassa */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* Limita o texto a 3 linhas */
+    text-overflow: ellipsis; /* Adiciona os três pontos '...' */
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 5px;
+
+}
+
+.produto-preco {
+    font-size: 1.2em;
+    color: #28a745;
+    font-weight: bold;
+}
+
+.button-editar {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 100%;
+}
+.produto-item {
+    position: relative; /* Define o contêiner da imagem como relativo */
+    display: inline-block;
+}
+
+.icone-oculto {
+    position: absolute;
+    top: -5px;
+    right: 3px;
+    font-size: 24px;
+    color: red; /* Cor do ícone */
+    border-radius: 50%;
+    padding: -3px;
+}
+
+.fa-clock {
+    position: absolute;
+    top: 3px;
+    /*right: 5px;*/
+    left: 5px;
+    font-size: 20px;
+    color: black; /* Cor do ícone */
+    border-radius: 50%;
+    padding: 2px;
+}
+.button-editar:hover {
+    background-color:darkorange;
+}
+.button {
+    margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: darkorange;
+}
+
+.catalogo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.categorias{
+    padding-bottom: 50px;
+}
+
+.categorias-parceiro {
+    display: flex; /* Flexbox para organizar os itens em linha */
+    flex-wrap: wrap; /* Permite quebrar para outra linha se necessário */
+    justify-content: center; /* Centraliza os itens horizontalmente */
+    gap: 15px; /* Espaçamento entre os itens */
+}
+
+.categoria-item {
+    text-align: center;
+    margin: 5px; /* Margem ao redor de cada item */
+}
+
+.categoria-imagem {
+    width: 60px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%;
+    transition: all 0.3s ease; /* Suaviza o efeito de transição */
+}
+
+.categorias-parceiro p {
+    font-size: 14px;
+    color: black;
+    margin: 0;
+    transition: all 0.3s ease; /* Suaviza o efeito de transição */
+}
+
+.categoria-item:hover .categoria-imagem {
+    width: 70px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: -5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%; /* Torna a imagem circular */
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+}
+
+.categoria-item:hover p {
+    font-size: 16px;
+    color: rgb(201, 231, 9);
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+    margin: 0;
+}
+.categoria-item.selected .categoria-imagem {
+    width: 70px; /* Ajuste o tamanho das imagens conforme necessário */
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: -5px; /* Espaçamento entre imagem e texto */
+    border-radius: 50%; /* Torna a imagem circular */
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+}
+
+.categoria-item.selected p {
+    font-size: 16px;
+    color: rgb(220, 200, 10);
+    transform: translateY(-5px); /* Move o texto 5px para cima */
+    margin: 0;
+    text-decoration: underline; /* Adiciona sublinhado ao texto */
+}
+
+
+.categoria-item {
+    cursor: pointer;
+    transition: transform 0.3s, color 0.3s;
+}
+
+
+
+
+/* Para telas menores que 768px */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 20px; /* Diminui o tamanho do título em telas pequenas */
+        /*margin: 20px 0; /* Adiciona margem para descer o título em telas pequenas */
+    }
+
+    header .logo img {
+        height: 100px; /* Diminui o tamanho do logo em telas pequenas */
+        width: 100px; /* Ajuste proporcional ao tamanho */
+    }
+
+    aside#menu-lateral {
+        display: none; /* Oculta a barra lateral em telas pequenas */
+    }
+
+    /* Adicionando esta linha para esconder o ícone do menu */
+    .menu-superior-direito .fa-store {
+        display: none; /* Oculta o ícone do menu em telas pequenas */
+    }
+
+    .menu-mobile {
+        display: flex; /* Exibe o menu mobile em telas pequenas */
+    }
+    /* Botão "Inclua seu primeiro produto" */
+    .button {
+        font-weight: bold; /* Deixa o texto em negrito */
+        padding: 10px 10px;
+        font-size: 12px;
+    }
+    main .opcoes {
+        /*flex-direction: column;*/
+        gap: 10px;
+        background-color: #007BFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 0px;
+        padding: auto;
+    }
+    /* Diminui o tamanho das letras em telas menores */
+    main .tab span {
+        font-size: 15px; /* Ajuste conforme o necessário */
+    }
+    main {
+        display: flex;
+        flex-direction: column;
+        height: 100vh; /* O contêiner principal ocupa a altura total da tela */
+        box-sizing: border-box;
+    }
+    main .tab {
+        max-width: 10px;
+        border-radius: 8px 8px 0 0; /* Bordas arredondadas só no topo, estilo de aba */
+        background-color: #007BFF;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        display: flex; /* Garante que o conteúdo interno seja flexível */
+        padding: 10px 50px;
+        width: auto; /* Garante que as abas se ajustem ao conteúdo */
+        /*width: 5%; /* Garante que as abas ocupem a largura completa em telas pequenas */
+        justify-content: center; /* Centraliza o texto dentro da aba */
+        align-items: center;
+    }
+
+    main .tab:hover {
+        background-color: #afa791;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    main .tab.active {
+        background-color: #ffb300; /* Aba ativa com cor diferente */
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .produto-item {
+        width: 100%;
+        width: 160px;
+        height: 160;
+        padding: 3px;
+    }
+
+    .produto-imagem {
+        width: 100%;
+        height: auto;
+        max-height: 155px;
+    }
+
+    .produto-nome {
+        font-size: 1.1em;
+    }
+
+    .button-editar {
+        padding: 6px 12px;
+    }
+
+}
+        
+/* Para telas menores que 480px */
+@media (max-width: 480px) {
+    .logo-img {
+        width: 80px;
+    }
+    .logo-text {
+        font-size: 16px;
+    }
+    .products {
+        grid-template-columns: 1fr;
+    }
+    .menu-mobile {
+        display: flex; /* Exibe o menu mobile em telas pequenas */
+    }
+    main {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Garante que o main ocupe no mínimo a altura da tela */
+        overflow: auto; /* Permite que o conteúdo do main role se for maior que a tela */
+    }
+    
+    .conteudo-aba {
+        flex-grow: 1;
+        overflow-y: auto; /* Permite que o conteúdo dentro das abas role */
+        max-height: calc(100vh - 100px); /* Ajuste para que o conteúdo role corretamente */
+    }
+    main .tab:hover {
+        background-color: #afa791;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    main .tab.active {
+        background-color: #ffb300; /* Aba ativa com cor diferente */
+        color: white;
+        transform: scale(1.05);
+
+        word-spacing: -10px; /* Junta as palavras mais próximas */
+        justify-content: center; /* Centraliza o texto dentro da aba */
+        align-items: center;
+    }
+    /* Estilos para telas maiores (desktops) */
+    .lista-produtos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }
+
+    .lista-promocoes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }
+    .lista-freteGgratis{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }  
+    .lista-novidades { 
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        padding-bottom: 50px;
+    }  
+    .produto-item {
+        width: 40%;
+        max-width: 250px;
+        height: 350px;
+        padding: 3px;
+
+    }
+
+    .produto-imagem {
+        width: 100%;
+        height: auto;
+        max-height: 190px;
+    }
+
+    .produto-nome {
+        font-size: 1.1em;
+    }
+
+    .button-editar {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .produto-descricao {
+        font-size: 0.85em;
+    }
+}
         .conteudo-secao {
             display: none;
         }
@@ -218,45 +1082,8 @@
         <div class="logo">
             <img src="<?php echo $logo; ?>" alt="Logo da Loja" class="logo-img">
         </div>
-
         <h1><?php echo $parceiro['nomeFantasia']; ?></h1>
-
-        <!--<div class="menu-superior-direito">
-            <!-- Ícone de notificações com contagem -->
-            <!--<div class="notificacoes">
-                <i class="fas fa-bell" onclick="toggleNotificacoes()"></i>
-                <!-- Exibir a contagem de notificações -->
-                <?php //if ($total_notificacoes > 0): ?>
-                    <!--<span id="notificacao-count" class="notificacao-count"></span>
-                <?php //else: ?>
-                    <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
-                <?php //endif; ?>
-            </div>
-
-            <i class="fas fa-store" onclick="toggleMenu()"></i><!--Configuraçõa da Loja-->
-        <!--</div>-->
-
     </header>
-
-    <!-- Painel de notificações que aparece ao clicar no ícone de notificações -->
-    <!--<aside id="painel-notificacoes">
-        <h2>Notificações: <?php //echo htmlspecialchars(string: $total_notificacoes); ?></h2>
-        <ul id="lista-notificacoes">
-            <li onclick="abrirNotificacao(1)">Novo Produtos: <?php //echo $not_novo_produto; ?></li>
-            <li onclick="abrirNotificacao(2)">Edição de Produtos: <?php //echo $not_adicao_produto; ?></li>
-            <li onclick="abrirNotificacao(3)">Pedidos: <?php //echo $pedidos; ?></li>
-
-        </ul>
-    </aside>-->
-
-    <!-- Menu lateral que aparece abaixo do ícone de menu -->
-    <!--<aside id="menu-lateral" >
-        <ul>
-            <li><a href="perfil_loja.php"><i class="fas fa-user"></i> Perfil da Loja</a></li>
-            <li><a href="configuracoes.php?id_parceiro=<?php //echo urlencode($id); ?>"><i class="fas fa-cog"></i> Configurações</a></li>
-            <li><a href="parceiro_logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
-        </ul>
-    </aside>-->
 
     <div class="categorias">
         <?php 
@@ -319,7 +1146,7 @@
                         $selectedClass = ($categoriaNome === $categoriaSelecionada) ? 'selected' : ''; // Adiciona a classe 'selected' se for a selecionada
 
                     ?>
-                    <div class="categoria-item <?php echo $selectedClass; ?>" onclick="selecionarCategoria('<?php echo $categoriaNome; ?>')" data-categoria="<?php echo $categoriaNome; ?>">
+                    <div class="categoria-item <?php echo $selectedClass; ?>" data-categoria="<?php echo $categoriaNome; ?>">
                         <img src="<?php echo htmlspecialchars('../arquivos_fixos/'.$imagem); ?>" alt="<?php echo $categoriaNome; ?>" class="categoria-imagem">
                         <p><?php echo $categoriaNome; ?></p>
                     </div>
@@ -711,7 +1538,7 @@
     <footer class="menu-mobile">
 
     </footer>
-    <script src="parceiro_home.js"></script> 
+    <!--<script src="parceiro_home.js"></script> -->
     <script>
         // Obtém o ID da sessão do PHP
         var sessionId = <?php echo json_encode($idParceiro); ?>;

@@ -138,38 +138,52 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             width: 150px;
             border-radius: 50%;
         }
+
         .menu-superior-direito {
             font-size: 20px;
             display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 3px;
+            align-items: flex-start;
+            /* Alinha o conteúdo no topo */
+            margin-top: -10px;
+            /* Ajuste para alinhar ao topo */
         }
 
         .menu-superior-direito span {
-            margin: 0;
+            margin-right: 15px;
+            /* Espaçamento entre o nome do usuário e os ícones */
             transition: color 0.3s ease;
+            /* Transição suave para a cor */
         }
 
         .menu-superior-direito i {
             font-size: 20px;
+            /* Aumenta o tamanho dos ícones */
             margin-left: 15px;
             transition: transform 0.3s ease, color 0.3s ease;
+            /* Transição para o movimento e cor */
             cursor: pointer;
+            /* Cursor de ponteiro ao passar o mouse */
         }
 
+        /* Efeito ao passar o mouse */
         .menu-superior-direito span:hover {
             color: #f0a309;
+            /* Muda a cor do texto ao passar o mouse */
         }
 
         .menu-superior-direito i:hover {
             transform: translateY(-5px);
+            /* Move o ícone para cima ao passar o mouse */
             color: #ff9d00;
+            /* Muda a cor do ícone ao passar o mouse */
         }
 
+        /* Efeito ao clicar */
         .menu-superior-direito i:active {
             transform: scale(0.9);
+            /* Diminui o tamanho do ícone ao clicar */
             color: #ff9d09;
+            /* Muda a cor do ícone ao passar o mouse */
         }
 
         aside#menu-lateral {
@@ -331,11 +345,11 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
         .carrinho-count {
             position: absolute;
-            top: 7px;
-            right: 60px;
+            top: 0px;
+            right: 33px;
             background-color: chocolate;
             color: white;
-            padding: 5px;
+            padding: 3px;
             border-radius: 50%;
             font-size: 10px;
             font-weight: bold;
@@ -950,7 +964,6 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             margin-top: 5px;
             margin-bottom: 5px;
         }
-
     </style>
     <script>
 
@@ -1042,13 +1055,16 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
                         <span id="notificacao-count" class="notificacao-count" style="display: none;"></span>
                     <?php endif; ?>
                 </div>
-                <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" style="color:#f0f0f0;"><i
-                        class="fas fa-shopping-cart" title="Meu Carrinho" onclick=""></i></a>
+                <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" style="color:#f0f0f0;">
+                    <i class="fas fa-shopping-cart" title="Meu Carrinho" onmouseover="moverCarrinho()"></i>
+                </a>
                 <!-- Exibir a contagem de produtos no carrinho -->
                 <?php if ($total_carrinho > 0): ?>
-                    <span id="carrinho-count" class="carrinho-count"><?php echo htmlspecialchars($total_carrinho); ?></span>
+                    <span id="carrinho-count" class="carrinho-count"
+                        onmouseover="moverCarrinho()"><?php echo htmlspecialchars($total_carrinho); ?></span>
                 <?php else: ?>
-                    <span id="carrinho-count" class="carrinho-count" style="display: none;"></span>
+                    <span id="carrinho-count" class="carrinho-count" style="display: none;"
+                        onmouseover="moverCarrinho()"></span>
                 <?php endif; ?>
                 <i class="fas fa-bars" title="Menu" onclick="toggleMenu()"></i>
             <?php else: ?>
@@ -1954,6 +1970,29 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             setTimeout(function () {
                 document.getElementById('resposra-carrinho').style.display = 'none';
             }, 3000);
+        }
+
+        function moverCarrinho() {
+            const carrinhoIcon = document.querySelector('.fa-shopping-cart');
+            const carrinhoCount = document.getElementById('carrinho-count');
+
+            // Adiciona animação ao ícone do carrinho
+            carrinhoIcon.style.transition = 'transform 0.3s ease';
+            carrinhoIcon.style.transform = 'translateY(-5px)';
+
+            // Adiciona animação ao contador
+            if (carrinhoCount) {
+                carrinhoCount.style.transition = 'transform 0.3s ease';
+                carrinhoCount.style.transform = 'translateY(-5px)';
+            }
+
+            // Remove a animação após um tempo
+            setTimeout(() => {
+                carrinhoIcon.style.transform = 'translateY(0)';
+                if (carrinhoCount) {
+                    carrinhoCount.style.transform = 'translateY(0)';
+                }
+            }, 300);
         }
 
     </script>
