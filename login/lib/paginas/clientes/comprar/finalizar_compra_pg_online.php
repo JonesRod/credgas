@@ -170,6 +170,12 @@ try {
             } else {
                 die("Erro na preparação da consulta: " . $mysqli->error);
             }
+            
+            // manda a notificação para o parceiro
+            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, pedidos) VALUES (?, ?, 1)");
+            $stmt->bind_param("si", $data_hora, $id_parceiro);
+            $stmt->execute();
+            $stmt->close();
 
             // salvar o cartão de crédito ou débito se necessário
             if ($salvar_cartao == 1) {

@@ -107,6 +107,52 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             box-sizing: border-box;
         }
 
+        header {
+            background-color: #007BFF;
+            color: white;
+            justify-content: space-between;
+            align-items: flex-start;
+            /* Alinha itens ao topo */
+            padding-bottom: 20px;
+        }
+
+        #logo-header {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px;
+
+        }
+
+        .logo {
+            width: 150px;
+            /* largura fixa para o logo */
+            height: 150px;
+            /* altura opcional */
+            flex-shrink: 0;
+            /* impede que o logo diminua */
+
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            /* bordas arredondadas */
+        }
+
+        #logo-header h1 {
+            flex: 1;
+            /* ocupa todo o espaço restante */
+            margin-left: 20%;
+            /* espaço entre logo e texto */
+            font-size: 1.8rem;
+            /* ajuste conforme necessário */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #007BFF;
@@ -114,42 +160,24 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             flex-direction: column;
             min-height: 100vh;
             position: relative;
-        }
-
-        header {
-            background-color: #007BFF;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 20px;
-        }
-
-        header h1 {
-            flex-grow: 1;
-            text-align: center;
-            font-size: 30px;
-            line-height: 100px;
-            margin: 0;
-        }
-
-        header .logo img {
-            height: 150px;
-            width: 150px;
-            border-radius: 50%;
+            overflow-y: scroll;
+            /* Garante que o corpo da página possa rolar */
         }
 
         .menu-superior-direito {
-            font-size: 20px;
             display: flex;
-            align-items: flex-start;
-            /* Alinha o conteúdo no topo */
-            margin-top: -10px;
-            /* Ajuste para alinhar ao topo */
+            justify-content: flex-end;
+            /* Alinha os itens à direita */
+            align-items: center;
+            /* Alinha verticalmente */
+            gap: 10px;
+            /* Espaçamento entre os itens */
+            padding: 15px;
+            /* Espaço interno opcional */
         }
 
         .menu-superior-direito span {
-            margin-right: 15px;
+            margin-right: 3px;
             /* Espaçamento entre o nome do usuário e os ícones */
             transition: color 0.3s ease;
             /* Transição suave para a cor */
@@ -158,7 +186,7 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
         .menu-superior-direito i {
             font-size: 20px;
             /* Aumenta o tamanho dos ícones */
-            margin-left: 15px;
+            margin-left: 3px;
             transition: transform 0.3s ease, color 0.3s ease;
             /* Transição para o movimento e cor */
             cursor: pointer;
@@ -190,9 +218,7 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             display: none;
             position: fixed;
             top: 40px;
-            /* Ajuste conforme a altura do cabeçalho */
             right: 20px;
-            /* Posiciona o menu à direita */
             width: 200px;
             height: auto;
             background-color: white;
@@ -203,11 +229,8 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             padding: 10px;
             color: rgb(24, 8, 235);
             width: 210px;
-            /* Largura fixa da barra lateral */
             position: absolute;
-            /* Mantém a barra lateral fixa */
             transition: all 0.3s ease;
-            /* Transição suave */
         }
 
         aside#menu-lateral ul {
@@ -217,72 +240,52 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
         aside#menu-lateral ul li {
             margin: 0;
-            /* Margem entre os itens */
             font-size: 16px;
-            /* Tamanho da fonte */
             display: flex;
-            /* Flexbox para alinhar ícone e texto */
             align-items: center;
-            /* Alinha verticalmente */
             transition: background-color 0.3s ease;
-            /* Transição suave para a cor de fundo */
             border-radius: 5px;
-            /* Bordas arredondadas */
             padding: 5px;
-            /* Espaçamento interno */
             font-weight: bold;
-            /* Aplica negrito ao texto */
         }
 
         /* Remove o sublinhado do link "Sair" */
         #menu-lateral a {
             text-decoration: none;
-            /* Remove o sublinhado */
             color: inherit;
-            /* Mantém a cor do texto herdada */
             transition: color 0.3s ease;
-            /* Suave transição de cor */
         }
 
         /* Efeito ao passar o mouse sobre o link */
         #menu-lateral a:hover {
             cursor: pointer;
             color: #007BFF;
-            /* Muda a cor ao passar o mouse */
         }
 
         /* Efeito ao passar o mouse sobre o item do menu */
         aside#menu-lateral ul li:hover {
             cursor: pointer;
             background-color: rgba(0, 123, 255, 0.1);
-            /* Cor de fundo ao passar o mouse */
         }
 
         /* Estilo para ícones */
         aside#menu-lateral ul li i {
             margin-right: 5px;
-            /* Espaçamento entre ícone e texto */
             font-size: 20px;
-            /* Tamanho dos ícones */
             transition: transform 0.3s ease, color 0.3s ease;
-            /* Transição para movimento e cor */
         }
 
         /* Efeito ao passar o mouse sobre o ícone */
         aside#menu-lateral ul li:hover i {
             cursor: pointer;
             transform: translateY(-3px);
-            /* Move o ícone para cima ao passar o mouse */
             color: #ffbb09;
-            /* Muda a cor do ícone ao passar o mouse */
         }
 
         /* Efeito ao clicar em um ícone */
         aside#menu-lateral ul li i:active {
             transform: scale(0.9);
-            /* Diminui o tamanho do ícone ao clicar */
             color: #ffbb09;
-            /* Muda a cor do ícone ao passar o mouse */
         }
 
         /* Efeitos para os spans */
@@ -333,27 +336,16 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
         .notificacao-count {
             position: absolute;
-            top: -8px;
-            right: -1px;
+            top: -13px;
+            left: 10px;
             background-color: red;
             color: white;
-            padding: 5px;
+            padding: 3px;
             border-radius: 50%;
             font-size: 12px;
             font-weight: bold;
         }
 
-        .carrinho-count {
-            position: absolute;
-            top: 0px;
-            right: 33px;
-            background-color: chocolate;
-            color: white;
-            padding: 3px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: bold;
-        }
 
         /* Painel de notificações estilo semelhante ao menu lateral */
         #painel-notificacoes {
@@ -537,9 +529,10 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
         .parceiros-carousel .parceiro-card {
             text-align: center;
-            padding: 10px;
+            padding: 5px;
             border-radius: 60px;
-            margin: 10px auto;
+            margin: 5px auto;
+            /* Reduz a margem para diminuir a distância */
             max-width: 200px;
             background-color: transparent;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -738,6 +731,8 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             width: 100%;
             display: none;
             justify-content: space-around;
+            z-index: 9999;
+            /* Garante que o footer fique sobre outros elementos */
         }
 
         #menu-mobile i {
@@ -964,6 +959,325 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             margin-top: 5px;
             margin-bottom: 5px;
         }
+        .carrinho-count {
+            position: absolute;
+            top: 0px;
+            right: 35px;
+            background-color: green;
+            color: white;
+            padding: 3px;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .opcoes span {
+                font-size: 15px;
+                /* Diminui ainda mais o tamanho do texto */
+                margin: 2px;
+                /* Ajusta a margem */
+            }
+            .icone-carrinho-wrapper {
+                position: relative;
+                display: inline-block;
+            }
+            .carrinho-count-rodape {
+                position: absolute;
+                top: -11px;
+                /* sobe um pouco acima do ícone */
+                right: -8px;
+                /* desloca para a direita do ícone */
+                background-color: green;
+                color: white;
+                padding: 5px;
+                border-radius: 50%;
+                font-size: 13px;
+                font-weight: bold;
+                z-index: 10;
+            }
+
+        }
+
+        /* Para telas menores que 480px */
+        @media (max-width: 480px) {
+            header #logo-header h1 {
+                font-size: 18px;
+                /* Reduz ainda mais o tamanho do título */
+                margin-left: 5%;
+                /* Ajusta o espaçamento */
+            }
+
+            .logo {
+                width: 60px;
+                /* Reduz ainda mais o tamanho da logo */
+                height: 60px;
+            }
+
+            .logo-img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .fa-shopping-cart {
+                display: none;
+            }
+
+            .carrinho-count {
+                display: none !important;
+            }
+            .carrinho-count-rodape {
+                position: absolute;
+                top: -11px;
+                /* sobe um pouco acima do ícone */
+                right: -8px;
+                /* desloca para a direita do ícone */
+                background-color: green;
+                color: white;
+                padding: 5px;
+                border-radius: 50%;
+                font-size: 13px;
+                font-weight: bold;
+                z-index: 10;
+            }
+            .fa-bars {
+                display: none;
+            }
+
+            .products {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-mobile {
+                display: flex;
+                /* Exibe o menu mobile em telas pequenas */
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                /* Garante que o main ocupe no mínimo a altura da tela */
+                overflow: auto;
+                /* Permite que o conteúdo do main role se for maior que a tela */
+            }
+
+            .opcoes {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                background-color: #007BFF;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                margin-top: 0px;
+                padding: auto;
+            }
+
+            .opcoes span {
+                font-size: 15px;
+                /* Reduz ainda mais o tamanho do texto */
+                margin: 3px;
+                /* Remove a margem esquerda */
+            }
+
+            .opcoes .tab {
+                width: 100%;
+                justify-content: center;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            main .tab:hover {
+                background-color: #afa791;
+                color: white;
+                transform: scale(1.05);
+            }
+
+            main .tab.active {
+                background-color: #ffb300;
+                /* Aba ativa com cor diferente */
+                color: white;
+                transform: scale(1.05);
+                word-spacing: -10px;
+                /* Junta as palavras mais próximas */
+                justify-content: center;
+                /* Centraliza o texto dentro da aba */
+                align-items: center;
+            }
+
+            .conteudo-aba {
+                flex-grow: 1;
+                overflow-y: auto;
+                /* Permite que o conteúdo dentro das abas role */
+                max-height: calc(100vh - 100px);
+                /* Ajuste para que o conteúdo role corretamente */
+            }
+
+            .produto-item {
+                width: 150px;
+                /* Largura total do cartão */
+                height: 360px;
+                /* Altura automática para se ajustar ao conteúdo */
+                max-width: 150px;
+                /* Limita a largura máxima */
+            }
+
+            .btn {
+                padding: 5px 10px;
+                /* Ajusta o tamanho do botão */
+                font-size: 12px;
+                /* Diminui o tamanho da fonte */
+            }
+
+            .input {
+                width: 80%;
+                /* Ajusta a largura do campo de entrada */
+                padding: 5px;
+                /* Ajusta o espaçamento interno */
+                font-size: 12px;
+                /* Diminui o tamanho da fonte */
+            }
+
+            /* Estilos para telas maiores (desktops) */
+            .lista-produtos {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+                padding-bottom: 50px;
+            }
+
+            .lista-promocoes {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+                padding-bottom: 50px;
+            }
+
+            .lista-freteGgratis {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+                padding-bottom: 50px;
+            }
+
+            .lista-novidades {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                justify-content: center;
+                padding-bottom: 50px;
+            }
+
+            .carrinho-count {
+                display: none;
+            }
+
+            .voltar {
+                font-size: 1rem;
+                /* Reduz ainda mais o tamanho do botão "voltar" */
+            }
+
+            .categoria-item {
+                width: 40px;
+                /* Reduz ainda mais o tamanho das categorias */
+                height: 40px;
+            }
+
+            .categoria-item .categoria-imagem {
+                width: 40px;
+                /* Ajusta ainda mais o tamanho da imagem da categoria */
+                height: 40px;
+            }
+
+            .categoria-item p {
+                font-size: 10px;
+                /* Reduz ainda mais o tamanho do texto das categorias */
+            }
+
+            .categoria-item:hover .categoria-imagem {
+                width: 45px;
+                /* Reduz ainda mais o tamanho no hover */
+                height: 45px;
+                transform: translateY(-2px);
+                /* Reduz ainda mais o movimento no hover */
+            }
+
+            .categoria-item:hover p {
+                font-size: 11px;
+                /* Reduz ainda mais o tamanho do texto no hover */
+                transform: translateY(-2px);
+                /* Reduz ainda mais o movimento no hover */
+            }
+
+            .categoria-item.selected .categoria-imagem {
+                width: 45px;
+                /* Ajusta ainda mais o tamanho da imagem selecionada */
+                height: 45px;
+                transform: translateY(-2px);
+                /* Reduz ainda mais o movimento */
+            }
+
+            .categoria-item.selected p {
+                font-size: 11px;
+                /* Ajusta ainda mais o tamanho do texto selecionado */
+                transform: translateY(-2px);
+                /* Reduz ainda mais o movimento */
+            }
+
+            .parceiros-carousel .parceiro-card {
+                text-align: center;
+                max-width: 100px;
+                padding: 5px;
+            }
+
+            .parceiros-carousel .parceiro-card img {
+                max-width: 100px;
+                height: 100px;
+            }
+
+            .parceiros-carousel .parceiro-card h3 {
+                font-size: 10px;
+            }
+
+            .parceiros-carousel .parceiro-card p {
+                font-size: 8px
+            }
+
+            .product-card {
+                margin: -3px;
+                width: 100px;
+                height: 270px;
+                padding: 3px;
+                margin-bottom: 20px;
+            }
+
+            .product-card img {
+                height: 100px;
+            }
+
+            .product-card h3 {
+                font-size: 10px;
+            }
+
+            .product-card p {
+                font-size: 0.8em;
+            }
+
+            .product-card .btn {
+                font-size: 13px;
+                padding: 5px;
+            }
+        }
     </style>
     <script>
 
@@ -1025,21 +1339,6 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
 
     <!-- Header -->
     <header>
-        <div class="logo">
-            <img src="<?php if (isset($logo))
-                echo $logo; ?>" alt="Logo" class="logo-img">
-        </div>
-
-        <h1 class="nome-fantasia">
-            <?php
-            if (!empty($nomeFantasia)) {
-                echo htmlspecialchars($nomeFantasia);
-            } else {
-                echo "Nome Fantasia Indisponível";
-            }
-            ?>
-        </h1>
-
         <div class="menu-superior-direito">
             <?php if ($usuarioLogado): ?>
                 <span>Bem-vindo,
@@ -1071,6 +1370,21 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
                 <span>Seja bem-vindo!</span>
                 <a href="login/lib/login.php" class="btn-login">Entrar</a>
             <?php endif; ?>
+        </div>
+        <div id="logo-header">
+            <div class="logo">
+                <img src="<?php if (isset($logo))
+                    echo $logo; ?>" alt="Logo" class="logo-img">
+            </div>
+            <h1 class="nome-fantasia">
+                <?php
+                if (!empty($nomeFantasia)) {
+                    echo htmlspecialchars($nomeFantasia);
+                } else {
+                    echo "Nome Fantasia Indisponível";
+                }
+                ?>
+            </h1>
         </div>
     </header>
 
@@ -1183,20 +1497,20 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             </div>
 
             <div class="tab" onclick="mostrarConteudo('promocoes',this)">
-                <span class="icone-promocao" title="Produto em promoção">🔥</span><span>Promoções</span>
+                <span class="icone-promocao" title="Produto em promoção">🔥Promoções</span>
             </div>
 
             <div class="tab" onclick="mostrarConteudo('frete_gratis',this)">
-                <span class="icone-frete-gratis" title="Frete grátis">🚚</span><span>Frete Grátis</span>
+                <span class="icone-frete-gratis" title="Frete grátis">🚚Frete Grátis</span>
             </div>
 
             <div class="tab" onclick="mostrarConteudo('novidades',this)">
-                <span class="icone-novidades" title="Novidades">🆕</span><span>Novidades</span>
+                <span class="icone-novidades" title="Novidades">🆕Novidades</span>
             </div>
 
             <?php if ($status_crediario == 1): ?>
                 <div class="tab" onclick="mostrarConteudo('crediario', this)">
-                    <span class="icone-crediario" title="Produtos no Crediário">🤝</span><span>Crediário</span>
+                    <span class="icone-crediario" title="Produtos no Crediário">🤝Crediário</span>
                 </div>
             <?php endif; ?>
         </div>
@@ -2001,15 +2315,21 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
         <ul>
             <li><a href="perfil_cliente.php" title="Meu Perfil"><i class="fas fa-user"></i></a></li>
             <li><a href="crediario.php" title="Crediário"><i class="fas fa-handshake"></i></a></li>
-            <li><a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i
+
+            <li>
+                <div class="icone-carrinho-wrapper">
+                    <!-- Contagem de produtos -->
+                    <?php if ($total_carrinho > 0): ?>
+                        <span id="carrinho-count-rodape"
+                            class="carrinho-count-rodape"><?php echo htmlspecialchars($total_carrinho); ?></span>
+                    <?php else: ?>
+                        <span id="carrinho-count-rodape" class="carrinho-count-rodape" style="display: none;"></span>
+                    <?php endif; ?>
+
+                    <!-- Ícone do carrinho -->
+                    <a href="comprar/meu_carrinho.php?id_cliente=<?php echo urlencode($id); ?>" title="Meu Carrinho"><i
                         class="fas fa-shopping-cart"></i></a>
-                <!-- Exibir a contagem de notificações -->
-                <?php if ($total_carrinho > 0): ?>
-                    <span id="carrinho-count-rodape"
-                        class="carrinho-count-rodape"><?php echo htmlspecialchars($total_carrinho); ?></span>
-                <?php else: ?>
-                    <span id="carrinho-count-rodape" class="carrinho-count-rodape" style="display: none;"></span>
-                <?php endif; ?>
+                </div>
             </li>
             <li>
                 <a href="comprar/meus_pedidos.php?id=<?php echo urlencode($id); ?>" title="Meus Pedidos">
@@ -2109,7 +2429,7 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
             var totalParceiros = <?php echo $result_parceiros->num_rows; ?>; // Total de parceiros no banco
 
             $(".parceiros-carousel").owlCarousel({
-                loop: totalParceiros > 1, // Loop apenas se houver mais de 1 parceiro
+                loop: totalParceiros > 3, // Loop apenas se houver mais de 3 parceiros
                 margin: 10,
                 center: true, // Centraliza os itens no carrossel
                 nav: true,
@@ -2118,7 +2438,7 @@ $status_crediario = $usuario['status_crediario'] ?? 0;
                 responsive: {
                     0: { items: 1 },       // Mostra 1 parceiro por vez em telas pequenas
                     600: { items: 2 },    // Mostra 2 parceiros em telas médias
-                    1000: { items: 4 }    // Mostra 4 parceiros em telas grandes
+                    1000: { items: 3 }    // Mostra no mínimo 3 parceiros em telas grandes
                 }
             });
         });

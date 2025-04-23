@@ -163,66 +163,11 @@ try {
             $num_pedido = $stmt->insert_id;
             $stmt->close();
 
-            // Buscar cartões do cliente usando prepared statements
-            /*$stmt = $mysqli->prepare("SELECT * FROM cartoes_clientes WHERE id_cliente = ?");
-            if ($stmt) {
-                $stmt->bind_param("i", $id_cliente);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                $cartoes = array();
-                $cartoes_credito = 0;
-                $cartoes_debito = 0;
-                while ($row = $result->fetch_assoc()) {
-                    $cartoes[] = $row;
-                    if ($row['tipo'] === 'credito') {
-                        $cartoes_credito++;
-                    } elseif ($row['tipo'] === 'debito') {
-                        $cartoes_debito++;
-                    }
-                }
-
-                $stmt->close();
-            } else {
-                die("Erro na preparação da consulta: " . $mysqli->error);
-            }
-
-            // salvar o cartão de crédito ou débito se necessário
-            if ($salvar_cartao == 1) {
-                // Criptografar o código de segurança
-                $cod_seguranca_criptografado = password_hash($cod_seguranca, PASSWORD_DEFAULT);
-
-                // Verificar se o cartão já está cadastrado
-                $stmt = $mysqli->prepare("SELECT id FROM cartoes_clientes WHERE id_cliente = ? AND num_cartao = ? AND tipo = ?");
-
-                if ($stmt) {
-                    $stmt->bind_param("iss", $id_cliente, $num_cartao, $segunda_forma_pg);
-                    $stmt->execute();
-                    $stmt->store_result();
-
-                    if ($stmt->num_rows > 0) {
-                        $stmt->close();
-                    } else {
-                        $stmt->close();
-
-                        // Verificar se o limite de cartões foi atingido
-                        if (($segunda_forma_pg === 'credito' && $cartoes_credito >= 5) || ($segunda_forma_pg === 'debito' && $cartoes_debito >= 5)) {
-                        } else {
-                            // Salvar o novo cartão no banco de dados
-                            $stmt = $mysqli->prepare("INSERT INTO cartoes_clientes (id_cliente, num_cartao, validade, cod_seguranca, tipo, nome) VALUES (?, ?, ?, ?, ?, ?)");
-                            if ($stmt) {
-                                $stmt->bind_param("isssss", $id_cliente, $num_cartao, $validade, $cod_seguranca_criptografado, $segunda_forma_pg, $nome_cartao);
-                                $stmt->execute();
-                                $stmt->close();
-                            } else {
-                                die("Erro ao salvar o cartão: " . $mysqli->error);
-                            }
-                        }
-                    }
-                } else {
-                    die("Erro na preparação da consulta: " . $mysqli->error);
-                }
-            }*/
+            // manda a notificação para o parceiro
+            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, pedidos) VALUES (?, ?, 1)");
+            $stmt->bind_param("si", $data_hora, $id_parceiro);
+            $stmt->execute();
+            $stmt->close();
 
             // Salvar notificação
             $msg = "Pedido #$num_pedido em Análise.";

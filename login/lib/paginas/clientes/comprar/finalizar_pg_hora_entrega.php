@@ -169,6 +169,12 @@ try {
                 $stmt_notificacao->execute();
                 $stmt_notificacao->close();
 
+                // manda a notificação para o parceiro
+                $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, pedidos) VALUES (?, ?, 1)");
+                $stmt->bind_param("si", $data_hora, $id_parceiro);
+                $stmt->execute();
+                $stmt->close();
+
                 // Excluir o pedido do carrinho
                 $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
                 if ($stmt_carrinho) {

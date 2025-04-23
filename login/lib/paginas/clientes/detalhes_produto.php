@@ -521,14 +521,14 @@
             <?php endif; ?>
             <?php 
                 // Exibe o ícone de frete grátis, se o produto tiver frete grátis
-                if ($produto['frete_gratis'] === 'sim' || ($produto['promocao'] === 'sim' && $produto['frete_gratis_promocao'] === 'sim')): 
+                if ($produto['frete_gratis'] === '1' || ($produto['promocao'] === '1' && $produto['frete_gratis_promocao'] === '1')): 
             ?>
                 <span class="icone-frete-gratis" title="Frete grátis">🚚</span>
             <?php 
                 endif;
 
                 // Exibe o ícone de promoção, se o produto estiver em promoção
-                if ($produto['promocao'] === 'sim'): 
+                if ($produto['promocao'] === '1'): 
             ?>
                 <span class="icone-promocao" title="Produto em promoção">🔥</span>
             <?php 
@@ -550,7 +550,7 @@
                     <!-- Preço do produto -->
                     <?php
                         $taxa_padrao = floatval($produto['taxa_padrao'] ?? 0);
-                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === 'sim' 
+                        $valor_base = isset($produto['promocao']) && $produto['promocao'] === '1' 
                             ? floatval($produto['valor_promocao'] ?? 0) 
                             : floatval($produto['valor_produto'] ?? 0);  
                         $valor_produto = $produto['valor_venda_vista'] ?? 0;

@@ -29,6 +29,11 @@ $stmt = $conn->prepare($query);
 $stmt->bind_param("iiddssssssss", $id_cliente, $id_parceiro, $valor_frete, $valor_total, $entrada_saldo, $detalhes_produtos, $entrega, $rua, $bairro, $numero, $contato, $comentario);
 
 if ($stmt->execute()) {
+    // manda a notificação para o parceiro
+    $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, pedidos) VALUES (?, ?, 1)");
+    $stmt->bind_param("si", $data_hora, $id_parceiro);
+    $stmt->execute();
+    $stmt->close();
     echo json_encode(["success" => true]);
 } else {
     echo json_encode(["success" => false, "message" => "Erro ao salvar os dados no banco."]);

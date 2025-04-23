@@ -6,7 +6,7 @@ include('../../conexao.php');
 session_start();
 //}
 
-if (isset($_SESSION['id']) && isset($_GET['id']) && isset($_GET['id_cliente'])) {
+if (isset($_GET['id']) && isset($_GET['id_cliente'])) {
     $idParceiro = intval($_GET['id']);
     $id_cliente = intval($_GET['id_cliente']);
 
@@ -509,21 +509,6 @@ $novidades = $mysqli->query("
             /* Garante que o elemento ocupe o espaço necessário */
         }
 
-        .tab {
-            cursor: pointer;
-            padding: 10px;
-            display: inline-block;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        .tab.active {
-            background-color: #eaeaea;
-            border-bottom: 2px solid #000;
-        }
-
         .voltar {
             margin: 0;
             /* Remove margens padrão */
@@ -583,53 +568,41 @@ $novidades = $mysqli->query("
             /* Aumenta o tamanho do botão em 10% */
         }
 
-        main {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            /* O contêiner principal ocupa a altura total da tela */
-            box-sizing: border-box;
-            align-items: center;
-            /* Centraliza horizontalmente */
-            justify-content: center;
-            /* Centraliza verticalmente */
-            text-align: center;
-        }
-
         /* Estilos para as abas */
         main .opcoes {
             background-color: #007BFF;
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 0px;
-            padding: auto;
+            align-items: center;;
         }
 
         main .tab {
-            padding: 10px;
+            padding: 5px;
             border-radius: 8px 8px 0 0;
-            /* Bordas arredondadas só no topo, estilo de aba */
-            background-color: #007BFF;
             cursor: pointer;
             font-size: 20px;
             font-weight: bold;
             text-align: center;
             transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            background-color: #007BFF;
         }
 
         main .tab:hover {
-            background-color: #afa791;
+            background-color:rgb(204, 166, 61);
             color: white;
             transform: scale(1.05);
         }
 
         main .tab.active {
             background-color: #ffb300;
-            /* Aba ativa com cor diferente */
             color: white;
             transform: scale(1.05);
+            background-color:rgb(238, 112, 10);
+            border-bottom: 2px solid #000;
         }
 
         /* Estilos para o conteúdo das abas */
@@ -1269,16 +1242,7 @@ $novidades = $mysqli->query("
                 font-size: 12px;
             }
 
-            main .opcoes {
-                /*flex-direction: column;*/
-                gap: 10px;
-                background-color: #007BFF;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 0px;
-                padding: auto;
-            }
+
 
             /* Diminui o tamanho das letras em telas menores */
             main .tab span {
@@ -1294,41 +1258,8 @@ $novidades = $mysqli->query("
                 box-sizing: border-box;
             }
 
-            main .tab {
-                max-width: 10px;
-                border-radius: 8px 8px 0 0;
-                background-color: #007BFF;
-                cursor: pointer;
-                font-size: 20px;
-                font-weight: bold;
-                text-align: center;
-                transition: background-color 0.3s ease, transform 0.3s ease;
-                display: flex;
-                padding: 10px 50px;
-                width: auto;
-                justify-content: center;
-                align-items: center;
-            }
-
-            main .tab:hover {
-                background-color: #afa791;
-                color: white;
-                transform: scale(1.05);
-            }
-
-            main .tab.active {
-                background-color: #ffb300;
-                /* Aba ativa com cor diferente */
-                color: white;
-                transform: scale(1.05);
-            }
-
             .produto-nome {
                 font-size: 1.1em;
-            }
-
-            .carrinho-count {
-                display: none;
             }
 
             .icone-carrinho-wrapper {
@@ -1449,31 +1380,22 @@ $novidades = $mysqli->query("
                 overflow: auto;
                 /* Permite que o conteúdo do main role se for maior que a tela */
             }
-
-
-            .conteudo-aba {
-                flex-grow: 1;
-                overflow-y: auto;
-                /* Permite que o conteúdo dentro das abas role */
-                max-height: calc(100vh - 100px);
-                /* Ajuste para que o conteúdo role corretamente */
+            .opcoes {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                background-color: #007BFF;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                margin-top: 0px;
+                padding: auto;
             }
-            main .opcoes {
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-            background-color: #007BFF;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 0px;
-            padding: auto;
-        }
 
-        main .tab {
-            width: 100%;
-            justify-content: center;
+            .opcoes .tab {
+                width: 100%;
+                justify-content: center;
                 flex-direction: column;
                 align-items: stretch;
             }
@@ -1494,6 +1416,35 @@ $novidades = $mysqli->query("
                 justify-content: center;
                 /* Centraliza o texto dentro da aba */
                 align-items: center;
+            }
+            .conteudo-aba {
+                flex-grow: 1;
+                overflow-y: auto;
+                /* Permite que o conteúdo dentro das abas role */
+                max-height: calc(100vh - 100px);
+                /* Ajuste para que o conteúdo role corretamente */
+            }
+            .produto-item {
+                width: 150px;
+                /* Largura total do cartão */
+                height: 360px;
+                /* Altura automática para se ajustar ao conteúdo */
+                max-width: 150px;
+                /* Limita a largura máxima */
+            }
+            .btn {
+                padding: 5px 10px;
+                /* Ajusta o tamanho do botão */
+                font-size: 12px;
+                /* Diminui o tamanho da fonte */
+            }
+            .input {
+                width: 80%;
+                /* Ajusta a largura do campo de entrada */
+                padding: 5px;
+                /* Ajusta o espaçamento interno */
+                font-size: 12px;
+                /* Diminui o tamanho da fonte */
             }
 
             /* Estilos para telas maiores (desktops) */
@@ -1921,8 +1872,9 @@ $novidades = $mysqli->query("
                                 $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
                                 ?>
                                 <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                                <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>"
-                                    class="btn">Detalhes</a>
+                                <a href="detalhes_produto_loja.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>&id_cliente=<?php echo $id_cliente; ?>"
+                                    class="btn">Detalhes
+                                </a>
                             </div>
                             <a href="#" class="btn" onclick="abrirPopup(
                             '<?php echo $produto['id_produto']; ?>',
@@ -2028,8 +1980,9 @@ $novidades = $mysqli->query("
                                 $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
                                 ?>
                                 <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                                <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>"
-                                    class="btn">Detalhes</a>
+                                <a href="detalhes_produto_loja.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>&id_cliente=<?php echo $id_cliente; ?>"
+                                    class="btn">Detalhes
+                                </a>
                             </div>
                             <a href="#" class="btn" onclick="abrirPopup(
                             '<?php echo $produto['id_produto']; ?>',
@@ -2124,8 +2077,9 @@ $novidades = $mysqli->query("
                                 $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
                                 ?>
                                 <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                                <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>"
-                                    class="btn">Detalhes</a>
+                                <a href="detalhes_produto_loja.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>&id_cliente=<?php echo $id_cliente; ?>"
+                                    class="btn">Detalhes
+                                </a>
                                 <a href="#" class="btn" onclick="abrirPopup(
                             '<?php echo $produto['id_produto']; ?>',
                             '<?php echo $produto['nome_produto']; ?>', 
@@ -2223,8 +2177,9 @@ $novidades = $mysqli->query("
                                 $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
                                 ?>
                                 <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                                <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>"
-                                    class="btn">Detalhes</a>
+                                <a href="detalhes_produto_loja.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>&id_cliente=<?php echo $id_cliente; ?>"
+                                    class="btn">Detalhes
+                                </a>
                                 <a href="#" class="btn" onclick="abrirPopup(
                             '<?php echo $produto['id_produto']; ?>',
                             '<?php echo $produto['nome_produto']; ?>', 
@@ -2298,8 +2253,9 @@ $novidades = $mysqli->query("
                                 $valor_produto = $valor_base + (($valor_base * $taxa_padrao) / 100);
                                 ?>
                                 <p class="produto-preco">R$ <?php echo number_format($valor_produto, 2, ',', '.'); ?></p>
-                                <a href="detalhes_novos_produtos.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>"
-                                    class="btn">Detalhes</a>
+                                <a href="detalhes_produto_loja.php?id_produto=<?php echo $produto['id_produto']; ?>&id_parceiro=<?php echo $idParceiro; ?>&id_cliente=<?php echo $id_cliente; ?>"
+                                    class="btn">Detalhes
+                                </a>
                             </div>
                             <a href="#" class="btn" onclick="abrirPopup(
                                 '<?php echo $produto['id_produto']; ?>',
