@@ -304,6 +304,7 @@ function formatDateTimeJS($dateString) {
         <table>
             <thead>
                 <tr>
+                    <th>Confirmar</th>
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
@@ -316,8 +317,9 @@ function formatDateTimeJS($dateString) {
                 foreach ($produtos as $produto) {
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
                     echo "<tr>
+                            <td><input type='checkbox' name='confirmar[]'></td>
                             <td>$nome</td>
-                            <td>$quantidade</td>
+                            <td><input type='number' value='$quantidade'</td>
                             <td>R$ " . number_format($valor_unitario, 2, ',', '.') . "</td>
                             <td>R$ " . number_format($valor_total, 2, ',', '.') . "</td>
                           </tr>";
