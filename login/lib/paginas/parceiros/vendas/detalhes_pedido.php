@@ -321,7 +321,7 @@ function formatDateTimeJS($dateString)
                 if ($pedido['status_cliente'] == 0) {
                     echo "Aguardando Confirmação da loja.";
                 } elseif ($pedido['status_cliente'] == 1) {
-                    echo "Pedido Confirmado e ja está em preparação.";
+                    echo "Pedido confirmado e ja está em preparação.";
                 } elseif ($pedido['status_cliente'] == 2) {
                     if ($pedido['tipo_entrega'] == 'entregar') {
                         echo "Saiu para entrega.";
@@ -341,7 +341,9 @@ function formatDateTimeJS($dateString)
         <table>
             <thead>
                 <tr>
-                    <th class="hide-column">Confirmar</th>
+                    <?php if ($pedido['status_cliente'] == 0): ?>
+                        <th>Confirmar</th>
+                    <?php endif; ?>
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
@@ -353,13 +355,19 @@ function formatDateTimeJS($dateString)
                 $produtos = explode('|', $pedido['produtos']);
                 foreach ($produtos as $produto) {
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
-                    echo "<tr>
-                            <td class='hide-column'><input type='checkbox' name='confirmar[]'></td>
-                            <td>$nome</td>
-                            <td><input type='number' value='$quantidade' data-max='$quantidade' data-unit-price='$valor_unitario'></td>
-                            <td>R$ " . number_format($valor_unitario, 2, ',', '.') . "</td>
-                            <td>R$ 0,00</td>
-                          </tr>";
+                    echo "<tr>";
+                    if ($pedido['status_cliente'] == 0) {
+                        echo "<td><input type='checkbox' name='confirmar[]'></td>";
+                    }
+                    echo "<td>$nome</td>";
+                    if ($pedido['status_cliente'] == 0) {
+                        echo "<td><input type='number' value='$quantidade' data-max='$quantidade' data-unit-price='$valor_unitario'></td>";
+                    } else {
+                        echo "<td>$quantidade</td>";
+                    }
+                    echo "<td>R$ " . number_format($valor_unitario, 2, ',', '.') . "</td>";
+                    echo "<td>R$ " . number_format($valor_total, 2, ',', '.') . "</td>";
+                    echo "</tr>";
                 }
                 ?>
             </tbody>
