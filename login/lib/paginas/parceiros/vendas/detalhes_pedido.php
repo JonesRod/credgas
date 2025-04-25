@@ -37,7 +37,7 @@ if ($result->num_rows > 0) {
     $saldo_usado = $pedido['saldo_usado'];
     $total = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
     $tipo_entrega = $pedido['tipo_entrega'];
-    //echo $status_parceiro;
+    //echo $valor_a_vista;
 } else {
     echo "Pedido não encontrado.";
     exit;
@@ -94,6 +94,55 @@ function formatDateTimeJS($dateString)
     } catch (Exception $e) {
         return "Erro na data";
     }
+}
+
+if ($formato_compra == 'crediario') {
+    $formato_compra = 'online';
+
+    $status_parceiro = $pedido['status_parceiro'];
+    $valor_a_vista = $pedido['valor_produtos'];
+    $taxa_crediario = $pedido['taxa_crediario'];
+    $frete = $pedido['valor_frete'];
+    $saldo_usado = $pedido['saldo_usado'];
+    $total = $valor_a_vista + $frete;
+    $tipo_entrega = $pedido['tipo_entrega'];
+    echo $valor_a_vista;
+
+} elseif ($formato_compra == 'online') {
+    $formato_compra = 'online';
+
+    $status_parceiro = $pedido['status_parceiro'];
+    $valor_a_vista = $pedido['valor_produtos'];
+    $taxa_crediario = $pedido['taxa_crediario'];
+    $frete = $pedido['valor_frete'];
+    $saldo_usado = $pedido['saldo_usado'];
+    $total = $valor_a_vista + $frete;
+    $tipo_entrega = $pedido['tipo_entrega'];
+    echo $valor_a_vista;
+
+} elseif ($formato_compra == 'retirar') {
+    $formato_compra = 'retirar';
+
+    $status_parceiro = $pedido['status_parceiro'];
+    $valor_a_vista = $pedido['valor_produtos'];
+    $taxa_crediario = $pedido['taxa_crediario'];
+    $frete = $pedido['valor_frete'];
+    $saldo_usado = $pedido['saldo_usado'];
+    $total = $valor_a_vista + $frete;
+    $tipo_entrega = $pedido['tipo_entrega'];
+    //echo $valor_a_vista;
+
+} else {
+    $formato_compra = 'entregar';
+
+    $status_parceiro = $pedido['status_parceiro'];
+    $valor_a_vista = $pedido['valor_produtos'];
+    $taxa_crediario = $pedido['taxa_crediario'];
+    $frete = $pedido['valor_frete'];
+    $saldo_usado = $pedido['saldo_usado'];
+    $total = $valor_a_vista + $frete;
+    $tipo_entrega = $pedido['tipo_entrega'];
+    //echo $valor_a_vista;
 }
 
 ?>
@@ -372,8 +421,9 @@ function formatDateTimeJS($dateString)
                 ?>
             </tbody>
         </table>
-        <p id="valor_vista" class="valores" data-total="<?php echo $valor_a_vista; ?>"><strong>Total:</strong> R$
-            <?php echo number_format($valor_a_vista, 2, ',', '.'); ?>
+        <p class="valores">
+            Total: R$
+            <span id="total_inicial"><?php echo number_format($valor_a_vista, 2, ',', '.'); ?></span>
         </p>
         <?php
         if ($frete != 0 && $tipo_entrega == 'entregar') {
@@ -383,20 +433,21 @@ function formatDateTimeJS($dateString)
         }
         ?>
         <?php
-        if ($saldo_usado != 0) {
+        if ($saldo_usado != 0 && $formato_compra != 'online') {
+            // Exibe o saldo utilizado apenas se for diferente de zero
             echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado'><strong>Saldo Utilzado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
         } else {
             echo "<p id='saldo_usado' class='valores' data-saldo='0' style='display: none;'><strong></strong>saldo_usado: 0,00</p>";
         }
         ?>
         <?php
-        if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
-            echo "<p id='taxa_crediario' class='valores' data-taxa='$taxa_crediario'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+        if ($taxa_crediario != 0 && $formato_compra == 'online') {
+            echo "<p id='taxa_crediario' class='valores' data-taxa='$taxa_crediario' style='display: none;'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
         } else {
             echo "<p id='taxa_crediario' class='valores' data-taxa='0' style='display: none;'><strong></strong>Taxa: Grátis</p>";
         }
         ?>
-        <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$
+        <p id="valor_total" class="valores" data-total="<?php $total; ?>"><strong>Valor Total: R$</strong>
             <?php echo number_format($total, 2, ',', '.'); ?>
         </p>
         <hr>
@@ -501,11 +552,10 @@ function formatDateTimeJS($dateString)
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const rows = document.querySelectorAll('table tbody tr');
-        const totalElement = document.getElementById('valor_total');
+        const totalElement = document.getElementById('total_inicial');
         const valorVistaElement = document.getElementById('valor_vista');
         const freteElement = document.getElementById('frete');
         const saldoUsadoElement = document.getElementById('saldo_usado');
-        const taxaCrediarioElement = document.getElementById('taxa_crediario');
         const confirmButton = document.getElementById('bt_confirmar_pedido');
         const recusarButton = document.getElementById('bt_recusar_pedido');
         const saindoEntregaButton = document.createElement('button');
@@ -571,7 +621,8 @@ function formatDateTimeJS($dateString)
          * Atualiza os totais na tabela.
          */
         function updateTotals() {
-            let total = 0;
+            let totalProdutos = 0;
+            let atLeastOneChecked = false;
 
             rows.forEach(row => {
                 const checkbox = row.querySelector('input[type="checkbox"]');
@@ -580,18 +631,117 @@ function formatDateTimeJS($dateString)
                 const quantity = parseInt(quantityInput.value, 10);
 
                 if (checkbox.checked && quantity > 0) {
-                    total += quantity * unitPrice;
+                    totalProdutos += quantity * unitPrice; // Soma o valor do produto confirmado
+                    atLeastOneChecked = true; // Marca que pelo menos um produto está confirmado
                 }
             });
 
-            const frete = parseFloat(freteElement.getAttribute('data-frete')) || 0;
-            const saldoUsado = parseFloat(saldoUsadoElement.getAttribute('data-saldo')) || 0;
-            const taxaCrediario = parseFloat(taxaCrediarioElement.getAttribute('data-taxa')) || 0;
+            const frete = freteElement ? parseFloat(freteElement.getAttribute('data-frete')) || 0 : 0;
+            const valorFinal = totalProdutos + (atLeastOneChecked ? frete : 0); // Adiciona o frete apenas se houver produtos confirmados
 
-            const valorFinal = total + frete + taxaCrediario - saldoUsado;
+            // Atualiza os valores na página
+            totalElement.textContent = `R$ ${totalProdutos.toFixed(2).replace('.', ',')}`;
+            if (freteElement) {
+                freteElement.style.display = atLeastOneChecked ? 'block' : 'none'; // Mostra ou oculta o frete
+            }
+            const valorTotalElement = document.getElementById('valor_total');
+            if (valorTotalElement) {
+                valorTotalElement.textContent = `Valor Total: R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+                valorTotalElement.style.display = atLeastOneChecked ? 'block' : 'none'; // Mostra ou oculta o valor total
+            }
 
-            valorVistaElement.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-            totalElement.textContent = `R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
+            // Exibe ou oculta o botão de confirmar pedido
+            confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
+        }
+
+        // Inicializa os valores na página
+        function initializeTotals() {
+            totalElement.textContent = 'R$ 0,00'; // Inicia com valor 0
+            if (freteElement) {
+                freteElement.style.display = 'none'; // Oculta o frete inicialmente
+            }
+            const valorTotalElement = document.getElementById('valor_total');
+            if (valorTotalElement) {
+                valorTotalElement.style.display = 'none'; // Oculta o valor total inicialmente
+            }
+            confirmButton.style.display = 'none'; // Oculta o botão de confirmar inicialmente
+        }
+
+        // Atualiza os totais ao carregar a página
+        initializeTotals();
+
+        rows.forEach(row => {
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            const quantityInput = row.querySelector('input[type="number"]');
+            const totalCell = row.querySelector('td:last-child');
+            const rowCells = row.querySelectorAll('td'); // Todas as células da linha
+
+            // Define a cor inicial como vermelha
+            updateRowColor(rowCells, 'red');
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    quantityInput.disabled = false; // Habilita o campo de quantidade
+                    const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
+                    const quantity = parseInt(quantityInput.value, 10);
+
+                    // Determina a cor com base na quantidade
+                    if (quantity === maxQuantity) {
+                        updateRowColor(rowCells, 'green'); // Verde se a quantidade for igual à escolhida
+                    } else if (quantity < maxQuantity) {
+                        updateRowColor(rowCells, 'orange'); // Laranja se a quantidade for menor
+                    }
+                } else {
+                    quantityInput.disabled = true; // Desabilita o campo de quantidade
+                    updateRowColor(rowCells, 'red'); // Vermelha se não estiver confirmada
+                }
+                updateTotals();
+            });
+
+            quantityInput.addEventListener('input', () => {
+                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
+                let quantity = parseInt(quantityInput.value, 10);
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    quantityInput.value = 1; // Define o valor mínimo como 1
+                    alert('A quantidade deve ser maior que 0.');
+                    return;
+                }
+
+                if (quantity > maxQuantity) {
+                    quantityInput.value = maxQuantity; // Limita ao máximo permitido
+                    alert('A quantidade não pode ser maior que a escolhida pelo cliente.');
+                    return;
+                }
+
+                const total = quantity * unitPrice;
+                totalCell.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+                // Determina a cor com base na quantidade
+                if (checkbox.checked) {
+                    if (quantity === maxQuantity) {
+                        updateRowColor(rowCells, 'green'); // Verde se a quantidade for igual à escolhida
+                    } else if (quantity < maxQuantity) {
+                        updateRowColor(rowCells, 'orange'); // Laranja se a quantidade for menor
+                    }
+                }
+                updateTotals();
+            });
+
+            // Inicialmente desabilita o campo de quantidade
+            quantityInput.disabled = !checkbox.checked;
+        });
+
+        /**
+         * Atualiza a cor da linha.
+         * @param {NodeList} rowCells - Todas as células da linha.
+         * @param {string} color - Cor a ser aplicada.
+         */
+        function updateRowColor(rowCells, color) {
+            rowCells.forEach(cell => {
+                cell.style.color = color; // Aplica a cor a todas as células da linha
+            });
         }
 
         /**
@@ -610,52 +760,6 @@ function formatDateTimeJS($dateString)
             // Exibe ou oculta o botão de confirmação
             confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
         }
-
-        rows.forEach(row => {
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            const quantityInput = row.querySelector('input[type="number"]');
-            const totalCell = row.querySelector('td:last-child');
-
-            // Carrega os valores iniciais
-            const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-            const quantity = parseInt(quantityInput.value, 10);
-            totalCell.textContent = `R$ ${(quantity * unitPrice).toFixed(2).replace('.', ',')}`;
-
-            checkbox.addEventListener('change', () => {
-                if (!checkbox.checked) {
-                    quantityInput.value = 0; // Reseta a quantidade se desmarcado
-                    totalCell.textContent = 'R$ 0,00';
-                }
-                checkConfirmation();
-                updateTotals();
-            });
-
-            quantityInput.addEventListener('input', () => {
-                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
-                let quantity = parseInt(quantityInput.value, 10);
-
-                if (isNaN(quantity) || quantity <= 0) {
-                    quantityInput.value = 0;
-                    alert('A quantidade deve ser maior que 0.');
-                    return;
-                }
-
-                if (quantity > maxQuantity) {
-                    quantityInput.value = maxQuantity;
-                    alert('A quantidade não pode ser maior que a solicitada.');
-                    return;
-                }
-
-                if (checkbox.checked) {
-                    const total = quantity * unitPrice;
-                    totalCell.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-                } else {
-                    totalCell.textContent = 'R$ 0,00';
-                }
-                checkConfirmation();
-                updateTotals();
-            });
-        });
 
         // Atualiza os totais ao carregar a página
         updateTotals();
