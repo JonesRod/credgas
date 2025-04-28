@@ -132,6 +132,16 @@ function formatDateTimeJS($dateString)
             /* Vermelho mais escuro */
         }
 
+        .card.status-4 {
+            background-color: #ffcdd2;
+            /* Vermelho */
+        }
+
+        .card.status-4:hover {
+            background-color: #ef9a9a;
+            /* Vermelho mais escuro */
+        }
+
         .card h2 {
             color: rgb(13, 69, 147);
         }
@@ -314,40 +324,24 @@ function formatDateTimeJS($dateString)
             ?>
             <div class="card <?php echo $status_class; ?>"
                 onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
-                <?php
-                // Fetch partner details from the database
-                $id_parceiro = $row['id_parceiro'];
-
-                $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
-                $stmt_parceiro = $mysqli->prepare($query_parceiro);
-                $stmt_parceiro->bind_param("i", $id_parceiro);
-                $stmt_parceiro->execute();
-                $result_parceiro = $stmt_parceiro->get_result();
-                $loja = $result_parceiro->fetch_assoc();
-                $logo = $loja['logo'];
-                $nomeFantasia = $loja['nomeFantasia'];
-                $estimativa_entrega = $loja['estimativa_entrega'];
-                $stmt_parceiro->close();
-                ?>
-                <p><img src="../../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                 <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
                 </h3>
                 <p><strong>Status do Pedido:</strong>
                     <span
-                        style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
+                        style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : ($row['status_cliente'] === 3 ? 'red' : 'red'))); ?>">
                         <?php
                         $status = $row['status_cliente'];
                         if ($status == 0) {
                             echo "Aguardando confirmação";
                         } else if ($status == 1) {
-                            echo "Pedido confirmado e ja está em preparação.";
+                            echo "Pedido confirmado e já está em preparação.";
                         } else if ($status == 2) {
                             echo "Pedido pronto para entrega";
                         } else if ($status == 3) {
-                            echo '<span style="color: red;">Pedido recusado</span>';
+                            echo '<span style="color: red;">Pedido recusado pelo cliente</span>';
                         } else if ($status == 4) {
-                            echo '<span style="color: red;">Pedido Cancelado</span>';
+                            echo '<span style="color: red;">Pedido Cancelado pelo cliente</span>';
                         }
                         ?>
                     </span>
@@ -448,12 +442,12 @@ function formatDateTimeJS($dateString)
             const countdownElements = document.querySelectorAll('.countdown');
 
             // Converte a estimativa de entrega para milissegundos
-            const estimativaEntrega = new Date(<?php echo json_encode($estimativa_entrega); ?>).getTime();
+            const estimativaEntrega = <?php echo json_encode(isset($estimativa_entrega) ? $estimativa_entrega : null); ?>;
 
             countdownElements.forEach(function (element) {
                 const endTime = new Date(element.getAttribute('data-end-time')).getTime();
                 if (!isNaN(endTime)) {
-                    startCountdown(element, endTime, estimativaEntrega); // Chama a função startCountdown
+                    startCountdown(element, endTime, estimativaEntrega ? new Date(estimativaEntrega).getTime() : 0); // Chama a função startCountdown
                 }
             });
 
