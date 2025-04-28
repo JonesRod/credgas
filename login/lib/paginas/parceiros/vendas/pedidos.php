@@ -289,6 +289,8 @@ function formatDateTimeJS($dateString)
                     echo 'selected'; ?>>Pedido cancelado</option>
                 <option value="3" <?php if ($status === '3')
                     echo 'selected'; ?>>Pedido recusado</option>
+                <option value="3" <?php if ($status === '4')
+                    echo 'selected'; ?>>Pedido Cancelado</option>
             </select>
             <input type="text" name="num_pedido" placeholder="Número do Pedido"
                 value="<?php echo htmlspecialchars($num_pedido); ?>">
@@ -339,13 +341,13 @@ function formatDateTimeJS($dateString)
                         if ($status == 0) {
                             echo "Aguardando confirmação";
                         } else if ($status == 1) {
-                            echo "Pedido confirmado";
+                            echo "Pedido confirmado e ja está em preparação.";
                         } else if ($status == 2) {
-                            echo "Pedido cancelado";
+                            echo "Pedido pronto para entrega";
                         } else if ($status == 3) {
                             echo '<span style="color: red;">Pedido recusado</span>';
-                        } else {
-                            echo "Status desconhecido";
+                        } else if ($status == 4) {
+                            echo '<span style="color: red;">Pedido Cancelado</span>';
                         }
                         ?>
                     </span>
@@ -372,7 +374,7 @@ function formatDateTimeJS($dateString)
         function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
-            form.action = 'detalhes_pedido.php';
+            form.action = status_cliente === '1' ? 'pedido_confirmado.php' : 'detalhes_pedido.php'; // Define a ação com base no status
 
             // Campos a serem enviados no formulário
             const fields = {

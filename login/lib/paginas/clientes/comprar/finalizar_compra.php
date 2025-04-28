@@ -34,6 +34,17 @@ if ($stmt->execute()) {
     $stmt->bind_param("si", $data_hora, $id_parceiro);
     $stmt->execute();
     $stmt->close();
+
+    // Excluir o pedido do carrinho
+    $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+    if ($stmt_carrinho) {
+        $stmt_carrinho->bind_param("ii", $id_cliente, $id_parceiro);
+        $stmt_carrinho->execute();
+        $stmt_carrinho->close();
+    } else {
+        throw new Exception("Erro ao excluir do carrinho: " . $mysqli->error);
+    }
+    
     echo json_encode(["success" => true]);
 } else {
     echo json_encode(["success" => false, "message" => "Erro ao salvar os dados no banco."]);

@@ -42,15 +42,21 @@ if ($result->num_rows > 0) {
     echo "Pedido não encontrado.";
     exit;
 }
-$formato_compra = $pedido['formato_compra'];
-//echo $formato_compra;
+
+$formato_compra = $pedido['formato_compra']; // Corrigido: Removido código duplicado ou incorreto
 
 // Calculate end time for countdown
 $pedido_time = new DateTime($pedido['data']);
 $pedido_time->modify('+15 minutes');
 $end_time = $pedido_time->format('Y-m-d H:i:s');
 
+// Consulta para buscar os produtos confirmados
+$produtos_confirmados = [];
+if (!empty($pedido['produtos_confirmados'])) {
+    $produtos_confirmados = explode('|', $pedido['produtos_confirmados']);
+}
 
+// Fetch partner details from the database
 $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
 $stmt_parceiro = $mysqli->prepare($query_parceiro);
 $stmt_parceiro->bind_param("i", $id_parceiro);
@@ -60,10 +66,8 @@ $loja = $result_parceiro->fetch_assoc();
 $logo = $loja['logo'];
 $nomeFantasia = $loja['nomeFantasia'];
 $tempo_entrega = $loja['estimativa_entrega'];
-
 $stmt_parceiro->close();
 
-// Fetch partner details from the database
 $id_cliente = $pedido['id_cliente'];
 
 // Consulta para buscar os dados do cliente
@@ -81,8 +85,8 @@ if ($result_cliente->num_rows > 0) {
     echo "Cliente não encontrado.";
     exit;
 }
-
 $stmt_cliente->close();
+
 function formatDateTimeJS($dateString)
 {
     if (empty($dateString)) {
@@ -98,53 +102,13 @@ function formatDateTimeJS($dateString)
 
 if ($formato_compra == 'crediario') {
     $formato_compra = 'online';
-
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    echo $valor_a_vista;
-
 } elseif ($formato_compra == 'online') {
     $formato_compra = 'online';
-
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    echo $valor_a_vista;
-
 } elseif ($formato_compra == 'retirar') {
     $formato_compra = 'retirar';
-
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    //echo $valor_a_vista;
-
 } else {
     $formato_compra = 'entregar';
-
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    //echo $valor_a_vista;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -230,7 +194,6 @@ if ($formato_compra == 'crediario') {
             font-size: 16px;
             color: #fff;
             background-color: #dc3545;
-            /* Cor vermelha */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -238,7 +201,6 @@ if ($formato_compra == 'crediario') {
 
         #bt_recusar_pedido:hover {
             background-color: #c82333;
-            /* Vermelho mais escuro ao passar o mouse */
         }
 
         #bt_confirmar_pedido {
@@ -248,7 +210,6 @@ if ($formato_compra == 'crediario') {
             font-size: 16px;
             color: #fff;
             background-color: #28a745;
-            /* Cor verde */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -256,7 +217,6 @@ if ($formato_compra == 'crediario') {
 
         #bt_confirmar_pedido:hover {
             background-color: #218838;
-            /* Verde mais escuro ao passar o mouse */
         }
 
         .cancel-timer {
@@ -275,7 +235,6 @@ if ($formato_compra == 'crediario') {
 
         .valores {
             text-align: right;
-            margin-right: 30px;
             font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
@@ -285,7 +244,6 @@ if ($formato_compra == 'crediario') {
             display: flex;
             justify-content: center;
             gap: 10px;
-            /* Espaçamento entre os botões */
             margin-top: 20px;
         }
 
@@ -342,11 +300,6 @@ if ($formato_compra == 'crediario') {
                 font-size: 14px;
             }
         }
-
-        /* Esconde a coluna de confirmar produtos */
-        .hide-column {
-            display: none;
-        }
     </style>
 </head>
 
@@ -358,9 +311,7 @@ if ($formato_compra == 'crediario') {
         <hr>
         <h2>Pedido #<?php echo $num_pedido; ?></h2>
         <p style="color:darkgreen;">
-            <strong>
-                Cód. para Retirada: <?php echo htmlspecialchars($pedido['codigo_retirada']); ?>
-            </strong>
+            <strong>Cód. para Retirada: <?php echo htmlspecialchars($pedido['codigo_retirada']); ?></strong>
         </p>
         <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
         <p><strong>Status do Pedido:</strong>
@@ -370,7 +321,7 @@ if ($formato_compra == 'crediario') {
                 if ($pedido['status_cliente'] == 0) {
                     echo "Aguardando Confirmação da loja.";
                 } elseif ($pedido['status_cliente'] == 1) {
-                    echo "Pedido confirmado e ja está em preparação.";
+                    echo "Pedido confirmado e já está em preparação.";
                 } elseif ($pedido['status_cliente'] == 2) {
                     if ($pedido['tipo_entrega'] == 'entregar') {
                         echo "Saiu para entrega.";
@@ -379,7 +330,9 @@ if ($formato_compra == 'crediario') {
                     }
                 } elseif ($pedido['status_cliente'] == 3) {
                     echo "Pedido Entregue.";
-                } else {
+                } elseif ($pedido['status_cliente'] == 4) {
+                    echo "Pedido recusado.";
+                } elseif ($pedido['status_cliente'] == 5) {
                     echo "Pedido Cancelado.";
                 }
                 ?>
@@ -402,66 +355,78 @@ if ($formato_compra == 'crediario') {
             <tbody>
                 <?php
                 $produtos = explode('|', $pedido['produtos']);
+                $produtos_confirmados_map = [];
+
+                // Mapeia os produtos confirmados para facilitar a verificação
+                foreach ($produtos_confirmados as $produto_confirmado) {
+                    list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto_confirmado);
+                    $produtos_confirmados_map[$nome] = [
+                        'quantidade' => $quantidade,
+                        'valor_unitario' => $valor_unitario,
+                        'valor_total' => $valor_total,
+                    ];
+                }
+
                 foreach ($produtos as $produto) {
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
-                    echo "<tr>";
+                    $is_confirmed = isset($produtos_confirmados_map[$nome]);
+                    $confirmed_quantity = $is_confirmed ? $produtos_confirmados_map[$nome]['quantidade'] : $quantidade;
+                    $row_color = $is_confirmed ? ($confirmed_quantity == $quantidade ? 'green' : 'orange') : 'red';
+
+                    echo "<tr style='color: $row_color;'>";
                     if ($pedido['status_cliente'] == 0) {
-                        echo "<td><input type='checkbox' name='confirmar[]'></td>";
+                        echo "<td><input type='checkbox' name='confirmar[]' " . ($is_confirmed ? 'checked disabled' : '') . "></td>";
                     }
                     echo "<td>$nome</td>";
                     if ($pedido['status_cliente'] == 0) {
-                        echo "<td><input type='number' value='$quantidade' data-max='$quantidade' data-unit-price='$valor_unitario'></td>";
+                        echo "<td><input type='number' value='$confirmed_quantity' data-max='$quantidade' data-unit-price='$valor_unitario' " . ($is_confirmed ? 'disabled' : '') . "></td>";
                     } else {
-                        echo "<td>$quantidade</td>";
+                        echo "<td>$confirmed_quantity</td>";
                     }
                     echo "<td>R$ " . number_format($valor_unitario, 2, ',', '.') . "</td>";
-                    echo "<td>R$ " . number_format($valor_total, 2, ',', '.') . "</td>";
+                    echo "<td class='total-cell'>R$ " . number_format($valor_total, 2, ',', '.') . "</td>";
                     echo "</tr>";
                 }
                 ?>
             </tbody>
         </table>
         <p class="valores">
-            Total: R$
-            <span id="total_inicial"><?php echo number_format($valor_a_vista, 2, ',', '.'); ?></span>
+            Total: R$ <span id="total_inicial">0,00</span>
         </p>
         <?php
-        if ($frete != 0 && $tipo_entrega == 'entregar') {
-            echo "<p id='frete' class='valores' data-frete='$frete'><strong>Frete:</strong> R$ " . number_format($frete, 2, ',', '.') . "</p>";
-        } else {
-            echo "<p id='frete' class='valores' data-frete='0'><strong></strong>Frete Grátis</p>";
-        }
-        ?>
-        <?php
         if ($saldo_usado != 0 && $formato_compra != 'online') {
-            // Exibe o saldo utilizado apenas se for diferente de zero
-            echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado'><strong>Saldo Utilzado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
+            echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado'><strong>Saldo Utilizado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
         } else {
-            echo "<p id='saldo_usado' class='valores' data-saldo='0' style='display: none;'><strong></strong>saldo_usado: 0,00</p>";
+            echo "<p id='saldo_usado' class='valores' data-saldo='0' style='display: none;'><strong>Saldo Utilizado: 0,00</strong></p>";
         }
         ?>
         <?php
         if ($taxa_crediario != 0 && $formato_compra == 'online') {
-            echo "<p id='taxa_crediario' class='valores' data-taxa='$taxa_crediario' style='display: none;'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+            echo "<p id='taxa_crediario' class='valores' data-taxa='$taxa_crediario'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
         } else {
-            echo "<p id='taxa_crediario' class='valores' data-taxa='0' style='display: none;'><strong></strong>Taxa: Grátis</p>";
+            echo "<p id='taxa_crediario' class='valores' data-taxa='0' style='display: none;'><strong>Taxa: Grátis</strong></p>";
         }
         ?>
-        <p id="valor_total" class="valores" data-total="<?php $total; ?>"><strong>Valor Total: R$</strong>
-            <?php echo number_format($total, 2, ',', '.'); ?>
+        <p id="frete" class="valores" data-frete="<?php echo $frete; ?>"
+            style="display: none; color: <?php echo $frete == 0 ? 'green' : 'inherit'; ?>;">
+            <strong><?php echo $frete == 0 ? 'Frete Grátis' : 'Frete:'; ?></strong>
+            <?php echo $frete == 0 ? '' : 'R$ ' . number_format($frete, 2, ',', '.'); ?>
+        </p>
+        <p id="valor_total" class="valores" data-total="<?php echo $total; ?>" style="display: none;">
+            <strong>Valor Total: R$</strong> <?php echo number_format($total, 2, ',', '.'); ?>
         </p>
         <hr>
         <h3>Status de Pagamento</h3>
         <p>
             <?php
             if ($formato_compra == 'crediario') {
-                echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
+                echo "<p><strong>Pagamento: <span>Online.</span></strong></p>";
             } elseif ($formato_compra == 'online') {
-                echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
+                echo "<p><strong>Pagamento: <span>Online.</span></strong></p>";
             } elseif ($formato_compra == 'retirar') {
-                echo "<p><strong>Pagamento: <span>Na Retirada.</span></p></strong></p>";
+                echo "<p><strong>Pagamento: <span>Na Retirada.</span></strong></p>";
             } else {
-                echo "<p><strong>Pagamento: <span>Na Entrega.</span></p></strong></p>";
+                echo "<p><strong>Pagamento: <span>Na Entrega.</span></strong></p>";
             }
             ?>
         </p>
@@ -472,7 +437,7 @@ if ($formato_compra == 'crediario') {
             if ($pedido['tipo_entrega'] == 'entregar') {
                 echo "Entregar em casa.";
             } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo "Retirar no loja.";
+                echo "Retirar na loja.";
             } else {
                 echo "Retirar na loja.";
             }
@@ -508,7 +473,7 @@ if ($formato_compra == 'crediario') {
         <p style="display: none;"><strong>CIDADE/UF:</strong>
             <?php
             if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $pedido['bairro_entrega'] != '' ? $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'] : $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'];
+                echo $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'];
             } elseif ($pedido['tipo_entrega'] == 'buscar') {
                 echo $loja['cidade'] . '/' . $loja['estado'] . ', CEP: ' . $loja['cep'];
             }
@@ -527,25 +492,23 @@ if ($formato_compra == 'crediario') {
             <strong>COMENTÁRIO:</strong>
         </p>
         <textarea name="comentario" id="comentario"
-            style="display: <?php echo empty($pedido['comentario']) ? 'none' : 'block'; ?>;">
-            <?php echo $pedido['comentario']; ?>
-        </textarea>
+            style="display: <?php echo empty($pedido['comentario']) ? 'none' : 'block'; ?>;"><?php echo $pedido['comentario']; ?></textarea>
         <hr>
         <p id="tempo-cancelar" class="cancel-timer" style="color: red; display: none;">
             <strong>Tempo para cancelar:</strong>
             <span id="countdown" data-end-time="<?php echo $end_time; ?>"></span>
         </p>
-        <?php if ($pedido['status_cliente'] != 1): // Não mostrar se o pedido estiver confirmado ?>
+        <?php if ($pedido['status_cliente'] != 1): ?>
             <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
                 <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
             </p>
         <?php endif; ?>
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
-            <?php if ($pedido['status_cliente'] != 1): // Mostrar botão de cancelar apenas se o pedido não estiver confirmado ?>
-                <button id="bt_recusar_pedido" style="display: none;" onclick="">Recusar pedido</button>
+            <?php if ($pedido['status_cliente'] != 1): ?>
+                <button id="bt_recusar_pedido" onclick="">Recusar pedido</button>
             <?php endif; ?>
-            <button id="bt_confirmar_pedido">Confirmar Pedido</button>
+            <button id="bt_confirmar_pedido" style="display: none;">Confirmar Pedido</button>
         </div>
     </div>
 </body>
@@ -553,60 +516,95 @@ if ($formato_compra == 'crediario') {
     document.addEventListener('DOMContentLoaded', function () {
         const rows = document.querySelectorAll('table tbody tr');
         const totalElement = document.getElementById('total_inicial');
-        const valorVistaElement = document.getElementById('valor_vista');
         const freteElement = document.getElementById('frete');
-        const saldoUsadoElement = document.getElementById('saldo_usado');
+        const valorTotalElement = document.getElementById('valor_total');
         const confirmButton = document.getElementById('bt_confirmar_pedido');
         const recusarButton = document.getElementById('bt_recusar_pedido');
-        const saindoEntregaButton = document.createElement('button');
-        const statusPedidoElement = document.querySelector('p > span');
 
-        saindoEntregaButton.id = 'bt_saindo_entrega';
-        saindoEntregaButton.textContent = 'Saindo para Entrega';
-        saindoEntregaButton.style.display = 'none';
-        saindoEntregaButton.style.padding = '10px 20px';
-        saindoEntregaButton.style.margin = '10px 5px';
-        saindoEntregaButton.style.fontSize = '16px';
-        saindoEntregaButton.style.color = '#fff';
-        saindoEntregaButton.style.backgroundColor = '#ffc107'; // Cor amarela
-        saindoEntregaButton.style.border = 'none';
-        saindoEntregaButton.style.borderRadius = '5px';
-        saindoEntregaButton.style.cursor = 'pointer';
+        if (!rows.length || !totalElement || !freteElement || !valorTotalElement || !confirmButton || !recusarButton) {
+            console.warn('Elementos necessários não encontrados na página.');
+            return;
+        }
 
-        saindoEntregaButton.addEventListener('click', function () {
-            alert('Pedido está saindo para entrega!');
+        recusarButton.addEventListener('click', function () {
+            if (confirm('Tem certeza de que deseja recusar este pedido?')) {
+                fetch('recusar_pedido.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `num_pedido=<?php echo $num_pedido; ?>`
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        window.location.href = 'pedido_recusado.php';
+                    })
+                    .catch(error => {
+                        console.error('Erro ao recusar o pedido:', error);
+                    });
+            }
         });
-
-        document.querySelector('.button-container').appendChild(saindoEntregaButton);
 
         confirmButton.addEventListener('click', function () {
             const numPedido = <?php echo json_encode($num_pedido); ?>;
+            const produtosConfirmados = [];
+            let totalProdutosConfirmados = 0;
 
-            fetch('atualizar_status_pedido.php', {
+            rows.forEach(row => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                const quantityInput = row.querySelector('input[type="number"]');
+                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+                const totalCell = row.querySelector('td:last-child');
+                const productName = row.querySelector('td:nth-child(2)').textContent.trim();
+
+                if (checkbox.checked) {
+                    const quantity = parseInt(quantityInput.value, 10);
+
+                    if (!isNaN(unitPrice) && !isNaN(quantity) && quantity > 0) {
+                        const total = unitPrice * quantity;
+                        produtosConfirmados.push(`${productName}/${quantity}/${unitPrice}/${total.toFixed(2)}`);
+                        totalProdutosConfirmados += total; // Soma o total dos produtos confirmados
+                    } else {
+                        alert(`Erro ao calcular o total para o produto: ${productName}. Verifique os valores.`);
+                    }
+                }
+            });
+
+            fetch('confirmar_pedido.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ num_pedido: numPedido, status_cliente: 1 }),
+                body: JSON.stringify({
+                    num_pedido: numPedido,
+                    status_cliente: 1,
+                    status_parceiro: 1,
+                    produtos_confirmados: produtosConfirmados.join('|'), // Formata os produtos confirmados
+                    valor_produtos_confirmados: totalProdutosConfirmados.toFixed(2) // Salva o total dos produtos confirmados com 2 casas decimais
+                }),
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        confirmButton.style.display = 'none';
-                        recusarButton.style.display = 'none';
-                        saindoEntregaButton.style.display = 'block';
-                        statusPedidoElement.textContent = 'Pedido Confirmado e já está em preparação.';
-                        statusPedidoElement.style.color = 'green';
-
-                        // Desabilitar os checkboxes e inputs de quantidade
-                        rows.forEach(row => {
-                            const checkbox = row.querySelector('input[type="checkbox"]');
-                            const quantityInput = row.querySelector('input[type="number"]');
-                            checkbox.disabled = true;
-                            quantityInput.disabled = true;
-                        });
-
                         alert('Pedido confirmado com sucesso!');
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'pedido_confirmado.php';
+
+                        const idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = 'id';
+                        idInput.value = <?php echo json_encode($_SESSION['id']); ?>;
+
+                        const numPedidoInput = document.createElement('input');
+                        numPedidoInput.type = 'hidden';
+                        numPedidoInput.name = 'num_pedido';
+                        numPedidoInput.value = numPedido;
+
+                        form.appendChild(idInput);
+                        form.appendChild(numPedidoInput);
+                        document.body.appendChild(form);
+                        form.submit();
                     } else {
                         alert('Erro ao confirmar o pedido.');
                     }
@@ -617,9 +615,19 @@ if ($formato_compra == 'crediario') {
                 });
         });
 
-        /**
-         * Atualiza os totais na tabela.
-         */
+        function updateRowColor(row, checkbox, quantityInput, maxQuantity) {
+            if (checkbox.checked) {
+                const quantity = parseInt(quantityInput.value, 10);
+                if (quantity < maxQuantity) {
+                    row.style.color = 'orange'; // Quantidade menor que a escolhida pelo cliente
+                } else {
+                    row.style.color = 'green'; // Produto confirmado com quantidade correta
+                }
+            } else {
+                row.style.color = 'red'; // Produto desconfirmado
+            }
+        }
+
         function updateTotals() {
             let totalProdutos = 0;
             let atLeastOneChecked = false;
@@ -627,208 +635,72 @@ if ($formato_compra == 'crediario') {
             rows.forEach(row => {
                 const checkbox = row.querySelector('input[type="checkbox"]');
                 const quantityInput = row.querySelector('input[type="number"]');
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const quantity = parseInt(quantityInput.value, 10);
+                const totalCell = row.querySelector('.total-cell');
+                if (!checkbox || !quantityInput || !totalCell) return;
 
-                if (checkbox.checked && quantity > 0) {
-                    totalProdutos += quantity * unitPrice; // Soma o valor do produto confirmado
-                    atLeastOneChecked = true; // Marca que pelo menos um produto está confirmado
-                }
-            });
-
-            const frete = freteElement ? parseFloat(freteElement.getAttribute('data-frete')) || 0 : 0;
-            const valorFinal = totalProdutos + (atLeastOneChecked ? frete : 0); // Adiciona o frete apenas se houver produtos confirmados
-
-            // Atualiza os valores na página
-            totalElement.textContent = `R$ ${totalProdutos.toFixed(2).replace('.', ',')}`;
-            if (freteElement) {
-                freteElement.style.display = atLeastOneChecked ? 'block' : 'none'; // Mostra ou oculta o frete
-            }
-            const valorTotalElement = document.getElementById('valor_total');
-            if (valorTotalElement) {
-                valorTotalElement.textContent = `Valor Total: R$ ${valorFinal.toFixed(2).replace('.', ',')}`;
-                valorTotalElement.style.display = atLeastOneChecked ? 'block' : 'none'; // Mostra ou oculta o valor total
-            }
-
-            // Exibe ou oculta o botão de confirmar pedido
-            confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
-        }
-
-        // Inicializa os valores na página
-        function initializeTotals() {
-            totalElement.textContent = 'R$ 0,00'; // Inicia com valor 0
-            if (freteElement) {
-                freteElement.style.display = 'none'; // Oculta o frete inicialmente
-            }
-            const valorTotalElement = document.getElementById('valor_total');
-            if (valorTotalElement) {
-                valorTotalElement.style.display = 'none'; // Oculta o valor total inicialmente
-            }
-            confirmButton.style.display = 'none'; // Oculta o botão de confirmar inicialmente
-        }
-
-        // Atualiza os totais ao carregar a página
-        initializeTotals();
-
-        rows.forEach(row => {
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            const quantityInput = row.querySelector('input[type="number"]');
-            const totalCell = row.querySelector('td:last-child');
-            const rowCells = row.querySelectorAll('td'); // Todas as células da linha
-
-            // Define a cor inicial como vermelha
-            updateRowColor(rowCells, 'red');
-
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    quantityInput.disabled = false; // Habilita o campo de quantidade
-                    const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
-                    const quantity = parseInt(quantityInput.value, 10);
-
-                    // Determina a cor com base na quantidade
-                    if (quantity === maxQuantity) {
-                        updateRowColor(rowCells, 'green'); // Verde se a quantidade for igual à escolhida
-                    } else if (quantity < maxQuantity) {
-                        updateRowColor(rowCells, 'orange'); // Laranja se a quantidade for menor
-                    }
-                } else {
-                    quantityInput.disabled = true; // Desabilita o campo de quantidade
-                    updateRowColor(rowCells, 'red'); // Vermelha se não estiver confirmada
-                }
-                updateTotals();
-            });
-
-            quantityInput.addEventListener('input', () => {
                 const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
                 const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
                 let quantity = parseInt(quantityInput.value, 10);
 
-                if (isNaN(quantity) || quantity <= 0) {
-                    quantityInput.value = 1; // Define o valor mínimo como 1
-                    alert('A quantidade deve ser maior que 0.');
-                    return;
-                }
-
-                if (quantity > maxQuantity) {
-                    quantityInput.value = maxQuantity; // Limita ao máximo permitido
+                if (quantity < 1) {
+                    quantityInput.value = 1;
+                    alert('A quantidade não pode ser menor que 1.');
+                    quantity = 1;
+                } else if (quantity > maxQuantity) {
+                    quantityInput.value = maxQuantity;
                     alert('A quantidade não pode ser maior que a escolhida pelo cliente.');
-                    return;
+                    quantity = maxQuantity;
                 }
 
-                const total = quantity * unitPrice;
-                totalCell.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+                updateRowColor(row, checkbox, quantityInput, maxQuantity);
 
-                // Determina a cor com base na quantidade
-                if (checkbox.checked) {
-                    if (quantity === maxQuantity) {
-                        updateRowColor(rowCells, 'green'); // Verde se a quantidade for igual à escolhida
-                    } else if (quantity < maxQuantity) {
-                        updateRowColor(rowCells, 'orange'); // Laranja se a quantidade for menor
-                    }
-                }
-                updateTotals();
-            });
-
-            // Inicialmente desabilita o campo de quantidade
-            quantityInput.disabled = !checkbox.checked;
-        });
-
-        /**
-         * Atualiza a cor da linha.
-         * @param {NodeList} rowCells - Todas as células da linha.
-         * @param {string} color - Cor a ser aplicada.
-         */
-        function updateRowColor(rowCells, color) {
-            rowCells.forEach(cell => {
-                cell.style.color = color; // Aplica a cor a todas as células da linha
-            });
-        }
-
-        /**
-         * Verifica se pelo menos um produto foi confirmado.
-         */
-        function checkConfirmation() {
-            let atLeastOneChecked = false;
-
-            rows.forEach(row => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                if (checkbox.checked) {
+                if (checkbox.checked && quantity > 0) {
+                    totalProdutos += quantity * unitPrice;
                     atLeastOneChecked = true;
+
+                    const total = quantity * unitPrice;
+                    totalCell.textContent = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
                 }
             });
 
-            // Exibe ou oculta o botão de confirmação
+            const frete = parseFloat(freteElement.getAttribute('data-frete')) || 0;
+            const totalComFrete = totalProdutos + (atLeastOneChecked ? frete : 0);
+
+            totalElement.textContent = totalProdutos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            if (atLeastOneChecked) {
+                freteElement.style.display = 'block';
+                freteElement.style.color = frete === 0 ? 'green' : 'inherit';
+                freteElement.innerHTML = frete === 0
+                    ? '<strong>Frete Grátis</strong>'
+                    : `<strong>Frete:</strong> R$ ${frete.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                valorTotalElement.style.display = 'block';
+                valorTotalElement.innerHTML = `<strong>Valor Total: R$</strong> ${totalComFrete.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            } else {
+                freteElement.style.display = 'none';
+                valorTotalElement.style.display = 'none';
+            }
+
             confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
         }
 
-        // Atualiza os totais ao carregar a página
+        rows.forEach(row => {
+            const checkbox = row.querySelector('input[type="checkbox"]');
+            const quantityInput = row.querySelector('input[type="number"]');
+
+            if (!checkbox || !quantityInput) return;
+
+            quantityInput.disabled = !checkbox.checked;
+
+            checkbox.addEventListener('change', () => {
+                quantityInput.disabled = !checkbox.checked;
+                updateTotals();
+            });
+
+            quantityInput.addEventListener('input', updateTotals);
+        });
+
         updateTotals();
-
-        // Seleciona o elemento com a classe 'countdown'.
-        const countdownElement = document.querySelector('#countdown');
-        if (countdownElement) {
-            const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
-            startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
-        }
-
-        // Garante que os elementos estejam inicialmente ocultos, se existirem.
-        const textCancelar = document.getElementById('text-cancelar');
-        const btCancelarPedido = document.getElementById('bt_recusar_pedido');
-        if (textCancelar) textCancelar.style.display = "none";
-        if (btCancelarPedido) btCancelarPedido.style.display = "none";
     });
-
-    /**
-     * Inicia a contagem regressiva para o tempo de cancelamento.
-     * @param {HTMLElement} element - O elemento onde a contagem será exibida.
-     * @param {number} endTime - O timestamp do fim do tempo de cancelamento.
-     */
-    function startCountdown(element, endTime) {
-        let interval;
-
-        /**
-         * Atualiza a contagem regressiva a cada segundo.
-         */
-        function updateCountdown() {
-            const now = new Date().getTime(); // Obtém o timestamp atual.
-            const distance = endTime - now; // Calcula o tempo restante.
-
-            if (distance > 0) {
-                // Calcula minutos e segundos restantes.
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-
-                const tempoCancelar = document.getElementById('tempo-cancelar');
-                const btCancelarPedido = document.getElementById('bt_recusar_pedido');
-                if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
-                if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
-            } else {
-                // Quando o tempo expira, para o intervalo e ajusta a exibição.
-                clearInterval(interval);
-
-                const tempoCancelar = document.getElementById('tempo-cancelar');
-                if (tempoCancelar) tempoCancelar.style.display = "none";
-
-                // Calcula os timestamps para as condições.
-                const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
-                const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
-
-                // Verifica se já passaram 15 minutos.
-                const now = new Date().getTime();
-                const btCancelarPedido = document.getElementById('bt_recusar_pedido');
-                const textCancelar = document.getElementById('text-cancelar');
-                if (now >= quinzeMinutos) {
-                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
-                    if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
-                }
-            }
-        }
-
-        updateCountdown(); // Atualiza a contagem imediatamente.
-        interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
-    }
-
 </script>
 
 </html>

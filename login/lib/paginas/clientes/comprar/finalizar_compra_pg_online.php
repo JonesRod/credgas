@@ -224,6 +224,16 @@ try {
             $stmt_notificacao->execute();
             $stmt_notificacao->close();
 
+            // Excluir o pedido do carrinho
+            $stmt_carrinho = $mysqli->prepare("DELETE FROM carrinho WHERE id_cliente = ? AND id_parceiro = ?");
+            if ($stmt_carrinho) {
+                $stmt_carrinho->bind_param("ii", $id_cliente, $id_parceiro);
+                $stmt_carrinho->execute();
+                $stmt_carrinho->close();
+            } else {
+                throw new Exception("Erro ao excluir do carrinho: " . $mysqli->error);
+            }
+            
             echo json_encode(['success' => true, 'message' => 'Compra finalizada com sucesso.']);
         } else {
             throw new Exception('Erro ao executar a consulta: ' . $stmt->error);
