@@ -38,7 +38,7 @@ if ($data) {
 }
 
 if ($status !== '') {
-    $query .= " AND status_cliente = ?";
+    $query .= " AND GREATEST(status_cliente, status_parceiro) = ?";
     $params[] = $status;
     $types .= "i";
 }
@@ -113,13 +113,13 @@ function formatDateTimeJS($dateString)
         }
 
         .card.status-2 {
-            background-color: #ffcdd2;
-            /* Vermelho */
+            background-color: #90caf9;
+            /* Azul */
         }
 
         .card.status-2:hover {
-            background-color: #ef9a9a;
-            /* Vermelho mais escuro */
+            background-color: #64b5f6;
+            /* Azul mais escuro */
         }
 
         .card.status-3 {
@@ -280,6 +280,50 @@ function formatDateTimeJS($dateString)
                 location.reload(); // Recarrega a página
             }, 300000); // 300000 ms = 3 minutos
         }
+
+        function atualizarStatusPedido(num_pedido, novoStatus) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'atualizar_status_pedido.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    alert('Status do pedido atualizado com sucesso!');
+                    const card = document.querySelector(`.card[data-num-pedido="${num_pedido}"]`);
+                    if (card) {
+                        card.className = `card status-${novoStatus}`; // Atualiza a classe do cartão
+                        const statusSpan = card.querySelector('span');
+                        if (statusSpan) {
+                            // Atualiza o texto do status
+                            switch (novoStatus) {
+                                case '0':
+                                    statusSpan.textContent = 'Aguardando confirmação';
+                                    statusSpan.style.color = '#ff5722';
+                                    break;
+                                case '1':
+                                    statusSpan.textContent = 'Pedido confirmado e já está em preparação.';
+                                    statusSpan.style.color = 'green';
+                                    break;
+                                case '2':
+                                    statusSpan.textContent = 'Pedido pronto para entrega';
+                                    statusSpan.style.color = 'blue';
+                                    break;
+                                case '3':
+                                    statusSpan.textContent = 'Pedido recusado pelo cliente';
+                                    statusSpan.style.color = 'red';
+                                    break;
+                                case '4':
+                                    statusSpan.textContent = 'Pedido Cancelado pelo cliente';
+                                    statusSpan.style.color = 'red';
+                                    break;
+                            }
+                        }
+                    }
+                } else {
+                    alert('Erro ao atualizar o status do pedido.');
+                }
+            };
+            xhr.send(`num_pedido=${num_pedido}&novo_status=${novoStatus}`);
+        }
     </script>
 </head>
 
@@ -309,8 +353,9 @@ function formatDateTimeJS($dateString)
         </form>
     </div>
     <div class="cards-container">
-        <?php while ($row = $result->fetch_assoc()):
-            $valor = $row['valor_produtos'];
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+            $valor = $row['status_cliente'] == 1 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
             $saldo_usado = $row['saldo_usado'];
             $taxa_crediario = $row['taxa_crediario'];
             $frete = $row['valor_frete'];
@@ -320,18 +365,19 @@ function formatDateTimeJS($dateString)
             $pedido_time = new DateTime($row['data']);
             $pedido_time->modify('+15 minutes');
             $end_time = $pedido_time->format('Y-m-d H:i:s');
-            $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
             ?>
-            <div class="card <?php echo $status_class; ?>"
+            <div class="card status-<?php echo max($row['status_cliente'], $row['status_parceiro']); ?>"
+                data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
                 onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                 <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
                 </h3>
                 <p><strong>Status do Pedido:</strong>
-                    <span
-                        style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : ($row['status_cliente'] === 3 ? 'red' : 'red'))); ?>">
+                    <span style="color: <?php
+                    $status = max($row['status_cliente'], $row['status_parceiro']);
+                    echo $status == 0 ? '#ff5722' : ($status == 1 ? 'green' : ($status == 2 ? 'blue' : 'red'));
+                    ?>">
                         <?php
-                        $status = $row['status_cliente'];
                         if ($status == 0) {
                             echo "Aguardando confirmação";
                         } else if ($status == 1) {
@@ -339,9 +385,9 @@ function formatDateTimeJS($dateString)
                         } else if ($status == 2) {
                             echo "Pedido pronto para entrega";
                         } else if ($status == 3) {
-                            echo '<span style="color: red;">Pedido recusado pelo cliente</span>';
+                            echo "Pedido recusado";
                         } else if ($status == 4) {
-                            echo '<span style="color: red;">Pedido Cancelado pelo cliente</span>';
+                            echo "Pedido Cancelado";
                         }
                         ?>
                     </span>
@@ -350,12 +396,9 @@ function formatDateTimeJS($dateString)
                 <p class="valor"><strong>Valor da compra: R$ </strong>
                     <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
                 <hr>
-                <p class="tempo-cancelar" style="color: red; display: none;"><strong>Tempo para cancelar:</strong>
-                    <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span>
-                </p>
-                <?php if ($row['status_cliente'] != 1): ?>
-                    <p class="text-cancelar" style="color: red; display: none;">
-                        <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+                <?php if ($row['status_cliente'] == 4 || $row['status_parceiro'] == 4): ?>
+                    <p style="color: red; text-align: center;"><strong>
+                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.</strong>
                     </p>
                 <?php endif; ?>
             </div>
@@ -365,16 +408,24 @@ function formatDateTimeJS($dateString)
 
     <script>
         // Função para redirecionar para a página de detalhes do pedido
-        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
+        function redirectToDetails(num_pedido, id_parceiro, status, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
-            form.action = status_cliente === '1' ? 'pedido_confirmado.php' : 'detalhes_pedido.php'; // Define a ação com base no status
+            if (status === '1') {
+                form.action = 'pedido_confirmado.php';
+            } else if (status === '3') {
+                form.action = 'pedido_recusado.php';
+            } else if (status === '4') {
+                form.action = 'pedido_cancelado.php';
+            } else {
+                form.action = 'detalhes_pedido.php';
+            }
 
             // Campos a serem enviados no formulário
             const fields = {
                 num_pedido: num_pedido,
                 id_parceiro: id_parceiro,
-                status_cliente: status_cliente,
+                status: status,
                 data: data,
                 valor: valor
             };

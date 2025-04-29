@@ -1,5 +1,4 @@
 <?php
-//var_dump($_POST);
 session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
@@ -15,10 +14,7 @@ if (!isset($_POST['num_pedido'])) {
     exit;
 }
 
-// Obtém o ID do cliente logado
 $id_parceiro = $_SESSION['id'];
-
-// Obtém o ID do pedido enviado via POST
 $num_pedido = $_POST['num_pedido'];
 
 // Consulta para buscar os dados do pedido
@@ -28,86 +24,96 @@ $stmt->bind_param("ii", $id_parceiro, $num_pedido);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-    $pedido = $result->fetch_assoc();
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    //echo $valor_a_vista;
-} else {
+if ($result->num_rows === 0) {
     echo "Pedido não encontrado.";
     exit;
 }
 
-$formato_compra = $pedido['formato_compra']; // Corrigido: Removido código duplicado ou incorreto
+$pedido = $result->fetch_assoc();
+$frete = $pedido['valor_frete'];
+$saldo_usado = $pedido['saldo_usado'];
+$taxa_crediario = $pedido['taxa_crediario'];
+$tipo_entrega = $pedido['tipo_entrega'];
+$formato_compra = $pedido['formato_compra'];
+$produtos = explode('|', $pedido['produtos']);
+$produtos_confirmados = !empty($pedido['produtos_confirmados']) ? explode('|', $pedido['produtos_confirmados']) : [];
+
+// Recalcula o total considerando apenas os produtos confirmados e suas quantidades
+$total_confirmado = 0;
+$produtos_confirmados_map = [];
+foreach ($produtos_confirmados as $produto_confirmado) {
+    list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto_confirmado);
+    $produtos_confirmados_map[$nome] = [
+        'quantidade' => (int) $quantidade,
+        'valor_unitario' => (float) $valor_unitario,
+        'valor_total' => (float) $valor_total
+    ];
+    $total_confirmado += (float) $valor_total;
+}
+
+// Atualiza o total com base nos produtos confirmados, saldo usado e frete
+$total = $total_confirmado;
+if ($frete > 0 && $tipo_entrega == 'entregar')
+    $total += $frete;
+if ($saldo_usado > 0)
+    $total -= $saldo_usado;
+
+// Consulta para buscar os dados do cliente
+$query_cliente = "SELECT * FROM meus_clientes WHERE id = ?";
+$stmt_cliente = $mysqli->prepare($query_cliente);
+$stmt_cliente->bind_param("i", $pedido['id_cliente']);
+$stmt_cliente->execute();
+$result_cliente = $stmt_cliente->get_result();
+
+if ($result_cliente->num_rows === 0) {
+    echo "Cliente não encontrado.";
+    exit;
+}
+
+$cliente = $result_cliente->fetch_assoc();
+$primeiro_nome = explode(' ', $cliente['nome_completo'])[0];
 
 // Calculate end time for countdown
 $pedido_time = new DateTime($pedido['data']);
 $pedido_time->modify('+15 minutes');
 $end_time = $pedido_time->format('Y-m-d H:i:s');
 
-// Consulta para buscar os produtos confirmados
-$produtos_confirmados = [];
-if (!empty($pedido['produtos_confirmados'])) {
-    $produtos_confirmados = explode('|', $pedido['produtos_confirmados']);
-}
-
-// Fetch partner details from the database
+// Consulta para buscar os dados do parceiro
 $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
 $stmt_parceiro = $mysqli->prepare($query_parceiro);
 $stmt_parceiro->bind_param("i", $id_parceiro);
 $stmt_parceiro->execute();
 $result_parceiro = $stmt_parceiro->get_result();
-$loja = $result_parceiro->fetch_assoc();
-$logo = $loja['logo'];
-$nomeFantasia = $loja['nomeFantasia'];
-$tempo_entrega = $loja['estimativa_entrega'];
-$stmt_parceiro->close();
 
-$id_cliente = $pedido['id_cliente'];
-
-// Consulta para buscar os dados do cliente
-$query_cliente = "SELECT * FROM meus_clientes WHERE id = ?";
-$stmt_cliente = $mysqli->prepare($query_cliente);
-$stmt_cliente->bind_param("i", $id_cliente);
-$stmt_cliente->execute();
-$result_cliente = $stmt_cliente->get_result();
-
-if ($result_cliente->num_rows > 0) {
-    $cliente = $result_cliente->fetch_assoc();
-    $nome_completo = $cliente['nome_completo'];
-    $primeiro_nome = explode(' ', $nome_completo)[0];
-} else {
-    echo "Cliente não encontrado.";
+if ($result_parceiro->num_rows === 0) {
+    echo "Parceiro não encontrado.";
     exit;
 }
-$stmt_cliente->close();
+
+$loja = $result_parceiro->fetch_assoc();
+$tempo_entrega = round($loja['estimativa_entrega'] / 60000); // Converte milissegundos para minutos
+$stmt_parceiro->close();
+
+// Calculate remaining time for delivery
+$pedido_time = new DateTime($pedido['data']);
+$pedido_time->modify("+{$tempo_entrega} minutes");
+$current_time = new DateTime();
+$interval = $current_time->diff($pedido_time);
+
+if ($current_time > $pedido_time) {
+    $tempo_entrega_restante = "Tempo expirado";
+} else {
+    $tempo_entrega_restante = $interval->format('%Hh %Im %Ss');
+}
 
 function formatDateTimeJS($dateString)
 {
-    if (empty($dateString)) {
-        return "Data não disponível";
-    }
     try {
         $date = new DateTime($dateString);
         return $date->format('d/m/Y H:i');
     } catch (Exception $e) {
         return "Erro na data";
     }
-}
-
-if ($formato_compra == 'crediario') {
-    $formato_compra = 'online';
-} elseif ($formato_compra == 'online') {
-    $formato_compra = 'online';
-} elseif ($formato_compra == 'retirar') {
-    $formato_compra = 'retirar';
-} else {
-    $formato_compra = 'entregar';
 }
 ?>
 <!DOCTYPE html>
@@ -120,29 +126,10 @@ if ($formato_compra == 'crediario') {
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             background-color: #f9f9f9;
             color: #333;
-        }
-
-        header,
-        h1,
-        h2,
-        h3 {
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        .end-parceiro {
-            text-align: center;
-            font-size: 14px;
-            color: #555;
-        }
-
-        img {
-            display: block;
-            margin: 0 auto;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
@@ -152,6 +139,13 @@ if ($formato_compra == 'crediario') {
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            color: #444;
         }
 
         table {
@@ -171,68 +165,6 @@ if ($formato_compra == 'crediario') {
             background-color: #f4f4f4;
         }
 
-        button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #bt_recusar_pedido {
-            display: block;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #dc3545;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #bt_recusar_pedido:hover {
-            background-color: #c82333;
-        }
-
-        #bt_confirmar_pedido {
-            display: none;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #bt_confirmar_pedido:hover {
-            background-color: #218838;
-        }
-
-        .cancel-timer {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        textarea {
-            width: 97.5%;
-            height: 100px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: none;
-        }
-
         .valores {
             text-align: right;
             font-size: 18px;
@@ -241,64 +173,91 @@ if ($formato_compra == 'crediario') {
         }
 
         .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
             margin-top: 20px;
+            text-align: center;
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
+        .button-container button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+        }
 
-            table th,
-            table td {
-                font-size: 12px;
-                padding: 4px;
-            }
+        .button-container button:hover {
+            background-color: #0056b3;
+        }
 
-            button {
-                font-size: 14px;
-                padding: 8px 15px;
-            }
+        .button-container button.cancel {
+            background-color: #dc3545;
+        }
 
-            img {
-                width: 80px;
-            }
+        .button-container button.cancel:hover {
+            background-color: #c82333;
+        }
 
-            textarea {
-                width: 91.5%;
-                height: 100px;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                resize: none;
-            }
+        .button-container button.confirm {
+            background-color: #28a745;
+        }
 
-            .valores {
-                font-size: 16px;
-                margin-right: 10px;
-            }
+        .button-container button.confirm:hover {
+            background-color: #218838;
+        }
 
-            .button-container {
-                flex-direction: column;
-                gap: 5px;
-            }
+        #cancelPopup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
 
-            .cancel-timer {
-                font-size: 14px;
-            }
+        #cancelPopup div {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 300px;
+        }
 
-            h1,
-            h2,
-            h3 {
-                font-size: 18px;
-            }
+        #cancelPopup button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
 
-            p {
-                font-size: 14px;
-            }
+        #cancelPopup button:first-of-type {
+            background-color: #6c757d;
+            /* Cinza para o botão "Voltar" */
+            color: #fff;
+        }
+
+        #cancelPopup button:first-of-type:hover {
+            background-color: #5a6268;
+            /* Cinza mais escuro ao passar o mouse */
+        }
+
+        #cancelPopup button:last-of-type {
+            background-color: #dc3545;
+            /* Vermelho para o botão "Confirmar Cancelamento" */
+            color: #fff;
+        }
+
+        #cancelPopup button:last-of-type:hover {
+            background-color: #c82333;
+            /* Vermelho mais escuro ao passar o mouse */
         }
     </style>
 </head>
@@ -308,32 +267,11 @@ if ($formato_compra == 'crediario') {
         <h1>Detalhes do Pedido</h1>
         <hr>
         <h3>Cliente: <span><?php echo $primeiro_nome; ?></span></h3>
-        <hr>
         <h2>Pedido #<?php echo $num_pedido; ?></h2>
-        <p style="color:darkgreen;">
-            <strong>Cód. para Retirada: <?php echo htmlspecialchars($pedido['codigo_retirada']); ?></strong>
-        </p>
-        <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
+        <p><strong>Data do pedido:</strong> <?php echo formatDateTimeJS($pedido['data']); ?></p>
         <p><strong>Status do Pedido:</strong>
-            <span
-                style="color: <?php echo $pedido['status_cliente'] === 0 ? '#ff5722' : ($pedido['status_cliente'] === 1 ? 'green' : ($pedido['status_cliente'] === 2 ? 'red' : ($pedido['status_cliente'] === 3 ? 'blue' : 'gray'))); ?>">
-                <?php
-                if ($pedido['status_cliente'] == 0) {
-                    echo "Aguardando Confirmação da loja.";
-                } elseif ($pedido['status_cliente'] == 1) {
-                    echo "Pedido confirmado e já está em preparação.";
-                } elseif ($pedido['status_cliente'] == 2) {
-                    if ($pedido['tipo_entrega'] == 'entregar') {
-                        echo "Saiu para entrega.";
-                    } else {
-                        echo "Pedido pronto para retirada.";
-                    }
-                } elseif ($pedido['status_cliente'] == 3) {
-                    echo "Pedido Entregue.";
-                } else {
-                    echo "Pedido Cancelado.";
-                }
-                ?>
+            <span style="color: <?php echo $pedido['status_parceiro'] == 1 ? 'green' : 'red'; ?>;">
+                <?php echo $pedido['status_parceiro'] == 1 ? 'Confirmado.' : 'Pendente'; ?>
             </span>
         </p>
         <hr>
@@ -341,9 +279,6 @@ if ($formato_compra == 'crediario') {
         <table>
             <thead>
                 <tr>
-                    <?php if ($pedido['status_cliente'] == 0): ?>
-                        <th>Confirmar</th>
-                    <?php endif; ?>
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Valor Unitário</th>
@@ -351,346 +286,147 @@ if ($formato_compra == 'crediario') {
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $produtos = explode('|', $pedido['produtos']);
-                $produtos_confirmados_map = [];
-
-                // Mapeia os produtos confirmados para facilitar a verificação
-                foreach ($produtos_confirmados as $produto_confirmado) {
-                    list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto_confirmado);
-                    $produtos_confirmados_map[$nome] = [
-                        'quantidade' => $quantidade,
-                        'valor_unitario' => $valor_unitario,
-                        'valor_total' => $valor_total,
-                    ];
-                }
-
-                foreach ($produtos as $produto) {
+                <?php foreach ($produtos as $produto): ?>
+                    <?php
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
                     $is_confirmed = isset($produtos_confirmados_map[$nome]);
-                    $confirmed_quantity = $is_confirmed ? $produtos_confirmados_map[$nome]['quantidade'] : $quantidade;
-                    $row_color = $is_confirmed ? ($confirmed_quantity == $quantidade ? 'green' : 'orange') : 'red';
-
-                    echo "<tr style='color: $row_color;'>";
-                    if ($pedido['status_cliente'] == 0) {
-                        echo "<td><input type='checkbox' name='confirmar[]' " . ($is_confirmed ? 'checked disabled' : '') . "></td>";
-                    }
-                    echo "<td>$nome</td>";
-                    if ($pedido['status_cliente'] == 0) {
-                        echo "<td><input type='number' value='$confirmed_quantity' data-max='$quantidade' data-unit-price='$valor_unitario' " . ($is_confirmed ? 'disabled' : '') . "></td>";
-                    } else {
-                        echo "<td>$confirmed_quantity</td>";
-                    }
-                    echo "<td>R$ " . number_format($valor_unitario, 2, ',', '.') . "</td>";
-                    echo "<td>R$ " . number_format($valor_total, 2, ',', '.') . "</td>";
-                    echo "</tr>";
-                }
-                ?>
+                    $confirmed_quantity = $is_confirmed ? $produtos_confirmados_map[$nome]['quantidade'] : 0;
+                    $row_color = $is_confirmed ? 'green' : 'red';
+                    $text_decoration = $is_confirmed ? 'none' : 'line-through';
+                    ?>
+                    <tr style="color: <?php echo $row_color; ?>; text-decoration: <?php echo $text_decoration; ?>;">
+                        <td><?php echo htmlspecialchars($nome); ?></td>
+                        <td><?php echo $is_confirmed ? $confirmed_quantity : htmlspecialchars($quantidade); ?></td>
+                        <td>R$ <?php echo number_format($valor_unitario, 2, ',', '.'); ?></td>
+                        <td>R$
+                            <?php echo $is_confirmed ? number_format($produtos_confirmados_map[$nome]['valor_total'], 2, ',', '.') : number_format($valor_total, 2, ',', '.'); ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
-        <p class="valores">
-            Total: R$ <span id="total_inicial"><?php echo number_format($valor_a_vista, 2, ',', '.'); ?></span>
-        </p>
-        <?php
-        if ($frete != 0 && $tipo_entrega == 'entregar') {
-            echo "<p id='frete' class='valores' data-frete='$frete'><strong>Frete:</strong> R$ " . number_format($frete, 2, ',', '.') . "</p>";
-        } else {
-            echo "<p id='frete' class='valores' data-frete='0'><strong>Frete Grátis</strong></p>";
-        }
-        ?>
-        <?php
-        if ($saldo_usado != 0 && $formato_compra != 'online') {
-            echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado'><strong>Saldo Utilizado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
-        } else {
-            echo "<p id='saldo_usado' class='valores' data-saldo='0' style='display: none;'><strong>Saldo Utilizado: 0,00</strong></p>";
-        }
-        ?>
-        <?php
-        if ($taxa_crediario != 0 && $formato_compra == 'online') {
-            echo "<p id='taxa_crediario' class='valores' data-taxa='$taxa_crediario'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
-        } else {
-            echo "<p id='taxa_crediario' class='valores' data-taxa='0' style='display: none;'><strong>Taxa: Grátis</strong></p>";
-        }
-        ?>
-        <p id="valor_total" class="valores" data-total="<?php echo $total; ?>"><strong>Valor Total: R$</strong>
-            <?php echo number_format($total, 2, ',', '.'); ?>
-        </p>
-        <hr>
-        <h3>Status de Pagamento</h3>
-        <p>
-            <?php
-            if ($formato_compra == 'crediario') {
-                echo "<p><strong>Pagamento: <span>Online.</span></strong></p>";
-            } elseif ($formato_compra == 'online') {
-                echo "<p><strong>Pagamento: <span>Online.</span></strong></p>";
-            } elseif ($formato_compra == 'retirar') {
-                echo "<p><strong>Pagamento: <span>Na Retirada.</span></strong></p>";
-            } else {
-                echo "<p><strong>Pagamento: <span>Na Entrega.</span></strong></p>";
-            }
-            ?>
-        </p>
+
+        <?php if ($frete > 0): ?>
+            <p class="valores">Frete: R$ <?php echo number_format($frete, 2, ',', '.'); ?></p>
+        <?php else: ?>
+            <p class="valores" style="color: green;">Frete Grátis</p>
+        <?php endif; ?>
+
+        <?php if ($saldo_usado > 0): ?>
+            <p class="valores">Saldo Usado: -R$ <?php echo number_format($saldo_usado, 2, ',', '.'); ?></p>
+        <?php endif; ?>
+
+        <p class="valores">Valor Total: R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
         <hr>
         <h3>Forma de Entrega</h3>
         <p><strong>Tipo de Entrega:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo "Entregar em casa.";
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo "Retirar na loja.";
-            } else {
-                echo "Retirar na loja.";
-            }
-            ?>
+            <?php echo $tipo_entrega === 'entregar' ? 'Entregar em casa' : 'Retirar na loja'; ?></p>
+        <p><strong>Endereço:</strong>
+            <?php echo $tipo_entrega === 'entregar' ? $cliente['endereco'] . ', ' . $cliente['numero'] . ' - ' . $cliente['bairro'] . ', ' . $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'] : 'Loja'; ?>
         </p>
-        <p><strong>AV/RUA:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $pedido['endereco_entrega'] != '' ? $pedido['endereco_entrega'] : $cliente['endereco'];
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo $loja['endereco'];
-            }
-            ?>
-        </p>
-        <p><strong>Nº:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $pedido['num_entrega'] != '' ? $pedido['num_entrega'] : $cliente['numero'];
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo $loja['numero'];
-            }
-            ?>
-        </p>
-        <p><strong>BAIRRO:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $pedido['bairro_entrega'] != '' ? $pedido['bairro_entrega'] : $cliente['bairro'];
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo $loja['bairro'];
-            }
-            ?>
-        </p>
-        <p style="display: none;"><strong>CIDADE/UF:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'];
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo $loja['cidade'] . '/' . $loja['estado'] . ', CEP: ' . $loja['cep'];
-            }
-            ?>
-        </p>
-        <p><strong>CONTATO:</strong>
-            <?php
-            if ($pedido['tipo_entrega'] == 'entregar') {
-                echo $pedido['contato_recebedor'] != '' ? $pedido['contato_recebedor'] : $cliente['celular1'];
-            } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                echo $loja['telefoneComercial'];
-            }
-            ?>
-        </p>
-        <p id="comentario_container" style="display: <?php echo empty($pedido['comentario']) ? 'none' : 'block'; ?>;">
-            <strong>COMENTÁRIO:</strong>
-        </p>
-        <textarea name="comentario" id="comentario"
-            style="display: <?php echo empty($pedido['comentario']) ? 'none' : 'block'; ?>;"><?php echo $pedido['comentario']; ?></textarea>
-        <hr>
-        <p id="tempo-cancelar" class="cancel-timer" style="color: red; display: none;">
-            <strong>Tempo para cancelar:</strong>
-            <span id="countdown" data-end-time="<?php echo $end_time; ?>"></span>
-        </p>
-        <?php if ($pedido['status_cliente'] != 1): ?>
-            <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
-                <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
-            </p>
+        <p><strong>Contato:</strong> <?php echo $cliente['celular1']; ?></p>
+        <?php if (!empty($pedido['comentario'])): ?>
+            <p><strong>Comentário:</strong> <?php echo htmlspecialchars($pedido['comentario']); ?></p>
         <?php endif; ?>
+        <p><strong>Tempo de Entrega:</strong> <span style="color: red;"><?php echo $tempo_entrega_restante; ?></span>
+        </p>
+        <hr>
         <div class="button-container">
-            <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
-            <?php if ($pedido['status_cliente'] != 1): ?>
-                <button id="bt_recusar_pedido" style="display: none;" onclick="">Recusar pedido</button>
-            <?php endif; ?>
-            <button id="bt_confirmar_pedido">Confirmar Pedido</button>
+            <button onclick="javascript:history.back()">Voltar</button>
+            <button class="cancel" onclick="cancelarPedido()">Cancelar Pedido</button>
+            <button class="confirm"
+                onclick="<?php echo $tipo_entrega === 'entregar' ? 'sairParaEntregar()' : 'prontoParaRetirada()'; ?>">
+                <?php echo $tipo_entrega === 'entregar' ? 'Sair para Entregar' : 'Pronto para Retirada'; ?>
+            </button>
+        </div>
+    </div>
+
+    <div id="cancelPopup">
+        <div>
+            <h3>Confirmar Cancelamento</h3>
+            <p>Tem certeza de que deseja cancelar este pedido?</p>
+            <textarea id="motivoCancelamento" placeholder="Informe o motivo do cancelamento"
+                style="width: 100%; height: 80px; margin-bottom: 10px;" required></textarea>
+            <button onclick="fecharPopup()">Voltar</button>
+            <button onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
         </div>
     </div>
 </body>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const rows = document.querySelectorAll('table tbody tr');
-        const totalElement = document.getElementById('total_inicial');
-        const freteElement = document.getElementById('frete');
-        const confirmButton = document.getElementById('bt_confirmar_pedido');
+        const tempoEntregaElement = document.getElementById('tempo-entrega');
 
-        if (!rows.length || !totalElement || !confirmButton) {
-            console.error('Elementos necessários não encontrados na página.');
+        // Verifica se o elemento existe antes de acessar suas propriedades
+        if (tempoEntregaElement) {
+            let tempoRestante = parseInt(tempoEntregaElement.getAttribute('data-tempo-entrega'), 10);
+
+            function atualizarTempoEntrega() {
+                if (tempoRestante <= 0) {
+                    tempoEntregaElement.innerHTML = "Tempo expirado";
+                    return;
+                }
+
+                const minutos = Math.floor(tempoRestante / 60);
+                const segundos = tempoRestante % 60;
+                tempoEntregaElement.innerHTML = `${minutos}m ${segundos}s`;
+
+                tempoRestante--;
+            }
+
+            atualizarTempoEntrega();
+            setInterval(atualizarTempoEntrega, 1000);
+        }
+    });
+
+    function confirmarPedido() {
+        if (confirm("Deseja confirmar este pedido?")) {
+            alert("Pedido confirmado com sucesso!");
+        }
+    }
+
+    function cancelarPedido() {
+        const popup = document.getElementById('cancelPopup');
+        popup.style.display = 'flex';
+    }
+
+    function fecharPopup() {
+        const popup = document.getElementById('cancelPopup');
+        popup.style.display = 'none';
+    }
+
+    function confirmarCancelamento() {
+        const motivo = document.getElementById('motivoCancelamento').value.trim();
+        if (!motivo) {
+            alert('Por favor, informe o motivo do cancelamento.');
             return;
         }
 
-        function updateTotals() {
-            let totalProdutos = 0;
-            let atLeastOneChecked = false;
-
-            rows.forEach(row => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                const quantityInput = row.querySelector('input[type="number"]');
-                if (!checkbox || !quantityInput) return;
-
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const quantity = parseInt(quantityInput.value, 10);
-
-                if (checkbox.checked && quantity > 0) {
-                    totalProdutos += quantity * unitPrice;
-                    atLeastOneChecked = true;
-                }
-            });
-
-            const frete = freteElement ? parseFloat(freteElement.getAttribute('data-frete')) || 0 : 0;
-            const totalComFrete = totalProdutos + (atLeastOneChecked ? frete : 0);
-
-            totalElement.textContent = `${totalProdutos.toFixed(2).replace('.', ',')}`;
-            if (freteElement) {
-                freteElement.style.display = atLeastOneChecked ? 'block' : 'none';
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'cancelar_pedido.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                alert('Pedido cancelado com sucesso!');
+                window.location.href = 'pedido_recusado.php'; // Redireciona para pedido_recusado.php
+            } else {
+                alert('Erro ao cancelar o pedido.');
             }
-            const totalComFreteElement = document.getElementById('total_com_frete');
-            if (totalComFreteElement) {
-                
-                totalComFreteElement.textContent = `R$ ${totalComFrete.toFixed(2).replace('.', ',')}`;
-            }
+        };
+        xhr.send('num_pedido=<?php echo $num_pedido; ?>&motivo_cancelamento=' + encodeURIComponent(motivo));
+    }
 
-            confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
+    function sairParaEntregar() {
+        if (confirm("Confirma que o pedido está saindo para entrega?")) {
+            alert("Pedido marcado como 'Saiu para Entregar'.");
         }
+    }
 
-        function initializeTotals() {
-            totalElement.textContent = 'R$ 0,00';
-            if (freteElement) {
-                freteElement.style.display = 'none';
-            }
-            const totalComFreteElement = document.getElementById('total_com_frete');
-            if (totalComFreteElement) {
-                totalComFreteElement.style.display = 'none';
-            }
-            confirmButton.style.display = 'none';
+    function prontoParaRetirada() {
+        if (confirm("Confirma que o pedido está pronto para retirada?")) {
+            alert("Pedido marcado como 'Pronto para Retirada'.");
         }
-
-        initializeTotals();
-
-        rows.forEach(row => {
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            const quantityInput = row.querySelector('input[type="number"]');
-            const totalCell = row.querySelector('td:last-child');
-            const rowCells = row.querySelectorAll('td');
-
-            if (!checkbox || !quantityInput || !totalCell || !rowCells.length) return;
-
-            updateRowColor(rowCells, 'red');
-
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    quantityInput.disabled = false;
-                    const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
-                    const quantity = parseInt(quantityInput.value, 10);
-
-                    if (quantity === maxQuantity) {
-                        updateRowColor(rowCells, 'green');
-                    } else if (quantity < maxQuantity) {
-                        updateRowColor(rowCells, 'orange');
-                    }
-                } else {
-                    quantityInput.disabled = true;
-                    updateRowColor(rowCells, 'red');
-                }
-                updateTotals();
-            });
-
-            quantityInput.addEventListener('input', () => {
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const maxQuantity = parseInt(quantityInput.getAttribute('data-max'), 10);
-                let quantity = parseInt(quantityInput.value, 10);
-
-                if (isNaN(quantity) || quantity <= 0) {
-                    quantityInput.value = 1;
-                    alert('A quantidade deve ser maior que 0.');
-                    return;
-                }
-
-                if (quantity > maxQuantity) {
-                    quantityInput.value = maxQuantity;
-                    alert('A quantidade não pode ser maior que a escolhida pelo cliente.');
-                    return;
-                }
-
-                const total = quantity * unitPrice;
-                totalCell.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
-
-                if (checkbox.checked) {
-                    if (quantity === maxQuantity) {
-                        updateRowColor(rowCells, 'green');
-                    } else if (quantity < maxQuantity) {
-                        updateRowColor(rowCells, 'orange');
-                    }
-                }
-                updateTotals();
-            });
-
-            quantityInput.disabled = !checkbox.checked;
-        });
-
-        function updateRowColor(rowCells, color) {
-            rowCells.forEach(cell => {
-                cell.style.color = color;
-            });
-        }
-
-        updateTotals();
-
-        confirmButton.addEventListener('click', function () {
-            const numPedido = <?php echo json_encode($num_pedido); ?>;
-            const produtosConfirmados = [];
-            let totalProdutosConfirmados = 0;
-
-            rows.forEach(row => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                const quantityInput = row.querySelector('input[type="number"]');
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const totalCell = row.querySelector('td:last-child');
-                const productName = row.querySelector('td:nth-child(2)').textContent.trim();
-
-                if (checkbox.checked) {
-                    const quantity = parseInt(quantityInput.value, 10);
-                    const total = parseFloat(totalCell.textContent.replace('R$', '').replace(',', '.').trim());
-                    produtosConfirmados.push(`${productName}/${quantity}/${unitPrice}/${total}`);
-                    totalProdutosConfirmados += total; // Soma o total dos produtos confirmados
-                }
-            });
-
-            fetch('atualizar_status_pedido.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    num_pedido: numPedido,
-                    status_cliente: 1,
-                    produtos_confirmados: produtosConfirmados.join('|'), // Formata os produtos confirmados
-                    valor_produtos_confirmados: totalProdutosConfirmados // Salva o total dos produtos confirmados
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido confirmado com sucesso!');
-                        location.reload(); // Recarrega a página para refletir as alterações
-                    } else {
-                        alert('Erro ao confirmar o pedido.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao processar a solicitação.');
-                });
-        });
-    });
+    }
 </script>
 
 </html>
-<?php
-
-?>
