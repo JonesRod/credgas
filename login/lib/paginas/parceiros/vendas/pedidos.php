@@ -355,7 +355,7 @@ function formatDateTimeJS($dateString)
     <div class="cards-container">
         <?php while ($row = $result->fetch_assoc()): ?>
             <?php
-            $valor = $row['status_cliente'] == 1 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
+            $valor = $row['valor_produtos_confirmados'] != "" ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
             $saldo_usado = $row['saldo_usado'];
             $taxa_crediario = $row['taxa_crediario'];
             $frete = $row['valor_frete'];
