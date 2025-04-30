@@ -368,7 +368,7 @@ function formatDateTimeJS($dateString)
             ?>
             <div class="card status-<?php echo max($row['status_cliente'], $row['status_parceiro']); ?>"
                 data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
-                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
+                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                 <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
                 </h3>
@@ -408,14 +408,17 @@ function formatDateTimeJS($dateString)
 
     <script>
         // Função para redirecionar para a página de detalhes do pedido
-        function redirectToDetails(num_pedido, id_parceiro, status, data, valor) {
+        function redirectToDetails(num_pedido, id_parceiro, status_cliente, status_parceiro, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
-            if (status === '1') {
+
+            const maiorStatus = Math.max(status_cliente, status_parceiro); // Determina o maior status
+
+            if (maiorStatus === 1) {
                 form.action = 'pedido_confirmado.php';
-            } else if (status === '3') {
+            } else if (maiorStatus === 3) {
                 form.action = 'pedido_recusado.php';
-            } else if (status === '4') {
+            } else if (maiorStatus === 4) {
                 form.action = 'pedido_cancelado.php';
             } else {
                 form.action = 'detalhes_pedido.php';
@@ -425,7 +428,7 @@ function formatDateTimeJS($dateString)
             const fields = {
                 num_pedido: num_pedido,
                 id_parceiro: id_parceiro,
-                status: status,
+                status: maiorStatus,
                 data: data,
                 valor: valor
             };
