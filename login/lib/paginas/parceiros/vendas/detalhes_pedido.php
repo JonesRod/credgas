@@ -371,9 +371,8 @@ if ($formato_compra == 'crediario') {
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
                     $is_confirmed = isset($produtos_confirmados_map[$nome]);
                     $confirmed_quantity = $is_confirmed ? $produtos_confirmados_map[$nome]['quantidade'] : $quantidade;
-                    $row_color = $is_confirmed ? ($confirmed_quantity == $quantidade ? 'green' : 'orange') : 'red';
 
-                    echo "<tr style='color: $row_color;'>";
+                    echo "<tr>";
                     if ($pedido['status_cliente'] == 0) {
                         echo "<td><input type='checkbox' name='confirmar[]' " . ($is_confirmed ? 'checked disabled' : '') . "></td>";
                     }
@@ -394,8 +393,8 @@ if ($formato_compra == 'crediario') {
             Total: R$ <span id="total_inicial">0,00</span>
         </p>
         <?php
-        if ($saldo_usado != 0 && $formato_compra != 'online') {
-            echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado'><strong>Saldo Utilizado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
+        if ($saldo_usado != 0) {
+            echo "<p id='saldo_usado' class='valores' data-saldo='$saldo_usado' style='display: none;'><strong>Saldo Utilizado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
         } else {
             echo "<p id='saldo_usado' class='valores' data-saldo='0' style='display: none;'><strong>Saldo Utilizado: 0,00</strong></p>";
         }
@@ -413,7 +412,11 @@ if ($formato_compra == 'crediario') {
             <?php echo $frete == 0 ? '' : 'R$ ' . number_format($frete, 2, ',', '.'); ?>
         </p>
         <p id="valor_total" class="valores" data-total="<?php echo $total; ?>" style="display: none;">
-            <strong>Valor Total: R$</strong> <?php echo number_format($total, 2, ',', '.'); ?>
+            <strong>Valor Total: R$</strong>
+            <?php
+            $valor_total_menos_saldo = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
+            echo number_format($valor_total_menos_saldo, 2, ',', '.');
+            ?>
         </p>
         <hr>
         <h3>Status de Pagamento</h3>
@@ -518,6 +521,7 @@ if ($formato_compra == 'crediario') {
         const totalElement = document.getElementById('total_inicial');
         const freteElement = document.getElementById('frete');
         const valorTotalElement = document.getElementById('valor_total');
+        const saldoUsadoElement = document.getElementById('saldo_usado');
         const confirmButton = document.getElementById('bt_confirmar_pedido');
         const recusarButton = document.getElementById('bt_recusar_pedido');
 
@@ -526,102 +530,15 @@ if ($formato_compra == 'crediario') {
             return;
         }
 
-        recusarButton.addEventListener('click', function () {
-            if (confirm('Tem certeza de que deseja recusar este pedido?')) {
-                fetch('recusar_pedido.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `num_pedido=<?php echo $num_pedido; ?>`
-                })
-                    .then(response => response.text())
-                    .then(data => {
-                        window.location.href = 'pedido_recusado.php';
-                    })
-                    .catch(error => {
-                        console.error('Erro ao recusar o pedido:', error);
-                    });
-            }
-        });
-
-        confirmButton.addEventListener('click', function () {
-            const numPedido = <?php echo json_encode($num_pedido); ?>;
-            const produtosConfirmados = [];
-            let totalProdutosConfirmados = 0;
-
-            rows.forEach(row => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                const quantityInput = row.querySelector('input[type="number"]');
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const totalCell = row.querySelector('td:last-child');
-                const productName = row.querySelector('td:nth-child(2)').textContent.trim();
-
-                if (checkbox.checked) {
-                    const quantity = parseInt(quantityInput.value, 10);
-
-                    if (!isNaN(unitPrice) && !isNaN(quantity) && quantity > 0) {
-                        const total = unitPrice * quantity;
-                        produtosConfirmados.push(`${productName}/${quantity}/${unitPrice}/${total.toFixed(2)}`);
-                        totalProdutosConfirmados += total; // Soma o total dos produtos confirmados
-                    } else {
-                        alert(`Erro ao calcular o total para o produto: ${productName}. Verifique os valores.`);
-                    }
-                }
-            });
-
-            fetch('confirmar_pedido.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    num_pedido: numPedido,
-                    status_cliente: 1,
-                    status_parceiro: 1,
-                    produtos_confirmados: produtosConfirmados.join('|'), // Formata os produtos confirmados
-                    valor_produtos_confirmados: totalProdutosConfirmados.toFixed(2) // Salva o total dos produtos confirmados com 2 casas decimais
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido confirmado com sucesso!');
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = 'pedido_confirmado.php';
-
-                        const idInput = document.createElement('input');
-                        idInput.type = 'hidden';
-                        idInput.name = 'id';
-                        idInput.value = <?php echo json_encode($_SESSION['id']); ?>;
-
-                        const numPedidoInput = document.createElement('input');
-                        numPedidoInput.type = 'hidden';
-                        numPedidoInput.name = 'num_pedido';
-                        numPedidoInput.value = numPedido;
-
-                        form.appendChild(idInput);
-                        form.appendChild(numPedidoInput);
-                        document.body.appendChild(form);
-                        form.submit();
-                    } else {
-                        alert('Erro ao confirmar o pedido.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao processar a solicitação.');
-                });
-        });
-
         function updateRowColor(row, checkbox, quantityInput, maxQuantity) {
             if (checkbox.checked) {
                 const quantity = parseInt(quantityInput.value, 10);
                 if (quantity < maxQuantity) {
                     row.style.color = 'orange'; // Quantidade menor que a escolhida pelo cliente
+                } else if (quantity === maxQuantity) {
+                    row.style.color = 'green'; // Quantidade correta confirmada
                 } else {
-                    row.style.color = 'green'; // Produto confirmado com quantidade correta
+                    row.style.color = 'red'; // Quantidade maior que a permitida (não deveria ocorrer)
                 }
             } else {
                 row.style.color = 'red'; // Produto desconfirmado
@@ -655,18 +572,21 @@ if ($formato_compra == 'crediario') {
                 updateRowColor(row, checkbox, quantityInput, maxQuantity);
 
                 if (checkbox.checked && quantity > 0) {
-                    totalProdutos += quantity * unitPrice;
-                    atLeastOneChecked = true;
-
                     const total = quantity * unitPrice;
+                    totalProdutos += total;
                     totalCell.textContent = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    atLeastOneChecked = true;
+                } else {
+                    totalCell.textContent = 'R$ 0,00';
                 }
             });
 
             const frete = parseFloat(freteElement.getAttribute('data-frete')) || 0;
-            const totalComFrete = totalProdutos + (atLeastOneChecked ? frete : 0);
+            const saldoUsado = parseFloat(saldoUsadoElement.getAttribute('data-saldo')) || 0;
+            const totalComFrete = totalProdutos + frete - saldoUsado;
 
             totalElement.textContent = totalProdutos.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
             if (atLeastOneChecked) {
                 freteElement.style.display = 'block';
                 freteElement.style.color = frete === 0 ? 'green' : 'inherit';
@@ -675,13 +595,64 @@ if ($formato_compra == 'crediario') {
                     : `<strong>Frete:</strong> R$ ${frete.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
                 valorTotalElement.style.display = 'block';
                 valorTotalElement.innerHTML = `<strong>Valor Total: R$</strong> ${totalComFrete.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+                if (saldoUsado > 0) {
+                    saldoUsadoElement.style.display = 'block';
+                }
+
+                confirmButton.style.display = totalComFrete >= 0 ? 'block' : 'none';
             } else {
                 freteElement.style.display = 'none';
                 valorTotalElement.style.display = 'none';
+                saldoUsadoElement.style.display = 'none';
+                confirmButton.style.display = 'none';
             }
-
-            confirmButton.style.display = atLeastOneChecked ? 'block' : 'none';
         }
+
+        confirmButton.addEventListener('click', function () {
+            const produtosConfirmados = [];
+            rows.forEach(row => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                const quantityInput = row.querySelector('input[type="number"]');
+                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+                const productName = row.querySelector('td:nth-child(2)').textContent.trim();
+
+                if (checkbox.checked) {
+                    const quantity = parseInt(quantityInput.value, 10);
+                    const total = quantity * unitPrice;
+                    produtosConfirmados.push({
+                        nome: productName,
+                        quantidade: quantity,
+                        valor_unitario: unitPrice,
+                        total: total
+                    });
+                }
+            });
+
+            fetch('confirmar_pedido.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    num_pedido: <?php echo json_encode($num_pedido); ?>,
+                    produtos: produtosConfirmados
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Pedido confirmado com sucesso!');
+                        window.location.href = 'pedido_confirmado.php';
+                    } else {
+                        alert('Erro ao confirmar o pedido.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao processar a solicitação.');
+                });
+        });
 
         rows.forEach(row => {
             const checkbox = row.querySelector('input[type="checkbox"]');
