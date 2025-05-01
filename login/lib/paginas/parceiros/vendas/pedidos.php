@@ -352,59 +352,92 @@ function formatDateTimeJS($dateString)
             <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
         </form>
     </div>
-    <div class="cards-container">
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <?php
-            $valor = $row['valor_produtos_confirmados'] != "" ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
-            $saldo_usado = $row['saldo_usado'];
-            $taxa_crediario = $row['taxa_crediario'];
-            $frete = $row['valor_frete'];
-            $total = $valor + $frete - $saldo_usado + $taxa_crediario;
 
-            // Calculate end time for countdown
-            $pedido_time = new DateTime($row['data']);
-            $pedido_time->modify('+15 minutes');
-            $end_time = $pedido_time->format('Y-m-d H:i:s');
+    <div class="cards-container">
+        <div>
+            <?php
+            $hoje = new DateTime();
+            $ontem = (new DateTime())->modify('-1 day');
+            $pedidosPorData = [
+                'Hoje' => [],
+                'Ontem' => [],
+            ];
+
+            // Agrupar pedidos por data
+            while ($row = $result->fetch_assoc()) {
+                $dataPedido = new DateTime($row['data']);
+                if ($dataPedido->format('Y-m-d') === $hoje->format('Y-m-d')) {
+                    $pedidosPorData['Hoje'][] = $row;
+                } elseif ($dataPedido->format('Y-m-d') === $ontem->format('Y-m-d')) {
+                    $pedidosPorData['Ontem'][] = $row;
+                } else {
+                    $diaPedido = $dataPedido->format('d/m/Y'); // Formatar a data
+                    if (!isset($pedidosPorData[$diaPedido])) {
+                        $pedidosPorData[$diaPedido] = []; // Criar nova seção para a data
+                    }
+                    $pedidosPorData[$diaPedido][] = $row;
+                }
+            }
+
+            // Exibir pedidos agrupados por data
+            foreach ($pedidosPorData as $titulo => $pedidos):
+                if (count($pedidos) > 0):
+                    ?>
+                    <h2 style="margin-top: 20px; text-align: left;"><?php echo $titulo; ?>:</h2>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 20px;">
+                        <?php foreach ($pedidos as $row): ?>
+                            <?php
+                            $valor = $row['valor_produtos_confirmados'] != "" ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
+                            $saldo_usado = $row['saldo_usado'];
+                            $taxa_crediario = $row['taxa_crediario'];
+                            $frete = $row['valor_frete'];
+                            $total = $valor + $frete - $saldo_usado + $taxa_crediario;
+
+                            $status = max($row['status_cliente'], $row['status_parceiro']);
+                            ?>
+                            <div class="card status-<?php echo $status; ?>"
+                                data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
+                                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')"
+                                style="flex: 1 1 250px; max-width: 250px; min-height: 300px; display: flex; flex-direction: column; justify-content: space-between;">
+                                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
+                                <h3 style="color:darkgreen;">Cód. para Retirada:
+                                    <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
+                                <p><strong>Status do Pedido:</strong>
+                                    <span
+                                        style="color: <?php echo $status == 0 ? '#ff5722' : ($status == 1 ? 'green' : ($status == 2 ? 'blue' : 'red')); ?>">
+                                        <?php
+                                        if ($status == 0) {
+                                            echo "Aguardando confirmação";
+                                        } elseif ($status == 1) {
+                                            echo "Pedido confirmado e já está em preparação.";
+                                        } elseif ($status == 2) {
+                                            echo "Pedido pronto para entrega";
+                                        } elseif ($status == 3) {
+                                            echo "Pedido recusado";
+                                        } elseif ($status == 4) {
+                                            echo "Pedido Cancelado";
+                                        }
+                                        ?>
+                                    </span>
+                                </p>
+                                <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
+                                <p class="valor"><strong>Valor da compra: R$ </strong>
+                                    <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
+                                <?php if ($row['status_cliente'] == 4 || $row['status_parceiro'] == 4): ?>
+                                    <p style="color: red; text-align: center;"><strong>
+                                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.</strong>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <hr style="width: 100%; border: 1px solid #ccc; margin: 20px 0;">
+                    <?php
+                endif;
+            endforeach;
             ?>
-            <div class="card status-<?php echo max($row['status_cliente'], $row['status_parceiro']); ?>"
-                data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
-                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
-                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
-                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
-                </h3>
-                <p><strong>Status do Pedido:</strong>
-                    <span style="color: <?php
-                    $status = max($row['status_cliente'], $row['status_parceiro']);
-                    echo $status == 0 ? '#ff5722' : ($status == 1 ? 'green' : ($status == 2 ? 'blue' : 'red'));
-                    ?>">
-                        <?php
-                        if ($status == 0) {
-                            echo "Aguardando confirmação";
-                        } else if ($status == 1) {
-                            echo "Pedido confirmado e já está em preparação.";
-                        } else if ($status == 2) {
-                            echo "Pedido pronto para entrega";
-                        } else if ($status == 3) {
-                            echo "Pedido recusado";
-                        } else if ($status == 4) {
-                            echo "Pedido Cancelado";
-                        }
-                        ?>
-                    </span>
-                </p>
-                <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
-                <p class="valor"><strong>Valor da compra: R$ </strong>
-                    <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
-                <hr>
-                <?php if ($row['status_cliente'] == 4 || $row['status_parceiro'] == 4): ?>
-                    <p style="color: red; text-align: center;"><strong>
-                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.</strong>
-                    </p>
-                <?php endif; ?>
-            </div>
-        <?php endwhile; ?>
+        </div>
     </div>
-    <br>
 
     <script>
         // Função para redirecionar para a página de detalhes do pedido
@@ -443,7 +476,6 @@ function formatDateTimeJS($dateString)
                     form.appendChild(hiddenField);
                 }
             }
-
             document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
             form.submit(); // Submete o formulário
         }
