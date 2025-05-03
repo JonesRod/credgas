@@ -259,6 +259,84 @@ function formatDateTimeJS($dateString)
             background-color: #c82333;
             /* Vermelho mais escuro ao passar o mouse */
         }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-size: 18px;
+            }
+
+            p,
+            .valores {
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 12px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th,
+            table td {
+                font-size: 10px;
+                padding: 4px;
+                text-align: center;
+            }
+
+            .button-container button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            body {
+                font-size: 12px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-size: 16px;
+            }
+
+            p,
+            .valores {
+                font-size: 12px;
+            }
+
+            table {
+                font-size: 10px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th,
+            table td {
+                font-size: 8px;
+                padding: 2px;
+                text-align: center;
+            }
+
+            .button-container button {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .container {
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 

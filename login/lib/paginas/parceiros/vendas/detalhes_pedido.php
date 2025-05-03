@@ -171,122 +171,20 @@ if ($formato_compra == 'crediario') {
             background-color: #f4f4f4;
         }
 
-        button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #bt_recusar_pedido {
-            display: block;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #dc3545;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #bt_recusar_pedido:hover {
-            background-color: #c82333;
-        }
-
-        #bt_confirmar_pedido {
-            display: none;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #bt_confirmar_pedido:hover {
-            background-color: #218838;
-        }
-
-        .cancel-timer {
+        table th:nth-child(3),
+        /* Coluna "Qt" */
+        table td:nth-child(3) {
+            width: 50px;
             text-align: center;
-            margin: 20px 0;
         }
 
-        textarea {
-            width: 97.5%;
-            height: 100px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            resize: none;
-        }
-
-        .valores {
-            text-align: right;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+        table td:nth-child(3) input[type="number"] {
+            width: 50px;
+            text-align: center;
         }
 
         @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-
-            table th,
-            table td {
-                font-size: 12px;
-                padding: 4px;
-            }
-
-            button {
-                font-size: 14px;
-                padding: 8px 15px;
-            }
-
-            img {
-                width: 80px;
-            }
-
-            textarea {
-                width: 91.5%;
-                height: 100px;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                resize: none;
-            }
-
-            .valores {
-                font-size: 16px;
-                margin-right: 10px;
-            }
-
-            .button-container {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .cancel-timer {
+            body {
                 font-size: 14px;
             }
 
@@ -296,8 +194,148 @@ if ($formato_compra == 'crediario') {
                 font-size: 18px;
             }
 
-            p {
+            p,
+            .valores,
+            .info p {
                 font-size: 14px;
+            }
+
+            table {
+                font-size: 12px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th,
+            table td {
+                font-size: 10px;
+                padding: 4px;
+                text-align: center;
+            }
+
+            table td:nth-child(3) input[type="number"] {
+                width: 40px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            textarea {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            body {
+                font-size: 12px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-size: 16px;
+            }
+
+            p,
+            .valores,
+            .info p {
+                font-size: 12px;
+            }
+
+            table {
+                font-size: 10px;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th,
+            table td {
+                font-size: 8px;
+                padding: 2px;
+                text-align: center;
+            }
+
+            table td:nth-child(3) input[type="number"] {
+                width: 30px;
+            }
+
+            button {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .container {
+                padding: 8px;
+            }
+
+            textarea {
+                font-size: 12px;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        button#bt_recusar_pedido {
+            background-color: #dc3545;
+            /* Vermelho */
+        }
+
+        button#bt_recusar_pedido:hover {
+            background-color: #c82333;
+            /* Vermelho mais escuro */
+        }
+
+        button#bt_confirmar_pedido {
+            background-color: #28a745;
+            /* Verde */
+        }
+
+        button#bt_confirmar_pedido:hover {
+            background-color: #218838;
+            /* Verde mais escuro */
+        }
+
+        button.voltar {
+            background-color: #007bff;
+            /* Azul */
+        }
+
+        button.voltar:hover {
+            background-color: #0056b3;
+            /* Azul mais escuro */
+        }
+
+        @media (max-width: 600px) {
+            button {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            button {
+                font-size: 12px;
+                padding: 6px 10px;
             }
         }
     </style>
@@ -347,8 +385,8 @@ if ($formato_compra == 'crediario') {
                         <th>Confirmar</th>
                     <?php endif; ?>
                     <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Valor Unitário</th>
+                    <th>Qt</th>
+                    <th>Vlr Uni</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -507,7 +545,7 @@ if ($formato_compra == 'crediario') {
             </p>
         <?php endif; ?>
         <div class="button-container">
-            <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
+            <button class="voltar" onclick="javascript:history.back()">Voltar para os Pedidos</button>
             <?php if ($pedido['status_cliente'] != 1): ?>
                 <button id="bt_recusar_pedido" onclick="">Recusar pedido</button>
             <?php endif; ?>

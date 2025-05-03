@@ -73,18 +73,25 @@ function formatDateTimeJS($dateString)
     <style>
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            /* Responsivo */
             gap: 10px;
-            justify-content: center;
+            /* Espaçamento entre os cards */
+
         }
 
         .card {
             border: 1px solid #ccc;
             border-radius: 5px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            /* Define uma altura mínima */
         }
 
         .card:hover {
@@ -241,35 +248,74 @@ function formatDateTimeJS($dateString)
                 flex-direction: column;
                 align-items: center;
             }
-        }
 
-        @media (max-width: 380px) {
-            .filters {
+            body {
+                font-size: 14px;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-size: 18px;
+            }
+
+            .cards-container {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .card {
+                font-size: 14px;
+                padding: 10px;
+                max-width: 180px;
+                min-height: 180px;
                 display: flex;
                 flex-direction: column;
-                align-items: center;
-                gap: 10px;
-                /* Espaçamento entre os elementos */
+                justify-content: space-between;
+            }
+
+            .card h2 {
+                font-size: 16px;
+            }
+
+            .card p {
+                font-size: 12px;
             }
 
             .filters input,
             .filters select,
-            .filters button,
-            .btn-voltar {
-                width: 100%;
-                /* Ocupa toda a largura disponível */
-                max-width: 300px;
-                /* Limita a largura máxima */
-                box-sizing: border-box;
-                /* Inclui padding e borda no tamanho total */
+            .filters button {
+                font-size: 14px;
+                padding: 8px;
             }
 
-            .filters form {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
+            .btn-voltar {
+                font-size: 14px;
+                padding: 8px 12px;
             }
+        }
+
+        h2.section-title {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .cards-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .section-divider {
+            width: 100%;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+
+        .cancel-message {
+            color: red;
+            text-align: center;
         }
     </style>
 
@@ -354,7 +400,7 @@ function formatDateTimeJS($dateString)
     </div>
 
     <div class="cards-container">
-        <div>
+        <div class="card">
             <?php
             $hoje = new DateTime();
             $ontem = (new DateTime())->modify('-1 day');
@@ -383,8 +429,8 @@ function formatDateTimeJS($dateString)
             foreach ($pedidosPorData as $titulo => $pedidos):
                 if (count($pedidos) > 0):
                     ?>
-                    <h2 style="margin-top: 20px; text-align: left;"><?php echo $titulo; ?>:</h2>
-                    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 20px;">
+                    <h2 class="section-title"><?php echo $titulo; ?>:</h2>
+                    <div class="cards-wrapper">
                         <?php foreach ($pedidos as $row): ?>
                             <?php
                             $valor = $row['valor_produtos_confirmados'] != "" ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
@@ -397,11 +443,11 @@ function formatDateTimeJS($dateString)
                             ?>
                             <div class="card status-<?php echo $status; ?>"
                                 data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
-                                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')"
-                                style="flex: 1 1 250px; max-width: 250px; min-height: 300px; display: flex; flex-direction: column; justify-content: space-between;">
+                                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
                                 <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
                                 <h3 style="color:darkgreen;">Cód. para Retirada:
-                                    <?php echo htmlspecialchars($row['codigo_retirada']); ?></h3>
+                                    <?php echo htmlspecialchars($row['codigo_retirada']); ?>
+                                </h3>
                                 <p><strong>Status do Pedido:</strong>
                                     <span
                                         style="color: <?php echo $status == 0 ? '#ff5722' : ($status == 1 ? 'green' : ($status == 2 ? 'blue' : 'red')); ?>">
@@ -424,14 +470,16 @@ function formatDateTimeJS($dateString)
                                 <p class="valor"><strong>Valor da compra: R$ </strong>
                                     <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
                                 <?php if ($row['status_cliente'] == 4 || $row['status_parceiro'] == 4): ?>
-                                    <p style="color: red; text-align: center;"><strong>
-                                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.</strong>
+                                    <p class="cancel-message">
+                                        <strong>
+                                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.
+                                        </strong>
                                     </p>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
-                    <hr style="width: 100%; border: 1px solid #ccc; margin: 20px 0;">
+                    <hr class="section-divider">
                     <?php
                 endif;
             endforeach;
@@ -459,7 +507,7 @@ function formatDateTimeJS($dateString)
 
             // Campos a serem enviados no formulário
             const fields = {
-                num_pedido: num_pedido,
+                num_pedido: num_pedido, // Adicionado número do pedido
                 id_parceiro: id_parceiro,
                 status: maiorStatus,
                 data: data,
