@@ -8,57 +8,98 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// Get user ID from session
-$id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
-if (!$id) {
-    header("Location: ../../../../index.php");
-    exit;
-}
+// Filtros
+$num_pedido = $_GET['num_pedido'] ?? '';
+$data = $_GET['data'] ?? '';
+$status = $_GET['status'] ?? '';
 
-// Fetch filters from GET parameters
-$num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
-$data = isset($_GET['data']) ? $_GET['data'] : '';
-$status = isset($_GET['status']) ? $_GET['status'] : '';
-
-// Build query with filters
+// Query base
 $query = "SELECT * FROM pedidos WHERE id_parceiro = ?";
-$params = [$id];
+$params = [$_SESSION['id']];
 $types = "i";
 
-if ($num_pedido) {
+// Filtros dinâmicos
+if (!empty($num_pedido)) {
     $query .= " AND num_pedido = ?";
     $params[] = $num_pedido;
     $types .= "i";
 }
-
-if ($data) {
+if (!empty($data)) {
     $query .= " AND DATE(data) = ?";
     $params[] = $data;
     $types .= "s";
 }
-
 if ($status !== '') {
-    $query .= " AND GREATEST(status_cliente, status_parceiro) = ?";
+    $query .= " AND (status_cliente = ? OR status_parceiro = ?)";
     $params[] = $status;
-    $types .= "i";
+    $params[] = $status;
+    $types .= "ii";
 }
 
-$query .= " ORDER BY num_pedido DESC";
+// Executa a consulta
 $stmt = $mysqli->prepare($query);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-function formatDateTimeJS($dateString)
-{
-    if (empty($dateString)) {
-        return "Data não disponível";
-    }
-    try {
-        $date = new DateTime($dateString);
-        return $date->format('d/m/Y H:i');
-    } catch (Exception $e) {
-        return "Erro na data";
+// Adicionar consulta para buscar estimativa_entrega da tabela meus_parceiros
+$parceiroQuery = "SELECT estimativa_entrega FROM meus_parceiros WHERE id = ?";
+$parceiroStmt = $mysqli->prepare($parceiroQuery);
+$parceiroStmt->bind_param("i", $_SESSION['id']);
+$parceiroStmt->execute();
+$parceiroResult = $parceiroStmt->get_result();
+$parceiroData = $parceiroResult->fetch_assoc();
+$estimativaEntrega = $parceiroData['estimativa_entrega'] ?? null;
+
+// Agrupamento por data
+$pedidosAgrupados = ['Hoje' => [], 'Ontem' => [], 'Outros' => []];
+$hoje = new DateTime();
+$ontem = (clone $hoje)->modify('-1 day');
+
+while ($row = $result->fetch_assoc()) {
+    $dataPedido = new DateTime($row['data']);
+    $dataFormatada = $dataPedido->format('d/m/Y H:i');
+
+    $valor = $row['valor_produtos_confirmados'] > 0 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
+    $frete = $row['valor_frete'] ?? 0;
+    $saldo_usado = $row['saldo_usado'] ?? 0;
+    $taxa_crediario = $row['taxa_crediario'] ?? 0;
+    $total = $valor + $frete - $saldo_usado + $taxa_crediario;
+
+    $status_cliente = $row['status_cliente'];
+    $status_parceiro = $row['status_parceiro'];
+    $status_final = max($status_cliente, $status_parceiro);
+
+    // Mapeamento do status para descrição
+    $status_descricao = [
+        0 => 'Pendente',
+        1 => 'Confirmado',
+        2 => 'Em preparação',
+        3 => 'Recusado',
+        4 => 'Cancelado',
+        5 => $row['tipo_entrega'] === 'buscar' ? 'Pronto para retirada' : 'Saiu para entrega'
+    ];
+    $descricao_status = $status_descricao[$status_final] ?? 'Desconhecido';
+
+    $pedidoHTML = "
+        <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' 
+            onclick='redirectToDetails(\"{$row['num_pedido']}\", \"{$status_final}\", \"{$row['id_parceiro']}\", \"{$row['status_cliente']}\", \"{$row['status_parceiro']}\", \"{$row['data']}\", \"{$row['valor_produtos']}\")'>
+            <h2>Pedido #{$row['num_pedido']}</h2>
+            <p>Status: <span class='status-label'>{$descricao_status}</span></p>
+            <p>Data: {$dataFormatada}</p>
+            <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>
+            <p>Código de Retirada: <strong>{$row['codigo_retirada']}</strong></p>
+            <p>Tempo Restante para Cancelar: <span class='cancel-countdown' data-end-time='{$row['data_cancelamento']}'></span></p>
+            <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$estimativaEntrega}'></span></p>
+        </div>";
+
+    if ($dataPedido->format('Y-m-d') === $hoje->format('Y-m-d')) {
+        $pedidosAgrupados['Hoje'][] = $pedidoHTML;
+    } elseif ($dataPedido->format('Y-m-d') === $ontem->format('Y-m-d')) {
+        $pedidosAgrupados['Ontem'][] = $pedidoHTML;
+    } else {
+        $dataChave = $dataPedido->format('d/m/Y');
+        $pedidosAgrupados['Outros'][$dataChave][] = $pedidoHTML;
     }
 }
 ?>
@@ -68,101 +109,34 @@ function formatDateTimeJS($dateString)
 
 <head>
     <meta charset="UTF-8">
-    <title>Pedidos</title>
-
+    <title>Meus Pedidos</title>
     <style>
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            /* Responsivo */
-            gap: 10px;
-            /* Espaçamento entre os cards */
-
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f4f4f4;
         }
 
-        .card {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            cursor: pointer;
+        form {
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 200px;
-            /* Define uma altura mínima */
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        form input,
+        form select,
+        form button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
         }
 
-        .card.status-0 {
-            background-color: #ffcc80;
-            /* Laranja */
-        }
-
-        .card.status-0:hover {
-            background-color: #ffb74d;
-            /* Laranja mais escuro */
-        }
-
-        .card.status-1 {
-            background-color: #c8e6c9;
-            /* Verde */
-        }
-
-        .card.status-1:hover {
-            background-color: #a5d6a7;
-            /* Verde mais escuro */
-        }
-
-        .card.status-2 {
-            background-color: #90caf9;
-            /* Azul */
-        }
-
-        .card.status-2:hover {
-            background-color: #64b5f6;
-            /* Azul mais escuro */
-        }
-
-        .card.status-3 {
-            background-color: #ffcdd2;
-            /* Vermelho */
-        }
-
-        .card.status-3:hover {
-            background-color: #ef9a9a;
-            /* Vermelho mais escuro */
-        }
-
-        .card.status-4 {
-            background-color: #ffcdd2;
-            /* Vermelho */
-        }
-
-        .card.status-4:hover {
-            background-color: #ef9a9a;
-            /* Vermelho mais escuro */
-        }
-
-        .card h2 {
-            color: rgb(13, 69, 147);
-        }
-
-        .card .valor {
-            font-weight: bold;
-            color: rgb(13, 69, 147);
-        }
-
-        .card img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            vertical-align: middle;
+        form button {
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-voltar {
@@ -180,316 +154,122 @@ function formatDateTimeJS($dateString)
             background-color: #0056b3;
         }
 
-        .title {
-            text-align: center;
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .filters {
-            margin-bottom: 20px;
-            text-align: center;
-            background-color: #f8f9fa;
+        .card {
+            background-color: #fff;
             padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .filters input,
-        .filters select {
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .filters button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
             cursor: pointer;
-            margin-bottom: 5px;
-            transition: background-color 0.3s ease;
+            transition: transform 0.2s, background-color 0.2s;
         }
 
-        .filters button:hover {
-            background-color: #0056b3;
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .status-0 {
+            background-color: orange;
+        }
+
+        .status-1 {
+            background-color: green;
+        }
+
+        .status-2 {
+            background-color: yellow;
+        }
+
+        .status-3 {
+            background-color: purple;
+        }
+
+        .status-4 {
+            background-color: red;
+        }
+
+        .status-5 {
+            background-color: blue;
+        }
+
+        .status-0:hover,
+        .status-1:hover,
+        .status-2:hover,
+        .status-3:hover,
+        .status-4:hover,
+        .status-5:hover {
+            filter: brightness(0.9);
+        }
+
+        h2 {
+            margin: 0 0 10px;
+        }
+
+        .status-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .section-title {
+            margin-top: 30px;
+            font-size: 20px;
         }
 
         @media (max-width: 600px) {
-            .filters {
-                display: flex;
+            form {
                 flex-direction: column;
-                align-items: center;
-                gap: 10px;
-                /* Espaçamento entre os elementos */
             }
-
-            .filters input,
-            .filters select,
-            .filters button,
-            .btn-voltar {
-                width: 100%;
-                /* Ocupa toda a largura disponível */
-                max-width: 600px;
-                /* Limita a largura máxima */
-                box-sizing: border-box;
-                /* Inclui padding e borda no tamanho total */
-            }
-
-            .filters form {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            body {
-                font-size: 14px;
-            }
-
-            h1,
-            h2,
-            h3 {
-                font-size: 18px;
-            }
-
-            .cards-container {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            }
-
-            .card {
-                font-size: 14px;
-                padding: 10px;
-                max-width: 180px;
-                min-height: 180px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-
-            .card h2 {
-                font-size: 16px;
-            }
-
-            .card p {
-                font-size: 12px;
-            }
-
-            .filters input,
-            .filters select,
-            .filters button {
-                font-size: 14px;
-                padding: 8px;
-            }
-
-            .btn-voltar {
-                font-size: 14px;
-                padding: 8px 12px;
-            }
-        }
-
-        h2.section-title {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .cards-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .section-divider {
-            width: 100%;
-            border: 1px solid #ccc;
-            margin: 20px 0;
-        }
-
-        .cancel-message {
-            color: red;
-            text-align: center;
         }
     </style>
-
-    <script>
-        // Função para recarregar a página a cada 5 minutos
-        function refreshPage() {
-            setInterval(function () {
-                location.reload(); // Recarrega a página
-            }, 300000); // 300000 ms = 3 minutos
-        }
-
-        function atualizarStatusPedido(num_pedido, novoStatus) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'atualizar_status_pedido.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    alert('Status do pedido atualizado com sucesso!');
-                    const card = document.querySelector(`.card[data-num-pedido="${num_pedido}"]`);
-                    if (card) {
-                        card.className = `card status-${novoStatus}`; // Atualiza a classe do cartão
-                        const statusSpan = card.querySelector('span');
-                        if (statusSpan) {
-                            // Atualiza o texto do status
-                            switch (novoStatus) {
-                                case '0':
-                                    statusSpan.textContent = 'Aguardando confirmação';
-                                    statusSpan.style.color = '#ff5722';
-                                    break;
-                                case '1':
-                                    statusSpan.textContent = 'Pedido confirmado e já está em preparação.';
-                                    statusSpan.style.color = 'green';
-                                    break;
-                                case '2':
-                                    statusSpan.textContent = 'Pedido pronto para entrega';
-                                    statusSpan.style.color = 'blue';
-                                    break;
-                                case '3':
-                                    statusSpan.textContent = 'Pedido recusado pelo cliente';
-                                    statusSpan.style.color = 'red';
-                                    break;
-                                case '4':
-                                    statusSpan.textContent = 'Pedido Cancelado pelo cliente';
-                                    statusSpan.style.color = 'red';
-                                    break;
-                            }
-                        }
-                    }
-                } else {
-                    alert('Erro ao atualizar o status do pedido.');
-                }
-            };
-            xhr.send(`num_pedido=${num_pedido}&novo_status=${novoStatus}`);
-        }
-    </script>
 </head>
 
-<body onload="refreshPage()">
-    <h1 class="title">Meus Pedidos</h1>
-    <div class="filters">
-        <form method="GET">
-            <a href="../parceiro_home.php" class="btn-voltar">Voltar</a>
-            <input type="date" name="data" value="<?php echo htmlspecialchars($data); ?>">
-            <select name="status">
-                <option value="">Todos os Status</option>
-                <option value="0" <?php if ($status === '0')
-                    echo 'selected'; ?>>Aguardando confirmação</option>
-                <option value="1" <?php if ($status === '1')
-                    echo 'selected'; ?>>Pedido confirmado</option>
-                <option value="2" <?php if ($status === '2')
-                    echo 'selected'; ?>>Pedido cancelado</option>
-                <option value="3" <?php if ($status === '3')
-                    echo 'selected'; ?>>Pedido recusado</option>
-                <option value="3" <?php if ($status === '4')
-                    echo 'selected'; ?>>Pedido Cancelado</option>
-            </select>
-            <input type="text" name="num_pedido" placeholder="Número do Pedido"
-                value="<?php echo htmlspecialchars($num_pedido); ?>">
-            <button type="submit">Filtrar</button>
-            <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
-        </form>
-    </div>
+<body>
 
-    <div class="cards-container">
-        <div class="card">
-            <?php
-            $hoje = new DateTime();
-            $ontem = (new DateTime())->modify('-1 day');
-            $pedidosPorData = [
-                'Hoje' => [],
-                'Ontem' => [],
-            ];
+    <h1>Meus Pedidos</h1>
 
-            // Agrupar pedidos por data
-            while ($row = $result->fetch_assoc()) {
-                $dataPedido = new DateTime($row['data']);
-                if ($dataPedido->format('Y-m-d') === $hoje->format('Y-m-d')) {
-                    $pedidosPorData['Hoje'][] = $row;
-                } elseif ($dataPedido->format('Y-m-d') === $ontem->format('Y-m-d')) {
-                    $pedidosPorData['Ontem'][] = $row;
-                } else {
-                    $diaPedido = $dataPedido->format('d/m/Y'); // Formatar a data
-                    if (!isset($pedidosPorData[$diaPedido])) {
-                        $pedidosPorData[$diaPedido] = []; // Criar nova seção para a data
-                    }
-                    $pedidosPorData[$diaPedido][] = $row;
+    <form method="GET">
+        <a href="../parceiro_home.php" class="btn-voltar">Voltar</a>
+        <input type="date" name="data" value="<?= htmlspecialchars($data) ?>">
+        <select name="status">
+            <option value="">Todos</option>
+            <option value="0" <?= $status === '0' ? 'selected' : '' ?>>Pendente</option>
+            <option value="1" <?= $status === '1' ? 'selected' : '' ?>>Confirmado</option>
+            <option value="2" <?= $status === '2' ? 'selected' : '' ?>>Em preparação</option>
+            <option value="3" <?= $status === '3' ? 'selected' : '' ?>>Recusado</option>
+            <option value="4" <?= $status === '4' ? 'selected' : '' ?>>Cancelado</option>
+            <option value="5" <?= $status === '5' ? 'selected' : '' ?>>Pronto para retirada/Saiu para entrega</option>
+        </select>
+        <input type="text" name="num_pedido" placeholder="Número do Pedido"
+            value="<?= htmlspecialchars($num_pedido) ?>">
+        <button type="submit">Filtrar</button>
+        <button type="button" onclick="window.location.href='pedidos.php'">Carregar Todos</button>
+    </form>
+
+    <?php
+    // Renderiza os pedidos agrupados
+    foreach ($pedidosAgrupados as $grupo => $pedidos) {
+        if (empty($pedidos))
+            continue;
+
+        if ($grupo === 'Outros') {
+            foreach ($pedidos as $dataEspecifica => $lista) {
+                echo "<div class='section-title'>Pedidos de $dataEspecifica</div>";
+                foreach ($lista as $pedidoHTML) {
+                    echo $pedidoHTML;
                 }
             }
-
-            // Exibir pedidos agrupados por data
-            foreach ($pedidosPorData as $titulo => $pedidos):
-                if (count($pedidos) > 0):
-                    ?>
-                    <h2 class="section-title"><?php echo $titulo; ?>:</h2>
-                    <div class="cards-wrapper">
-                        <?php foreach ($pedidos as $row): ?>
-                            <?php
-                            $valor = $row['valor_produtos_confirmados'] != "" ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
-                            $saldo_usado = $row['saldo_usado'];
-                            $taxa_crediario = $row['taxa_crediario'];
-                            $frete = $row['valor_frete'];
-                            $total = $valor + $frete - $saldo_usado + $taxa_crediario;
-
-                            $status = max($row['status_cliente'], $row['status_parceiro']);
-                            ?>
-                            <div class="card status-<?php echo $status; ?>"
-                                data-num-pedido="<?php echo htmlspecialchars($row['num_pedido']); ?>"
-                                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['status_parceiro']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
-                                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
-                                <h3 style="color:darkgreen;">Cód. para Retirada:
-                                    <?php echo htmlspecialchars($row['codigo_retirada']); ?>
-                                </h3>
-                                <p><strong>Status do Pedido:</strong>
-                                    <span
-                                        style="color: <?php echo $status == 0 ? '#ff5722' : ($status == 1 ? 'green' : ($status == 2 ? 'blue' : 'red')); ?>">
-                                        <?php
-                                        if ($status == 0) {
-                                            echo "Aguardando confirmação";
-                                        } elseif ($status == 1) {
-                                            echo "Pedido confirmado e já está em preparação.";
-                                        } elseif ($status == 2) {
-                                            echo "Pedido pronto para entrega";
-                                        } elseif ($status == 3) {
-                                            echo "Pedido recusado";
-                                        } elseif ($status == 4) {
-                                            echo "Pedido Cancelado";
-                                        }
-                                        ?>
-                                    </span>
-                                </p>
-                                <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
-                                <p class="valor"><strong>Valor da compra: R$ </strong>
-                                    <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
-                                <?php if ($row['status_cliente'] == 4 || $row['status_parceiro'] == 4): ?>
-                                    <p class="cancel-message">
-                                        <strong>
-                                            <?php echo $row['status_cliente'] == 4 ? 'Cancelado pelo Cliente' : 'Cancelado pela Loja'; ?>.
-                                        </strong>
-                                    </p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <hr class="section-divider">
-                    <?php
-                endif;
-            endforeach;
-            ?>
-        </div>
-    </div>
+        } else {
+            echo "<div class='section-title'>$grupo</div>";
+            foreach ($pedidos as $pedidoHTML) {
+                echo $pedidoHTML;
+            }
+        }
+    }
+    ?>
 
     <script>
-        // Função para redirecionar para a página de detalhes do pedido
-        function redirectToDetails(num_pedido, id_parceiro, status_cliente, status_parceiro, data, valor) {
+        // Função para redirecionar para a página de detalhes do pedido com base no status
+        function redirectToDetails(num_pedido, status_final, id_parceiro, status_cliente, status_parceiro, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
 
@@ -507,7 +287,7 @@ function formatDateTimeJS($dateString)
 
             // Campos a serem enviados no formulário
             const fields = {
-                num_pedido: num_pedido, // Adicionado número do pedido
+                num_pedido: num_pedido,
                 id_parceiro: id_parceiro,
                 status: maiorStatus,
                 data: data,
@@ -528,76 +308,39 @@ function formatDateTimeJS($dateString)
             form.submit(); // Submete o formulário
         }
 
-        // Função para iniciar a contagem regressiva
-        function startCountdown(element, endTime, estimativaEntrega) {
-            let interval;
+        // Atualiza a página a cada 5 minutos
+        setInterval(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
 
-            // Atualiza a contagem regressiva a cada segundo
-            function updateCountdown() {
-                const now = new Date().getTime(); // Obtém o timestamp atual
-                const distance = endTime - now; // Calcula o tempo restante
+        // Função para iniciar o cronômetro
+        function startCountdown(element, endTime) {
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
 
                 if (distance > 0) {
-                    // Calcula minutos e segundos restantes
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-
-                    const tempoCancelar = element.closest('.tempo-cancelar');
-                    if (tempoCancelar) {
-                        tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar"
-                    }
+                    element.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds} min`;
                 } else {
-                    // Quando o tempo expira, para o intervalo e ajusta a exibição
                     clearInterval(interval);
-
-                    const tempoCancelar = element.closest('.tempo-cancelar');
-                    if (tempoCancelar) {
-                        tempoCancelar.style.display = "none";
-                    }
-
-                    // Verifica se o tempo de cancelamento expirou
-                    const tempoEntregaMais15Min = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega
-                    const card = element.closest('.card');
-                    if (now > tempoEntregaMais15Min && card) {
-                        const textCancelar = card.querySelector('.text-cancelar');
-                        if (textCancelar) {
-                            textCancelar.style.display = "block"; // Mostra o texto de cancelamento
-                        }
-                    }
+                    element.textContent = "Tempo expirado";
                 }
-            }
-
-            updateCountdown(); // Atualiza a contagem imediatamente
-            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
+            }, 1000);
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const countdownElements = document.querySelectorAll('.countdown');
-
-            // Converte a estimativa de entrega para milissegundos
-            const estimativaEntrega = <?php echo json_encode(isset($estimativa_entrega) ? $estimativa_entrega : null); ?>;
-
-            countdownElements.forEach(function (element) {
+        document.addEventListener('DOMContentLoaded', () => {
+            const countdownElements = document.querySelectorAll('.countdown, .cancel-countdown');
+            countdownElements.forEach(element => {
                 const endTime = new Date(element.getAttribute('data-end-time')).getTime();
                 if (!isNaN(endTime)) {
-                    startCountdown(element, endTime, estimativaEntrega ? new Date(estimativaEntrega).getTime() : 0); // Chama a função startCountdown
-                }
-            });
-
-            // Garante que os elementos estejam inicialmente ocultos
-            document.querySelectorAll('.text-cancelar').forEach(function (element) {
-                if (element) {
-                    element.style.display = "none";
+                    startCountdown(element, endTime);
                 }
             });
         });
     </script>
+
 </body>
 
 </html>
-
-<?php
-$stmt->close();
-$mysqli->close();
-?>

@@ -1,8 +1,10 @@
 <style>
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsivo */
-            gap: 10px; /* Espaçamento entre os cards */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            /* Responsivo */
+            gap: 10px;
+            /* Espaçamento entre os cards */
 
         }
 
@@ -16,7 +18,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 200px; /* Define uma altura mínima */
+            min-height: 200px;
+            /* Define uma altura mínima */
         }
 
         .card:hover {
@@ -219,66 +222,27 @@
             }
         }
 
-        @media (max-width: 380px) {
-            .filters {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-                /* Espaçamento entre os elementos */
-            }
+        h2.section-title {
+            margin-top: 20px;
+            text-align: left;
+        }
 
-            .filters input,
-            .filters select,
-            .filters button,
-            .btn-voltar {
-                width: 100%;
-                /* Ocupa toda a largura disponível */
-                max-width: 300px;
-                /* Limita a largura máxima */
-                box-sizing: border-box;
-                /* Inclui padding e borda no tamanho total */
-            }
+        .cards-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-            .filters form {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
+        .section-divider {
+            width: 100%;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
 
-            .cards-container {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-
-            .card {
-                font-size: 12px;
-                padding: 8px;
-                max-width: 150px;
-                min-height: 150px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-
-            .card h2 {
-                font-size: 14px;
-            }
-
-            .card p {
-                font-size: 10px;
-            }
-
-            .filters input,
-            .filters select,
-            .filters button {
-                font-size: 12px;
-                padding: 6px;
-            }
-
-            .btn-voltar {
-                font-size: 12px;
-                padding: 6px 10px;
-            }
+        .cancel-message {
+            color: red;
+            text-align: center;
         }
     </style>
