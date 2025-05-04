@@ -36,8 +36,14 @@ if ($status !== '') {
     $types .= "ii";
 }
 
+// Adicionar ordenação no final da consulta
+$query .= " ORDER BY num_pedido DESC";
+
 // Executa a consulta
 $stmt = $mysqli->prepare($query);
+if (!$stmt) {
+    die("Erro na preparação da consulta: " . $mysqli->error); // Exibe o erro da consulta
+}
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -45,6 +51,9 @@ $result = $stmt->get_result();
 // Adicionar consulta para buscar estimativa_entrega da tabela meus_parceiros
 $parceiroQuery = "SELECT estimativa_entrega FROM meus_parceiros WHERE id = ?";
 $parceiroStmt = $mysqli->prepare($parceiroQuery);
+if (!$parceiroStmt) {
+    die("Erro na preparação da consulta de parceiro: " . $mysqli->error); // Exibe o erro da consulta
+}
 $parceiroStmt->bind_param("i", $_SESSION['id']);
 $parceiroStmt->execute();
 $parceiroResult = $parceiroStmt->get_result();
@@ -53,12 +62,17 @@ $estimativaEntrega = $parceiroData['estimativa_entrega'] ?? null;
 
 // Agrupamento por data
 $pedidosAgrupados = ['Hoje' => [], 'Ontem' => [], 'Outros' => []];
-$hoje = new DateTime();
+$hoje = new DateTime('2025-05-03'); // Define a data atual como 03/05/2025
 $ontem = (clone $hoje)->modify('-1 day');
 
 while ($row = $result->fetch_assoc()) {
+    // Ignorar pedidos com o código de retirada 983678
+    if ($row['codigo_retirada'] === '983678') {
+        continue;
+    }
+
     $dataPedido = new DateTime($row['data']);
-    $dataFormatada = $dataPedido->format('d/m/Y H:i');
+    $dataFormatada = $dataPedido->format('d/m/Y H:i:s'); // Formato brasileiro para exibição
 
     $valor = $row['valor_produtos_confirmados'] > 0 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
     $frete = $row['valor_frete'] ?? 0;
@@ -81,16 +95,26 @@ while ($row = $result->fetch_assoc()) {
     ];
     $descricao_status = $status_descricao[$status_final] ?? 'Desconhecido';
 
+    // Calcular o tempo de recusa e a estimativa de entrega
+    $tempoCancelamento = (new DateTime($dataPedido->format('Y-m-d H:i:s')))->modify('+15 minutes');
+    $tempoEntrega = (clone $tempoCancelamento)->modify('+' . ($estimativaEntrega / 1000 / 60) . ' minutes')->format('Y-m-d H:i:s');
+
     $pedidoHTML = "
-        <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' 
-            onclick='redirectToDetails(\"{$row['num_pedido']}\", \"{$status_final}\", \"{$row['id_parceiro']}\", \"{$row['status_cliente']}\", \"{$row['status_parceiro']}\", \"{$row['data']}\", \"{$row['valor_produtos']}\")'>
+        <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' onclick=\"redirectToDetails(
+            '{$row['num_pedido']}', 
+            '{$status_final}', 
+            '{$_SESSION['id']}', 
+            '{$status_cliente}', 
+            '{$status_parceiro}', 
+            '{$dataFormatada}', 
+            '{$total}'
+        )\">
             <h2>Pedido #{$row['num_pedido']}</h2>
             <p>Status: <span class='status-label'>{$descricao_status}</span></p>
             <p>Data: {$dataFormatada}</p>
             <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>
-            <p>Código de Retirada: <strong>{$row['codigo_retirada']}</strong></p>
-            <p>Tempo Restante para Cancelar: <span class='cancel-countdown' data-end-time='{$row['data_cancelamento']}'></span></p>
-            <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$estimativaEntrega}'></span></p>
+            <p>Tempo Restante para Recusar: <span class='cancel-countdown' data-end-time='{$tempoCancelamento->format('Y-m-d H:i:s')}'></span></p>
+            <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$tempoEntrega}'></span></p>
         </div>";
 
     if ($dataPedido->format('Y-m-d') === $hoje->format('Y-m-d')) {
@@ -114,52 +138,23 @@ while ($row = $result->fetch_assoc()) {
         body {
             font-family: Arial, sans-serif;
             padding: 30px;
-            background: #f4f4f4;
+            background: #f9f9f9;
         }
 
-        form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+        .pedidos-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            /* Ajusta dinamicamente o número de colunas */
+            gap: 15px;
+            /* Espaçamento entre os pedidos */
             margin-bottom: 20px;
         }
 
-        form input,
-        form select,
-        form button {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        form button {
-            background-color: #2196F3;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-voltar {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-voltar:hover {
-            background-color: #0056b3;
-        }
-
         .card {
-            background-color: #fff;
+            background-color: #ffffff;
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
         }
@@ -169,55 +164,157 @@ while ($row = $result->fetch_assoc()) {
         }
 
         .status-0 {
-            background-color: orange;
+            background-color: #ffe5b4;
+            /* Laranja claro */
         }
 
         .status-1 {
-            background-color: green;
+            background-color: #d4edda;
+            /* Verde claro */
         }
 
         .status-2 {
-            background-color: yellow;
+            background-color: #fff3cd;
+            /* Amarelo claro */
         }
 
         .status-3 {
-            background-color: purple;
+            background-color: #e2d6f5;
+            /* Roxo claro */
         }
 
         .status-4 {
-            background-color: red;
+            background-color: #f8d7da;
+            /* Vermelho claro */
         }
 
         .status-5 {
-            background-color: blue;
+            background-color: #d1ecf1;
+            /* Azul claro */
         }
 
-        .status-0:hover,
-        .status-1:hover,
-        .status-2:hover,
-        .status-3:hover,
-        .status-4:hover,
-        .status-5:hover {
-            filter: brightness(0.9);
+        .section-title {
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         h2 {
             margin: 0 0 10px;
+            font-size: 18px;
         }
 
         .status-label {
             font-weight: bold;
             color: #555;
+            font-size: 14px;
         }
 
-        .section-title {
-            margin-top: 30px;
-            font-size: 20px;
+        .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        @media (max-width: 600px) {
-            form {
+        .form-container input,
+        .form-container select,
+        .form-container button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .form-container button[type="submit"] {
+            background-color: #28a745;
+            /* Verde para o botão de filtrar */
+            color: #fff;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .form-container button[type="submit"]:hover {
+            background-color: #218838;
+            /* Verde mais escuro ao passar o mouse */
+            transform: scale(1.05);
+        }
+
+        .form-container button[type="button"] {
+            background-color: #007bff;
+            /* Azul para o botão de carregar todos */
+            color: #fff;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .form-container button[type="button"]:hover {
+            background-color: #0056b3;
+            /* Azul mais escuro ao passar o mouse */
+            transform: scale(1.05);
+        }
+
+        .form-container .btn-voltar {
+            background-color: #6c757d;
+            /* Cinza para o botão de voltar */
+            color: #fff;
+            text-decoration: none;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .form-container .btn-voltar:hover {
+            background-color: #5a6268;
+            /* Cinza mais escuro ao passar o mouse */
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 14px;
+            }
+
+            .status-label {
+                font-size: 12px;
+            }
+
+            .form-container {
                 flex-direction: column;
+                align-items: stretch;
+            }
+
+            .form-container input,
+            .form-container select,
+            .form-container button,
+            .form-container .btn-voltar {
+                width: 100%;
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            .pedidos-container {
+                grid-template-columns: 1fr;
+                /* Exibe os pedidos em uma única coluna */
+            }
+
+            .card {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .section-title {
+                font-size: 16px;
+                text-align: center;
+                /* Centraliza o título */
+            }
+
+            p {
+                font-size: 12px;
             }
         }
     </style>
@@ -227,7 +324,7 @@ while ($row = $result->fetch_assoc()) {
 
     <h1>Meus Pedidos</h1>
 
-    <form method="GET">
+    <form method="GET" class="form-container">
         <a href="../parceiro_home.php" class="btn-voltar">Voltar</a>
         <input type="date" name="data" value="<?= htmlspecialchars($data) ?>">
         <select name="status">
@@ -239,31 +336,50 @@ while ($row = $result->fetch_assoc()) {
             <option value="4" <?= $status === '4' ? 'selected' : '' ?>>Cancelado</option>
             <option value="5" <?= $status === '5' ? 'selected' : '' ?>>Pronto para retirada/Saiu para entrega</option>
         </select>
-        <input type="text" name="num_pedido" placeholder="Número do Pedido"
-            value="<?= htmlspecialchars($num_pedido) ?>">
+        <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?= htmlspecialchars($num_pedido) ?>"
+            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
         <button type="submit">Filtrar</button>
         <button type="button" onclick="window.location.href='pedidos.php'">Carregar Todos</button>
     </form>
 
+    <hr> <!-- Linha horizontal para separar os filtros dos pedidos -->
+
     <?php
     // Renderiza os pedidos agrupados
+    $nenhumPedidoEncontrado = true; // Variável para verificar se há pedidos
+    
     foreach ($pedidosAgrupados as $grupo => $pedidos) {
-        if (empty($pedidos))
+        if (empty($pedidos)) {
             continue;
+        }
 
+        $nenhumPedidoEncontrado = false; // Há pelo menos um pedido
+    
         if ($grupo === 'Outros') {
+            // Agrupamento por data
             foreach ($pedidos as $dataEspecifica => $lista) {
+                echo "<hr>"; // Linha horizontal para separar os pedidos por data
                 echo "<div class='section-title'>Pedidos de $dataEspecifica</div>";
+                echo "<div class='pedidos-container'>"; // Container flexível para pedidos lado a lado
                 foreach ($lista as $pedidoHTML) {
                     echo $pedidoHTML;
                 }
+                echo "</div>"; // Fecha o container flexível
             }
         } else {
+            echo "<hr>"; // Linha horizontal para separar os pedidos por grupo
             echo "<div class='section-title'>$grupo</div>";
+            echo "<div class='pedidos-container'>"; // Container flexível para pedidos lado a lado
             foreach ($pedidos as $pedidoHTML) {
                 echo $pedidoHTML;
             }
+            echo "</div>"; // Fecha o container flexível
         }
+    }
+
+    // Exibe mensagem se nenhum pedido for encontrado
+    if ($nenhumPedidoEncontrado) {
+        echo "<p style='text-align: center; font-size: 18px; color: #555;'>Nenhum pedido encontrado.</p>";
     }
     ?>
 
@@ -317,7 +433,7 @@ while ($row = $result->fetch_assoc()) {
         function startCountdown(element, endTime) {
             const interval = setInterval(() => {
                 const now = new Date().getTime();
-                const distance = endTime - now;
+                const distance = new Date(endTime).getTime() - now;
 
                 if (distance > 0) {
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -325,16 +441,24 @@ while ($row = $result->fetch_assoc()) {
                     element.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds} min`;
                 } else {
                     clearInterval(interval);
-                    element.textContent = "Tempo expirado";
+                    element.textContent = "Tempo expirado"; // Continua mostrando "Tempo Restante para Entrega" com "Tempo expirado"
                 }
             }, 1000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const countdownElements = document.querySelectorAll('.countdown, .cancel-countdown');
+            const countdownElements = document.querySelectorAll('.countdown');
             countdownElements.forEach(element => {
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
-                if (!isNaN(endTime)) {
+                const endTime = element.getAttribute('data-end-time');
+                if (endTime) {
+                    startCountdown(element, endTime);
+                }
+            });
+
+            const cancelCountdownElements = document.querySelectorAll('.cancel-countdown');
+            cancelCountdownElements.forEach(element => {
+                const endTime = element.getAttribute('data-end-time');
+                if (endTime) {
                     startCountdown(element, endTime);
                 }
             });
