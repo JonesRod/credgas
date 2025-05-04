@@ -260,6 +260,96 @@ function formatDateTimeJS($dateString)
             /* Vermelho mais escuro ao passar o mouse */
         }
 
+        .progress-container {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px solid #ccc;
+            /* Adiciona uma borda */
+            border-radius: 8px;
+            /* Bordas arredondadas */
+            background-color: #f9f9f9;
+            /* Fundo claro */
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            /* Centraliza a linha verticalmente dentro da barra */
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #ddd;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .progress-container.active .progress-line {
+            background: linear-gradient(to right, #28a745
+                    <?php echo $pedido['status_parceiro'] == 0 ? '0%' : ($pedido['status_parceiro'] == 1 ? '33%' : ($pedido['status_parceiro'] == 5 ? '66%' : '100%')); ?>
+                    , #ddd
+                    <?php echo $pedido['status_parceiro'] == 0 ? '0%' : ($pedido['status_parceiro'] == 1 ? '33%' : ($pedido['status_parceiro'] == 5 ? '66%' : '100%')); ?>
+                );
+        }
+
+        .progress-container.pending::before {
+            background-color: #ffc107;
+            /* Laranja */
+        }
+
+        .progress-container.cancelled::before {
+            background-color: #dc3545;
+            /* Vermelho */
+        }
+
+        .progress-step {
+            position: relative;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+            background-color: #ddd;
+            /* Cor padrão */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .progress-step.active {
+            background-color: #28a745;
+            /* Verde para etapas concluídas */
+        }
+
+        .progress-step.pending {
+            background-color: #ffc107;
+            /* Laranja para pendente */
+        }
+
+        .progress-step.cancelled {
+            background-color: #dc3545;
+            /* Vermelho para cancelado */
+        }
+
+        .progress-label {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #333;
+            /* Cor padrão */
+            text-align: center;
+        }
+
+        .progress-label.highlight {
+            font-weight: bold;
+            color: #28a745;
+            /* Verde para o rótulo correspondente ao status atual */
+        }
+
         @media (max-width: 600px) {
             body {
                 font-size: 14px;
@@ -349,10 +439,36 @@ function formatDateTimeJS($dateString)
         <p><strong>Data do pedido:</strong> <?php echo formatDateTimeJS($pedido['data']); ?></p>
         <p><strong>Status do Pedido:</strong>
             <span style="color: <?php echo $pedido['status_parceiro'] == 1 ? 'green' : 'red'; ?>;">
-                <?php echo $pedido['status_parceiro'] == 1 ? 'Confirmado.' : 'Pendente'; ?>
+                <?php echo $pedido['status_parceiro'] == 1 ? 'Confirmado e vai para preparação.' : 'Pendente'; ?>
             </span>
         </p>
         <hr>
+
+        <h3 style="margin-bottom: 20px;">Andamento do Pedido</h3>
+        <div class="progress-container <?php
+        echo $pedido['status_parceiro'] == 0 ? 'pending' :
+            ($pedido['status_parceiro'] == 3 || $pedido['status_parceiro'] == 4 ? 'cancelled' : 'active'); ?>">
+            <div class="progress-line"></div> <!-- Linha de progresso ajustada -->
+            <div
+                class="progress-step <?php echo $pedido['status_parceiro'] == 0 ? 'pending' : ($pedido['status_parceiro'] == 3 || $pedido['status_parceiro'] == 4 ? 'cancelled' : 'active'); ?>">
+                <span
+                    class="progress-label <?php echo $pedido['status_parceiro'] == 0 ? 'highlight' : ''; ?>">Pendente</span>
+            </div>
+            <div class="progress-step <?php echo $pedido['status_parceiro'] >= 1 ? 'active' : ''; ?>">
+                <span
+                    class="progress-label <?php echo $pedido['status_parceiro'] >= 1 && $pedido['status_parceiro'] < 5 ? 'highlight' : ''; ?>">Confirmado</span>
+            </div>
+            <div class="progress-step <?php echo $pedido['status_parceiro'] == 5 ? 'active' : ''; ?>">
+                <span
+                    class="progress-label <?php echo $pedido['status_parceiro'] == 5 ? 'highlight' : ''; ?>">Pronto</span>
+            </div>
+            <div class="progress-step <?php echo $pedido['status_parceiro'] == 6 ? 'active' : ''; ?>">
+                <span
+                    class="progress-label <?php echo $pedido['status_parceiro'] == 6 ? 'highlight' : ''; ?>">Entregue</span>
+            </div>
+        </div>
+        <hr>
+
         <h3>Produtos</h3>
         <table>
             <thead>
