@@ -437,7 +437,6 @@ function formatDateTimeJS($dateString)
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            autocomplete: off;
         }
 
         #popupCodigoRetirada span {
