@@ -70,6 +70,12 @@ if ($result->num_rows > 0) {
         $valor_total = $valor_total_produtos_confirmados + $frete - $saldo_usado;
         $exibir_frete_saldo = true;
     }
+
+    // Calcula o tempo que durou para cancelar o pedido usando data_finalizacao
+    $dataPedido = new DateTime($pedido['data']);
+    $dataFinalizacao = new DateTime($pedido['data_finalizacao']);
+    $intervalo = $dataPedido->diff($dataFinalizacao);
+    $tempoCancelamento = $intervalo->format('%d dias, %h horas, %i minutos');
 } else {
     echo "Pedido não encontrado.";
     exit;
@@ -207,6 +213,9 @@ $mysqli->close();
         <p><strong>Cancelado pelo:</strong> <?php echo $quem_cancelou; ?></p>
         <div class="info">
             <p><strong>Data do Pedido:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></p>
+            <p><strong>Data do Cancelamento:</strong>
+                <?php echo date('d/m/Y H:i', strtotime($pedido['data_finalizacao'])); ?></p>
+            <p><strong>Tempo para Cancelar:</strong> <?php echo $tempoCancelamento; ?></p>
             <hr>
             <p><strong>Cliente:</strong> <?php echo htmlspecialchars($pedido['nome_completo']); ?></p>
             <hr>

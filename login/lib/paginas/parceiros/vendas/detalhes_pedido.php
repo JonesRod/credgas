@@ -563,8 +563,9 @@ if ($formato_compra == 'crediario') {
         const confirmButton = document.getElementById('bt_confirmar_pedido');
         const recusarButton = document.getElementById('bt_recusar_pedido');
 
+        // Verifica se todos os elementos necessários estão presentes
         if (!rows.length || !totalElement || !freteElement || !valorTotalElement || !confirmButton || !recusarButton) {
-            console.warn('Elementos necessários não encontrados na página.');
+            //console.warn('Elementos necessários não encontrados na página.');
             return;
         }
 
@@ -639,6 +640,8 @@ if ($formato_compra == 'crediario') {
                 }
 
                 confirmButton.style.display = totalComFrete >= 0 ? 'block' : 'none';
+
+
             } else {
                 freteElement.style.display = 'none';
                 valorTotalElement.style.display = 'none';
@@ -647,49 +650,268 @@ if ($formato_compra == 'crediario') {
             }
         }
 
-        confirmButton.addEventListener('click', function () {
-            const produtosConfirmados = [];
-            rows.forEach(row => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                const quantityInput = row.querySelector('input[type="number"]');
-                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
-                const productName = row.querySelector('td:nth-child(2)').textContent.trim();
+        function showPopup(message, onConfirm) {
+            const popup = document.createElement('div');
+            popup.style.position = 'fixed';
+            popup.style.top = '0';
+            popup.style.left = '0';
+            popup.style.width = '100%';
+            popup.style.height = '100%';
+            popup.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            popup.style.display = 'flex';
+            popup.style.justifyContent = 'center';
+            popup.style.alignItems = 'center';
+            popup.style.zIndex = '1000';
 
-                if (checkbox.checked) {
-                    const quantity = parseInt(quantityInput.value, 10);
-                    const total = quantity * unitPrice;
-                    produtosConfirmados.push({
-                        nome: productName,
-                        quantidade: quantity,
-                        valor_unitario: unitPrice,
-                        total: total
-                    });
-                }
+            const popupContent = document.createElement('div');
+            popupContent.style.backgroundColor = '#fff';
+            popupContent.style.padding = '20px';
+            popupContent.style.borderRadius = '8px';
+            popupContent.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+            popupContent.style.textAlign = 'center';
+
+            const messageElement = document.createElement('p');
+            messageElement.textContent = message;
+            messageElement.style.marginBottom = '20px';
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'space-around';
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancelar';
+            cancelButton.style.backgroundColor = '#dc3545';
+            cancelButton.style.color = '#fff';
+            cancelButton.style.border = 'none';
+            cancelButton.style.padding = '10px 20px';
+            cancelButton.style.borderRadius = '5px';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.addEventListener('click', () => {
+                document.body.removeChild(popup);
             });
 
-            fetch('confirmar_pedido.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    num_pedido: <?php echo json_encode($num_pedido); ?>,
-                    produtos: produtosConfirmados
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido confirmado com sucesso!');
-                        window.location.href = 'pedido_confirmado.php';
-                    } else {
-                        alert('Erro ao confirmar o pedido.');
+            const confirmButton = document.createElement('button');
+            confirmButton.textContent = 'Confirmar';
+            confirmButton.style.backgroundColor = '#28a745';
+            confirmButton.style.color = '#fff';
+            confirmButton.style.border = 'none';
+            confirmButton.style.padding = '10px 20px';
+            confirmButton.style.borderRadius = '5px';
+            confirmButton.style.cursor = 'pointer';
+            confirmButton.addEventListener('click', () => {
+                document.body.removeChild(popup);
+                onConfirm();
+            });
+
+            buttonContainer.appendChild(cancelButton); // Botão de cancelar à esquerda
+            buttonContainer.appendChild(confirmButton); // Botão de confirmar à direita
+            popupContent.appendChild(messageElement);
+            popupContent.appendChild(buttonContainer);
+            popup.appendChild(popupContent);
+            document.body.appendChild(popup);
+        }
+
+        confirmButton.addEventListener('click', function () {
+            showPopup('Tem certeza de que deseja confirmar este pedido?', () => {
+                const produtosConfirmados = [];
+                rows.forEach(row => {
+                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    const quantityInput = row.querySelector('input[type="number"]');
+                    const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+                    const productName = row.querySelector('td:nth-child(2)').textContent.trim();
+
+                    if (checkbox.checked) {
+                        const quantity = parseInt(quantityInput.value, 10);
+                        const total = quantity * unitPrice;
+                        produtosConfirmados.push({
+                            nome: productName,
+                            quantidade: quantity,
+                            valor_unitario: unitPrice,
+                            total: total
+                        });
                     }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Erro ao processar a solicitação.');
                 });
+
+                fetch('confirmar_pedido.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        num_pedido: <?php echo json_encode($num_pedido); ?>,
+                        produtos: produtosConfirmados
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showPopup('Pedido confirmado com sucesso!', () => {
+                                // Redirecionar com ID do parceiro e número do pedido na URL
+                                window.location.href = `pedido_confirmado.php?id_parceiro=${encodeURIComponent(<?php echo json_encode($id_parceiro); ?>)}&num_pedido=${encodeURIComponent(<?php echo json_encode($num_pedido); ?>)}`;
+                            });
+                        } else {
+                            showPopup('Erro ao confirmar o pedido.', () => { });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        showPopup('Erro ao processar a solicitação.', () => { });
+                    });
+            });
+        });
+
+        recusarButton.addEventListener('click', function () {
+            const popup = document.createElement('div');
+            popup.style.position = 'fixed';
+            popup.style.top = '0';
+            popup.style.left = '0';
+            popup.style.width = '100%';
+            popup.style.height = '100%';
+            popup.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            popup.style.display = 'flex';
+            popup.style.justifyContent = 'center';
+            popup.style.alignItems = 'center';
+            popup.style.zIndex = '1000';
+
+            const popupContent = document.createElement('div');
+            popupContent.style.backgroundColor = '#fff';
+            popupContent.style.padding = '20px';
+            popupContent.style.borderRadius = '8px';
+            popupContent.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+            popupContent.style.textAlign = 'center';
+
+            const messageElement = document.createElement('p');
+            messageElement.textContent = 'Tem certeza de que deseja recusar este pedido?';
+            messageElement.style.marginBottom = '20px';
+
+            const errorMessage = document.createElement('p');
+            errorMessage.style.color = 'red';
+            errorMessage.style.display = 'none'; // Inicialmente oculto
+            errorMessage.style.marginBottom = '10px';
+
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = 'Justifique a recusa (obrigatório)';
+            textarea.style.width = '100%';
+            textarea.style.height = '80px';
+            textarea.style.marginBottom = '20px';
+            textarea.style.resize = 'none'; // Impedir redimensionamento, se necessário
+            textarea.style.padding = '10px'; // Garantir espaço interno para digitação
+            textarea.style.fontSize = '14px'; // Ajustar tamanho da fonte para melhor visibilidade
+            textarea.style.boxSizing = 'border-box'; // Garantir que o padding não afete o tamanho total
+
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'space-around';
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancelar';
+            cancelButton.style.backgroundColor = '#dc3545';
+            cancelButton.style.color = '#fff';
+            cancelButton.style.border = 'none';
+            cancelButton.style.padding = '10px 20px';
+            cancelButton.style.borderRadius = '5px';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.addEventListener('click', () => {
+                document.body.removeChild(popup);
+            });
+
+            const confirmButton = document.createElement('button');
+            confirmButton.textContent = 'Confirmar';
+            confirmButton.style.backgroundColor = '#28a745';
+            confirmButton.style.color = '#fff';
+            confirmButton.style.border = 'none';
+            confirmButton.style.padding = '10px 20px';
+            confirmButton.style.borderRadius = '5px';
+            confirmButton.style.cursor = 'pointer';
+            confirmButton.addEventListener('click', () => {
+                const motivo = textarea.value.trim();
+                if (!motivo) {
+                    errorMessage.textContent = 'Por favor, justifique a recusa.';
+                    errorMessage.style.display = 'block'; // Exibir a mensagem de erro
+                    return;
+                }
+
+                // Captura a data e hora local do cliente
+                const now = new Date();
+                const dataHoraCliente = now.toLocaleString('sv-SE', { timeZoneName: 'short' }).replace(' ', 'T');
+
+                fetch('recusar_pedido.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id_parceiro: <?php echo json_encode($id_parceiro); ?>,
+                        num_pedido: <?php echo json_encode($num_pedido); ?>,
+                        motivo_cancelamento: motivo,
+                        data_hora_cliente: dataHoraCliente
+                    }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            if (data.success) {
+                                const successPopup = document.createElement('div');
+                                successPopup.style.position = 'fixed';
+                                successPopup.style.top = '0';
+                                successPopup.style.left = '0';
+                                successPopup.style.width = '100%';
+                                successPopup.style.height = '100%';
+                                successPopup.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                                successPopup.style.display = 'flex';
+                                successPopup.style.justifyContent = 'center';
+                                successPopup.style.alignItems = 'center';
+                                successPopup.style.zIndex = '1000';
+
+                                const successContent = document.createElement('div');
+                                successContent.style.backgroundColor = '#fff';
+                                successContent.style.padding = '20px';
+                                successContent.style.borderRadius = '8px';
+                                successContent.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+                                successContent.style.textAlign = 'center';
+
+                                const successMessage = document.createElement('p');
+                                successMessage.textContent = 'Pedido recusado com sucesso!';
+                                successMessage.style.marginBottom = '20px';
+
+                                successContent.appendChild(successMessage);
+                                successPopup.appendChild(successContent);
+                                document.body.appendChild(successPopup);
+
+                                setTimeout(() => {
+                                    window.location.href = `pedido_recusado.php?id_parceiro=${encodeURIComponent(<?php echo json_encode($id_parceiro); ?>)}&num_pedido=${encodeURIComponent(<?php echo json_encode($num_pedido); ?>)}`;
+                                }, 2000); // Redirecionar após 2 segundos
+                            } else {
+                                errorMessage.textContent = data.message || 'Erro ao recusar o pedido.';
+                                errorMessage.style.display = 'block';
+                            }
+                        } catch (error) {
+                            console.error('Erro ao processar JSON:', error);
+                            errorMessage.textContent = 'Resposta inesperada do servidor.';
+                            errorMessage.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        errorMessage.textContent = 'Erro ao processar a solicitação.';
+                        errorMessage.style.display = 'block';
+                    });
+            });
+
+            buttonContainer.appendChild(cancelButton);
+            buttonContainer.appendChild(confirmButton);
+            popupContent.appendChild(messageElement);
+            popupContent.appendChild(errorMessage); // Adicionar a mensagem de erro ao popup
+            popupContent.appendChild(textarea);
+            popupContent.appendChild(buttonContainer);
+            popup.appendChild(popupContent);
+            document.body.appendChild(popup);
         });
 
         rows.forEach(row => {
@@ -702,13 +924,13 @@ if ($formato_compra == 'crediario') {
 
             checkbox.addEventListener('change', () => {
                 quantityInput.disabled = !checkbox.checked;
-                updateTotals();
+                updateTotals(); // Garantir que updateTotals gerencie a visibilidade do botão
             });
 
             quantityInput.addEventListener('input', updateTotals);
         });
 
-        updateTotals();
+        updateTotals(); // Chamar updateTotals diretamente para inicializar corretamente
     });
 </script>
 

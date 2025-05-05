@@ -3,20 +3,20 @@ session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
 // Verifica se o usuário está logado
-if (!isset($_SESSION['id'])) {
+if (!isset($_GET['id_parceiro'])) {
     header("Location: ../../../../index.php");
     exit;
 }
 
 // Verifica se o ID do pedido foi enviado
-if (!isset($_POST['num_pedido'])) {
+if (!isset($_GET['num_pedido'])) {
     echo "Número do pedido não fornecido.";
     exit;
 }
 
 // Obtém o ID do cliente logado e o número do pedido
-$id_parceiro = $_SESSION['id'];
-$num_pedido = $_POST['num_pedido'];
+$id_parceiro = $_GET['id_parceiro'];
+$num_pedido = $_GET['num_pedido'];
 
 // Consulta para buscar os dados do pedido
 $query = "SELECT p.*, c.nome_completo, c.endereco, c.numero, c.bairro, c.cidade, c.uf, c.cep, c.celular1 
@@ -60,6 +60,12 @@ if ($result->num_rows > 0) {
         $valor_total = $valor_total_produtos_confirmados + $frete - $saldo_usado;
         $exibir_frete_saldo = true;
     }
+
+    // Calcula o tempo que durou para recusar o pedido usando data_finalizacao
+    $dataPedido = new DateTime($pedido['data']);
+    $dataFinalizacao = new DateTime($pedido['data_finalizacao']);
+    $intervalo = $dataPedido->diff($dataFinalizacao);
+    $tempoRecusa = $intervalo->format('%d dias, %h horas, %i minutos');
 } else {
     echo "Pedido não encontrado.";
     exit;
@@ -200,6 +206,9 @@ $mysqli->close();
         <p class="motivo">Motivo da Recusa: <?php echo htmlspecialchars($motivo_recusa); ?></p>
         <div class="info">
             <p><strong>Data do Pedido:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></p>
+            <p><strong>Data da Recusa:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['data_finalizacao'])); ?>
+            </p>
+            <p><strong>Tempo para Recusar:</strong> <?php echo $tempoRecusa; ?></p>
             <hr>
             <p><strong>Cliente:</strong> <?php echo htmlspecialchars($pedido['nome_completo']); ?></p>
             <hr>

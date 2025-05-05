@@ -62,7 +62,7 @@ $estimativaEntrega = $parceiroData['estimativa_entrega'] ?? null;
 
 // Agrupamento por data
 $pedidosAgrupados = ['Hoje' => [], 'Ontem' => [], 'Outros' => []];
-$hoje = new DateTime('2025-05-03'); // Define a data atual como 03/05/2025
+$hoje = new DateTime(); // Data atual
 $ontem = (clone $hoje)->modify('-1 day');
 
 while ($row = $result->fetch_assoc()) {
@@ -91,7 +91,9 @@ while ($row = $result->fetch_assoc()) {
         2 => 'Em preparação',
         3 => 'Recusado',
         4 => 'Cancelado',
-        5 => $row['tipo_entrega'] === 'buscar' ? 'Pronto para retirada' : 'Saiu para entrega'
+        5 => 'Pedido pronto',
+        6 => $row['tipo_entrega'] === 'buscar' ? 'Pronto para retirada' : 'Saiu para entrega',
+        7 => 'Finalizado'
     ];
     $descricao_status = $status_descricao[$status_final] ?? 'Desconhecido';
 
@@ -110,19 +112,23 @@ while ($row = $result->fetch_assoc()) {
             '{$total}'
         )\">
             <h2>Pedido #{$row['num_pedido']}</h2>
-            <p>Status: <span class='status-label'>{$descricao_status}</span></p>
+            <p>Status do Pedido: <span class='status-label'>{$descricao_status}</span></p>
             <p>Data: {$dataFormatada}</p>
             <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>
             <p>Tempo Restante para Recusar: <span class='cancel-countdown' data-end-time='{$tempoCancelamento->format('Y-m-d H:i:s')}'></span></p>
             <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$tempoEntrega}'></span></p>
         </div>";
 
+    // Agrupamento dos pedidos
     if ($dataPedido->format('Y-m-d') === $hoje->format('Y-m-d')) {
         $pedidosAgrupados['Hoje'][] = $pedidoHTML;
     } elseif ($dataPedido->format('Y-m-d') === $ontem->format('Y-m-d')) {
         $pedidosAgrupados['Ontem'][] = $pedidoHTML;
     } else {
         $dataChave = $dataPedido->format('d/m/Y');
+        if (!isset($pedidosAgrupados['Outros'][$dataChave])) {
+            $pedidosAgrupados['Outros'][$dataChave] = [];
+        }
         $pedidosAgrupados['Outros'][$dataChave][] = $pedidoHTML;
     }
 }
@@ -168,7 +174,10 @@ while ($row = $result->fetch_assoc()) {
             /* Laranja claro */
         }
 
-        .status-1 {
+        .status-1,
+        .status-5,
+        .status-6,
+        .status-7 {
             background-color: #d4edda;
             /* Verde claro */
         }
@@ -179,18 +188,13 @@ while ($row = $result->fetch_assoc()) {
         }
 
         .status-3 {
-            background-color: #e2d6f5;
-            /* Roxo claro */
+            background-color: #f8c6d8;
+            /* Rosa claro */
         }
 
         .status-4 {
             background-color: #f8d7da;
             /* Vermelho claro */
-        }
-
-        .status-5 {
-            background-color: #d1ecf1;
-            /* Azul claro */
         }
 
         .section-title {
@@ -334,7 +338,9 @@ while ($row = $result->fetch_assoc()) {
             <option value="2" <?= $status === '2' ? 'selected' : '' ?>>Em preparação</option>
             <option value="3" <?= $status === '3' ? 'selected' : '' ?>>Recusado</option>
             <option value="4" <?= $status === '4' ? 'selected' : '' ?>>Cancelado</option>
-            <option value="5" <?= $status === '5' ? 'selected' : '' ?>>Pronto para retirada/Saiu para entrega</option>
+            <option value="5" <?= $status === '5' ? 'selected' : '' ?>>Pedido pronto</option>
+            <option value="6" <?= $status === '6' ? 'selected' : '' ?>>Pronto para retirada/Saiu para entrega</option>
+            <option value="7" <?= $status === '7' ? 'selected' : '' ?>>Finalizado</option>
         </select>
         <input type="text" name="num_pedido" placeholder="Número do Pedido" value="<?= htmlspecialchars($num_pedido) ?>"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')">
@@ -391,14 +397,14 @@ while ($row = $result->fetch_assoc()) {
 
             const maiorStatus = Math.max(status_cliente, status_parceiro); // Determina o maior status
 
-            if (maiorStatus === 1) {
-                form.action = 'pedido_confirmado.php';
+            if (maiorStatus === 1 || maiorStatus === 5 || maiorStatus === 6 || maiorStatus === 7) {
+                form.action = `pedido_confirmado.php?id_parceiro=${encodeURIComponent(id_parceiro)}&num_pedido=${encodeURIComponent(num_pedido)}`;
             } else if (maiorStatus === 3) {
-                form.action = 'pedido_recusado.php';
+                form.action = `pedido_recusado.php?id_parceiro=${encodeURIComponent(id_parceiro)}&num_pedido=${encodeURIComponent(num_pedido)}`;
             } else if (maiorStatus === 4) {
-                form.action = 'pedido_cancelado.php';
+                form.action = `pedido_cancelado.php?id_parceiro=${encodeURIComponent(id_parceiro)}&num_pedido=${encodeURIComponent(num_pedido)}`;
             } else {
-                form.action = 'detalhes_pedido.php';
+                form.action = `detalhes_pedido.php?id_parceiro=${encodeURIComponent(id_parceiro)}&num_pedido=${encodeURIComponent(num_pedido)}`;
             }
 
             // Campos a serem enviados no formulário
