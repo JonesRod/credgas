@@ -73,13 +73,11 @@ while ($row = $result->fetch_assoc()) {
 
     $dataPedido = new DateTime($row['data']);
     $dataFormatada = $dataPedido->format('d/m/Y H:i:s'); // Formato brasileiro para exibição
-
     $valor = $row['valor_produtos_confirmados'] > 0 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
     $frete = $row['valor_frete'] ?? 0;
     $saldo_usado = $row['saldo_usado'] ?? 0;
     $taxa_crediario = $row['taxa_crediario'] ?? 0;
     $total = $valor + $frete - $saldo_usado + $taxa_crediario;
-
     $status_cliente = $row['status_cliente'];
     $status_parceiro = $row['status_parceiro'];
     $status_final = max($status_cliente, $status_parceiro);
@@ -93,13 +91,21 @@ while ($row = $result->fetch_assoc()) {
         4 => 'Cancelado',
         5 => 'Pedido pronto',
         6 => $row['tipo_entrega'] === 'buscar' ? 'Pronto para retirada' : 'Saiu para entrega',
-        7 => 'Finalizado'
+        7 => 'Finalizado',
     ];
     $descricao_status = $status_descricao[$status_final] ?? 'Desconhecido';
 
     // Calcular o tempo de recusa e a estimativa de entrega
     $tempoCancelamento = (new DateTime($dataPedido->format('Y-m-d H:i:s')))->modify('+15 minutes');
     $tempoEntrega = (clone $tempoCancelamento)->modify('+' . ($estimativaEntrega / 1000 / 60) . ' minutes')->format('Y-m-d H:i:s');
+
+    // Calcular o tempo total do processo para pedidos finalizados
+    $tempoDuracao = '';
+    if ($status_final === 7 && !empty($row['data_finalizacao'])) {
+        $dataFinalizacao = new DateTime($row['data_finalizacao']);
+        $intervalo = $dataPedido->diff($dataFinalizacao);
+        $tempoDuracao = sprintf('%02dh %02dm %02ds', $intervalo->h + ($intervalo->days * 24), $intervalo->i, $intervalo->s);
+    }
 
     $pedidoHTML = "
         <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' onclick=\"redirectToDetails(
@@ -108,15 +114,24 @@ while ($row = $result->fetch_assoc()) {
             '{$_SESSION['id']}', 
             '{$status_cliente}', 
             '{$status_parceiro}', 
-            '{$dataFormatada}', 
+            '{$dataFormatada}',  
             '{$total}'
         )\">
             <h2>Pedido #{$row['num_pedido']}</h2>
             <p>Status do Pedido: <span class='status-label'>{$descricao_status}</span></p>
             <p>Data: {$dataFormatada}</p>
-            <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>
+            <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>";
+
+    if ($status_final !== 7) { // Oculta o tempo de recusa se o pedido estiver finalizado
+        $pedidoHTML .= "
             <p>Tempo Restante para Recusar: <span class='cancel-countdown' data-end-time='{$tempoCancelamento->format('Y-m-d H:i:s')}'></span></p>
-            <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$tempoEntrega}'></span></p>
+            <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$tempoEntrega}'></span></p>";
+    } else { // Exibe o tempo total do processo para pedidos finalizados
+        $pedidoHTML .= "
+            <p>Tempo Total do Processo: <span>{$tempoDuracao}</span></p>";
+    }
+
+    $pedidoHTML .= "
         </div>";
 
     // Agrupamento dos pedidos
@@ -133,7 +148,6 @@ while ($row = $result->fetch_assoc()) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -150,9 +164,7 @@ while ($row = $result->fetch_assoc()) {
         .pedidos-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            /* Ajusta dinamicamente o número de colunas */
             gap: 15px;
-            /* Espaçamento entre os pedidos */
             margin-bottom: 20px;
         }
 
@@ -171,7 +183,6 @@ while ($row = $result->fetch_assoc()) {
 
         .status-0 {
             background-color: #ffe5b4;
-            /* Laranja claro */
         }
 
         .status-1,
@@ -179,22 +190,18 @@ while ($row = $result->fetch_assoc()) {
         .status-6,
         .status-7 {
             background-color: #d4edda;
-            /* Verde claro */
         }
 
         .status-2 {
             background-color: #fff3cd;
-            /* Amarelo claro */
         }
 
         .status-3 {
             background-color: #f8c6d8;
-            /* Rosa claro */
         }
 
         .status-4 {
             background-color: #f8d7da;
-            /* Vermelho claro */
         }
 
         .section-title {
@@ -233,7 +240,6 @@ while ($row = $result->fetch_assoc()) {
 
         .form-container button[type="submit"] {
             background-color: #28a745;
-            /* Verde para o botão de filtrar */
             color: #fff;
             border: none;
             transition: background-color 0.3s ease, transform 0.2s ease;
@@ -241,13 +247,11 @@ while ($row = $result->fetch_assoc()) {
 
         .form-container button[type="submit"]:hover {
             background-color: #218838;
-            /* Verde mais escuro ao passar o mouse */
             transform: scale(1.05);
         }
 
         .form-container button[type="button"] {
             background-color: #007bff;
-            /* Azul para o botão de carregar todos */
             color: #fff;
             border: none;
             transition: background-color 0.3s ease, transform 0.2s ease;
@@ -255,13 +259,11 @@ while ($row = $result->fetch_assoc()) {
 
         .form-container button[type="button"]:hover {
             background-color: #0056b3;
-            /* Azul mais escuro ao passar o mouse */
             transform: scale(1.05);
         }
 
         .form-container .btn-voltar {
             background-color: #6c757d;
-            /* Cinza para o botão de voltar */
             color: #fff;
             text-decoration: none;
             border: none;
@@ -274,7 +276,6 @@ while ($row = $result->fetch_assoc()) {
 
         .form-container .btn-voltar:hover {
             background-color: #5a6268;
-            /* Cinza mais escuro ao passar o mouse */
             transform: scale(1.05);
         }
 
@@ -303,7 +304,6 @@ while ($row = $result->fetch_assoc()) {
 
             .pedidos-container {
                 grid-template-columns: 1fr;
-                /* Exibe os pedidos em uma única coluna */
             }
 
             .card {
@@ -314,7 +314,6 @@ while ($row = $result->fetch_assoc()) {
             .section-title {
                 font-size: 16px;
                 text-align: center;
-                /* Centraliza o título */
             }
 
             p {
@@ -325,7 +324,6 @@ while ($row = $result->fetch_assoc()) {
 </head>
 
 <body>
-
     <h1>Meus Pedidos</h1>
 
     <form method="GET" class="form-container">
@@ -347,18 +345,15 @@ while ($row = $result->fetch_assoc()) {
         <button type="submit">Filtrar</button>
         <button type="button" onclick="window.location.href='pedidos.php'">Carregar Todos</button>
     </form>
-
     <hr> <!-- Linha horizontal para separar os filtros dos pedidos -->
 
     <?php
     // Renderiza os pedidos agrupados
     $nenhumPedidoEncontrado = true; // Variável para verificar se há pedidos
-    
     foreach ($pedidosAgrupados as $grupo => $pedidos) {
         if (empty($pedidos)) {
             continue;
         }
-
         $nenhumPedidoEncontrado = false; // Há pelo menos um pedido
     
         if ($grupo === 'Outros') {
@@ -382,19 +377,16 @@ while ($row = $result->fetch_assoc()) {
             echo "</div>"; // Fecha o container flexível
         }
     }
-
     // Exibe mensagem se nenhum pedido for encontrado
     if ($nenhumPedidoEncontrado) {
         echo "<p style='text-align: center; font-size: 18px; color: #555;'>Nenhum pedido encontrado.</p>";
     }
     ?>
-
     <script>
         // Função para redirecionar para a página de detalhes do pedido com base no status
         function redirectToDetails(num_pedido, status_final, id_parceiro, status_cliente, status_parceiro, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
-
             const maiorStatus = Math.max(status_cliente, status_parceiro); // Determina o maior status
 
             if (maiorStatus === 1 || maiorStatus === 5 || maiorStatus === 6 || maiorStatus === 7) {
@@ -413,7 +405,7 @@ while ($row = $result->fetch_assoc()) {
                 id_parceiro: id_parceiro,
                 status: maiorStatus,
                 data: data,
-                valor: valor
+                valor: valor,
             };
 
             // Adiciona os campos como inputs ocultos no formulário
@@ -470,7 +462,6 @@ while ($row = $result->fetch_assoc()) {
             });
         });
     </script>
-
 </body>
 
 </html>

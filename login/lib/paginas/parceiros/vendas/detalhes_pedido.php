@@ -833,7 +833,7 @@ if ($formato_compra == 'crediario') {
 
                 // Captura a data e hora local do cliente
                 const now = new Date();
-                const dataHoraCliente = now.toLocaleString('sv-SE', { timeZoneName: 'short' }).replace(' ', 'T');
+                const dataHoraCliente = now.toLocaleString('sv-SE', { timeZoneName: 'short' }).replace('T', ' ');
 
                 fetch('recusar_pedido.php', {
                     method: 'POST',

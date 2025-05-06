@@ -797,9 +797,9 @@ function formatDateTimeJS($dateString)
         mensagem.style.fontWeight = 'bold';
         mensagem.style.color = 'red';
 
-        // Captura a data e hora local do cliente no formato correto para MySQL
+        // Captura a data e hora local do cliente
         const now = new Date();
-        const dataHoraCliente = now.toISOString().slice(0, 19).replace('T', ' '); // Exemplo: "2025-05-05 02:49:22"
+        const dataHoraCliente = now.toLocaleString('sv-SE', { timeZoneName: 'short' }).replace('T', ' ');
 
         // Remove mensagens anteriores, se existirem
         const mensagensExistentes = popupContent.querySelectorAll('p.mensagem');
@@ -811,7 +811,7 @@ function formatDateTimeJS($dateString)
             popupContent.insertBefore(mensagem, botaoVoltar);
             return;
         }
-
+        console.log("dataHoraCliente:", dataHoraCliente); // Log da data e hora do cliente
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'cancelar_pedido.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -821,7 +821,7 @@ function formatDateTimeJS($dateString)
         console.log("Dados enviados:", dadosEnviados);
 
         xhr.onload = function () {
-            console.log("Resposta do servidor:", xhr.responseText); // Log da resposta do servidor
+            //console.log("Resposta do servidor:", xhr.responseText); // Log da resposta do servidor
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (xhr.status === 200 && response.success) {
@@ -830,8 +830,11 @@ function formatDateTimeJS($dateString)
                     mensagem.classList.add('mensagem');
                     popupContent.insertBefore(mensagem, botaoVoltar);
 
+                    // Desabilita todos os botões
+                    document.querySelectorAll('button').forEach(button => button.disabled = true);
+
                     setTimeout(() => {
-                        window.location.href = 'pedido_cancelado.php';
+                        window.location.href = `pedido_cancelado.php?id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>`;
                     }, 2000);
                 } else {
                     mensagem.textContent = response.message || 'Erro ao cancelar o pedido.';
@@ -839,7 +842,7 @@ function formatDateTimeJS($dateString)
                     popupContent.insertBefore(mensagem, botaoVoltar);
                 }
             } catch (e) {
-                console.error("Erro ao processar a resposta do servidor:", e); // Log do erro no console
+                //console.error("Erro ao processar a resposta do servidor:", e); // Log do erro no console
                 mensagem.textContent = 'Erro inesperado: resposta inválida do servidor.';
                 mensagem.classList.add('mensagem');
                 popupContent.insertBefore(mensagem, botaoVoltar);

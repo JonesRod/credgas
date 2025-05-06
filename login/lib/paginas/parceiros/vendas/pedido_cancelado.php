@@ -3,20 +3,20 @@ session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
 // Verifica se o usuário está logado
-if (!isset($_SESSION['id'])) {
+if (!isset($_GET['id_parceiro']) || $_GET['id_parceiro'] != $_SESSION['id']) {
     header("Location: ../../../../index.php");
     exit;
 }
 
 // Verifica se o ID do pedido foi enviado
-if (!isset($_POST['num_pedido'])) {
+if (!isset($_GET['num_pedido'])) {
     echo "Número do pedido não fornecido.";
     exit;
 }
 
 // Obtém o ID do cliente logado e o número do pedido
-$id_parceiro = $_SESSION['id'];
-$num_pedido = $_POST['num_pedido'];
+$id_parceiro = $_GET['id_parceiro'];
+$num_pedido = $_GET['num_pedido'];
 
 // Consulta para buscar os dados do pedido
 $query = "SELECT p.*, c.nome_completo, c.endereco, c.numero, c.bairro, c.cidade, c.uf, c.cep, c.celular1 
