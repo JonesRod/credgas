@@ -99,14 +99,15 @@ while ($row = $result->fetch_assoc()) {
     $tempoCancelamento = (new DateTime($dataPedido->format('Y-m-d H:i:s')))->modify('+15 minutes');
     $tempoEntrega = (clone $tempoCancelamento)->modify('+' . ($estimativaEntrega / 1000 / 60) . ' minutes')->format('Y-m-d H:i:s');
 
-    // Calcular o tempo total do processo para pedidos finalizados
+    // Calcular o tempo total do processo para pedidos finalizados, recusados e cancelados
     $tempoDuracao = '';
-    if ($status_final === 7 && !empty($row['data_finalizacao'])) {
+    if (in_array($status_final, [3, 4, 7]) && !empty($row['data_finalizacao'])) {
         $dataFinalizacao = new DateTime($row['data_finalizacao']);
         $intervalo = $dataPedido->diff($dataFinalizacao);
         $tempoDuracao = sprintf('%02dh %02dm %02ds', $intervalo->h + ($intervalo->days * 24), $intervalo->i, $intervalo->s);
     }
 
+    $currentDateTime = new DateTime();
     $pedidoHTML = "
         <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' onclick=\"redirectToDetails(
             '{$row['num_pedido']}', 
@@ -122,11 +123,14 @@ while ($row = $result->fetch_assoc()) {
             <p>Data: {$dataFormatada}</p>
             <p>Valor Total: R$ " . number_format($total, 2, ',', '.') . "</p>";
 
-    if ($status_final !== 7) { // Oculta o tempo de recusa se o pedido estiver finalizado
+    if ($status_final !== 7 && $status_final !== 3 && $status_final !== 4) { // Exibe o tempo de recusa e entrega apenas para pedidos não finalizados, recusados ou cancelados
+        if ($currentDateTime < $tempoCancelamento) { // Exibe o tempo de recusa apenas se não expirou
+            $pedidoHTML .= "
+                <p>Tempo Restante para Recusar: <span class='cancel-countdown' data-end-time='{$tempoCancelamento->format('Y-m-d H:i:s')}'></span></p>";
+        }
         $pedidoHTML .= "
-            <p>Tempo Restante para Recusar: <span class='cancel-countdown' data-end-time='{$tempoCancelamento->format('Y-m-d H:i:s')}'></span></p>
             <p>Tempo Restante para Entrega: <span class='countdown' data-end-time='{$tempoEntrega}'></span></p>";
-    } else { // Exibe o tempo total do processo para pedidos finalizados
+    } elseif (in_array($status_final, [3, 4, 7])) { // Exibe o tempo total do processo para pedidos finalizados, recusados ou cancelados
         $pedidoHTML .= "
             <p>Tempo Total do Processo: <span>{$tempoDuracao}</span></p>";
     }

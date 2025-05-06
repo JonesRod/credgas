@@ -1,25 +1,90 @@
-<style>
+<?php
+session_start();
+include('../../../conexao.php'); // Conexão com o banco
+
+// Verificação de sessão
+if (!isset($_SESSION['id'])) {
+    header("Location: ../../../../index.php");
+    exit;
+}
+
+// Get user ID from session
+$id = filter_var($_SESSION['id'], FILTER_VALIDATE_INT);
+if (!$id) {
+    header("Location: ../../../../index.php");
+    exit;
+}
+
+// Fetch filters from GET parameters
+$num_pedido = isset($_GET['num_pedido']) ? $_GET['num_pedido'] : '';
+$data = isset($_GET['data']) ? $_GET['data'] : '';
+$status = isset($_GET['status']) ? $_GET['status'] : '';
+
+// Build query with filters
+$query = "SELECT * FROM pedidos WHERE id_cliente = ?";
+$params = [$id];
+$types = "i";
+
+if ($num_pedido) {
+    $query .= " AND num_pedido = ?";
+    $params[] = $num_pedido;
+    $types .= "i";
+}
+
+if ($data) {
+    $query .= " AND DATE(data) = ?";
+    $params[] = $data;
+    $types .= "s";
+}
+
+if ($status !== '') {
+    $query .= " AND status_cliente = ?";
+    $params[] = $status;
+    $types .= "i";
+}
+
+$query .= " ORDER BY num_pedido DESC";
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$result = $stmt->get_result();
+
+function formatDateTimeJS($dateString)
+{
+    if (empty($dateString)) {
+        return "Data não disponível";
+    }
+    try {
+        $date = new DateTime($dateString);
+        return $date->format('d/m/Y H:i');
+    } catch (Exception $e) {
+        return "Erro na data";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Pedidos</title>
+
+    <style>
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            /* Responsivo */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 10px;
-            /* Espaçamento entre os cards */
-
+            justify-content: center;
         }
 
         .card {
             border: 1px solid #ccc;
             border-radius: 5px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 200px;
-            /* Define uma altura mínima */
         }
 
         .card:hover {
@@ -48,13 +113,13 @@
         }
 
         .card.status-2 {
-            background-color: #90caf9;
-            /* Azul */
+            background-color: #ffcdd2;
+            /* Vermelho */
         }
 
         .card.status-2:hover {
-            background-color: #64b5f6;
-            /* Azul mais escuro */
+            background-color: #ef9a9a;
+            /* Vermelho mais escuro */
         }
 
         .card.status-3 {
@@ -63,16 +128,6 @@
         }
 
         .card.status-3:hover {
-            background-color: #ef9a9a;
-            /* Vermelho mais escuro */
-        }
-
-        .card.status-4 {
-            background-color: #ffcdd2;
-            /* Vermelho */
-        }
-
-        .card.status-4:hover {
             background-color: #ef9a9a;
             /* Vermelho mais escuro */
         }
@@ -176,73 +231,249 @@
                 flex-direction: column;
                 align-items: center;
             }
+        }
 
-            body {
-                font-size: 14px;
-            }
-
-            h1,
-            h2,
-            h3 {
-                font-size: 18px;
-            }
-
-            .cards-container {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            }
-
-            .card {
-                font-size: 14px;
-                padding: 10px;
-                max-width: 180px;
-                min-height: 180px;
+        @media (max-width: 380px) {
+            .filters {
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
-            }
-
-            .card h2 {
-                font-size: 16px;
-            }
-
-            .card p {
-                font-size: 12px;
+                align-items: center;
+                gap: 10px;
+                /* Espaçamento entre os elementos */
             }
 
             .filters input,
             .filters select,
-            .filters button {
-                font-size: 14px;
-                padding: 8px;
-            }
-
+            .filters button,
             .btn-voltar {
-                font-size: 14px;
-                padding: 8px 12px;
+                width: 100%;
+                /* Ocupa toda a largura disponível */
+                max-width: 300px;
+                /* Limita a largura máxima */
+                box-sizing: border-box;
+                /* Inclui padding e borda no tamanho total */
             }
-        }
 
-        h2.section-title {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .cards-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .section-divider {
-            width: 100%;
-            border: 1px solid #ccc;
-            margin: 20px 0;
-        }
-
-        .cancel-message {
-            color: red;
-            text-align: center;
+            .filters form {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
+
+    <script>
+        // Função para recarregar a página a cada 5 minutos
+        function refreshPage() {
+            setInterval(function () {
+                location.reload(); // Recarrega a página
+            }, 300000); // 300000 ms = 3 minutos
+        }
+    </script>
+</head>
+
+<body onload="refreshPage()">
+    <h1 class="title">Meus Pedidos</h1>
+    <div class="filters">
+        <form method="GET">
+            <a href="../cliente_home.php" class="btn-voltar">Voltar</a>
+            <input type="date" name="data" value="<?php echo htmlspecialchars($data); ?>">
+            <select name="status">
+                <option value="">Todos os Status</option>
+                <option value="0" <?php if ($status === 0)
+                    echo 'selected'; ?>>Aguardando confirmação</option>
+                <option value="1" <?php if ($status === 1)
+                    echo 'selected'; ?>>Pedido confirmado</option>
+                <option value="3" <?php if ($status === 3)
+                    echo 'selected'; ?>>Pedido recusado</option>
+                <option value="4" <?php if ($status === 4)
+                    echo 'selected'; ?>>Pedido cancelado</option>
+                <option value="5" <?php if ($status === 5)
+                    echo 'selected'; ?>>Pedido Pronto</option>
+                <option value="6" <?php if ($status === 6)
+                    echo 'selected'; ?>>Saui para entrega</option>
+                <option value="7" <?php if ($status === 7)
+                    echo 'selected'; ?>>Finalizado</option>
+            </select>
+            <input type="text" name="num_pedido" placeholder="Número do Pedido"
+                value="<?php echo htmlspecialchars($num_pedido); ?>">
+            <button type="submit">Filtrar</button>
+            <button type="button" onclick="window.location.href='meus_pedidos.php'">Carregar Todos</button>
+        </form>
+    </div>
+    <div class="cards-container">
+        <?php while ($row = $result->fetch_assoc()):
+            $valor = $row['valor_produtos'];
+            $saldo_usado = $row['saldo_usado'];
+            $taxa_crediario = $row['taxa_crediario'];
+            $frete = $row['valor_frete'];
+            $total = $valor + $frete - $saldo_usado + $taxa_crediario;
+
+            // Calculate end time for countdown
+            $pedido_time = new DateTime($row['data']);
+            $pedido_time->modify('+15 minutes');
+            $end_time = $pedido_time->format('Y-m-d H:i:s');
+            $status_class = "status-" . $row['status_cliente']; // Define a classe com base no status
+            ?>
+            <div class="card <?php echo $status_class; ?>"
+                onclick="redirectToDetails('<?php echo htmlspecialchars($row['num_pedido']); ?>', '<?php echo htmlspecialchars($row['id_parceiro']); ?>', '<?php echo htmlspecialchars($row['status_cliente']); ?>', '<?php echo htmlspecialchars($row['data']); ?>', '<?php echo htmlspecialchars($row['valor_produtos']); ?>')">
+                <?php
+                // Fetch partner details from the database
+                $id_parceiro = $row['id_parceiro'];
+
+                $query_parceiro = "SELECT * FROM meus_parceiros WHERE id = ?";
+                $stmt_parceiro = $mysqli->prepare($query_parceiro);
+                $stmt_parceiro->bind_param("i", $id_parceiro);
+                $stmt_parceiro->execute();
+                $result_parceiro = $stmt_parceiro->get_result();
+                $loja = $result_parceiro->fetch_assoc();
+                $logo = $loja['logo'];
+                $nomeFantasia = $loja['nomeFantasia'];
+                $estimativa_entrega = $loja['estimativa_entrega'];
+                $stmt_parceiro->close();
+                ?>
+                <p><img src="../../parceiros/arquivos/<?php echo $logo; ?>" alt="Logo"> <?php echo $nomeFantasia; ?></p>
+                <h2>Pedido #<?php echo htmlspecialchars($row['num_pedido']); ?></h2>
+                <h3 style="color:darkgreen;">Cód. para Retirada: <?php echo htmlspecialchars($row['codigo_retirada']); ?>
+                </h3>
+                <p><strong>Status do Pedido:</strong>
+                    <span
+                        style="color: <?php echo $row['status_cliente'] === 0 ? '#ff5722' : ($row['status_cliente'] === 1 ? 'green' : ($row['status_cliente'] === 2 ? 'red' : 'red')); ?>">
+                        <?php
+                        $status = $row['status_cliente'];
+                        if ($status == 0) {
+                            echo "Aguardando confirmação";
+                        } else if ($status == 1) {
+                            echo "Pedido confirmado";
+                        } else if ($status == 2) {
+                            echo "Pedido cancelado";
+                        } else if ($status == 3) {
+                            echo '<span style="color: red;">Pedido recusado</span>';
+                        } else {
+                            echo "Status desconhecido";
+                        }
+                        ?>
+                    </span>
+                </p>
+                <p><strong>Data:</strong> <?php echo htmlspecialchars(formatDateTimeJS($row['data'])); ?></p>
+                <p class="valor"><strong>Valor da compra: R$ </strong>
+                    <?php echo htmlspecialchars(number_format($total, 2, ',', '.')); ?></p>
+                <hr>
+                <p class="tempo-cancelar" style="color: red; display: none;"><strong>Tempo para cancelar:</strong>
+                    <span class="countdown" data-end-time="<?php echo $end_time; ?>"></span>
+                </p>
+                <?php if ($row['status_cliente'] != 1): ?>
+                    <p class="text-cancelar" style="color: red; display: none;">
+                        <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+                    </p>
+                <?php endif; ?>
+            </div>
+        <?php endwhile; ?>
+    </div>
+    <br>
+
+    <script>
+        // Função para redirecionar para a página de detalhes do pedido
+        function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
+            const form = document.createElement('form'); // Cria um formulário dinamicamente
+            form.method = 'POST';
+            form.action = 'detalhes_pedido.php';
+
+            // Campos a serem enviados no formulário
+            const fields = {
+                num_pedido: num_pedido,
+                id_parceiro: id_parceiro,
+                status_cliente: status_cliente,
+                data: data,
+                valor: valor
+            };
+
+            // Adiciona os campos como inputs ocultos no formulário
+            for (const key in fields) {
+                if (fields.hasOwnProperty(key)) {
+                    const hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = key;
+                    hiddenField.value = fields[key];
+                    form.appendChild(hiddenField);
+                }
+            }
+
+            document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
+            form.submit(); // Submete o formulário
+        }
+
+        // Função para iniciar a contagem regressiva
+        function startCountdown(element, endTime, estimativaEntrega) {
+            let interval;
+
+            // Atualiza a contagem regressiva a cada segundo
+            function updateCountdown() {
+                const now = new Date().getTime(); // Obtém o timestamp atual
+                const distance = endTime - now; // Calcula o tempo restante
+
+                if (distance > 0) {
+                    // Calcula minutos e segundos restantes
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
+
+                    const tempoCancelar = element.closest('.tempo-cancelar');
+                    if (tempoCancelar) {
+                        tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar"
+                    }
+                } else {
+                    // Quando o tempo expira, para o intervalo e ajusta a exibição
+                    clearInterval(interval);
+
+                    const tempoCancelar = element.closest('.tempo-cancelar');
+                    if (tempoCancelar) {
+                        tempoCancelar.style.display = "none";
+                    }
+
+                    // Verifica se o tempo de cancelamento expirou
+                    const tempoEntregaMais15Min = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega
+                    const card = element.closest('.card');
+                    if (now > tempoEntregaMais15Min && card) {
+                        const textCancelar = card.querySelector('.text-cancelar');
+                        if (textCancelar) {
+                            textCancelar.style.display = "block"; // Mostra o texto de cancelamento
+                        }
+                    }
+                }
+            }
+
+            updateCountdown(); // Atualiza a contagem imediatamente
+            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const countdownElements = document.querySelectorAll('.countdown');
+
+            // Converte a estimativa de entrega para milissegundos
+            const estimativaEntrega = new Date(<?php echo json_encode($estimativa_entrega); ?>).getTime();
+
+            countdownElements.forEach(function (element) {
+                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
+                if (!isNaN(endTime)) {
+                    startCountdown(element, endTime, estimativaEntrega); // Chama a função startCountdown
+                }
+            });
+
+            // Garante que os elementos estejam inicialmente ocultos
+            document.querySelectorAll('.text-cancelar').forEach(function (element) {
+                if (element) {
+                    element.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
+
+<?php
+$stmt->close();
+$mysqli->close();
+?>
