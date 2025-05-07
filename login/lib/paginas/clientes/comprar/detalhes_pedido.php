@@ -1,6 +1,6 @@
 <?php
-    //var_dump($_POST);
-    session_start();
+//var_dump($_POST);
+session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
 // Verifica se o usuário está logado
@@ -80,7 +80,8 @@ if ($result_cliente->num_rows > 0) {
 }
 
 $stmt_cliente->close();
-function formatDateTimeJS($dateString) {
+function formatDateTimeJS($dateString)
+{
     if (empty($dateString)) {
         return "Data não disponível";
     }
@@ -92,9 +93,13 @@ function formatDateTimeJS($dateString) {
     }
 }
 
+// Determina o status final com base no maior status entre cliente e parceiro
+$status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -108,10 +113,14 @@ function formatDateTimeJS($dateString) {
             color: #333;
         }
 
-        header, h1, h2, h3 {
+        header,
+        h1,
+        h2,
+        h3 {
             text-align: center;
             margin: 10px 0;
         }
+
         .end-parceiro {
             text-align: center;
             font-size: 14px;
@@ -138,7 +147,8 @@ function formatDateTimeJS($dateString) {
             margin: 20px 0;
         }
 
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
@@ -170,14 +180,16 @@ function formatDateTimeJS($dateString) {
             margin: 10px 5px;
             font-size: 16px;
             color: #fff;
-            background-color: #dc3545; /* Cor vermelha */
+            background-color: #dc3545;
+            /* Cor vermelha */
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
         #bt_cancelar_pedido:hover {
-            background-color: #c82333; /* Vermelho mais escuro ao passar o mouse */
+            background-color: #c82333;
+            /* Vermelho mais escuro ao passar o mouse */
         }
 
         .cancel-timer {
@@ -205,7 +217,8 @@ function formatDateTimeJS($dateString) {
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 10px; /* Espaçamento entre os botões */
+            gap: 10px;
+            /* Espaçamento entre os botões */
             margin-top: 20px;
         }
 
@@ -214,7 +227,8 @@ function formatDateTimeJS($dateString) {
                 padding: 10px;
             }
 
-            table th, table td {
+            table th,
+            table td {
                 font-size: 12px;
                 padding: 4px;
             }
@@ -251,7 +265,9 @@ function formatDateTimeJS($dateString) {
                 font-size: 14px;
             }
 
-            h1, h2, h3 {
+            h1,
+            h2,
+            h3 {
                 font-size: 18px;
             }
 
@@ -261,18 +277,21 @@ function formatDateTimeJS($dateString) {
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Detalhes do Pedido</h1>
         <hr>
-        <img src="<?php echo '../../parceiros/arquivos/'.$logo; ?>" alt="Logo" style="width: 100px; height: auto;">
+        <img src="<?php echo '../../parceiros/arquivos/' . $logo; ?>" alt="Logo" style="width: 100px; height: auto;">
         <h2><?php echo $nomeFantasia; ?></h2>
         <p class="end-parceiro">
-            <?php echo $loja['endereco'] != '' ? $loja['endereco'] : 'Endereço não disponível'; ?>, 
+            <?php echo $loja['endereco'] != '' ? $loja['endereco'] : 'Endereço não disponível'; ?>,
             <?php echo $loja['numero'] != '' ? $loja['numero'] : 'Número não disponível'; ?>,
             <?php echo $loja['bairro'] != '' ? $loja['bairro'] : 'Bairro não disponível'; ?>.
         </p>
-        <p class="end-parceiro">Contato: <?php echo $loja['telefoneComercial'] != '' ? $loja['telefoneComercial'] : 'Contato não disponível'; ?>.</p>
+        <p class="end-parceiro">Contato:
+            <?php echo $loja['telefoneComercial'] != '' ? $loja['telefoneComercial'] : 'Contato não disponível'; ?>.
+        </p>
         <hr>
         <h2>Pedido #<?php echo $num_pedido; ?></h2>
         <p style="color:darkgreen;">
@@ -281,20 +300,31 @@ function formatDateTimeJS($dateString) {
             </strong>
         </p>
         <p><strong>Data do pedido:</strong> <?php echo htmlspecialchars(formatDateTimeJS($pedido['data'])); ?></p>
-        <p><strong>Status do Pedido:</strong> 
-            <span style="color: <?php echo $pedido['status_cliente'] === 0 ? '#ff5722' : ($pedido['status_cliente'] === 1 ? 'green' : ($pedido['status_cliente'] === 2 ? 'red' : ($pedido['status_cliente'] === 3 ? 'blue' : 'gray'))); ?>">
-                <?php 
-                    if ($pedido['status_cliente'] == 0) {
-                        echo "Aguardando Confirmação.";
-                    } elseif ($pedido['status_cliente'] == 1) {
-                        echo "Pedido Confirmado.";
-                    } elseif ($pedido['status_cliente'] == 2) {
-                        echo "Pedido Cancelado!";
-                    } elseif ($pedido['status_cliente'] == 3) {
-                        echo "Pedido Entregue.";
+        <p><strong>Status do Pedido:</strong>
+            <span
+                style="color: <?php echo $status_final === 0 ? '#ff5722' : ($status_final === 1 ? 'green' : ($status_final === 3 || $status_final === 4 ? 'red' : ($status_final === 5 ? 'orange' : ($status_final === 6 ? 'blue' : 'gray')))); ?>">
+                <?php
+                if ($status_final == 0) {
+                    echo "Aguardando Confirmação.";
+                } elseif ($status_final == 1) {
+                    echo "Pedido Confirmado.";
+                } elseif ($status_final == 3) {
+                    echo "Pedido Recusado.";
+                } elseif ($status_final == 4) {
+                    echo "Pedido Cancelado!";
+                } elseif ($status_final == 5) {
+                    echo "Pedido em Preparação.";
+                } elseif ($status_final == 6) {
+                    if ($tipo_entrega == 'entregar') {
+                        echo "Pedido pronto para entregar.";
                     } else {
-                        echo "Pedido Cancelado.";
+                        echo "Pedido pronto para retirar.";
                     }
+                } elseif ($status_final == 7) {
+                    echo "Pedido Entregue.";
+                } else {
+                    echo "Status Desconhecido.";
+                }
                 ?>
             </span>
         </p>
@@ -310,7 +340,7 @@ function formatDateTimeJS($dateString) {
                 </tr>
             </thead>
             <tbody>
-                <?php 
+                <?php
                 $produtos = explode('|', $pedido['produtos']);
                 foreach ($produtos as $produto) {
                     list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
@@ -324,190 +354,195 @@ function formatDateTimeJS($dateString) {
                 ?>
             </tbody>
         </table>
-        <p id="valor_vista" class="valores"><strong>Total:</strong> R$ <?php echo number_format($valor_a_vista, 2, ',', '.'); ?></p>
+        <p id="valor_vista" class="valores"><strong>Valor Total dos Produtos:</strong> R$
+            <?php echo number_format($valor_a_vista, 2, ',', '.'); ?>
+        </p>
         <?php
-            if ($frete != 0 && $tipo_entrega == 'entregar') {
-                echo "<p id='frete' class='valores'><strong>Frete:</strong> R$ " . number_format($frete, 2, ',', '.') . "</p>";
-            }else {
-                echo "<p id='frete' class='valores'><strong></strong>Frete Grátis</p>";
-            }
+        if ($frete != 0 && $tipo_entrega == 'entregar') {
+            echo "<p id='frete' class='valores'><strong>Frete:</strong> R$ " . number_format($frete, 2, ',', '.') . "</p>";
+        } else {
+            echo "<p id='frete' class='valores' style='color: green;'><strong>Frete Grátis</strong></p>";
+        }
         ?>
         <?php
-            if ($saldo_usado != 0) {
-                echo "<p id='saldo_usado' class='valores'><strong>Saldo Utilzado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
-            } else {
-                echo "<p id='saldo_usado' class='valores' style='display: none;'><strong></strong>saldo_usado: 0,00</p>";
-            }
+        if ($saldo_usado != 0) {
+            echo "<p id='saldo_usado' class='valores'><strong>Saldo Utilzado:</strong> - R$ " . number_format($saldo_usado, 2, ',', '.') . "</p>";
+        } else {
+            echo "<p id='saldo_usado' class='valores' style='display: none;'><strong></strong>saldo_usado: 0,00</p>";
+        }
         ?>
         <?php
-            if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
-                echo "<p id='taxa_crediario' class='valores'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
-            } else {
-                echo "<p id='taxa_crediario' class='valores' style='display: none;'><strong></strong>Taxa: Grátis</p>";
-            }
+        if ($taxa_crediario != 0 && $formato_compra == 'crediario') {
+            echo "<p id='taxa_crediario' class='valores'><strong>Taxa:</strong> R$ " . number_format($taxa_crediario, 2, ',', '.') . "</p>";
+        } else {
+            echo "<p id='taxa_crediario' class='valores' style='display: none;'><strong></strong>Taxa: Grátis</p>";
+        }
         ?>
-        <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$ <?php echo number_format($total, 2, ',', '.'); ?></p>
+        <p id="valor_total" class="valores"><strong>Valor Total:</strong> R$
+            <?php echo number_format($total, 2, ',', '.'); ?>
+        </p>
         <hr>
         <h3>Status de Pagamento</h3>
         <p>
-            <?php 
-                if ($formato_compra == 'crediario') {
-                    echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
-                } elseif ($formato_compra == 'online') {
-                    echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
-                } elseif ($formato_compra == 'retirar') {
-                    echo "<p><strong>Pagamento: <span>Na Retirada.</span></p></strong></p>";
-                } else {
-                    echo "<p><strong>Pagamento: <span>Na Entrega.</span></p></strong></p>";
-                }
+            <?php
+            if ($formato_compra == 'crediario') {
+                echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
+            } elseif ($formato_compra == 'online') {
+                echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
+            } elseif ($formato_compra == 'retirar') {
+                echo "<p><strong>Pagamento: <span>Na Retirada.</span></p></strong></p>";
+            } else {
+                echo "<p><strong>Pagamento: <span>Na Entrega.</span></p></strong></p>";
+            }
             ?>
         </p>
         <hr>
         <h3>Forma de Entrega</h3>
         <p><strong>Tipo de Entrega:</strong>
             <?php
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo "Entregar em casa.";
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo "Retirar no loja.";
-                } else {
-                    echo "Retirar na loja.";
-                }
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo "Entregar em casa.";
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo "Retirar no loja.";
+            } else {
+                echo "Retirar na loja.";
+            }
             ?>
         </p>
-        <p>AV/RUA: 
-            <?php 
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo $pedido['endereco_entrega'] != '' ? $pedido['endereco_entrega'] : $cliente['endereco'];
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo $loja['endereco'];
-                }
+        <p>AV/RUA:
+            <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['endereco_entrega'] != '' ? $pedido['endereco_entrega'] : $cliente['endereco'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $loja['endereco'];
+            }
             ?>
         </p>
-        <p>Nº: 
-            <?php 
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo $pedido['num_entrega'] != '' ? $pedido['num_entrega'] : $cliente['numero'];
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo $loja['numero'];
-                }
+        <p>Nº:
+            <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['num_entrega'] != '' ? $pedido['num_entrega'] : $cliente['numero'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $loja['numero'];
+            }
             ?>
         </p>
-        <p>BAIRRO: 
-            <?php 
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo $pedido['bairro_entrega'] != '' ? $pedido['bairro_entrega'] : $cliente['bairro'];
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo $loja['bairro'];
-                }
+        <p>BAIRRO:
+            <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['bairro_entrega'] != '' ? $pedido['bairro_entrega'] : $cliente['bairro'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $loja['bairro'];
+            }
             ?>
         </p>
-        <p>CIDADE/UF: 
-            <?php 
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo $pedido['bairro_entrega'] != '' ? $cliente['cidade'].'/'.$cliente['uf'].', CEP: '. $cliente['cep'] : $cliente['cidade'].'/'.$cliente['uf'] . ', CEP: ' . $cliente['cep'];
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo $loja['cidade'].'/'.$loja['estado'].', CEP: '. $loja['cep'];
-                }
+        <p>CIDADE/UF:
+            <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['bairro_entrega'] != '' ? $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'] : $cliente['cidade'] . '/' . $cliente['uf'] . ', CEP: ' . $cliente['cep'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $loja['cidade'] . '/' . $loja['estado'] . ', CEP: ' . $loja['cep'];
+            }
             ?>
         </p>
-        <p>CONTATO: 
-            <?php 
-                if ($pedido['tipo_entrega'] == 'entregar') {
-                    echo $pedido['contato_recebedor'] != '' ? $pedido['contato_recebedor'] : $cliente['celular1'];
-                } elseif ($pedido['tipo_entrega'] == 'buscar') {
-                    echo $loja['telefoneComercial'];
-                }
+        <p>CONTATO:
+            <?php
+            if ($pedido['tipo_entrega'] == 'entregar') {
+                echo $pedido['contato_recebedor'] != '' ? $pedido['contato_recebedor'] : $cliente['celular1'];
+            } elseif ($pedido['tipo_entrega'] == 'buscar') {
+                echo $loja['telefoneComercial'];
+            }
             ?>
         </p>
         <p>COMENTÁRIO: </p>
         <textarea name="comentario" id="comentario"><?php echo $pedido['comentario']; ?></textarea>
         <hr>
         <p id="tempo-cancelar" class="cancel-timer" style="color: red; display: none;">
-            <strong>Tempo para cancelar:</strong> 
+            <strong>Tempo para cancelar:</strong>
             <span id="countdown" data-end-time="<?php echo $end_time; ?>"></span>
         </p>
         <?php if ($pedido['status_cliente'] != 1): // Não mostrar se o pedido estiver confirmado ?>
-        <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
-            <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
-        </p>
+            <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
+                <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+            </p>
         <?php endif; ?>
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
             <?php if ($pedido['status_cliente'] != 1): // Mostrar botão de cancelar apenas se o pedido não estiver confirmado ?>
-            <button id="bt_cancelar_pedido" style="display: none;" onclick="">Cancelar pedido</button>
+                <button id="bt_cancelar_pedido" style="display: none;" onclick="">Cancelar pedido</button>
             <?php endif; ?>
         </div>
     </div>
 </body>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Seleciona o elemento com a classe 'countdown'.
-            const countdownElement = document.querySelector('#countdown');
-            if (countdownElement) {
-                const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
-                startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
-            }
-
-            // Garante que os elementos estejam inicialmente ocultos, se existirem.
-            const textCancelar = document.getElementById('text-cancelar');
-            const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-            if (textCancelar) textCancelar.style.display = "none";
-            if (btCancelarPedido) btCancelarPedido.style.display = "none";
-        });
-
-        /**
-         * Inicia a contagem regressiva para o tempo de cancelamento.
-         * @param {HTMLElement} element - O elemento onde a contagem será exibida.
-         * @param {number} endTime - O timestamp do fim do tempo de cancelamento.
-         */
-        function startCountdown(element, endTime) {
-            let interval;
-
-            /**
-             * Atualiza a contagem regressiva a cada segundo.
-             */
-            function updateCountdown() {
-                const now = new Date().getTime(); // Obtém o timestamp atual.
-                const distance = endTime - now; // Calcula o tempo restante.
-
-                if (distance > 0) {
-                    // Calcula minutos e segundos restantes.
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-
-                    const tempoCancelar = document.getElementById('tempo-cancelar');
-                    const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-                    if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
-                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
-                } else {
-                    // Quando o tempo expira, para o intervalo e ajusta a exibição.
-                    clearInterval(interval);
-
-                    const tempoCancelar = document.getElementById('tempo-cancelar');
-                    if (tempoCancelar) tempoCancelar.style.display = "none";
-
-                    // Calcula os timestamps para as condições.
-                    const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
-                    const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
-
-                    // Verifica se já passaram 15 minutos.
-                    const now = new Date().getTime();
-                    const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-                    const textCancelar = document.getElementById('text-cancelar');
-                    if (now >= quinzeMinutos) {
-                        if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
-                        if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
-                    }
-                }
-            }
-
-            updateCountdown(); // Atualiza a contagem imediatamente.
-            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Seleciona o elemento com a classe 'countdown'.
+        const countdownElement = document.querySelector('#countdown');
+        if (countdownElement) {
+            const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
+            startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
         }
 
-    </script>
+        // Garante que os elementos estejam inicialmente ocultos, se existirem.
+        const textCancelar = document.getElementById('text-cancelar');
+        const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+        if (textCancelar) textCancelar.style.display = "none";
+        if (btCancelarPedido) btCancelarPedido.style.display = "none";
+    });
+
+    /**
+     * Inicia a contagem regressiva para o tempo de cancelamento.
+     * @param {HTMLElement} element - O elemento onde a contagem será exibida.
+     * @param {number} endTime - O timestamp do fim do tempo de cancelamento.
+     */
+    function startCountdown(element, endTime) {
+        let interval;
+
+        /**
+         * Atualiza a contagem regressiva a cada segundo.
+         */
+        function updateCountdown() {
+            const now = new Date().getTime(); // Obtém o timestamp atual.
+            const distance = endTime - now; // Calcula o tempo restante.
+
+            if (distance > 0) {
+                // Calcula minutos e segundos restantes.
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
+
+                const tempoCancelar = document.getElementById('tempo-cancelar');
+                const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
+                if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
+            } else {
+                // Quando o tempo expira, para o intervalo e ajusta a exibição.
+                clearInterval(interval);
+
+                const tempoCancelar = document.getElementById('tempo-cancelar');
+                if (tempoCancelar) tempoCancelar.style.display = "none";
+
+                // Calcula os timestamps para as condições.
+                const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
+                const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
+
+                // Verifica se já passaram 15 minutos.
+                const now = new Date().getTime();
+                const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                const textCancelar = document.getElementById('text-cancelar');
+                if (now >= quinzeMinutos) {
+                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
+                    if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
+                }
+            }
+        }
+
+        updateCountdown(); // Atualiza a contagem imediatamente.
+        interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
+    }
+
+</script>
+
 </html>
 <?php
 

@@ -32,34 +32,18 @@ if ($result->num_rows > 0) {
     $pedido = $result->fetch_assoc();
     $motivo_recusa = $pedido['motivo_cancelamento'];
     $produtos = explode('|', $pedido['produtos']);
-    $produtos_confirmados = !empty($pedido['produtos_confirmados']) ? explode('|', $pedido['produtos_confirmados']) : [];
     $frete = $pedido['valor_frete'];
     $saldo_usado = $pedido['saldo_usado'];
 
-    // Mapeia os produtos confirmados
-    $produtos_confirmados_map = [];
-    foreach ($produtos_confirmados as $produto_confirmado) {
-        list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto_confirmado);
-        $produtos_confirmados_map[$nome] = [
-            'quantidade' => (float) $quantidade,
-            'valor_unitario' => (float) $valor_unitario,
-            'valor_total' => (float) $valor_total,
-        ];
-    }
-
-    // Calcula o total apenas dos produtos confirmados
-    $valor_total_produtos_confirmados = array_reduce($produtos_confirmados_map, function ($carry, $produto) {
-        return $carry + $produto['valor_total'];
+    // Calcula o total dos produtos listados
+    $valor_total_produtos = array_reduce($produtos, function ($carry, $produto) {
+        list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
+        return $carry + (float) $valor_total;
     }, 0.0);
 
-    // Se nenhum produto foi confirmado, o valor total será 0
-    if ($valor_total_produtos_confirmados == 0) {
-        $valor_total = 0;
-        $exibir_frete_saldo = false;
-    } else {
-        $valor_total = $valor_total_produtos_confirmados + $frete - $saldo_usado;
-        $exibir_frete_saldo = true;
-    }
+    // Calcula o valor total geral
+    $valor_total = $valor_total_produtos + $frete - $saldo_usado;
+    $exibir_frete_saldo = $valor_total_produtos > 0 || $frete > 0 || $saldo_usado > 0;
 
     // Calcula o tempo que durou para recusar o pedido usando data_finalizacao
     $dataPedido = new DateTime($pedido['data']);
@@ -236,28 +220,18 @@ $mysqli->close();
                 <?php foreach ($produtos as $produto): ?>
                     <?php
                     list($nome, $quantidade_listada, $valor_unitario, $total_listado) = explode('/', $produto);
-                    $is_confirmed = isset($produtos_confirmados_map[$nome]);
-                    $confirmed_quantity = $is_confirmed ? $produtos_confirmados_map[$nome]['quantidade'] : $quantidade_listada;
-                    $confirmed_total = $is_confirmed ? $produtos_confirmados_map[$nome]['valor_total'] : $total_listado;
-
-                    // Define a cor da linha com base na confirmação e quantidade
-                    if (!$is_confirmed) {
-                        $row_color = 'red'; // Produto não confirmado
-                    } elseif ($confirmed_quantity < $quantidade_listada) {
-                        $row_color = 'orange'; // Quantidade confirmada menor que a escolhida pelo cliente
-                    } else {
-                        $row_color = 'green'; // Quantidade confirmada igual à escolhida pelo cliente
-                    }
                     ?>
-                    <tr style="color: <?php echo $row_color; ?>;">
+                    <tr>
                         <td><?php echo htmlspecialchars($nome); ?></td>
-                        <td><?php echo htmlspecialchars($confirmed_quantity); ?></td>
+                        <td><?php echo htmlspecialchars($quantidade_listada); ?></td>
                         <td>R$ <?php echo number_format($valor_unitario, 2, ',', '.'); ?></td>
-                        <td>R$ <?php echo number_format($confirmed_total, 2, ',', '.'); ?></td>
+                        <td>R$ <?php echo number_format($total_listado, 2, ',', '.'); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <p class="valores"><strong>Valor Total dos Produtos:</strong> R$
+            <?php echo number_format($valor_total_produtos, 2, ',', '.'); ?></p>
         <?php if ($exibir_frete_saldo): ?>
             <?php if ($frete == 0): ?>
                 <p class="valores" style="color: green;"><strong>Frete:</strong> Frete Grátis</p>
@@ -270,7 +244,8 @@ $mysqli->close();
                 </p>
             <?php endif; ?>
         <?php endif; ?>
-        <p class="valores">Valor Total: R$ <?php echo number_format($valor_total, 2, ',', '.'); ?></p>
+        <p class="valores"><strong>Valor Total Geral:</strong> R$
+            <?php echo number_format($valor_total, 2, ',', '.'); ?></p>
         <button onclick="window.location.href='pedidos.php';">Voltar</button>
     </div>
 </body>

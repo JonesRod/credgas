@@ -392,13 +392,13 @@ while ($row = $result->fetch_assoc()) {
                     $status_final = $pedido['status_final'];
                     $total = $pedido['valor_produtos'] + $pedido['valor_frete'] - $pedido['saldo_usado'] + $pedido['taxa_crediario'];
                     ?>
-                    <div class="card status-<?php echo $status_final; ?>" 
-                         onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
-                         style="background-color: <?php
-                            echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
-                                (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
-                                    (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
-                            ?>;">
+                    <div class="card status-<?php echo $status_final; ?>"
+                        onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
+                        style="background-color: <?php
+                        echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
+                            (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                                (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
+                        ?>;">
                         <h2>Pedido #<?php echo htmlspecialchars($pedido['num_pedido']); ?></h2>
                         <p><strong>Status:</strong>
                             <span style="color: <?php
@@ -450,13 +450,13 @@ while ($row = $result->fetch_assoc()) {
                     $status_final = $pedido['status_final'];
                     $total = $pedido['valor_produtos'] + $pedido['valor_frete'] - $pedido['saldo_usado'] + $pedido['taxa_crediario'];
                     ?>
-                    <div class="card status-<?php echo $status_final; ?>" 
-                         onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
-                         style="background-color: <?php
-                            echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
-                                (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
-                                    (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
-                            ?>;">
+                    <div class="card status-<?php echo $status_final; ?>"
+                        onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
+                        style="background-color: <?php
+                        echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
+                            (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                                (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
+                        ?>;">
                         <h2>Pedido #<?php echo htmlspecialchars($pedido['num_pedido']); ?></h2>
                         <p><strong>Status:</strong>
                             <span style="color: <?php

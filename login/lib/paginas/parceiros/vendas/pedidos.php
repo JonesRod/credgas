@@ -349,7 +349,6 @@ while ($row = $result->fetch_assoc()) {
         <button type="submit">Filtrar</button>
         <button type="button" onclick="window.location.href='pedidos.php'">Carregar Todos</button>
     </form>
-    <hr> <!-- Linha horizontal para separar os filtros dos pedidos -->
 
     <?php
     // Renderiza os pedidos agrupados
