@@ -581,6 +581,14 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
 
                 const textCancelar = document.getElementById('text-cancelar');
                 if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
+
+                // Verifica se o pedido não foi finalizado até a estimativa de entrega + 15 minutos.
+                const estimativaEntrega = new Date("<?php echo $pedido['data_entrega']; ?>").getTime();
+                const quinzeMinutosDepois = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega.
+
+                if (now > quinzeMinutosDepois) {
+                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar novamente.
+                }
             }
         }
 

@@ -100,7 +100,7 @@ if ($result_parceiro->num_rows === 0) {
 }
 
 $loja = $result_parceiro->fetch_assoc();
-$tempo_entrega = round($loja['estimativa_entrega'] / 60000); // Converte milissegundos para minutos
+$tempo_entrega = round($loja['estimativa_entrega'] / 60000) + 15; // Converte milissegundos para minutos e adiciona 15 minutos
 $stmt_parceiro->close();
 
 // Inicializa a variável $tempo_entrega_restante
