@@ -96,6 +96,50 @@ function formatDateTimeJS($dateString)
 // Determina o status final com base no maior status entre cliente e parceiro
 $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
 
+// Determina quem recusou ou cancelou o pedido e a justificativa
+$quem_responsavel = '';
+$justificativa = '';
+if ($status_final == 3 || $status_final == 4) { // Status 3 = Recusado, Status 4 = Cancelado
+    if ($status_final == 3) {
+        $quem_responsavel = 'Parceiro';
+        $justificativa = isset($pedido['motivo_recusa']) ? $pedido['motivo_recusa'] : 'Motivo não informado.';
+    } elseif ($status_final == 4) {
+        if ($pedido['status_cliente'] > $pedido['status_parceiro']) {
+            $quem_responsavel = 'Cliente';
+        } else {
+            $quem_responsavel = 'Parceiro';
+        }
+        $justificativa = isset($pedido['motivo_cancelamento']) ? $pedido['motivo_cancelamento'] : 'Motivo não informado.';
+    }
+}
+
+// Calcula o tempo que durou o processo, se aplicável
+$tempo_duracao = '';
+if (in_array($status_final, [3, 4, 7])) { // Status 3 = Recusado, 4 = Cancelado, 7 = Entregue
+    $data_inicio = new DateTime($pedido['data']);
+    $data_fim = new DateTime($pedido['data_finalizacao']);
+    $intervalo = $data_inicio->diff($data_fim);
+
+    $horas = ($intervalo->d * 24) + $intervalo->h; // Converte dias em horas e soma com as horas
+    $minutos = $intervalo->i;
+
+    $tempo_duracao = $horas . ' hora(s) e ' . $minutos . ' minuto(s)';
+}
+
+// Calcula o tempo de duração do pedido até expirar
+$tempo_duracao_expiracao = '';
+if ($status_final == 0) { // Status 0 = Aguardando Confirmação
+    $data_inicio = new DateTime($pedido['data']);
+    $data_expiracao = clone $data_inicio;
+    $data_expiracao->modify('+15 minutes');
+    $intervalo = $data_inicio->diff($data_expiracao);
+
+    $horas = ($intervalo->d * 24) + $intervalo->h; // Converte dias em horas e soma com as horas
+    $minutos = $intervalo->i;
+
+    $tempo_duracao_expiracao = $horas . ' hora(s) e ' . $minutos . ' minuto(s)';
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -328,6 +372,17 @@ $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
                 ?>
             </span>
         </p>
+        <?php if (!empty($tempo_duracao_expiracao)): // Exibe o tempo de duração até expirar se aplicável ?>
+            <p><strong>Tempo de Duração até Expirar:</strong> <?php echo $tempo_duracao_expiracao; ?></p>
+        <?php endif; ?>
+        <?php if (!empty($tempo_duracao)): // Exibe o tempo de duração se aplicável ?>
+            <p><strong>Tempo de Duração:</strong> <?php echo $tempo_duracao; ?></p>
+        <?php endif; ?>
+        <?php if ($status_final == 3 || $status_final == 4): // Exibe quem recusou/cancelou e a justificativa ?>
+            <p><strong><?php echo $status_final == 3 ? 'Recusado pelo(a):' : 'Cancelado pelo(a):'; ?></strong>
+                <?php echo $quem_responsavel; ?></p>
+            <p><strong>Justificativa:</strong> <?php echo htmlspecialchars($justificativa); ?></p>
+        <?php endif; ?>
         <hr>
         <h3>Produtos</h3>
         <table>
@@ -463,12 +518,13 @@ $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
         </p>
         <?php if ($pedido['status_cliente'] != 1): // Não mostrar se o pedido estiver confirmado ?>
             <p id="text-cancelar" class="cancel-timer" style="color: red; display: none;">
-                <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong>
+                <!-- Mensagem oculta -->
+                <!-- <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong> -->
             </p>
         <?php endif; ?>
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
-            <?php if ($pedido['status_cliente'] != 1): // Mostrar botão de cancelar apenas se o pedido não estiver confirmado ?>
+            <?php if ($status_final !== 3 && $status_final !== 4): // Mostrar botão de cancelar apenas se o pedido não estiver recusado ou cancelado ?>
                 <button id="bt_cancelar_pedido" style="display: none;" onclick="">Cancelar pedido</button>
             <?php endif; ?>
         </div>
@@ -483,11 +539,9 @@ $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
             startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
         }
 
-        // Garante que os elementos estejam inicialmente ocultos, se existirem.
-        const textCancelar = document.getElementById('text-cancelar');
+        // Garante que os elementos estejam inicialmente visíveis.
         const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-        if (textCancelar) textCancelar.style.display = "none";
-        if (btCancelarPedido) btCancelarPedido.style.display = "none";
+        if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar inicialmente.
     });
 
     /**
@@ -514,7 +568,7 @@ $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
                 const tempoCancelar = document.getElementById('tempo-cancelar');
                 const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
                 if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
-                if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
+                if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Continua mostrando o botão de cancelar.
             } else {
                 // Quando o tempo expira, para o intervalo e ajusta a exibição.
                 clearInterval(interval);
@@ -522,25 +576,17 @@ $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
                 const tempoCancelar = document.getElementById('tempo-cancelar');
                 if (tempoCancelar) tempoCancelar.style.display = "none";
 
-                // Calcula os timestamps para as condições.
-                const pedidoTimestamp = new Date("<?php echo $pedido['data']; ?>").getTime();
-                const quinzeMinutos = pedidoTimestamp + 15 * 60 * 1000; // 15 minutos após o pedido.
-
-                // Verifica se já passaram 15 minutos.
-                const now = new Date().getTime();
                 const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                if (btCancelarPedido) btCancelarPedido.style.display = "none"; // Oculta o botão de cancelar após expirar.
+
                 const textCancelar = document.getElementById('text-cancelar');
-                if (now >= quinzeMinutos) {
-                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar.
-                    if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
-                }
+                if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
             }
         }
 
         updateCountdown(); // Atualiza a contagem imediatamente.
         interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
     }
-
 </script>
 
 </html>

@@ -20,30 +20,33 @@ $num_pedido = isset($_GET['num_pedido']) ? filter_var($_GET['num_pedido'], FILTE
 $data = isset($_GET['data']) ? filter_var($_GET['data'], FILTER_SANITIZE_STRING) : '';
 $status = isset($_GET['status']) ? filter_var($_GET['status'], FILTER_SANITIZE_NUMBER_INT) : '';
 
-// Build query with filters
-$query = "SELECT *, GREATEST(status_cliente, status_parceiro) AS status_final FROM pedidos WHERE id_cliente = ?";
+// Construção da consulta SQL corrigida para incluir a logo e o nome da loja
+$query = "SELECT p.*, GREATEST(p.status_cliente, p.status_parceiro) AS status_final, mp.logo, mp.nomeFantasia 
+          FROM pedidos p 
+          JOIN meus_parceiros mp ON p.id_parceiro = mp.id 
+          WHERE p.id_cliente = ?";
 $params = [$id];
 $types = "i";
 
 if (!empty($num_pedido)) {
-    $query .= " AND num_pedido = ?";
+    $query .= " AND p.num_pedido = ?";
     $params[] = $num_pedido;
     $types .= "i";
 }
 
 if (!empty($data)) {
-    $query .= " AND DATE(data) = ?";
+    $query .= " AND DATE(p.data) = ?";
     $params[] = $data;
     $types .= "s";
 }
 
 if ($status !== '' && is_numeric($status)) {
-    $query .= " AND GREATEST(status_cliente, status_parceiro) = ?";
+    $query .= " AND GREATEST(p.status_cliente, p.status_parceiro) = ?";
     $params[] = $status;
     $types .= "i";
 }
 
-$query .= " ORDER BY num_pedido DESC";
+$query .= " ORDER BY p.num_pedido DESC";
 $stmt = $mysqli->prepare($query);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
@@ -87,21 +90,18 @@ while ($row = $result->fetch_assoc()) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <title>Meus Pedidos</title>
-
     <style>
         /* Container principal dos cards */
         .cards-container {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            /* Reduz o espaçamento entre os cards */
             justify-content: center;
         }
 
@@ -117,7 +117,6 @@ while ($row = $result->fetch_assoc()) {
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             cursor: pointer;
             margin: 5px;
-            /* Reduz a margem ao redor dos cards */
         }
 
         .card:hover {
@@ -306,13 +305,12 @@ while ($row = $result->fetch_assoc()) {
             /* Ajusta o tamanho da fonte */
         }
     </style>
-
     <script>
         // Função para recarregar a página a cada 5 minutos
         function refreshPage() {
             setInterval(function () {
                 location.reload(); // Recarrega a página
-            }, 300000); // 300000 ms = 3 minutos
+            }, 300000); // 300000 ms = 5 minutos
         }
 
         // Função para redirecionar para a página de detalhes do pedido
@@ -399,6 +397,11 @@ while ($row = $result->fetch_assoc()) {
                             (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
                                 (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
                         ?>;">
+                        <div class="store-info">
+                            <img src="<?php echo '../../parceiros/arquivos/' . htmlspecialchars($pedido['logo']); ?>"
+                                alt="Logo da Loja">
+                            <span><?php echo htmlspecialchars($pedido['nomeFantasia']); ?></span>
+                        </div>
                         <h2>Pedido #<?php echo htmlspecialchars($pedido['num_pedido']); ?></h2>
                         <p><strong>Status:</strong>
                             <span style="color: <?php
@@ -457,6 +460,11 @@ while ($row = $result->fetch_assoc()) {
                             (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
                                 (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
                         ?>;">
+                        <div class="store-info">
+                            <img src="<?php echo '../../parceiros/arquivos/' . htmlspecialchars($pedido['logo']); ?>"
+                                alt="Logo da Loja">
+                            <span><?php echo htmlspecialchars($pedido['nomeFantasia']); ?></span>
+                        </div>
                         <h2>Pedido #<?php echo htmlspecialchars($pedido['num_pedido']); ?></h2>
                         <p><strong>Status:</strong>
                             <span style="color: <?php
@@ -504,7 +512,6 @@ while ($row = $result->fetch_assoc()) {
         ?>
     </div>
     <br>
-
     <script>
         // Função para iniciar a contagem regressiva
         function startCountdown(element, endTime, estimativaEntrega) {
@@ -574,7 +581,6 @@ while ($row = $result->fetch_assoc()) {
 </body>
 
 </html>
-
 <?php
 $stmt->close();
 $mysqli->close();
