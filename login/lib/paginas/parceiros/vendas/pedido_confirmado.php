@@ -791,6 +791,7 @@ function formatDateTimeJS($dateString)
         const motivo = document.getElementById('motivoCancelamento').value.trim();
         const popupContent = document.querySelector('#cancelPopup div');
         const botaoVoltar = popupContent.querySelector('button:first-of-type');
+        const botaoConfirmar = popupContent.querySelector('button:last-of-type');
         const mensagem = document.createElement('p');
         mensagem.style.marginBottom = '10px';
         mensagem.style.fontSize = '14px';
@@ -811,17 +812,17 @@ function formatDateTimeJS($dateString)
             popupContent.insertBefore(mensagem, botaoVoltar);
             return;
         }
-        console.log("dataHoraCliente:", dataHoraCliente); // Log da data e hora do cliente
+
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'cancelar_pedido.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        // Log dos dados enviados
         const dadosEnviados = `num_pedido=<?php echo $num_pedido; ?>&id_parceiro=<?php echo $id_parceiro; ?>&motivo_cancelamento=${encodeURIComponent(motivo)}&data_hora_cliente=${encodeURIComponent(dataHoraCliente)}`;
-        console.log("Dados enviados:", dadosEnviados);
+
+        // Desabilita todos os botões, incluindo os do popup
+        document.querySelectorAll('button').forEach(button => button.disabled = true);
 
         xhr.onload = function () {
-            //console.log("Resposta do servidor:", xhr.responseText); // Log da resposta do servidor
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (xhr.status === 200 && response.success) {
@@ -830,9 +831,14 @@ function formatDateTimeJS($dateString)
                     mensagem.classList.add('mensagem');
                     popupContent.insertBefore(mensagem, botaoVoltar);
 
-                    // Desabilita todos os botões
-                    document.querySelectorAll('button').forEach(button => button.disabled = true);
+                    // Atualiza o status do pedido para "Cancelado"
+                    const statusPedidoElement = document.querySelector('span[style*="Status do Pedido"]');
+                    if (statusPedidoElement) {
+                        statusPedidoElement.textContent = 'Cancelado';
+                        statusPedidoElement.style.color = 'red';
+                    }
 
+                    // Redireciona para a página de pedido cancelado
                     setTimeout(() => {
                         window.location.href = `pedido_cancelado.php?id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>`;
                     }, 2000);
@@ -840,19 +846,29 @@ function formatDateTimeJS($dateString)
                     mensagem.textContent = response.message || 'Erro ao cancelar o pedido.';
                     mensagem.classList.add('mensagem');
                     popupContent.insertBefore(mensagem, botaoVoltar);
+
+                    // Reabilita os botões em caso de erro
+                    document.querySelectorAll('button').forEach(button => button.disabled = false);
                 }
             } catch (e) {
-                //console.error("Erro ao processar a resposta do servidor:", e); // Log do erro no console
                 mensagem.textContent = 'Erro inesperado: resposta inválida do servidor.';
                 mensagem.classList.add('mensagem');
                 popupContent.insertBefore(mensagem, botaoVoltar);
+
+                // Reabilita os botões em caso de erro
+                document.querySelectorAll('button').forEach(button => button.disabled = false);
             }
         };
+
         xhr.onerror = function () {
             mensagem.textContent = 'Erro de conexão com o servidor.';
             mensagem.classList.add('mensagem');
             popupContent.insertBefore(mensagem, botaoVoltar);
+
+            // Reabilita os botões em caso de erro
+            document.querySelectorAll('button').forEach(button => button.disabled = false);
         };
+
         xhr.send(dadosEnviados);
     }
 
@@ -971,6 +987,20 @@ function formatDateTimeJS($dateString)
         };
         xhr.send('num_pedido=<?php echo $num_pedido; ?>&novo_status=7&codigo_retirada=' + encodeURIComponent(codigo));
     }
+
+    window.addEventListener('load', () => {
+        const scrollY = localStorage.getItem('scrollY');
+        if (scrollY !== null) {
+            window.scrollTo(0, parseInt(scrollY));
+            localStorage.removeItem('scrollY'); // limpa depois de usar
+        }
+    });
+
+    setInterval(() => {
+        const scrollPosition = window.scrollY;
+        localStorage.setItem('scrollY', scrollPosition);
+        location.reload();
+    }, 3000); // 3000 milissegundos = 3 segundos
 </script>
 
 </html>

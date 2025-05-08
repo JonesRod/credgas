@@ -15,6 +15,31 @@ if (!$id) {
     exit;
 }
 
+// Inicia o buffer de saída para evitar saída acidental
+ob_start();
+
+// Certifique-se de que não há saída HTML antes de processar o conteúdo
+if (headers_sent()) {
+    ob_end_clean();
+    header('Content-Type: application/json');
+    echo json_encode(['erro' => 'Saída inesperada detectada.']);
+    exit;
+}
+
+// Função para formatar datas no formato "d/m/Y H:i"
+function formatDateTimeJS($dateString)
+{
+    if (empty($dateString)) {
+        return "Data não disponível";
+    }
+    try {
+        $date = new DateTime($dateString);
+        return $date->format('d/m/Y H:i');
+    } catch (Exception $e) {
+        return "Erro na data";
+    }
+}
+
 // Fetch filters from GET parameters
 $num_pedido = isset($_GET['num_pedido']) ? filter_var($_GET['num_pedido'], FILTER_SANITIZE_NUMBER_INT) : '';
 $data = isset($_GET['data']) ? filter_var($_GET['data'], FILTER_SANITIZE_STRING) : '';
@@ -52,17 +77,12 @@ $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-function formatDateTimeJS($dateString)
-{
-    if (empty($dateString)) {
-        return "Data não disponível";
-    }
-    try {
-        $date = new DateTime($dateString);
-        return $date->format('d/m/Y H:i');
-    } catch (Exception $e) {
-        return "Erro na data";
-    }
+// Certifique-se de que não há saída HTML antes de processar o conteúdo
+if (headers_sent()) {
+    ob_end_clean();
+    header('Content-Type: application/json');
+    echo json_encode(['erro' => 'Saída inesperada detectada.']);
+    exit;
 }
 
 // Agrupamento por data
@@ -88,6 +108,14 @@ while ($row = $result->fetch_assoc()) {
         }
         $pedidosAgrupados['Outros'][$dataFormatada][] = $row;
     }
+}
+
+$stmt->close();
+$mysqli->close();
+
+// Limpa qualquer saída acidental antes de renderizar o HTML
+if (ob_get_length()) {
+    ob_end_clean();
 }
 ?>
 <!DOCTYPE html>
@@ -306,13 +334,6 @@ while ($row = $result->fetch_assoc()) {
         }
     </style>
     <script>
-        // Função para recarregar a página a cada 5 minutos
-        function refreshPage() {
-            setInterval(function () {
-                location.reload(); // Recarrega a página
-            }, 300000); // 300000 ms = 5 minutos
-        }
-
         // Função para redirecionar para a página de detalhes do pedido
         function redirectToDetails(num_pedido, id_parceiro, status_cliente, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
@@ -342,10 +363,26 @@ while ($row = $result->fetch_assoc()) {
             document.body.appendChild(form); // Adiciona o formulário ao corpo do documento
             form.submit(); // Submete o formulário
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const countdownElements = document.querySelectorAll('.countdown');
+
+            // Limpa o conteúdo dos elementos countdown
+            countdownElements.forEach(function (element) {
+                element.innerHTML = "";
+            });
+
+            // Garante que os elementos estejam inicialmente ocultos
+            document.querySelectorAll('.text-cancelar').forEach(function (element) {
+                if (element) {
+                    element.style.display = "none";
+                }
+            });
+        });
     </script>
 </head>
 
-<body onload="refreshPage()">
+<body>
     <h1 class="title">Meus Pedidos</h1>
     <div class="filters">
         <form method="GET">
@@ -512,76 +549,21 @@ while ($row = $result->fetch_assoc()) {
         ?>
     </div>
     <br>
-    <script>
-        // Função para iniciar a contagem regressiva
-        function startCountdown(element, endTime, estimativaEntrega) {
-            let interval;
-
-            // Atualiza a contagem regressiva a cada segundo
-            function updateCountdown() {
-                const now = new Date().getTime(); // Obtém o timestamp atual
-                const distance = endTime - now; // Calcula o tempo restante
-
-                if (distance > 0) {
-                    // Calcula minutos e segundos restantes
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
-
-                    const tempoCancelar = element.closest('.tempo-cancelar');
-                    if (tempoCancelar) {
-                        tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar"
-                    }
-                } else {
-                    // Quando o tempo expira, para o intervalo e ajusta a exibição
-                    clearInterval(interval);
-
-                    const tempoCancelar = element.closest('.tempo-cancelar');
-                    if (tempoCancelar) {
-                        tempoCancelar.style.display = "none";
-                    }
-
-                    // Verifica se o tempo de cancelamento expirou
-                    const tempoEntregaMais15Min = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega
-                    const card = element.closest('.card');
-                    if (now > tempoEntregaMais15Min && card) {
-                        const textCancelar = card.querySelector('.text-cancelar');
-                        if (textCancelar) {
-                            textCancelar.style.display = "block"; // Mostra o texto de cancelamento
-                        }
-                    }
-                }
-            }
-
-            updateCountdown(); // Atualiza a contagem imediatamente
-            interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const countdownElements = document.querySelectorAll('.countdown');
-
-            // Converte a estimativa de entrega para milissegundos
-            const estimativaEntrega = new Date(<?php echo json_encode($estimativa_entrega); ?>).getTime();
-
-            countdownElements.forEach(function (element) {
-                const endTime = new Date(element.getAttribute('data-end-time')).getTime();
-                if (!isNaN(endTime)) {
-                    startCountdown(element, endTime, estimativaEntrega); // Chama a função startCountdown
-                }
-            });
-
-            // Garante que os elementos estejam inicialmente ocultos
-            document.querySelectorAll('.text-cancelar').forEach(function (element) {
-                if (element) {
-                    element.style.display = "none";
-                }
-            });
-        });
-    </script>
 </body>
+<script>
+    window.addEventListener('load', () => {
+        const scrollY = localStorage.getItem('scrollY');
+        if (scrollY !== null) {
+            window.scrollTo(0, parseInt(scrollY));
+            localStorage.removeItem('scrollY'); // limpa depois de usar
+        }
+    });
+
+    setInterval(() => {
+        const scrollPosition = window.scrollY;
+        localStorage.setItem('scrollY', scrollPosition);
+        location.reload();
+    }, 3000); // 3000 milissegundos = 3 segundos
+</script>
 
 </html>
-<?php
-$stmt->close();
-$mysqli->close();
-?>

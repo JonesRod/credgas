@@ -464,6 +464,20 @@ while ($row = $result->fetch_assoc()) {
                 }
             });
         });
+
+        /*window.addEventListener('load', () => {
+            const scrollY = localStorage.getItem('scrollY');
+            if (scrollY !== null) {
+                window.scrollTo(0, parseInt(scrollY));
+                localStorage.removeItem('scrollY'); // limpa depois de usar
+            }
+        });
+
+        setInterval(() => {
+            const scrollPosition = window.scrollY;
+            localStorage.setItem('scrollY', scrollPosition);
+            location.reload();
+        }, 3000); // 3000 milissegundos = 3 segundos*/
     </script>
 </body>
 

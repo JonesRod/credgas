@@ -1,24 +1,23 @@
 <?php
-//var_dump($_POST);
 session_start();
 include('../../../conexao.php'); // Conexão com o banco
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['id'])) {
-    header("Location: ../../../../index.php");
+    header('Content-Type: application/json');
+    echo json_encode(['erro' => 'Usuário não autenticado.']);
     exit;
 }
 
 // Verifica se o ID do pedido foi enviado
 if (!isset($_POST['num_pedido'])) {
-    header("Location: ../../../../index.php");
+    header('Content-Type: application/json');
+    echo json_encode(['erro' => 'Número do pedido não fornecido.']);
     exit;
 }
 
-// Obtém o ID do cliente logado
+// Obtém o ID do cliente logado e o número do pedido
 $id_cliente = $_SESSION['id'];
-
-// Obtém o ID do pedido enviado via POST
 $num_pedido = $_POST['num_pedido'];
 
 // Consulta para buscar os dados do pedido
@@ -27,23 +26,17 @@ $stmt = $mysqli->prepare($query);
 $stmt->bind_param("ii", $id_cliente, $num_pedido);
 $stmt->execute();
 $result = $stmt->get_result();
+$pedido = $result->fetch_assoc();
 
-if ($result->num_rows > 0) {
-    $pedido = $result->fetch_assoc();
-    $status_parceiro = $pedido['status_parceiro'];
-    $valor_a_vista = $pedido['valor_produtos'];
-    $taxa_crediario = $pedido['taxa_crediario'];
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
-    $total = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
-    $tipo_entrega = $pedido['tipo_entrega'];
-    //echo $status_parceiro;
-} else {
-    echo "Pedido não encontrado.";
-    exit;
-}
+
+$status_parceiro = $pedido['status_parceiro'];
+$valor_a_vista = $pedido['valor_produtos'];
+$taxa_crediario = $pedido['taxa_crediario'];
+$frete = $pedido['valor_frete'];
+$saldo_usado = $pedido['saldo_usado'];
+$total = $valor_a_vista + $frete + $taxa_crediario - $saldo_usado;
+$tipo_entrega = $pedido['tipo_entrega'];
 $formato_compra = $pedido['formato_compra'];
-//echo $formato_compra;
 
 // Calculate end time for countdown
 $pedido_time = new DateTime($pedido['data']);
@@ -373,15 +366,17 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
             </span>
         </p>
         <?php if (!empty($tempo_duracao_expiracao)): // Exibe o tempo de duração até expirar se aplicável ?>
-            <p><strong>Tempo de Duração até Expirar:</strong> <?php echo $tempo_duracao_expiracao; ?></p>
+            <p data-tempo-duracao><strong>Tempo de Duração até Expirar:</strong> <?php echo $tempo_duracao_expiracao; ?></p>
         <?php endif; ?>
         <?php if (!empty($tempo_duracao)): // Exibe o tempo de duração se aplicável ?>
-            <p><strong>Tempo de Duração:</strong> <?php echo $tempo_duracao; ?></p>
+            <p data-tempo-duracao><strong>Tempo de Duração:</strong> <?php echo $tempo_duracao; ?></p>
         <?php endif; ?>
         <?php if ($status_final == 3 || $status_final == 4): // Exibe quem recusou/cancelou e a justificativa ?>
-            <p><strong><?php echo $status_final == 3 ? 'Recusado pelo(a):' : 'Cancelado pelo(a):'; ?></strong>
-                <?php echo $quem_responsavel; ?></p>
-            <p><strong>Justificativa:</strong> <?php echo htmlspecialchars($justificativa); ?></p>
+            <p data-quem-responsavel>
+                <strong><?php echo $status_final == 3 ? 'Recusado pelo(a):' : 'Cancelado pelo(a):'; ?></strong>
+                <?php echo $quem_responsavel; ?>
+            </p>
+            <p data-justificativa><strong>Justificativa:</strong> <?php echo htmlspecialchars($justificativa); ?></p>
         <?php endif; ?>
         <hr>
         <h3>Produtos</h3>
@@ -522,6 +517,9 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
                 <!-- <strong>O tempo de resposta expirou. Você pode cancelar sua compra!</strong> -->
             </p>
         <?php endif; ?>
+        <div id="atraso-entrega" style="display: none; color: red; text-align: center; margin-top: 20px;">
+            <strong>A entrega está atrasada. Você pode cancelar o pedido, se desejar.</strong>
+        </div>
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar para os Pedidos</button>
             <?php if ($status_final !== 3 && $status_final !== 4): // Mostrar botão de cancelar apenas se o pedido não estiver recusado ou cancelado ?>
@@ -532,16 +530,21 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Seleciona o elemento com a classe 'countdown'.
         const countdownElement = document.querySelector('#countdown');
         if (countdownElement) {
-            const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime(); // Obtém o timestamp de fim.
-            startCountdown(countdownElement, endTime); // Inicia a contagem regressiva.
+            const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime();
+            startCountdown(countdownElement, endTime);
         }
 
-        // Garante que os elementos estejam inicialmente visíveis.
         const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-        if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar inicialmente.
+        if (btCancelarPedido) btCancelarPedido.style.display = "block";
+
+        // Oculta a mensagem de atraso se o pedido for cancelado ou recusado
+        const statusFinal = <?php echo $status_final; ?>;
+        if (statusFinal === 3 || statusFinal === 4) {
+            const atrasoEntrega = document.getElementById('atraso-entrega');
+            if (atrasoEntrega) atrasoEntrega.style.display = "none";
+        }
     });
 
     /**
@@ -552,49 +555,58 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
     function startCountdown(element, endTime) {
         let interval;
 
-        /**
-         * Atualiza a contagem regressiva a cada segundo.
-         */
         function updateCountdown() {
-            const now = new Date().getTime(); // Obtém o timestamp atual.
-            const distance = endTime - now; // Calcula o tempo restante.
+            const now = new Date().getTime();
+            const distance = endTime - now;
 
             if (distance > 0) {
-                // Calcula minutos e segundos restantes.
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 element.innerHTML = minutes + ":" + (seconds < 10 ? "0" : "") + seconds + " min";
 
                 const tempoCancelar = document.getElementById('tempo-cancelar');
                 const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-                if (tempoCancelar) tempoCancelar.style.display = "block"; // Mostra o "Tempo para cancelar".
-                if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Continua mostrando o botão de cancelar.
+                if (tempoCancelar) tempoCancelar.style.display = "block";
+                if (btCancelarPedido) btCancelarPedido.style.display = "block";
             } else {
-                // Quando o tempo expira, para o intervalo e ajusta a exibição.
                 clearInterval(interval);
 
                 const tempoCancelar = document.getElementById('tempo-cancelar');
                 if (tempoCancelar) tempoCancelar.style.display = "none";
 
-                const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-                if (btCancelarPedido) btCancelarPedido.style.display = "none"; // Oculta o botão de cancelar após expirar.
-
                 const textCancelar = document.getElementById('text-cancelar');
-                if (textCancelar) textCancelar.style.display = "block"; // Mostra o texto de cancelamento.
+                if (textCancelar) textCancelar.style.display = "block";
 
-                // Verifica se o pedido não foi finalizado até a estimativa de entrega + 15 minutos.
-                const estimativaEntrega = new Date("<?php echo $pedido['data_entrega']; ?>").getTime();
-                const quinzeMinutosDepois = estimativaEntrega + 15 * 60 * 1000; // 15 minutos após a estimativa de entrega.
+                // Exibe mensagem de atraso na entrega apenas se o pedido não estiver cancelado ou recusado
+                const statusFinal = <?php echo $status_final; ?>;
+                if (statusFinal !== 3 && statusFinal !== 4) {
+                    const atrasoEntrega = document.getElementById('atraso-entrega');
+                    if (atrasoEntrega) atrasoEntrega.style.display = "block";
 
-                if (now > quinzeMinutosDepois) {
-                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Mostra o botão de cancelar novamente.
+                    const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
+                    if (btCancelarPedido) btCancelarPedido.style.display = "block"; // Permite cancelar após atraso
                 }
             }
         }
 
-        updateCountdown(); // Atualiza a contagem imediatamente.
-        interval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo.
+        updateCountdown();
+        interval = setInterval(updateCountdown, 1000);
     }
+
+    /*window.addEventListener('load', () => {
+        const scrollY = localStorage.getItem('scrollY');
+        if (scrollY !== null) {
+            window.scrollTo(0, parseInt(scrollY));
+            localStorage.removeItem('scrollY'); // limpa depois de usar
+        }
+    });
+
+    setInterval(() => {
+        const scrollPosition = window.scrollY;
+        localStorage.setItem('scrollY', scrollPosition);
+        location.reload();
+    }, 3000); // 3000 milissegundos = 3 segundos*/
+
 </script>
 
 </html>
