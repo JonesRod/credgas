@@ -8,47 +8,59 @@ if (!isset($_GET['id_parceiro']) || $_GET['id_parceiro'] != $_SESSION['id']) {
     exit;
 }
 
-// Verifica se o ID do pedido foi enviado
-if (!isset($_GET['num_pedido'])) {
-    echo "Número do pedido não fornecido.";
+// Verifica se o ID do pedido foi enviado e valida os parâmetros
+if (!isset($_GET['num_pedido']) || !is_numeric($_GET['num_pedido']) || !is_numeric($_GET['id_parceiro'])) {
+    echo "Parâmetros inválidos.";
     exit;
 }
 
-// Obtém o ID do cliente logado e o número do pedido
-$id_parceiro = $_GET['id_parceiro'];
-$num_pedido = $_GET['num_pedido'];
+$id_parceiro = (int) $_GET['id_parceiro'];
+$num_pedido = (int) $_GET['num_pedido'];
 
-// Consulta para buscar os dados do pedido
-$query = "SELECT p.*, c.nome_completo, c.endereco, c.numero, c.bairro, c.cidade, c.uf, c.cep, c.celular1 
-          FROM pedidos p 
-          JOIN meus_clientes c ON p.id_cliente = c.id 
-          WHERE p.id_parceiro = ? AND p.num_pedido = ?";
-$stmt = $mysqli->prepare($query);
-$stmt->bind_param("ii", $id_parceiro, $num_pedido);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    // Consulta para buscar os dados do pedido
+    $query = "SELECT p.*, c.nome_completo, c.endereco, c.numero, c.bairro, c.cidade, c.uf, c.cep, c.celular1 
+              FROM pedidos p 
+              JOIN meus_clientes c ON p.id_cliente = c.id 
+              WHERE p.id_parceiro = ? AND p.num_pedido = ?";
+    $stmt = $mysqli->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Erro ao preparar a consulta: " . $mysqli->error);
+    }
+    $stmt->bind_param("ii", $id_parceiro, $num_pedido);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
+    if ($result->num_rows === 0) {
+        throw new Exception("Pedido não encontrado.");
+    }
+
     $pedido = $result->fetch_assoc();
-    $motivo_cancelamento = $pedido['motivo_cancelamento'];
+    $motivo_cancelamento = htmlspecialchars($pedido['motivo_cancelamento']);
     $status_cliente = $pedido['status_cliente'];
     $status_parceiro = $pedido['status_parceiro'];
 
     // Determina quem cancelou com base no maior status
-    if ($status_cliente > $status_parceiro) {
-        $quem_cancelou = 'Cliente';
-    } else {
-        $quem_cancelou = 'Parceiro';
-    }
+    $quem_cancelou = $status_cliente > $status_parceiro ? 'Cliente' : 'Parceiro';
 
     $produtos = explode('|', $pedido['produtos']);
-    $frete = $pedido['valor_frete'];
-    $saldo_usado = $pedido['saldo_usado'];
+    $frete = (float) $pedido['valor_frete'];
+    $saldo_usado = (float) $pedido['saldo_usado'];
 
-    // Calcula o total dos produtos listados
+    // Calcula o total dos produtos listados com validação de formato
     $valor_total_produtos = array_reduce($produtos, function ($carry, $produto) {
-        list($nome, $quantidade, $valor_unitario, $valor_total) = explode('/', $produto);
-        return $carry + (float) $valor_total;
+        $detalhes = explode('/', $produto);
+
+        // Verifica se o formato está correto (4 elementos)
+        if (count($detalhes) === 4) {
+            list($nome, $quantidade, $valor_unitario, $valor_total) = $detalhes;
+
+            // Soma o valor total ao acumulador
+            return $carry + (float) $valor_total;
+        }
+
+        // Ignora itens malformados
+        return $carry;
     }, 0.0);
 
     // Calcula o valor total geral
@@ -60,12 +72,14 @@ if ($result->num_rows > 0) {
     $dataFinalizacao = new DateTime($pedido['data_finalizacao']);
     $intervalo = $dataPedido->diff($dataFinalizacao);
     $tempoCancelamento = $intervalo->format('%d dias, %h horas, %i minutos');
-} else {
-    echo "Pedido não encontrado.";
+} catch (Exception $e) {
+    echo "Erro: " . $e->getMessage();
     exit;
+} finally {
+    if (isset($stmt))
+        $stmt->close();
+    $mysqli->close();
 }
-$stmt->close();
-$mysqli->close();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -193,7 +207,7 @@ $mysqli->close();
     <div class="container">
         <h1>Pedido Cancelado</h1>
         <h2>Pedido #<?php echo htmlspecialchars($num_pedido); ?></h2>
-        <p class="motivo">Motivo do Cancelamento: <?php echo htmlspecialchars($motivo_cancelamento); ?></p>
+        <p class="motivo">Motivo do Cancelamento: <?php echo $motivo_cancelamento; ?></p>
         <p><strong>Cancelado pelo:</strong> <?php echo $quem_cancelou; ?></p>
         <div class="info">
             <p><strong>Data do Pedido:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['data'])); ?></p>
@@ -238,7 +252,8 @@ $mysqli->close();
             </tbody>
         </table>
         <p class="valores"><strong>Valor Total dos Produtos:</strong> R$
-            <?php echo number_format($valor_total_produtos, 2, ',', '.'); ?></p>
+            <?php echo number_format($valor_total_produtos, 2, ',', '.'); ?>
+        </p>
         <?php if ($exibir_frete_saldo): ?>
             <?php if ($frete == 0): ?>
                 <p class="valores" style="color: green;"><strong>Frete:</strong> Frete Grátis</p>
@@ -252,7 +267,8 @@ $mysqli->close();
             <?php endif; ?>
         <?php endif; ?>
         <p class="valores"><strong>Valor Total Geral:</strong> R$
-            <?php echo number_format($valor_total, 2, ',', '.'); ?></p>
+            <?php echo number_format($valor_total, 2, ',', '.'); ?>
+        </p>
         <button onclick="window.location.href='pedidos.php';">Voltar</button>
     </div>
 </body>

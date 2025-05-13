@@ -60,6 +60,48 @@ $parceiroResult = $parceiroStmt->get_result();
 $parceiroData = $parceiroResult->fetch_assoc();
 $estimativaEntrega = $parceiroData['estimativa_entrega'] ?? null;
 
+// Adicionar um endpoint para retornar os dados em JSON
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    header('Content-Type: application/json');
+
+    $pedidos = [];
+    $result->data_seek(0); // Reinicia o ponteiro do resultado
+    while ($row = $result->fetch_assoc()) {
+        $dataPedido = new DateTime($row['data']);
+        $valor = $row['valor_produtos_confirmados'] > 0 ? $row['valor_produtos_confirmados'] : $row['valor_produtos'];
+        $frete = $row['valor_frete'] ?? 0;
+        $saldo_usado = $row['saldo_usado'] ?? 0;
+        $taxa_crediario = $row['taxa_crediario'] ?? 0;
+        $total = $valor + $frete - $saldo_usado + $taxa_crediario;
+        $status_cliente = $row['status_cliente'];
+        $status_parceiro = $row['status_parceiro'];
+        $status_final = max($status_cliente, $status_parceiro);
+
+        // Mapeamento do status para descrição
+        $status_descricao = [
+            0 => 'Pendente',
+            1 => 'Confirmado',
+            2 => 'Em preparação',
+            3 => 'Recusado',
+            4 => 'Cancelado',
+            5 => 'Pedido pronto',
+            6 => $row['tipo_entrega'] === 'buscar' ? 'Pronto para retirada' : 'Saiu para entrega',
+            7 => 'Finalizado',
+        ];
+
+        $pedidos[] = [
+            'num_pedido' => $row['num_pedido'],
+            'status_final' => $status_final,
+            'descricao_status' => $status_descricao[$status_final] ?? 'Desconhecido',
+            'data' => $dataPedido->format('d/m/Y H:i:s'),
+            'total' => number_format($total, 2, ',', '.'),
+        ];
+    }
+
+    echo json_encode($pedidos);
+    exit;
+}
+
 // Agrupamento por data
 $pedidosAgrupados = ['Hoje' => [], 'Ontem' => [], 'Outros' => []];
 $hoje = new DateTime(); // Data atual
@@ -465,19 +507,36 @@ while ($row = $result->fetch_assoc()) {
             });
         });
 
-        /*window.addEventListener('load', () => {
-            const scrollY = localStorage.getItem('scrollY');
-            if (scrollY !== null) {
-                window.scrollTo(0, parseInt(scrollY));
-                localStorage.removeItem('scrollY'); // limpa depois de usar
-            }
-        });
+        // Função para buscar e atualizar o status dos pedidos via AJAX
+        function atualizarStatusPedidos() {
+            fetch('pedidos.php?ajax=1')
+                .then(response => response.json())
+                .then(data => {
+                    const cards = document.querySelectorAll('.card');
+                    cards.forEach(card => {
+                        const numPedido = card.getAttribute('data-num-pedido');
+                        const pedidoAtualizado = data.find(pedido => pedido.num_pedido == numPedido);
 
-        setInterval(() => {
-            const scrollPosition = window.scrollY;
-            localStorage.setItem('scrollY', scrollPosition);
-            location.reload();
-        }, 3000); // 3000 milissegundos = 3 segundos*/
+                        if (pedidoAtualizado) {
+                            // Atualiza o status do pedido
+                            const statusLabel = card.querySelector('.status-label');
+                            if (statusLabel) {
+                                statusLabel.textContent = pedidoAtualizado.descricao_status;
+                            }
+
+                            // Atualiza a classe do card para refletir o novo status
+                            card.className = `card status-${pedidoAtualizado.status_final}`;
+                        }
+                    });
+                })
+                .catch(error => console.error('Erro ao atualizar status dos pedidos:', error));
+        }
+
+        // Atualiza o status dos pedidos a cada 30 segundos
+        setInterval(atualizarStatusPedidos, 5000);
+
+        // Atualiza o status dos pedidos ao carregar a página
+        document.addEventListener('DOMContentLoaded', atualizarStatusPedidos);
     </script>
 </body>
 
