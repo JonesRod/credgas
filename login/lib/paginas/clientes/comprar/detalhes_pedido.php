@@ -9,6 +9,26 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+// Adicione este bloco PHP no início do arquivo, antes de qualquer saída HTML:
+if (isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['num_pedido'])) {
+    header('Content-Type: application/json');
+    $id_cliente = $_SESSION['id'];
+    $num_pedido = (int) $_GET['num_pedido'];
+    $query = "SELECT status_cliente, status_parceiro FROM pedidos WHERE id_cliente = ? AND num_pedido = ?";
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("ii", $id_cliente, $num_pedido);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $pedido = $result->fetch_assoc();
+        $status_final = max($pedido['status_cliente'], $pedido['status_parceiro']);
+        echo json_encode(['status_final' => $status_final]);
+    } else {
+        echo json_encode(['status_final' => null]);
+    }
+    exit;
+}
+
 // Verifica se o ID do pedido foi enviado
 if (!isset($_POST['num_pedido'])) {
     header('Content-Type: application/json');
@@ -133,13 +153,26 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
     $tempo_duracao_expiracao = $horas . ' hora(s) e ' . $minutos . ' minuto(s)';
 }
 
+// Defina o valor do preenchimento com base no status_final
+$percent = 0;
+
+if ($status_final >= 7) {
+    $percent = 100;
+} elseif ($status_final >= 6) {
+    $percent = 75;
+} elseif ($status_final >= 5) {
+    $percent = 50;
+} elseif ($status_final >= 1) {
+    $percent = 25;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" width="device-width, initial-scale=1.0">
     <title>Detalhes do Pedido</title>
     <style>
         body {
@@ -218,7 +251,6 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
             font-size: 16px;
             color: #fff;
             background-color: #dc3545;
-            /* Cor vermelha */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -226,7 +258,6 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
 
         #bt_cancelar_pedido:hover {
             background-color: #c82333;
-            /* Vermelho mais escuro ao passar o mouse */
         }
 
         .cancel-timer {
@@ -255,7 +286,6 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
             display: flex;
             justify-content: center;
             gap: 10px;
-            /* Espaçamento entre os botões */
             margin-top: 20px;
         }
 
@@ -312,6 +342,73 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
                 font-size: 14px;
             }
         }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            position: relative;
+            padding: 40px 30px 20px 30px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 63%;
+            left: 33px;
+            right: 33px;
+            height: 4px;
+            background-color: #ddd;
+            z-index: 1;
+            transform: translateY(-50%);
+            <?php if ($status_final == 3 || $status_final == 4): ?>
+                background: linear-gradient(to right, #dc3545 100%, #dc3545 100%);
+            <?php else: ?>
+                background: linear-gradient(to right, #28a745 <?= $percent ?>%, #ddd <?= $percent ?>%);
+            <?php endif; ?>
+        }
+
+        .progress-step {
+            position: relative;
+            z-index: 2;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #fff;
+            background-color:
+                <?php echo ($status_final == 3 || $status_final == 4) ? '#dc3545' : '#ddd'; ?>
+            ;
+        }
+
+        .progress-step.active {
+            background-color:
+                <?php echo ($status_final == 3 || $status_final == 4) ? '#dc3545' : '#28a745'; ?>
+            ;
+        }
+
+        .progress-label {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color:
+                <?php echo ($status_final == 3 || $status_final == 4) ? '#dc3545' : '#333'; ?>
+            ;
+            text-align: center;
+        }
+
+        .progress-label.active-label {
+            font-weight: bold;
+            color:
+                <?php echo ($status_final == 3 || $status_final == 4) ? '#dc3545' : '#28a745'; ?>
+            ;
+        }
     </style>
 </head>
 
@@ -350,10 +447,14 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
                 } elseif ($status_final == 4) {
                     echo "Pedido Cancelado!";
                 } elseif ($status_final == 5) {
-                    echo "Pedido em Preparação.";
-                } elseif ($status_final == 6) {
                     if ($tipo_entrega == 'entregar') {
                         echo "Pedido pronto para entregar.";
+                    } else {
+                        echo "Pedido pronto.";
+                    }
+                } elseif ($status_final == 6) {
+                    if ($tipo_entrega == 'entregar') {
+                        echo "Saiu para entregar.";
                     } else {
                         echo "Pedido pronto para retirar.";
                     }
@@ -378,6 +479,26 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
             </p>
             <p data-justificativa><strong>Justificativa:</strong> <?php echo htmlspecialchars($justificativa); ?></p>
         <?php endif; ?>
+        <hr>
+        <h3 style="margin-bottom: 20px;">Andamento do Pedido</h3>
+        <div class="progress-container">
+            <div class="progress-line"></div>
+            <div class="progress-step <?php echo $status_final >= 0 ? 'active' : ''; ?>">
+                <span class="progress-label">Pendente</span>
+            </div>
+            <div class="progress-step <?php echo $status_final >= 1 ? 'active' : ''; ?>">
+                <span class="progress-label">Confirmado</span>
+            </div>
+            <div class="progress-step <?php echo $status_final >= 5 ? 'active' : ''; ?>">
+                <span class="progress-label">Pronto</span>
+            </div>
+            <div class="progress-step <?php echo $status_final >= 6 ? 'active' : ''; ?>">
+                <span class="progress-label"><?php echo $tipo_entrega === 'entregar' ? 'Entregar' : 'Retirar'; ?></span>
+            </div>
+            <div class="progress-step <?php echo $status_final >= 7 ? 'active' : ''; ?>">
+                <span class="progress-label">Entregou</span>
+            </div>
+        </div>
         <hr>
         <h3>Produtos</h3>
         <table>
@@ -593,20 +714,29 @@ if ($status_final == 0) { // Status 0 = Aguardando Confirmação
         interval = setInterval(updateCountdown, 1000);
     }
 
-    /*window.addEventListener('load', () => {
-        const scrollY = localStorage.getItem('scrollY');
-        if (scrollY !== null) {
-            window.scrollTo(0, parseInt(scrollY));
-            localStorage.removeItem('scrollY'); // limpa depois de usar
-        }
+    // Verificação automática do status do pedido a cada 3 segundos
+    let verificarStatusInterval;
+    let ultimoStatusFinal = <?php echo $status_final; ?>;
+
+    function verificarStatusPedido() {
+        fetch('detalhes_pedido.php?ajax=1&num_pedido=<?php echo $num_pedido; ?>')
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.status_final !== undefined) {
+                    // Se o status mudou, recarrega a página
+                    if (data.status_final !== ultimoStatusFinal) {
+                        clearInterval(verificarStatusInterval);
+                        location.reload();
+                    }
+                }
+            })
+            .catch(() => { });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        verificarStatusPedido();
+        verificarStatusInterval = setInterval(verificarStatusPedido, 3000);
     });
-
-    setInterval(() => {
-        const scrollPosition = window.scrollY;
-        localStorage.setItem('scrollY', scrollPosition);
-        location.reload();
-    }, 3000); // 3000 milissegundos = 3 segundos*/
-
 </script>
 
 </html>

@@ -368,10 +368,10 @@ function formatDateTimeJS($dateString)
 
         .progress-container.active .progress-line {
             background: linear-gradient(to right, #28a745
-                    <?php echo $pedido['status_parceiro'] == 0 ? '0%' : ($pedido['status_parceiro'] == 1 ? '25%' : ($pedido['status_parceiro'] == 5 ? '50%' : ($pedido['status_parceiro'] == 6 ? '75%' : '100%'))); ?>
+                    <?php echo $maior_status == 0 ? '0%' : ($maior_status == 1 ? '25%' : ($maior_status == 5 ? '50%' : ($maior_status == 6 ? '75%' : '100%'))); ?>
                     ,
                     #ddd
-                    <?php echo $pedido['status_parceiro'] == 0 ? '0%' : ($pedido['status_parceiro'] == 1 ? '25%' : ($pedido['status_parceiro'] == 5 ? '50%' : ($pedido['status_parceiro'] == 6 ? '75%' : '100%'))); ?>
+                    <?php echo $maior_status == 0 ? '0%' : ($maior_status == 1 ? '25%' : ($maior_status == 5 ? '50%' : ($maior_status == 6 ? '75%' : '100%'))); ?>
                 );
         }
 
@@ -418,8 +418,8 @@ function formatDateTimeJS($dateString)
         <p><strong>Status do Pedido:</strong>
             <span style="color: <?php echo $maior_status == 0 ? 'orange' :
                 ($maior_status == 1 ? 'green' :
-                    ($maior_status == 5 ? 'blue' :
-                        ($maior_status == 6 ? 'purple' :
+                    ($maior_status == 5 ? 'green' :
+                        ($maior_status == 6 ? 'green' :
                             ($maior_status == 7 ? 'green' : 'red')))); ?>;">
                 <?php echo $maior_status == 0 ? 'Pendente' :
                     ($maior_status == 1 ? 'Confirmado e vai para preparação.' :
@@ -567,7 +567,32 @@ function formatDateTimeJS($dateString)
             atualizarTempoEntrega();
             intervalId = setInterval(atualizarTempoEntrega, 1000); // Inicializa intervalId após a declaração
         }
+
+        // Inicia a verificação automática do status do pedido a cada 3 segundos
+        verificarStatusPedido();
+        verificarStatusInterval = setInterval(verificarStatusPedido, 3000);
     });
+
+    // Verificação automática do status do pedido a cada 3 segundos
+    let verificarStatusInterval;
+
+    function verificarStatusPedido() {
+        fetch(`pedido_confirmado.php?ajax=1&id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Se o pedido for cancelado pelo cliente ou parceiro (status 3 ou 4), redireciona
+                    if (data.status_final === 3 || data.status_final === 4) {
+                        clearInterval(verificarStatusInterval);
+                        window.location.href = `pedido_cancelado.php?id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>`;
+                    }
+                }
+            })
+            .catch(error => {
+                // Opcional: pode exibir erro no console
+                // console.error('Erro ao verificar status do pedido:', error);
+            });
+    }
 </script>
 
 </html>
