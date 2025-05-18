@@ -583,7 +583,7 @@ function formatDateTimeJS($dateString)
         </p>
         <hr>
         <div class="button-container">
-            <button onclick="javascript:history.back()">Voltar</button>
+            <button onclick="window.location.href='pedidos.php'">Voltar</button>
             <?php if (!in_array($maior_status, [3, 4, 7])): ?>
                 <button class="confirm" onclick="abrirPopupConfirmar()">Continuar</button>
                 <button class="cancel" onclick="cancelarPedido()">Cancelar Pedido</button>
@@ -597,7 +597,7 @@ function formatDateTimeJS($dateString)
                 <p>Deseja realmente avançar o andamento do pedido?</p>
                 <div id="codigo-retirada-div">
                     <label for="codigo-retirada-input"><strong>Código de Retirada do Cliente:</strong></label>
-                    <input type="text" id="codigo-retirada-input" maxlength="6" placeholder="Informe o código" value="921943">
+                    <input type="text" id="codigo-retirada-input" maxlength="6" placeholder="Informe o código" value="">
                 </div>
                 <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
                     <button class="cancel" onclick="fecharPopupConfirmar()">Cancelar</button>
@@ -844,7 +844,7 @@ function formatDateTimeJS($dateString)
                         fecharPopupConfirmar();
                         setTimeout(function () {
                             location.reload();
-                        }, 3000);
+                        }, 500);
                     } else {
                         mostrarMensagemPopup(resp.message || 'Erro ao atualizar pedido.', false);
                     }

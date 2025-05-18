@@ -752,10 +752,39 @@ if ($formato_compra == 'crediario') {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            showPopup('Pedido confirmado com sucesso!', () => {
+                            // Exibir apenas a mensagem, sem botões, e fechar automaticamente
+                            const successPopup = document.createElement('div');
+                            successPopup.style.position = 'fixed';
+                            successPopup.style.top = '0';
+                            successPopup.style.left = '0';
+                            successPopup.style.width = '100%';
+                            successPopup.style.height = '100%';
+                            successPopup.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                            successPopup.style.display = 'flex';
+                            successPopup.style.justifyContent = 'center';
+                            successPopup.style.alignItems = 'center';
+                            successPopup.style.zIndex = '1000';
+
+                            const successContent = document.createElement('div');
+                            successContent.style.backgroundColor = '#fff';
+                            successContent.style.padding = '20px';
+                            successContent.style.borderRadius = '8px';
+                            successContent.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+                            successContent.style.textAlign = 'center';
+
+                            const successMessage = document.createElement('p');
+                            successMessage.textContent = 'Pedido confirmado com sucesso!';
+                            successMessage.style.marginBottom = '20px';
+
+                            successContent.appendChild(successMessage);
+                            successPopup.appendChild(successContent);
+                            document.body.appendChild(successPopup);
+
+                            setTimeout(() => {
+                                document.body.removeChild(successPopup);
                                 // Redirecionar com ID do parceiro e número do pedido na URL
                                 window.location.href = `pedido_confirmado.php?id_parceiro=${encodeURIComponent(<?php echo json_encode($id_parceiro); ?>)}&num_pedido=${encodeURIComponent(<?php echo json_encode($num_pedido); ?>)}`;
-                            });
+                            }, 2000); // Redirecionar após 2 segundos
                         } else {
                             showPopup('Erro ao confirmar o pedido.', () => { });
                         }
