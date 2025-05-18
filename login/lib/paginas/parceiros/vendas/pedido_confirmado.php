@@ -405,6 +405,87 @@ function formatDateTimeJS($dateString)
             font-weight: bold;
             color: #28a745;
         }
+
+        /* Popup de confirmação de andamento */
+        #popupConfirmar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #popupConfirmar .cancel {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        #popupConfirmar .cancel:hover {
+            background-color: #c82333;
+        }
+
+        #popupConfirmar .confirm {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        #popupConfirmar .confirm:hover {
+            background-color: #218838;
+        }
+
+        #popupConfirmar>div {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 350px;
+            margin: auto;
+        }
+
+        #codigo-retirada-div {
+            display: none;
+        }
+
+        #codigo-retirada-input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* Popup de mensagem */
+        #mensagem-popup {
+            display: none;
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 18px 30px;
+            border-radius: 8px;
+            z-index: 3000;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            min-width: 200px;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -504,74 +585,100 @@ function formatDateTimeJS($dateString)
         <div class="button-container">
             <button onclick="javascript:history.back()">Voltar</button>
             <?php if (!in_array($maior_status, [3, 4, 7])): ?>
+                <button class="confirm" onclick="abrirPopupConfirmar()">Continuar</button>
                 <button class="cancel" onclick="cancelarPedido()">Cancelar Pedido</button>
             <?php endif; ?>
         </div>
+
+        <!-- Popup de confirmação de andamento -->
+        <div id="popupConfirmar">
+            <div>
+                <h3>Confirmação</h3>
+                <p>Deseja realmente avançar o andamento do pedido?</p>
+                <div id="codigo-retirada-div">
+                    <label for="codigo-retirada-input"><strong>Código de Retirada do Cliente:</strong></label>
+                    <input type="text" id="codigo-retirada-input" maxlength="6" placeholder="Informe o código">
+                </div>
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <button class="cancel" onclick="fecharPopupConfirmar()">Cancelar</button>
+                    <button class="confirm" onclick="confirmarAndamento()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup de mensagem -->
+        <div id="mensagem-popup"></div>
     </div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const tempoEntregaElement = document.getElementById('tempo-entrega');
-
-        // Verifica se o elemento existe antes de acessar suas propriedades
-        if (tempoEntregaElement) {
-            const statusPedido = <?php echo $maior_status; ?>; // Status do pedido
-
-            if ([3, 4, 7].includes(statusPedido)) {
-                // Calcula o tempo decorrido para pedidos cancelados, recusados ou finalizados
-                const dataInicio = new Date("<?php echo $pedido['data']; ?>");
-                const dataFim = new Date("<?php echo $pedido['data_finalizacao'] ?? $pedido['data_cancelamento'] ?? $pedido['data_recusa']; ?>");
-
-                if (!isNaN(dataInicio) && !isNaN(dataFim)) {
-                    const diffMs = Math.abs(dataFim - dataInicio); // Diferença em milissegundos
-                    const horas = Math.floor(diffMs / (1000 * 60 * 60));
-                    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                    const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-                    tempoEntregaElement.innerHTML = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-                } else {
-                    tempoEntregaElement.innerHTML = "Dados de tempo indisponíveis.";
-                }
-                return;
-            }
-
-            // Calcula o tempo restante para pedidos em andamento
-            const dataPedido = new Date("<?php echo $pedido['data']; ?>");
-            const tempoEntregaMinutos = <?php echo $tempo_entrega; ?>;
-            const dataLimite = new Date(dataPedido.getTime() + tempoEntregaMinutos * 60000);
-            const agora = new Date();
-
-            if (isNaN(dataPedido) || isNaN(dataLimite)) {
-                tempoEntregaElement.innerHTML = "Dados de tempo indisponíveis.";
-                return;
-            }
-
-            let tempoRestante = Math.floor((dataLimite - agora) / 1000); // Tempo restante em segundos
-            let intervalId; // Declaração da variável intervalId
-
-            function atualizarTempoEntrega() {
-                if (tempoRestante <= 0) {
-                    tempoEntregaElement.innerHTML = "Tempo expirado";
-                    clearInterval(intervalId); // Para o cronômetro quando o tempo expira
-                    return;
-                }
-
-                const horas = Math.floor(tempoRestante / 3600);
-                const minutos = Math.floor((tempoRestante % 3600) / 60);
-                const segundos = tempoRestante % 60;
-
-                tempoEntregaElement.innerHTML = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-                tempoRestante--;
-            }
-
-            atualizarTempoEntrega();
-            intervalId = setInterval(atualizarTempoEntrega, 1000); // Inicializa intervalId após a declaração
-        }
+        atualizarTempoEntregaPedido(); // Chama ao carregar a página
 
         // Inicia a verificação automática do status do pedido a cada 3 segundos
         verificarStatusPedido();
         verificarStatusInterval = setInterval(verificarStatusPedido, 3000);
+
+        // Chame também ao carregar a página para garantir consistência inicial
+        atualizarBotoesStatus(<?php echo $maior_status; ?>);
     });
+
+    function atualizarTempoEntregaPedido(status_final = null) {
+        const tempoEntregaElement = document.getElementById('tempo-entrega');
+        if (!tempoEntregaElement) return;
+
+        // Usa status_final se passado, senão usa o inicial do PHP
+        let statusPedido = status_final !== null ? status_final : <?php echo $maior_status; ?>;
+
+        if ([3, 4, 7].includes(statusPedido)) {
+            // Calcula o tempo decorrido para pedidos cancelados, recusados ou finalizados
+            const dataInicio = new Date("<?php echo $pedido['data']; ?>");
+            const dataFim = new Date("<?php echo $pedido['data_finalizacao'] ?? $pedido['data_cancelamento'] ?? $pedido['data_recusa']; ?>");
+
+            if (!isNaN(dataInicio) && !isNaN(dataFim)) {
+                const diffMs = Math.abs(dataFim - dataInicio);
+                const horas = Math.floor(diffMs / (1000 * 60 * 60));
+                const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const segundos = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                tempoEntregaElement.innerHTML = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            } else {
+                tempoEntregaElement.innerHTML = "Dados de tempo indisponíveis.";
+            }
+            return;
+        }
+
+        // Calcula o tempo restante para pedidos em andamento
+        const dataPedido = new Date("<?php echo $pedido['data']; ?>");
+        const tempoEntregaMinutos = <?php echo $tempo_entrega; ?>;
+        const dataLimite = new Date(dataPedido.getTime() + tempoEntregaMinutos * 60000);
+        const agora = new Date();
+
+        if (isNaN(dataPedido) || isNaN(dataLimite)) {
+            tempoEntregaElement.innerHTML = "Dados de tempo indisponíveis.";
+            return;
+        }
+
+        let tempoRestante = Math.floor((dataLimite - agora) / 1000);
+        let intervalId;
+
+        function atualizarTempoEntrega() {
+            if (tempoRestante <= 0) {
+                tempoEntregaElement.innerHTML = "Tempo expirado";
+                clearInterval(intervalId);
+                return;
+            }
+
+            const horas = Math.floor(tempoRestante / 3600);
+            const minutos = Math.floor((tempoRestante % 3600) / 60);
+            const segundos = tempoRestante % 60;
+
+            tempoEntregaElement.innerHTML = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            tempoRestante--;
+        }
+
+        atualizarTempoEntrega();
+        intervalId = setInterval(atualizarTempoEntrega, 1000);
+    }
 
     // Verificação automática do status do pedido a cada 3 segundos
     let verificarStatusInterval;
@@ -588,6 +695,7 @@ function formatDateTimeJS($dateString)
                     } else {
                         // Atualiza a barra de progresso e o status do pedido sem recarregar a página
                         atualizarBarraProgressoEStatus(data.status_final);
+                        atualizarBotoesStatus(data.status_final);
                     }
                 }
             })
@@ -640,6 +748,124 @@ function formatDateTimeJS($dateString)
             statusSpan.style.color = cor;
             statusSpan.textContent = texto;
         }
+
+        atualizarTempoEntregaPedido(status_final); // Atualiza o tempo de entrega conforme status
+    }
+
+    // Função para mostrar/ocultar botões conforme status
+    function atualizarBotoesStatus(status_final) {
+        const btnConfirm = document.querySelector('.button-container .confirm');
+        const btnCancel = document.querySelector('.button-container .cancel');
+        //console.log('Atualizando botões para status:', status_final);
+        if (btnConfirm) {
+            if ([3, 4, 7].includes(status_final)) {
+                btnConfirm.style.display = 'none';
+            } else {
+                btnConfirm.style.display = 'block';
+            }
+        }
+        if (btnCancel) {
+            if ([3, 4, 7].includes(status_final)) {
+                btnCancel.style.display = 'none';
+            } else {
+                btnCancel.style.display = 'block';
+            }
+        }
+    }
+
+    function abrirPopupConfirmar() {
+        const popup = document.getElementById('popupConfirmar');
+        if (popup) {
+            popup.style.display = 'flex';
+            // Exibe o campo do código apenas se for finalizar (novo_status == 7)
+            var statusAtual = <?php echo (int) max($pedido['status_parceiro'], $pedido['status_cliente']); ?>;
+            var novo_status = statusAtual;
+            if (novo_status == 0) {
+                novo_status = 1;
+            } else if (novo_status == 1) {
+                novo_status = 5;
+            } else if (novo_status == 5) {
+                novo_status = 6;
+            } else if (novo_status == 6) {
+                novo_status = 7;
+            }
+            if ((<?php echo json_encode($tipo_entrega); ?> === 'buscar' || <?php echo json_encode($tipo_entrega); ?> === 'entregar') && novo_status == 7) {
+                document.getElementById('codigo-retirada-div').style.display = 'block';
+            } else {
+                document.getElementById('codigo-retirada-div').style.display = 'none';
+            }
+        }
+    }
+
+    function fecharPopupConfirmar() {
+        const popup = document.getElementById('popupConfirmar');
+        if (popup) popup.style.display = 'none';
+        document.getElementById('codigo-retirada-div').style.display = 'none';
+        document.getElementById('codigo-retirada-input').value = '';
+    }
+
+    function confirmarAndamento() {
+        // Para retirada ou entrega, exige o código do cliente ao finalizar
+        var statusAtual = <?php echo (int) max($pedido['status_parceiro'], $pedido['status_cliente']); ?>;
+        var novo_status = statusAtual;
+        if (novo_status == 0) {
+            novo_status = 1;
+        } else if (novo_status == 1) {
+            novo_status = 5;
+        } else if (novo_status == 5) {
+            novo_status = 6;
+        } else if (novo_status == 6) {
+            novo_status = 7;
+        }
+        if (novo_status == 7) {
+            const codigoInput = document.getElementById('codigo-retirada-input');
+            const codigo = codigoInput.value.trim();
+            if (!codigo || codigo.length < 4) {
+                alert('Informe o código de retirada fornecido pelo cliente.');
+                codigoInput.focus();
+                return;
+            }
+        }
+
+        // Envia requisição AJAX para avançar o status do pedido
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'atualizar_status_pedido.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                try {
+                    var resp = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200 && resp.success) {
+                        mostrarMensagemPopup(resp.message || 'Pedido atualizado com sucesso!', true);
+                        fecharPopupConfirmar();
+                        setTimeout(function () {
+                            location.reload();
+                        }, 3000);
+                    } else {
+                        mostrarMensagemPopup(resp.message || 'Erro ao atualizar pedido.', false);
+                    }
+                } catch (e) {
+                    alert('Erro inesperado ao processar resposta.');
+                }
+            }
+        };
+        var params = 'id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>&novo_status=' + novo_status;
+        if (novo_status == 7) {
+            params += '&codigo_retirada=' + encodeURIComponent(document.getElementById('codigo-retirada-input').value.trim());
+        }
+        xhr.send(params);
+    }
+
+    function mostrarMensagemPopup(msg, sucesso) {
+        var popup = document.getElementById('mensagem-popup');
+        if (!popup) return;
+        popup.textContent = msg;
+        popup.style.background = sucesso ? '#28a745' : '#dc3545';
+        popup.style.display = 'block';
+        clearTimeout(popup._timeout);
+        popup._timeout = setTimeout(function () {
+            popup.style.display = 'none';
+        }, 1500);
     }
 </script>
 

@@ -656,15 +656,24 @@ if ($status_final >= 7) {
             const endTime = new Date(countdownElement.getAttribute('data-end-time')).getTime();
             startCountdown(countdownElement, endTime);
         }
-
+        // Exibe o botão de cancelar pedido se o status não for 3 (recusado), 4 (cancelado) ou 7 (entregue)
+        const atrasoEntrega = document.getElementById('atraso-entrega');
         const btCancelarPedido = document.getElementById('bt_cancelar_pedido');
-        if (btCancelarPedido) btCancelarPedido.style.display = "block";
+        //if (btCancelarPedido) btCancelarPedido.style.display = "block";
 
-        // Oculta a mensagem de atraso se o pedido for cancelado ou recusado
+        // Esconde o botão de cancelar pedido se o status for 3 (recusado), 4 (cancelado) ou 7 (entregue)
         const statusFinal = <?php echo $status_final; ?>;
-        if (statusFinal === 3 || statusFinal === 4) {
-            const atrasoEntrega = document.getElementById('atraso-entrega');
+        if (statusFinal === 3 || statusFinal === 4 || statusFinal === 7) {
+            //# Esconde o botão de cancelar pedido
+            if (btCancelarPedido) btCancelarPedido.style.display = "none";
+            // Esconde a mensagem de tempo para cancelar
             if (atrasoEntrega) atrasoEntrega.style.display = "none";
+            console.log("ocultarCancelarPedido");
+        } else {
+            // Exibe o botão de cancelar pedido se o status não for 3 (recusado), 4 (cancelado) ou 7 (entregue)
+            if (btCancelarPedido) btCancelarPedido.style.display = "block";
+            // Exibe a mensagem de tempo para cancelar
+            if (atrasoEntrega) atrasoEntrega.style.display = "block";
         }
     });
 
@@ -700,7 +709,7 @@ if ($status_final >= 7) {
 
                 // Exibe mensagem de atraso na entrega apenas se o pedido não estiver cancelado ou recusado
                 const statusFinal = <?php echo $status_final; ?>;
-                if (statusFinal !== 3 && statusFinal !== 4) {
+                if (statusFinal !== 3 && statusFinal !== 4 && statusFinal !== 7) {
                     const atrasoEntrega = document.getElementById('atraso-entrega');
                     if (atrasoEntrega) atrasoEntrega.style.display = "block";
 
@@ -726,6 +735,7 @@ if ($status_final >= 7) {
                     // Se o status mudou, recarrega a página
                     if (data.status_final !== ultimoStatusFinal) {
                         clearInterval(verificarStatusInterval);
+                        
                         location.reload();
                     }
                 }
@@ -735,7 +745,7 @@ if ($status_final >= 7) {
 
     document.addEventListener('DOMContentLoaded', function () {
         verificarStatusPedido();
-        verificarStatusInterval = setInterval(verificarStatusPedido, 3000);
+        verificarStatusInterval = setInterval(verificarStatusPedido, 1500);
     });
 </script>
 

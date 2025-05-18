@@ -8,8 +8,9 @@ if (!isset($_SESSION['id']) || !isset($_POST['num_pedido']) || !isset($_POST['no
     exit;
 }
 
-$id_parceiro = $_SESSION['id'];
-$num_pedido = filter_var($_POST['num_pedido'], FILTER_VALIDATE_INT);
+// Certifique-se de receber os parâmetros necessários:
+$id_parceiro = isset($_POST['id_parceiro']) ? intval($_POST['id_parceiro']) : 0;
+$num_pedido = isset($_POST['num_pedido']) ? intval($_POST['num_pedido']) : 0;
 $novo_status = filter_var($_POST['novo_status'], FILTER_VALIDATE_INT);
 $codigo_retirada = isset($_POST['codigo_retirada']) ? trim($_POST['codigo_retirada']) : null;
 
@@ -19,23 +20,26 @@ if (!$num_pedido || $novo_status === null) {
     exit;
 }
 
-// Verifica o código de retirada, se enviado
-if ($codigo_retirada !== null) {
-    $query_codigo = "SELECT codigo_retirada FROM pedidos WHERE id_parceiro = ? AND num_pedido = ?";
-    $stmt_codigo = $mysqli->prepare($query_codigo);
-    $stmt_codigo->bind_param("ii", $id_parceiro, $num_pedido);
-    $stmt_codigo->execute();
-    $result_codigo = $stmt_codigo->get_result();
+// Busca do pedido
+$query_pedido = "SELECT tipo_entrega, codigo_retirada FROM pedidos WHERE id_parceiro = ? AND num_pedido = ?";
+$stmt_pedido = $mysqli->prepare($query_pedido);
+$stmt_pedido->bind_param("ii", $id_parceiro, $num_pedido);
+$stmt_pedido->execute();
+$result_pedido = $stmt_pedido->get_result();
 
-    if ($result_codigo->num_rows === 0) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Pedido não encontrado.']);
-        exit;
-    }
+if ($result_pedido->num_rows === 0) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Pedido não encontrado.']);
+    exit;
+}
 
-    $pedido = $result_codigo->fetch_assoc();
-    if ($pedido['codigo_retirada'] !== $codigo_retirada) {
-        http_response_code(400);
+$pedido = $result_pedido->fetch_assoc();
+$tipo_entrega = $pedido['tipo_entrega'];
+$codigo_retirada_pedido = $pedido['codigo_retirada'];
+
+// para finalizar o pedido, o código de retirada deve ser fornecido
+if ($novo_status === 7) {
+    if (!$codigo_retirada || $codigo_retirada !== $codigo_retirada_pedido) {
         echo json_encode(['success' => false, 'message' => 'Código de retirada inválido.']);
         exit;
     }
@@ -47,9 +51,9 @@ if ($codigo_retirada !== null) {
     $stmt_finalizacao->bind_param("sii", $data_finalizacao, $id_parceiro, $num_pedido);
     $stmt_finalizacao->execute();
     $stmt_finalizacao->close();
-
-    $stmt_codigo->close();
 }
+
+$stmt_pedido->close();
 
 // Atualiza o status do pedido
 $query = "UPDATE pedidos SET status_parceiro = ? WHERE id_parceiro = ? AND num_pedido = ?";
