@@ -172,8 +172,8 @@ try {
             }
             
             // manda a notificação para o parceiro
-            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (data, id_parceiro, pedidos) VALUES (?, ?, 1)");
-            $stmt->bind_param("si", $data_hora, $id_parceiro);
+            $stmt = $mysqli->prepare("INSERT INTO contador_notificacoes_parceiro (cod_num_pedido, data, id_parceiro, pedidos) VALUES (?, ?, ?, 1)");
+            $stmt->bind_param("isi", $num_pedido, $data_hora, $id_parceiro);
             $stmt->execute();
             $stmt->close();
 
@@ -216,11 +216,11 @@ try {
 
             // Salvar notificação
             $msg = "Pedido #$num_pedido em Análise.";
-            $stmt_notificacao = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, 'pedido', 1)");
+            $stmt_notificacao = $mysqli->prepare("INSERT INTO contador_notificacoes_cliente (cod_num_pedido, data, id_cliente, msg, referente, lida) VALUES (?, ?, ?, ?, 'pedido', 1)");
             if (!$stmt_notificacao) {
                 throw new Exception("Erro ao salvar a notificação: " . $mysqli->error);
             }
-            $stmt_notificacao->bind_param("sis", $data_hora, $id_cliente, $msg);
+            $stmt_notificacao->bind_param("isis", $num_pedido, $data_hora, $id_cliente, $msg);
             $stmt_notificacao->execute();
             $stmt_notificacao->close();
 

@@ -21,6 +21,13 @@ $id_parceiro = $_SESSION['id'];
 // Obtém o ID do pedido enviado via POST
 $num_pedido = $_POST['num_pedido'];
 
+// desativar a notificação do pedido contador_notificacoes_parceiro
+$query_notificacao = "DELETE FROM contador_notificacoes_parceiro WHERE id_parceiro = ? AND cod_num_pedido = ?";
+$stmt = $mysqli->prepare($query_notificacao);
+$stmt->bind_param("ii", $id_parceiro, $num_pedido);
+$stmt->execute();
+
+
 // Consulta para buscar os dados do pedido
 $query = "SELECT * FROM pedidos WHERE id_parceiro = ? AND num_pedido = ?";
 $stmt = $mysqli->prepare($query);

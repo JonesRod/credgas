@@ -9,6 +9,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $id_cliente = intval($_POST['id_cliente']);
     $id_parceiro = intval($_POST['id_parceiro']);
     $total = floatval($_POST['valor_total']);
@@ -241,25 +242,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             /* Alinha os elementos verticalmente */
             justify-content: center;
             /* Centraliza o conteúdo */
-            gap: 8px;
+            gap: 0px;
             /* Espaço entre o radio e o texto */
         }
 
         #momento_pagamento div:hover {
             border-top: 8px;
-            background-color: #f0f0f0;
+            background-color:rgb(89, 186, 24);
             /* Cor de fundo ao passar o mouse */
             cursor: pointer;
             /* Muda o cursor para indicar que é clicável */
         }
 
         #momento_pagamento input[type="radio"] {
+            cursor: pointer;
             text-align: center;
             position: relative;
             top: -5px;
-            /* Ajusta levemente para cima */
             transform: scale(1.2);
-            /* Aumenta um pouco o tamanho do radio */
+            margin-right: 0;
+        }
+        #momento_pagamento input[type="radio"]:checked {
+            accent-color:rgb(0, 8, 255); /* Moderno, funciona nos navegadores mais recentes */
+        }
+
+        #momento_pagamento label {
+            cursor: pointer;
+            margin-left: 0;
+            padding-left: 5px;
         }
 
         /* Estilização geral do contêiner */
@@ -270,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 5px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 0px;
             /* Espaço entre os itens */
             width: 100%;
             /* Define um tamanho máximo para evitar expansão excessiva */
@@ -402,7 +412,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h2>Formas de Pagamento</h2>
 
-        <?php if ($status_crediario == '1' && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise']) && $total_vende_crediario > 0): ?>
+        <?php if ($status_crediario == 1 && !in_array($situacao_crediario, ['atrasado', 'inadimplente', 'em analise']) && $total_vende_crediario > 0): ?>
             <?php if (!empty($limite_cred) && $limite_cred > 0): ?>
                 <h3>Limite disponível no crediário: R$ <?php echo number_format($limite_cred, 2, ',', '.'); ?></h3>
             <?php endif; ?>

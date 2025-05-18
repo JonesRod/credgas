@@ -47,6 +47,7 @@ $endereco_parceiro = !empty($parceiro['endereco']) ? $parceiro['endereco'] : '';
 $numero_parceiro = !empty($parceiro['numero']) ? $parceiro['numero'] : '';
 $bairro_parceiro = !empty($parceiro['bairro']) ? $parceiro['bairro'] : '';
 $telefoneComercial = !empty($parceiro['telefoneComercial']) ? $parceiro['telefoneComercial'] : '';
+$valor_min_entrega_gratis = !empty($parceiro['valor_min_entrega_gratis']) ? $parceiro['valor_min_entrega_gratis'] : 0;
 
 // Buscar se o parceiro aceita cartão de crédito
 $stmt = $mysqli->prepare("SELECT * FROM meus_clientes WHERE id = ?");
@@ -459,7 +460,9 @@ $valorTaxaCrediario = 5; // Exemplo: 5% de taxa
                         if ($produto['frete'] > $maiorFrete) {
                             $maiorFrete = $produto['frete'];
                         }
-
+                        if ($totalGeral > $valor_min_entrega_gratis) {
+                            $maiorFrete = 0; // Se o frete for menor que o mínimo, não cobra frete
+                        }
                         // Verifica o maior quantidade de parcelas
                         if ($qtParcelas > $maiorQtPar) {
                             $maiorQtPar = $qtParcelas;

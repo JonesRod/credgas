@@ -15,7 +15,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
     $stmt_delete->execute();
     $stmt_delete->close();
 
-    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.promocao, p.valor_promocao, pa.nomeFantasia, c.frete 
+    $sql_produtos = $mysqli->query("SELECT c.*, p.nome_produto, p.valor_produto, p.taxa_padrao, p.promocao, p.valor_promocao, pa.nomeFantasia, pa.valor_minimo_pedido, c.frete 
                                     FROM carrinho c
                                     INNER JOIN produtos p ON c.id_produto = p.id_produto
                                     INNER JOIN meus_parceiros pa ON c.id_parceiro = pa.id
@@ -29,7 +29,8 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
         if (!isset($carrinho[$id_parceiro])) {
             $carrinho[$id_parceiro] = [
                 'nomeFantasia' => $produto['nomeFantasia'],
-                'frete' => $produto['frete'], // Adiciona o frete do parceiro
+                'frete' => $produto['frete'],
+                'valor_minimo_pedido' => $produto['valor_minimo_pedido'], // Adiciona o valor mínimo do pedido
                 'produtos' => [],
                 'total' => 0
             ];
@@ -254,6 +255,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             <?php foreach ($carrinho as $id_parceiro => $dados): ?>
                 <div class="parceiro" data-id-parceiro="<?php echo $id_parceiro; ?>">
                     <h3>Loja: <?php echo htmlspecialchars($dados['nomeFantasia']); ?></h3>
+                    <input type="hidden" class="valor-minimo-pedido" value="<?php echo $dados['valor_minimo_pedido']; ?>">
                     <table>
                         <thead>
                             <tr>
@@ -298,8 +300,8 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                     </table>
                     <div class="total">Total: R$
                         <?php
-                        $total_com_frete = $dados['total'] + $dados['frete']; // Soma o frete ao total
-                        echo number_format($total_com_frete, 2, ',', '.');
+                        $total = $dados['total'];
+                        echo number_format($total, 2, ',', '.');
                         ?><button class="comprar" data-id-cliente="<?php echo $id_cliente; ?>">Comprar</button>
                     </div>
                 </div>
@@ -437,7 +439,7 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                     atualizarTotalParceiro(produtoRow.closest(".parceiro"));
 
                     // Atualiza o total geral
-                    atualizarTotalGeral();
+                    //atualizarTotalGeral();
                 });
             });
         });
@@ -458,25 +460,31 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
             document.querySelectorAll(".comprar").forEach(botao => {
                 botao.addEventListener("click", function () {
                     let parceiroDiv = this.closest(".parceiro");
-                    let idParceiro = parceiroDiv.getAttribute("data-id-parceiro"); // ID do parceiro
-                    let idCliente = this.getAttribute("data-id-cliente"); // ID do cliente
+                    let idParceiro = parceiroDiv.getAttribute("data-id-parceiro");
+                    let idCliente = this.getAttribute("data-id-cliente");
                     let produtos = [];
 
-                    // ✅ Log para depuração
-                    //console.log("ID Parceiro:", idParceiro);
-                    //console.log("ID Cliente:", idCliente);
+                    // Calcula o total do pedido (produtos + frete)
+                    let totalPedido = 0;
+                    parceiroDiv.querySelectorAll(".produto").forEach(produto => {
+                        let quantidade = parseInt(produto.querySelector(".quantidade").value) || 0;
+                        let precoUnitario = parseFloat(produto.querySelector(".preco-produto").getAttribute("data-valor")) || 0;
+                        totalPedido += precoUnitario * quantidade;
+                    });
 
-                    // 🚨 Verificação se os IDs estão corretos
-                    if (!idCliente || !idParceiro) {
-                        alert("Erro: Cliente ou Parceiro não identificado.");
+
+                    // Pega o valor mínimo do pedido do input oculto
+                    let valorMinimoInput = parceiroDiv.querySelector("input.valor-minimo-pedido");
+                    let valorMinimo = valorMinimoInput ? parseFloat(valorMinimoInput.value) || 0 : 0;
+
+                    if (totalPedido < valorMinimo) {
+                        mostrarPopupMinimoPedido("O valor mínimo para pedidos nesta loja é R$ " + valorMinimo.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + ". Seu pedido está em R$ " + totalPedido.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + ".");
                         return;
                     }
 
                     parceiroDiv.querySelectorAll(".produto").forEach(produto => {
                         let idProduto = produto.getAttribute("data-id-produto");
                         let quantidade = parseInt(produto.querySelector(".quantidade").value) || 0;
-
-                        // ✅ Apenas adiciona produtos com quantidade > 0
                         if (idProduto && quantidade > 0) {
                             produtos.push({
                                 id_produto: idProduto,
@@ -485,16 +493,11 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                         }
                     });
 
-                    // 🚨 Se não houver produtos válidos, impedir a requisição
                     if (produtos.length === 0) {
                         alert("Nenhum produto selecionado!");
                         return;
                     }
-                    console.log("Enviando para o servidor:", JSON.stringify({
-                        id_cliente: idCliente,
-                        id_parceiro: idParceiro,
-                        produtos: produtos
-                    }));
+
                     fetch("atualizar_carrinho.php", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -504,13 +507,11 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                             produtos: produtos,
                         })
                     })
-                        .then(response => response.text()) // 👈 Primeiro, pega como texto
+                        .then(response => response.text())
                         .then(text => {
-                            //console.log("Resposta bruta do servidor:", text); // 👀 Log da resposta
-                            return JSON.parse(text); // Depois, tenta converter para JSON
+                            return JSON.parse(text);
                         })
                         .then(data => {
-                            console.log("Resposta JSON processada:", data);
                             if (data.status === "sucesso") {
                                 window.location.href = "forma_entrega.php?id_parceiro=" + idParceiro + "&id_cliente=" + idCliente;
                             } else {
@@ -518,13 +519,42 @@ if (isset($_SESSION['id']) && isset($_GET['id_cliente'])) {
                             }
                         })
                         .catch(error => {
-                            //console.error("Erro ao processar resposta:", error);
                             alert("Erro ao conectar ao servidor.");
                         });
-
                 });
             });
         });
+
+        // Função para mostrar popup de valor mínimo
+        function mostrarPopupMinimoPedido(msg) {
+            let popup = document.createElement("div");
+            popup.style.position = "fixed";
+            popup.style.top = "30%";
+            popup.style.left = "50%";
+            popup.style.transform = "translate(-50%, -50%)";
+            popup.style.background = "#fff";
+            popup.style.color = "#222";
+            popup.style.padding = "30px 40px";
+            popup.style.borderRadius = "10px";
+            popup.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+            popup.style.zIndex = "9999";
+            popup.style.fontSize = "18px";
+            popup.style.textAlign = "center";
+
+            // Conteúdo do popup com título e botão centralizado
+            popup.innerHTML = `
+                <strong style="display:block; font-size:22px; margin-bottom:15px;">Atenção</strong>
+                ${msg}
+                <div style="margin-top: 20px;">
+                    <button 
+                        style="padding: 8px 20px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer;"
+                        onclick="this.closest('div').parentNode.remove()"
+                    >OK</button>
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+        }
 
     </script>
 </body>
