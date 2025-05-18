@@ -151,7 +151,7 @@ while ($row = $result->fetch_assoc()) {
 
     $currentDateTime = new DateTime();
     $pedidoHTML = "
-        <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' onclick=\"redirectToDetails(
+        <div class='card status-{$status_final}' data-num-pedido='{$row['num_pedido']}' data-status-final='{$status_final}' data-id-parceiro='{$_SESSION['id']}' onclick=\"redirectToDetails(
             '{$row['num_pedido']}', 
             '{$status_final}', 
             '{$_SESSION['id']}', 
@@ -432,7 +432,12 @@ while ($row = $result->fetch_assoc()) {
         function redirectToDetails(num_pedido, status_final, id_parceiro, status_cliente, status_parceiro, data, valor) {
             const form = document.createElement('form'); // Cria um formulário dinamicamente
             form.method = 'POST';
-            const maiorStatus = Math.max(status_cliente, status_parceiro); // Determina o maior status
+            // Tenta pegar o maior status atualizado do atributo data-status-final
+            let maiorStatus = Math.max(status_cliente, status_parceiro);
+            const card = document.querySelector(`.card[data-num-pedido="${num_pedido}"]`);
+            if (card && card.getAttribute('data-status-final')) {
+                maiorStatus = parseInt(card.getAttribute('data-status-final'));
+            }
 
             if (maiorStatus === 1 || maiorStatus === 5 || maiorStatus === 6 || maiorStatus === 7) {
                 form.action = `pedido_confirmado.php?id_parceiro=${encodeURIComponent(id_parceiro)}&num_pedido=${encodeURIComponent(num_pedido)}`;
@@ -526,14 +531,20 @@ while ($row = $result->fetch_assoc()) {
 
                             // Atualiza a classe do card para refletir o novo status
                             card.className = `card status-${pedidoAtualizado.status_final}`;
+                            // Atualiza o atributo data-status-final para o maior status atualizado
+                            card.setAttribute('data-status-final', pedidoAtualizado.status_final);
+                            // Atualiza o atributo onclick para passar o maior status atualizado
+                            card.setAttribute('onclick',
+                                `redirectToDetails('${numPedido}', '${pedidoAtualizado.status_final}', '${card.getAttribute('data-id-parceiro') || '<?= $_SESSION['id'] ?>'}', '${pedidoAtualizado.status_final}', '${pedidoAtualizado.status_final}', '${pedidoAtualizado.data}', '${pedidoAtualizado.total}')`
+                            );
                         }
                     });
                 })
                 .catch(error => console.error('Erro ao atualizar status dos pedidos:', error));
         }
 
-        // Atualiza o status dos pedidos a cada 30 segundos
-        setInterval(atualizarStatusPedidos, 5000);
+        // Atualiza o status dos pedidos a cada 1 segundo
+        setInterval(atualizarStatusPedidos, 1000);
 
         // Atualiza o status dos pedidos ao carregar a página
         document.addEventListener('DOMContentLoaded', atualizarStatusPedidos);

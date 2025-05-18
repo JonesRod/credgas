@@ -585,13 +585,61 @@ function formatDateTimeJS($dateString)
                     if (data.status_final === 3 || data.status_final === 4) {
                         clearInterval(verificarStatusInterval);
                         window.location.href = `pedido_cancelado.php?id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>`;
+                    } else {
+                        // Atualiza a barra de progresso e o status do pedido sem recarregar a página
+                        atualizarBarraProgressoEStatus(data.status_final);
                     }
                 }
             })
             .catch(error => {
                 // Opcional: pode exibir erro no console
-                // console.error('Erro ao verificar status do pedido:', error);
+                console.error('Erro ao verificar status do pedido:', error);
             });
+    }
+
+    function atualizarBarraProgressoEStatus(status_final) {
+        // Atualiza classes dos steps
+        const steps = document.querySelectorAll('.progress-step');
+        const labels = document.querySelectorAll('.progress-label');
+        steps.forEach((step, idx) => {
+            // idx: 0=Pendente, 1=Confirmado, 2=Pronto, 3=Entregar/Retirar, 4=Entregou
+            let ativo = false;
+            if (idx === 0 && status_final >= 0) ativo = true;
+            if (idx === 1 && status_final >= 1) ativo = true;
+            if (idx === 2 && status_final >= 5) ativo = true;
+            if (idx === 3 && status_final >= 6) ativo = true;
+            if (idx === 4 && status_final >= 7) ativo = true;
+            if (ativo) {
+                step.classList.add('active');
+                if (labels[idx]) labels[idx].classList.add('active-label');
+            } else {
+                step.classList.remove('active');
+                if (labels[idx]) labels[idx].classList.remove('active-label');
+            }
+        });
+
+        // Atualiza a barra de progresso (linha)
+        const progressLine = document.querySelector('.progress-line');
+        let percent = '0%';
+        if (status_final >= 7) percent = '100%';
+        else if (status_final >= 6) percent = '75%';
+        else if (status_final >= 5) percent = '50%';
+        else if (status_final >= 1) percent = '25%';
+        progressLine.style.background = `linear-gradient(to right, #28a745 ${percent}, #ddd ${percent})`;
+
+        // Atualiza o texto do status
+        const statusSpan = document.querySelector('span[style*="color"]');
+        if (statusSpan) {
+            let cor = 'orange', texto = 'Pendente';
+            if (status_final == 0) { cor = 'orange'; texto = 'Pendente'; }
+            else if (status_final == 1) { cor = 'green'; texto = 'Confirmado e vai para preparação.'; }
+            else if (status_final == 5) { cor = 'green'; texto = 'Pronto para entrega.'; }
+            else if (status_final == 6) { cor = 'green'; texto = 'Saiu para entrega.'; }
+            else if (status_final == 7) { cor = 'green'; texto = 'Finalizado.'; }
+            else { cor = 'red'; texto = 'Cancelado.'; }
+            statusSpan.style.color = cor;
+            statusSpan.textContent = texto;
+        }
     }
 </script>
 

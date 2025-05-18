@@ -136,8 +136,8 @@ if (ob_get_length()) {
         /* Estilo dos cards */
         .card {
             flex: 1 1 calc(25% - 10px);
-            max-width: 300px;
-            min-width: 250px;
+            max-width: auto;
+            min-width: 180px;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 20px;
