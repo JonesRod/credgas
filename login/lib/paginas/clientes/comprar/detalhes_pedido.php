@@ -557,7 +557,7 @@ if ($status_final >= 7) {
         <p>
             <?php
             if ($formato_compra == 'crediario') {
-                echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
+                echo "<p><strong>Pagamento: <span>Crediario.</span></p></strong></p>";
             } elseif ($formato_compra == 'online') {
                 echo "<p><strong>Pagamento: <span>Oline.</span></p></strong></p>";
             } elseif ($formato_compra == 'retirar') {

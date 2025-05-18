@@ -431,7 +431,7 @@ if (ob_get_length()) {
                         onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
                         style="background-color: <?php
                         echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
-                            (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                            (in_array($status_final, [1, 5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido confirmado, Pronto, Saiu para entrega e Finalizado
                                 (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
                         ?>;">
                         <div class="store-info">
@@ -443,7 +443,7 @@ if (ob_get_length()) {
                         <p><strong>Status:</strong>
                             <span style="color: <?php
                             echo $status_final === 0 ? '#ff5722' : // Laranja para Aguardando confirmação
-                                (in_array($status_final, [5, 6, 7]) ? 'green' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                                (in_array($status_final, [1, 5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido confirmado, Pronto, Saiu para entrega e Finalizado
                                     (in_array($status_final, [3, 4]) ? 'red' : 'black')); // Vermelho para Recusado e Cancelado
                             ?>">
                                 <?php
@@ -494,7 +494,7 @@ if (ob_get_length()) {
                         onclick="redirectToDetails('<?php echo $pedido['num_pedido']; ?>', '<?php echo $pedido['id_parceiro']; ?>', '<?php echo $status_final; ?>', '<?php echo $pedido['data']; ?>', '<?php echo $total; ?>')"
                         style="background-color: <?php
                         echo $status_final === 0 ? '#ffcc80' : // Laranja para Aguardando confirmação
-                            (in_array($status_final, [5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                            (in_array($status_final, [1, 5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido confirmado, Pronto, Saiu para entrega e Finalizado
                                 (in_array($status_final, [3, 4]) ? '#ffcdd2' : 'inherit')); // Vermelho para Recusado e Cancelado
                         ?>;">
                         <div class="store-info">
@@ -506,7 +506,7 @@ if (ob_get_length()) {
                         <p><strong>Status:</strong>
                             <span style="color: <?php
                             echo $status_final === 0 ? '#ff5722' : // Laranja para Aguardando confirmação
-                                (in_array($status_final, [5, 6, 7]) ? 'green' : // Verde para Pedido Pronto, Saiu para entrega e Finalizado
+                                (in_array($status_final, [1, 5, 6, 7]) ? '#c8e6c9' : // Verde para Pedido confirmado, Pronto, Saiu para entrega e Finalizado
                                     (in_array($status_final, [3, 4]) ? 'red' : 'black')); // Vermelho para Recusado e Cancelado
                             ?>">
                                 <?php

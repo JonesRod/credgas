@@ -597,7 +597,7 @@ function formatDateTimeJS($dateString)
                 <p>Deseja realmente avançar o andamento do pedido?</p>
                 <div id="codigo-retirada-div">
                     <label for="codigo-retirada-input"><strong>Código de Retirada do Cliente:</strong></label>
-                    <input type="text" id="codigo-retirada-input" maxlength="6" placeholder="Informe o código">
+                    <input type="text" id="codigo-retirada-input" maxlength="6" placeholder="Informe o código" value="921943">
                 </div>
                 <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
                     <button class="cancel" onclick="fecharPopupConfirmar()">Cancelar</button>
@@ -760,15 +760,19 @@ function formatDateTimeJS($dateString)
         if (btnConfirm) {
             if ([3, 4, 7].includes(status_final)) {
                 btnConfirm.style.display = 'none';
+                btnCancel.style.display = 'none';
             } else {
                 btnConfirm.style.display = 'block';
+                btnCancel.style.display = 'block';
             }
         }
         if (btnCancel) {
             if ([3, 4, 7].includes(status_final)) {
                 btnCancel.style.display = 'none';
+                btnConfirm.style.display = 'none';
             } else {
                 btnCancel.style.display = 'block';
+                btnConfirm.style.display = 'block';
             }
         }
     }
