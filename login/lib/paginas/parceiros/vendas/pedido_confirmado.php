@@ -605,6 +605,7 @@ function formatDateTimeJS($dateString)
                 </div>
             </div>
         </div>
+        <input type="text" id="data_hora" style="display: none;">
 
         <!-- Popup de mensagem -->
         <div id="mensagem-popup"></div>
@@ -808,6 +809,24 @@ function formatDateTimeJS($dateString)
         document.getElementById('codigo-retirada-input').value = '';
     }
 
+    function obterHorarioLocal() {
+        const agora = new Date();
+
+        // Obtém os componentes da data e hora
+        const ano = agora.getFullYear();
+        const mes = String(agora.getMonth() + 1).padStart(2, '0'); // Mês começa do 0, então +1
+        const dia = String(agora.getDate()).padStart(2, '0');
+        const hora = String(agora.getHours()).padStart(2, '0');
+        const minuto = String(agora.getMinutes()).padStart(2, '0');
+        const segundo = String(agora.getSeconds()).padStart(2, '0');
+
+        // Formata a data e hora como YYYY-MM-DD HH:MM:SS
+        const dataFormatada = `${ano}-${mes}-${dia} ${hora}:${minuto}:${segundo}`;
+
+        //console.log("Horário do dispositivo:", dataFormatada);
+        document.getElementById('data_hora').value = dataFormatada;
+    }
+
     function confirmarAndamento() {
         // Para retirada ou entrega, exige o código do cliente ao finalizar
         var statusAtual = <?php echo (int) max($pedido['status_parceiro'], $pedido['status_cliente']); ?>;
@@ -822,6 +841,10 @@ function formatDateTimeJS($dateString)
             novo_status = 7;
         }
         if (novo_status == 7) {
+
+            obterHorarioLocal();
+
+            // Verifica se o código de retirada foi informado
             const codigoInput = document.getElementById('codigo-retirada-input');
             const codigo = codigoInput.value.trim();
             if (!codigo || codigo.length < 4) {
@@ -856,6 +879,7 @@ function formatDateTimeJS($dateString)
         var params = 'id_parceiro=<?php echo $id_parceiro; ?>&num_pedido=<?php echo $num_pedido; ?>&novo_status=' + novo_status;
         if (novo_status == 7) {
             params += '&codigo_retirada=' + encodeURIComponent(document.getElementById('codigo-retirada-input').value.trim());
+            params += '&data_hora=' + encodeURIComponent(document.getElementById('data_hora').value);
         }
         xhr.send(params);
     }
