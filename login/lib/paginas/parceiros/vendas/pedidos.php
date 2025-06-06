@@ -204,7 +204,7 @@ while ($row = $result->fetch_assoc()) {
         body {
             font-family: Arial, sans-serif;
             padding: 30px;
-            background: #f9f9f9;
+            background:  #f9f9f9;
         }
 
         .pedidos-container {
@@ -366,6 +366,7 @@ while ($row = $result->fetch_assoc()) {
                 font-size: 12px;
             }
         }
+        
     </style>
 </head>
 
